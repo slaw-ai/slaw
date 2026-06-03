@@ -15,7 +15,7 @@ export function printSlawCliBanner(): void {
   const lines = [
     "",
     ...SLAW_ART.map((line) => pc.cyan(line)),
-    pc.blue("  ──────────────────────────────────"),
+    pc.blue("  ───────────────────────────────────────────────────────"),
     pc.bold(pc.white(`  ${TAGLINE}`)),
     "",
   ];
