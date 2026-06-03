@@ -37,8 +37,8 @@ function hasOwn(record: Record<string, unknown>, key: string) {
   return Object.prototype.hasOwnProperty.call(record, key);
 }
 
-function defaultTimeoutSecForAdapter(adapterType: string) {
-  return adapterType === "openclaw_gateway" ? 120 : 0;
+function defaultTimeoutSecForAdapter(_adapterType: string) {
+  return 0;
 }
 
 export function normalizeMaxTurnStopReason(value: unknown): Extract<HeartbeatRunStopReason, "max_turns_exhausted"> | null {

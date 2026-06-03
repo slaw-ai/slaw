@@ -28,7 +28,7 @@
 
 # Open-source orchestration for zero-human companies
 
-**If OpenClaw is an _employee_, Slaw is the _company_**
+**If an agent is an _employee_, Slaw is the _company_**
 
 Slaw is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track your agents' work and costs from one dashboard.
 
@@ -52,7 +52,6 @@ It looks like a task manager — but under the hood it has org charts, budgets, 
 <table>
   <tr>
     <td align="center"><strong>Works<br/>with</strong></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/slaw/slaw/master/doc/assets/logos/openclaw.svg" width="32" alt="OpenClaw" /><br/><sub>OpenClaw</sub></td>
     <td align="center"><img src="https://raw.githubusercontent.com/slaw/slaw/master/doc/assets/logos/claude.svg" width="32" alt="Claude" /><br/><sub>Claude Code</sub></td>
     <td align="center"><img src="https://raw.githubusercontent.com/slaw/slaw/master/doc/assets/logos/codex.svg" width="32" alt="Codex" /><br/><sub>Codex</sub></td>
     <td align="center"><img src="https://raw.githubusercontent.com/slaw/slaw/master/doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
@@ -70,7 +69,7 @@ It looks like a task manager — but under the hood it has org charts, budgets, 
 ## Slaw is right for you if
 
 - ✅ You want to build **autonomous AI companies**
-- ✅ You **coordinate many different agents** (OpenClaw, Codex, Claude, Cursor) toward a common goal
+- ✅ You **coordinate many different agents** (Codex, Claude, Cursor) toward a common goal
 - ✅ You have **20 simultaneous Claude Code terminals** open and lose track of what everyone is doing
 - ✅ You want agents running **autonomously 24/7**, but still want to audit work and chime in when needed
 - ✅ You want to **monitor costs** and enforce budgets
@@ -213,16 +212,16 @@ If you're a solo-entreprenuer you can use Tailscale to access Slaw on the go. Th
 **Can I run multiple companies?**
 Yes. A single deployment can run an unlimited number of companies with complete data isolation.
 
-**How is Slaw different from agents like OpenClaw or Claude Code?**
+**How is Slaw different from agents like Claude Code?**
 Slaw _uses_ those agents. It orchestrates them into a company — with org charts, budgets, goals, governance, and accountability.
 
-**Why should I use Slaw instead of just pointing my OpenClaw to Asana or Trello?**
+**Why should I use Slaw instead of just pointing my agent to Asana or Trello?**
 Agent orchestration has subtleties in how you coordinate who has work checked out, how to maintain sessions, monitoring costs, establishing governance - Slaw does this for you.
 
 (Bring-your-own-ticket-system is on the Roadmap)
 
 **Do agents run continuously?**
-By default, agents run on scheduled heartbeats and event-based triggers (task assignment, @-mentions). You can also hook in continuous agents like OpenClaw. You bring your agent and Slaw coordinates.
+By default, agents run on scheduled heartbeats and event-based triggers (task assignment, @-mentions). You can also hook in continuous agents. You bring your agent and Slaw coordinates.
 
 <br/>
 
@@ -265,7 +264,7 @@ See [doc/DEVELOPING.md](https://github.com/slaw/slaw/blob/master/doc/DEVELOPING.
 ## Roadmap
 
 - ✅ Plugin system (e.g. add a knowledge base, custom tracing, queues, etc)
-- ✅ Get OpenClaw / claw-style agent employees
+- ✅ Get continuous agent employees
 - ✅ companies.sh - import and export entire organizations
 - ✅ Easy AGENTS.md configurations
 - ✅ Skills Manager

@@ -31,7 +31,6 @@ Slaw currently has these adapters:
 - `acpx_local`
 - `opencode_local`
 - `pi_local`
-- `openclaw_gateway`
 
 The current skill API supports:
 
@@ -49,7 +48,6 @@ Current implementation state:
 - `opencode_local`: implemented, `persistent`, with shared Claude skills home caveats
 - `acpx_local`: implemented, `ephemeral` for Claude/Codex sub-agents and `unsupported` for custom commands
 - `grok_local`: implemented, `ephemeral`
-- `openclaw_gateway`: not yet implemented; blocked on gateway protocol support, so `unsupported` for now
 
 ## 3. Product Principles
 
@@ -106,7 +104,6 @@ These adapters cannot support skill sync without new external capabilities.
 Current adapter:
 
 - `acpx_local` when configured for custom commands
-- `openclaw_gateway`
 
 Expected UX:
 
@@ -259,29 +256,6 @@ Success criteria:
 - OpenCode agents show real state
 - shared-home risk is visible and bounded
 
-### 5.7 OpenClaw Gateway
-
-Target mode:
-
-- `unsupported` until gateway protocol support exists
-
-Required external work:
-
-- gateway API to list installed/available skills
-- gateway API to install/remove or otherwise reconcile skills
-- gateway metadata for whether state is persistent or ephemeral
-
-Until then:
-
-- Slaw stores desired skills only
-- UI shows unsupported actual state
-- no fake sync implementation
-
-Future target:
-
-- likely a fourth truth model eventually, such as remote-managed persistent state
-- for now, keep the current API and treat gateway as unsupported
-
 ### 5.8 ACPX Local
 
 Target mode:
@@ -367,18 +341,6 @@ Status:
 
 - implemented with shared Claude skills-home warning
 
-### Phase 3: Gateway support decision
-
-Decide:
-
-- keep `openclaw_gateway` unsupported for V1
-- or extend the gateway protocol for remote skill management
-
-My recommendation:
-
-- do not block V1 on gateway support
-- keep it explicitly unsupported until the remote protocol exists
-
 ## 9. Definition Of Done
 
 Adapter-wide skill support is ready when all are true:
@@ -396,9 +358,6 @@ Adapter-wide skill support is ready when all are true:
    - actual-state discovery
    - managed vs external distinctions
    - stale managed-skill cleanup where supported
-5. `openclaw_gateway` is either:
-   - explicitly unsupported with clean UX
-   - or backed by a real remote skill API
 
 ## 10. Recommendation
 
@@ -408,6 +367,5 @@ The recommended immediate order is:
 2. `gemini_local`
 3. `pi_local`
 4. `opencode_local`
-5. defer `openclaw_gateway`
 
-The local-adapter family now has explicit truth models. The remaining V1 boundary is `openclaw_gateway`, which should stay unsupported until the gateway protocol can report real remote skill state.
+The local-adapter family now has explicit truth models.

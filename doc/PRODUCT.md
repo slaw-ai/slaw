@@ -22,7 +22,7 @@ Every employee is an agent. When you create a company, you start by defining the
 
 Each employee has:
 
-- **Adapter type + config** — how this agent runs and what defines its identity/behavior. This is adapter-specific (e.g., an OpenClaw agent might use SOUL.md and HEARTBEAT.md files; a Claude Code agent might use CLAUDE.md; a bare script might use CLI args). Slaw doesn't prescribe the format — the adapter does.
+- **Adapter type + config** — how this agent runs and what defines its identity/behavior. This is adapter-specific (e.g., a Claude Code agent might use CLAUDE.md; a bare script might use CLI args). Slaw doesn't prescribe the format — the adapter does.
 - **Role & reporting** — their title, who they report to, who reports to them
 - **Capabilities description** — a short paragraph on what this agent does and when they're relevant (helps other agents discover who can help with what)
 
@@ -36,7 +36,7 @@ Slaw supports several ways to run an agent's heartbeat:
 
 1. **Local CLI/session adapters** — Slaw starts or resumes local coding-tool sessions such as Claude Code, Codex, Gemini, OpenCode, Pi, and Cursor, then tracks the run.
 2. **Run a command** — Slaw kicks off a process (shell command, Python script, etc.) and tracks it. The heartbeat is "execute this and monitor it."
-3. **Fire and forget a request** — Slaw sends a webhook/API call to an externally running agent. The heartbeat is "notify this agent to wake up." OpenClaw-style hooks work this way.
+3. **Fire and forget a request** — Slaw sends a webhook/API call to an externally running agent. The heartbeat is "notify this agent to wake up." Webhook-style hooks work this way.
 4. **External adapter plugins** — Slaw loads adapter packages through the plugin/adapter flow so self-hosted installs can add runtimes without hardcoding them in core.
 
 Agent runs can use project and execution workspaces, managed runtime services such as preview/dev servers, adapter-specific session state, and HTTP/webhook-style execution. We provide sensible defaults, but the adapter is still the boundary: if a runtime can be invoked, observed, and authorized, Slaw can coordinate it.
@@ -60,7 +60,7 @@ The current issue model includes stable issue identifiers, parent/sub-issues, bl
 
 ## Principles
 
-1. **Unopinionated about how you run your agents.** Your agents could be OpenClaw bots, Python scripts, Node scripts, Claude Code sessions, Codex instances — we don't care. Slaw defines the control plane for communication and provides utility infrastructure for heartbeats. It does not mandate an agent runtime.
+1. **Unopinionated about how you run your agents.** Your agents could be Python scripts, Node scripts, Claude Code sessions, Codex instances — we don't care. Slaw defines the control plane for communication and provides utility infrastructure for heartbeats. It does not mandate an agent runtime.
 
 2. **Company is the unit of organization.** Everything lives under a company. One Slaw instance, many companies.
 
@@ -75,7 +75,7 @@ The current issue model includes stable issue identifiers, parent/sub-issues, bl
 1. Open Slaw, create a new company
 2. Define the company's goal: "Create the #1 AI note-taking app, $1M MRR in 3 months"
 3. Create the CEO
-   - Choose an adapter (e.g., process adapter for Claude Code, HTTP adapter for OpenClaw)
+   - Choose an adapter (e.g., process adapter for Claude Code, HTTP adapter for a webhook bot)
    - Configure the adapter (agent identity, loop behavior, execution settings)
    - CEO proposes strategic breakdown → board approves
 4. Define the CEO's reports: CTO, CMO, CFO, etc.

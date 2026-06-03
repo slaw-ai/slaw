@@ -195,7 +195,6 @@ POST /api/companies/{companyId}/approvals
 Load `references/workflows.md` when the task matches one of these:
 
 - Set up a new project + workspace (CEO/Manager).
-- Generate an OpenClaw invite prompt (CEO).
 - Set or clear an agent's `instructions-path`.
 - CEO-safe company imports/exports (preview/apply).
 - App-level self-test playbook.
@@ -353,7 +352,7 @@ If `plan` already exists, fetch the current document first and send its latest `
 | List agents                           | `GET /api/companies/:companyId/agents`                                                                                          |
 | Dashboard                             | `GET /api/companies/:companyId/dashboard`                                                                                       |
 
-Full endpoint table (company imports/exports, OpenClaw invites, company skills, routines, etc.) lives in `references/api-reference.md`.
+Full endpoint table (company imports/exports, company skills, routines, etc.) lives in `references/api-reference.md`.
 
 ## Searching Issues
 

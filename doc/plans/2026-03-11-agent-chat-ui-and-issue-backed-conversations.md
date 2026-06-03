@@ -13,7 +13,6 @@ This is not only a component-library decision. In Slaw today:
 - Issues already carry assignment, audit trail, billing code, project linkage, goal linkage, and active run linkage.
 - Live run streaming already exists on issue detail pages.
 - Agent sessions already persist by `taskKey`, and today `taskKey` falls back to `issueId`.
-- The OpenClaw gateway adapter already supports an issue-scoped session key strategy.
 
 That means the cheapest useful path is not "add a second messaging product inside Slaw." It is "add a better conversational UI on top of issue and run primitives we already have."
 
@@ -33,7 +32,7 @@ Session continuity is already task-shaped.
 
 - `heartbeat.ts` derives `taskKey` from `taskKey`, then `taskId`, then `issueId`.
 - `agent_task_sessions` stores session state per company + agent + adapter + task key.
-- OpenClaw gateway supports `sessionKeyStrategy=issue|fixed|run`, and `issue` already matches the Slaw mental model well.
+- Adapters that support `sessionKeyStrategy=issue|fixed|run` map cleanly onto this, and `issue` already matches the Slaw mental model well.
 
 That means "chat with the CEO about this issue" naturally maps to one durable session per issue today without inventing a second session system.
 
@@ -100,7 +99,7 @@ Pros:
 - matches current product spec
 - billing, runs, comments, approvals, and activity already work
 - sessions already resume on issue identity
-- works with all adapters, including OpenClaw, without new agent auth or a second API surface
+- works with all adapters without new agent auth or a second API surface
 
 Cons:
 
@@ -173,7 +172,6 @@ That already matches current behavior:
 
 - adapter task sessions persist against `taskKey`
 - `taskKey` already falls back to `issueId`
-- OpenClaw already supports an issue-scoped session key
 
 This means "resume the CEO conversation later" works by reopening the same issue and waking the same agent on the same issue.
 
@@ -184,7 +182,6 @@ Do not add multi-thread-per-issue chat in the first pass.
 If Slaw later needs several parallel threads on one issue, then add an explicit conversation identity and derive:
 
 - `taskKey = issue:<issueId>:conversation:<conversationId>`
-- OpenClaw `sessionKey = slaw:conversation:<conversationId>`
 
 Until that requirement becomes real, one issue == one durable conversation is the simpler and better rule.
 
@@ -323,7 +320,6 @@ The most defensible first build is:
 - V1 communication model: `doc/SPEC-implementation.md`
 - Current issue/comment/run UI: `ui/src/pages/IssueDetail.tsx`, `ui/src/components/CommentThread.tsx`, `ui/src/components/LiveRunWidget.tsx`
 - Session persistence and task key derivation: `server/src/services/heartbeat.ts`, `packages/db/src/schema/agent_task_sessions.ts`
-- OpenClaw session routing: `packages/adapters/openclaw-gateway/README.md`
 - assistant-ui docs: <https://www.assistant-ui.com/docs>
 - assistant-ui repo: <https://github.com/assistant-ui/assistant-ui>
 - AI SDK transport docs: <https://ai-sdk.dev/docs/ai-sdk-ui/transport>

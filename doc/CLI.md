@@ -623,7 +623,6 @@ pnpm slaw inbox dismissals --company-id <company-id>
 pnpm slaw inbox dismiss --company-id <company-id> --payload-json '{"itemKey":"run:<run-id>"}'
 pnpm slaw board-claim show <token>
 pnpm slaw board-claim claim <token> [--payload-json '{...}']
-pnpm slaw openclaw invite-prompt --company-id <company-id> --payload-json '{...}'
 pnpm slaw available-skill list
 pnpm slaw available-skill index
 pnpm slaw available-skill get <skill-name>

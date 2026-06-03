@@ -17,7 +17,7 @@ Use when:
 - You want Slaw-managed instructions and skills staged into the execution workspace using Grok's native discovery paths (\`Agents.md\` and \`.claude/skills\`)
 
 Don't use when:
-- You need a webhook-style external invocation (use http or openclaw_gateway)
+- You need a webhook-style external invocation (use http)
 - You only need a one-shot script without an AI coding agent loop (use process)
 - Grok CLI is not installed or authenticated on the machine that runs Slaw
 

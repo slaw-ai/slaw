@@ -331,7 +331,7 @@ Slaw should define a new adapter surface area around skills:
 Examples:
 
 - Claude Code / Codex style adapters may manage skills as local filesystem packages or adapter-owned skill directories
-- OpenClaw-style adapters may expose currently enabled skills through an API or a reflected config surface
+- Webhook/gateway-style adapters may expose currently enabled skills through an API or a reflected config surface
 - some adapters may be read-only and only report what they have
 
 Planned adapter capability shape:
@@ -616,7 +616,7 @@ Docs to update later as implementation lands:
 
 1. Should imported skill packages be stored as managed package files in Slaw storage, or only referenced at import time?
    Decision: managed package files should support both company-scoped reuse and agent-scoped attachment.
-2. What is the minimum adapter skill interface needed to make the UI useful across Claude Code, Codex, OpenClaw, and future adapters?
+2. What is the minimum adapter skill interface needed to make the UI useful across Claude Code, Codex, and future adapters?
    Decision: use the baseline interface in section 8.5.
 3. Should Slaw support direct local folder selection in the web UI, or keep that CLI-only initially?
 4. Do we want optional generated lock files in phase 2, or defer them until provenance work?

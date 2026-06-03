@@ -13,7 +13,6 @@ const mockCompaniesApi = vi.hoisted(() => ({
 }));
 
 const mockAccessApi = vi.hoisted(() => ({
-  createOpenClawInvitePrompt: vi.fn(),
   getInviteOnboarding: vi.fn(),
 }));
 

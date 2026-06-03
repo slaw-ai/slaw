@@ -1,6 +1,5 @@
 import {
   createHash,
-  generateKeyPairSync,
   randomBytes,
   timingSafeEqual
 } from "node:crypto";
@@ -34,7 +33,6 @@ import {
   claimJoinRequestApiKeySchema,
   createBoardApiKeySchema,
   createCompanyInviteSchema,
-  createOpenClawInvitePromptSchema,
   listCompanyInvitesQuerySchema,
   listJoinRequestsQuerySchema,
   resolveCliAuthChallengeSchema,
@@ -460,92 +458,12 @@ function headerMapGetIgnoreCase(
   return typeof value === "string" ? value : null;
 }
 
-function tokenFromAuthorizationHeader(rawHeader: string | null): string | null {
-  const trimmed = nonEmptyTrimmedString(rawHeader);
-  if (!trimmed) return null;
-  const bearerMatch = trimmed.match(/^bearer\s+(.+)$/i);
-  if (bearerMatch?.[1]) {
-    return nonEmptyTrimmedString(bearerMatch[1]);
-  }
-  return trimmed;
-}
-
-function parseBooleanLike(value: unknown): boolean | null {
-  if (typeof value === "boolean") return value;
-  if (typeof value !== "string") return null;
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "true" || normalized === "1") return true;
-  if (normalized === "false" || normalized === "0") return false;
-  return null;
-}
-
-function generateEd25519PrivateKeyPem(): string {
-  const generated = generateKeyPairSync("ed25519");
-  return generated.privateKey
-    .export({ type: "pkcs8", format: "pem" })
-    .toString();
-}
-
 export function buildJoinDefaultsPayloadForAccept(input: {
   adapterType: string | null;
   defaultsPayload: unknown;
   slawApiUrl?: unknown;
-  inboundOpenClawAuthHeader?: string | null;
-  inboundOpenClawTokenHeader?: string | null;
 }): unknown {
-  if (input.adapterType !== "openclaw_gateway") {
-    return input.defaultsPayload;
-  }
-
-  const merged = isPlainObject(input.defaultsPayload)
-    ? { ...(input.defaultsPayload as Record<string, unknown>) }
-    : ({} as Record<string, unknown>);
-
-  if (!nonEmptyTrimmedString(merged.slawApiUrl)) {
-    const legacySlawApiUrl = nonEmptyTrimmedString(input.slawApiUrl);
-    if (legacySlawApiUrl) merged.slawApiUrl = legacySlawApiUrl;
-  }
-  const mergedHeaders = normalizeHeaderMap(merged.headers) ?? {};
-
-  const inboundOpenClawAuthHeader = nonEmptyTrimmedString(
-    input.inboundOpenClawAuthHeader
-  );
-  const inboundOpenClawTokenHeader = nonEmptyTrimmedString(
-    input.inboundOpenClawTokenHeader
-  );
-  if (
-    inboundOpenClawTokenHeader &&
-    !headerMapHasKeyIgnoreCase(mergedHeaders, "x-openclaw-token")
-  ) {
-    mergedHeaders["x-openclaw-token"] = inboundOpenClawTokenHeader;
-  }
-  if (
-    inboundOpenClawAuthHeader &&
-    !headerMapHasKeyIgnoreCase(mergedHeaders, "x-openclaw-auth")
-  ) {
-    mergedHeaders["x-openclaw-auth"] = inboundOpenClawAuthHeader;
-  }
-
-  if (Object.keys(mergedHeaders).length > 0) {
-    merged.headers = mergedHeaders;
-  } else {
-    delete merged.headers;
-  }
-
-  const discoveredToken =
-    headerMapGetIgnoreCase(mergedHeaders, "x-openclaw-token") ??
-    headerMapGetIgnoreCase(mergedHeaders, "x-openclaw-auth") ??
-    tokenFromAuthorizationHeader(
-      headerMapGetIgnoreCase(mergedHeaders, "authorization")
-    );
-  if (
-    discoveredToken &&
-    !headerMapHasKeyIgnoreCase(mergedHeaders, "x-openclaw-token")
-  ) {
-    mergedHeaders["x-openclaw-token"] = discoveredToken;
-  }
-
-  return Object.keys(merged).length > 0 ? merged : null;
+  return input.defaultsPayload;
 }
 
 export function mergeJoinDefaultsPayloadForReplay(
@@ -588,84 +506,6 @@ export function mergeJoinDefaultsPayloadForReplay(
   return merged;
 }
 
-export function canReplayOpenClawGatewayInviteAccept(input: {
-  requestType: "human" | "agent";
-  adapterType: string | null;
-  existingJoinRequest: Pick<
-    typeof joinRequests.$inferSelect,
-    "requestType" | "adapterType" | "status"
-  > | null;
-}): boolean {
-  if (
-    input.requestType !== "agent" ||
-    input.adapterType !== "openclaw_gateway"
-  ) {
-    return false;
-  }
-  if (!input.existingJoinRequest) {
-    return false;
-  }
-  if (
-    input.existingJoinRequest.requestType !== "agent" ||
-    input.existingJoinRequest.adapterType !== "openclaw_gateway"
-  ) {
-    return false;
-  }
-  return (
-    input.existingJoinRequest.status === "pending_approval" ||
-    input.existingJoinRequest.status === "approved"
-  );
-}
-
-function summarizeSecretForLog(
-  value: unknown
-): { present: true; length: number; sha256Prefix: string } | null {
-  const trimmed = nonEmptyTrimmedString(value);
-  if (!trimmed) return null;
-  return {
-    present: true,
-    length: trimmed.length,
-    sha256Prefix: hashToken(trimmed).slice(0, 12)
-  };
-}
-
-function summarizeOpenClawGatewayDefaultsForLog(defaultsPayload: unknown) {
-  const defaults = isPlainObject(defaultsPayload)
-    ? (defaultsPayload as Record<string, unknown>)
-    : null;
-  const headers = defaults ? normalizeHeaderMap(defaults.headers) : undefined;
-  const gatewayTokenValue = headers
-    ? headerMapGetIgnoreCase(headers, "x-openclaw-token") ??
-      headerMapGetIgnoreCase(headers, "x-openclaw-auth") ??
-      tokenFromAuthorizationHeader(
-        headerMapGetIgnoreCase(headers, "authorization")
-      )
-    : null;
-  return {
-    present: Boolean(defaults),
-    keys: defaults ? Object.keys(defaults).sort() : [],
-    url: defaults ? nonEmptyTrimmedString(defaults.url) : null,
-    slawApiUrl: defaults
-      ? nonEmptyTrimmedString(defaults.slawApiUrl)
-      : null,
-    headerKeys: headers ? Object.keys(headers).sort() : [],
-    sessionKeyStrategy: defaults
-      ? nonEmptyTrimmedString(defaults.sessionKeyStrategy)
-      : null,
-    disableDeviceAuth: defaults
-      ? parseBooleanLike(defaults.disableDeviceAuth)
-      : null,
-    waitTimeoutMs:
-      defaults && typeof defaults.waitTimeoutMs === "number"
-        ? defaults.waitTimeoutMs
-        : null,
-    devicePrivateKeyPem: defaults
-      ? summarizeSecretForLog(defaults.devicePrivateKeyPem)
-      : null,
-    gatewayToken: summarizeSecretForLog(gatewayTokenValue)
-  };
-}
-
 export function normalizeAgentDefaultsForJoin(input: {
   adapterType: string | null;
   defaultsPayload: unknown;
@@ -676,246 +516,9 @@ export function normalizeAgentDefaultsForJoin(input: {
 }) {
   const fatalErrors: string[] = [];
   const diagnostics: JoinDiagnostic[] = [];
-  if (input.adapterType !== "openclaw_gateway") {
-    const normalized = isPlainObject(input.defaultsPayload)
-      ? (input.defaultsPayload as Record<string, unknown>)
-      : null;
-    return { normalized, diagnostics, fatalErrors };
-  }
-
-  if (!isPlainObject(input.defaultsPayload)) {
-    diagnostics.push({
-      code: "openclaw_gateway_defaults_missing",
-      level: "warn",
-      message:
-        "No OpenClaw gateway config was provided in agentDefaultsPayload.",
-      hint:
-        "Include agentDefaultsPayload.url and headers.x-openclaw-token for OpenClaw gateway joins."
-    });
-    fatalErrors.push(
-      "agentDefaultsPayload is required for adapterType=openclaw_gateway"
-    );
-    return {
-      normalized: null as Record<string, unknown> | null,
-      diagnostics,
-      fatalErrors
-    };
-  }
-
-  const defaults = input.defaultsPayload as Record<string, unknown>;
-  const normalized: Record<string, unknown> = {};
-
-  let gatewayUrl: URL | null = null;
-  const rawGatewayUrl = nonEmptyTrimmedString(defaults.url);
-  if (!rawGatewayUrl) {
-    diagnostics.push({
-      code: "openclaw_gateway_url_missing",
-      level: "warn",
-      message: "OpenClaw gateway URL is missing.",
-      hint: "Set agentDefaultsPayload.url to ws:// or wss:// gateway URL."
-    });
-    fatalErrors.push("agentDefaultsPayload.url is required");
-  } else {
-    try {
-      gatewayUrl = new URL(rawGatewayUrl);
-      if (gatewayUrl.protocol !== "ws:" && gatewayUrl.protocol !== "wss:") {
-        diagnostics.push({
-          code: "openclaw_gateway_url_protocol",
-          level: "warn",
-          message: `OpenClaw gateway URL must use ws:// or wss:// (got ${gatewayUrl.protocol}).`
-        });
-        fatalErrors.push(
-          "agentDefaultsPayload.url must use ws:// or wss:// for openclaw_gateway"
-        );
-      } else {
-        normalized.url = gatewayUrl.toString();
-        diagnostics.push({
-          code: "openclaw_gateway_url_configured",
-          level: "info",
-          message: `Gateway endpoint set to ${gatewayUrl.toString()}`
-        });
-      }
-    } catch {
-      diagnostics.push({
-        code: "openclaw_gateway_url_invalid",
-        level: "warn",
-        message: `Invalid OpenClaw gateway URL: ${rawGatewayUrl}`
-      });
-      fatalErrors.push("agentDefaultsPayload.url is not a valid URL");
-    }
-  }
-
-  const headers = normalizeHeaderMap(defaults.headers) ?? {};
-  const gatewayToken =
-    headerMapGetIgnoreCase(headers, "x-openclaw-token") ??
-    headerMapGetIgnoreCase(headers, "x-openclaw-auth") ??
-    tokenFromAuthorizationHeader(headerMapGetIgnoreCase(headers, "authorization"));
-  if (gatewayToken && !headerMapHasKeyIgnoreCase(headers, "x-openclaw-token")) {
-    headers["x-openclaw-token"] = gatewayToken;
-  }
-  if (Object.keys(headers).length > 0) {
-    normalized.headers = headers;
-  }
-
-  if (!gatewayToken) {
-    diagnostics.push({
-      code: "openclaw_gateway_auth_header_missing",
-      level: "warn",
-      message: "Gateway auth token is missing from agent defaults.",
-      hint:
-        "Set agentDefaultsPayload.headers.x-openclaw-token (or legacy x-openclaw-auth)."
-    });
-    fatalErrors.push(
-      "agentDefaultsPayload.headers.x-openclaw-token (or x-openclaw-auth) is required"
-    );
-  } else if (gatewayToken.trim().length < 16) {
-    diagnostics.push({
-      code: "openclaw_gateway_auth_header_too_short",
-      level: "warn",
-      message: `Gateway auth token appears too short (${gatewayToken.trim().length} chars).`,
-      hint:
-        "Use the full gateway auth token from ~/.openclaw/openclaw.json (typically long random string)."
-    });
-    fatalErrors.push(
-      "agentDefaultsPayload.headers.x-openclaw-token is too short; expected a full gateway token"
-    );
-  } else {
-    diagnostics.push({
-      code: "openclaw_gateway_auth_header_configured",
-      level: "info",
-      message: "Gateway auth token configured."
-    });
-  }
-
-  if (isPlainObject(defaults.payloadTemplate)) {
-    normalized.payloadTemplate = defaults.payloadTemplate;
-  }
-
-  const parsedDisableDeviceAuth = parseBooleanLike(defaults.disableDeviceAuth);
-  const disableDeviceAuth = parsedDisableDeviceAuth === true;
-  if (parsedDisableDeviceAuth !== null) {
-    normalized.disableDeviceAuth = parsedDisableDeviceAuth;
-  }
-
-  const configuredDevicePrivateKeyPem = nonEmptyTrimmedString(
-    defaults.devicePrivateKeyPem
-  );
-  if (configuredDevicePrivateKeyPem) {
-    normalized.devicePrivateKeyPem = configuredDevicePrivateKeyPem;
-    diagnostics.push({
-      code: "openclaw_gateway_device_key_configured",
-      level: "info",
-      message:
-        "Gateway device key configured. Pairing approvals should persist for this agent."
-    });
-  } else if (!disableDeviceAuth) {
-    try {
-      normalized.devicePrivateKeyPem = generateEd25519PrivateKeyPem();
-      diagnostics.push({
-        code: "openclaw_gateway_device_key_generated",
-        level: "info",
-        message:
-          "Generated persistent gateway device key for this join. Pairing approvals should persist for this agent."
-      });
-    } catch (err) {
-      diagnostics.push({
-        code: "openclaw_gateway_device_key_generate_failed",
-        level: "warn",
-        message: `Failed to generate gateway device key: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
-        hint:
-          "Set agentDefaultsPayload.devicePrivateKeyPem explicitly or set disableDeviceAuth=true."
-      });
-      fatalErrors.push(
-        "Failed to generate gateway device key. Set devicePrivateKeyPem or disableDeviceAuth=true."
-      );
-    }
-  }
-
-  const waitTimeoutMs =
-    typeof defaults.waitTimeoutMs === "number" &&
-    Number.isFinite(defaults.waitTimeoutMs)
-      ? Math.floor(defaults.waitTimeoutMs)
-      : typeof defaults.waitTimeoutMs === "string"
-      ? Number.parseInt(defaults.waitTimeoutMs.trim(), 10)
-      : NaN;
-  if (Number.isFinite(waitTimeoutMs) && waitTimeoutMs > 0) {
-    normalized.waitTimeoutMs = waitTimeoutMs;
-  }
-
-  const timeoutSec =
-    typeof defaults.timeoutSec === "number" && Number.isFinite(defaults.timeoutSec)
-      ? Math.floor(defaults.timeoutSec)
-      : typeof defaults.timeoutSec === "string"
-      ? Number.parseInt(defaults.timeoutSec.trim(), 10)
-      : NaN;
-  if (Number.isFinite(timeoutSec) && timeoutSec > 0) {
-    normalized.timeoutSec = timeoutSec;
-  }
-
-  const sessionKeyStrategy = nonEmptyTrimmedString(defaults.sessionKeyStrategy);
-  if (
-    sessionKeyStrategy === "fixed" ||
-    sessionKeyStrategy === "issue" ||
-    sessionKeyStrategy === "run"
-  ) {
-    normalized.sessionKeyStrategy = sessionKeyStrategy;
-  }
-
-  const sessionKey = nonEmptyTrimmedString(defaults.sessionKey);
-  if (sessionKey) {
-    normalized.sessionKey = sessionKey;
-  }
-
-  const role = nonEmptyTrimmedString(defaults.role);
-  if (role) {
-    normalized.role = role;
-  }
-
-  if (Array.isArray(defaults.scopes)) {
-    const scopes = defaults.scopes
-      .filter((entry): entry is string => typeof entry === "string")
-      .map((entry) => entry.trim())
-      .filter(Boolean);
-    if (scopes.length > 0) {
-      normalized.scopes = scopes;
-    }
-  }
-
-  const rawSlawApiUrl =
-    typeof defaults.slawApiUrl === "string"
-      ? defaults.slawApiUrl.trim()
-      : "";
-  if (rawSlawApiUrl) {
-    try {
-      const parsedSlawApiUrl = new URL(rawSlawApiUrl);
-      if (
-        parsedSlawApiUrl.protocol !== "http:" &&
-        parsedSlawApiUrl.protocol !== "https:"
-      ) {
-        diagnostics.push({
-          code: "openclaw_gateway_slaw_api_url_protocol",
-          level: "warn",
-          message: `slawApiUrl must use http:// or https:// (got ${parsedSlawApiUrl.protocol}).`
-        });
-      } else {
-        normalized.slawApiUrl = parsedSlawApiUrl.toString();
-        diagnostics.push({
-          code: "openclaw_gateway_slaw_api_url_configured",
-          level: "info",
-          message: `slawApiUrl set to ${parsedSlawApiUrl.toString()}`
-        });
-      }
-    } catch {
-      diagnostics.push({
-        code: "openclaw_gateway_slaw_api_url_invalid",
-        level: "warn",
-        message: `Invalid slawApiUrl: ${rawSlawApiUrl}`
-      });
-    }
-  }
-
+  const normalized = isPlainObject(input.defaultsPayload)
+    ? (input.defaultsPayload as Record<string, unknown>)
+    : null;
   return { normalized, diagnostics, fatalErrors };
 }
 
@@ -1455,10 +1058,10 @@ function buildOnboardingDiscoveryDiagnostics(input: {
 
   if (apiHost && isLoopbackHost(apiHost)) {
     diagnostics.push({
-      code: "openclaw_onboarding_api_loopback",
+      code: "onboarding_api_loopback",
       level: "warn",
       message:
-        "Onboarding URL resolves to loopback hostname. Remote OpenClaw agents cannot reach localhost on your Slaw host.",
+        "Onboarding URL resolves to loopback hostname. Remote agents cannot reach localhost on your Slaw host.",
       hint: "Use a reachable hostname/IP (for example Tailscale hostname, Docker host alias, or public domain)."
     });
   }
@@ -1469,7 +1072,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
     (!bindHost || isLoopbackHost(bindHost))
   ) {
     diagnostics.push({
-      code: "openclaw_onboarding_private_loopback_bind",
+      code: "onboarding_private_loopback_bind",
       level: "warn",
       message: "Slaw is bound to loopback in authenticated/private mode.",
       hint: "Use a reachable private bind mode such as `pnpm dev --bind lan` or `pnpm dev --bind tailnet` for private-network onboarding."
@@ -1485,7 +1088,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
     !allowSet.has(apiHost)
   ) {
     diagnostics.push({
-      code: "openclaw_onboarding_private_host_not_allowed",
+      code: "onboarding_private_host_not_allowed",
       level: "warn",
       message: `Onboarding host "${apiHost}" is not in allowed hostnames for authenticated/private mode.`,
       hint: `Run pnpm slaw allowed-hostname ${apiHost}`
@@ -1585,17 +1188,17 @@ function buildInviteOnboardingManifest(
     ),
     onboarding: {
       instructions:
-        "Join as an external Slaw agent, save your one-time claim secret, wait for board approval, then claim your API key. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable. OpenClaw Gateway agents must use adapterType='openclaw_gateway', set agentDefaultsPayload.url to a ws:// or wss:// gateway endpoint, and include agentDefaultsPayload.headers.x-openclaw-token.",
+        "Join as an external Slaw agent, save your one-time claim secret, wait for board approval, then claim your API key. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable.",
       inviteMessage: extractInviteMessage(invite),
       recommendedAdapterType: null,
       requiredFields: {
         requestType: "agent",
         agentName: "Display name for this agent",
         adapterType:
-          "Adapter type for this runtime. Use 'openclaw_gateway' only for OpenClaw Gateway agents.",
+          "Adapter type for this runtime.",
         capabilities: "Optional capability summary",
         agentDefaultsPayload:
-          "Runtime-specific adapter config. OpenClaw Gateway agents must include url (ws:// or wss://) and headers.x-openclaw-token. Other runtimes should include the config their adapter expects."
+          "Runtime-specific adapter config. Include the config your adapter expects."
       },
       registrationEndpoint: {
         method: "POST",
@@ -1620,8 +1223,8 @@ function buildInviteOnboardingManifest(
         guidance:
           opts.deploymentMode === "authenticated" &&
           opts.deploymentExposure === "private"
-            ? "If OpenClaw runs on another machine, ensure the Slaw hostname is reachable and allowed via `pnpm slaw allowed-hostname <host>`."
-            : "Ensure OpenClaw can reach this Slaw API base URL for invite, claim, and skill bootstrap calls."
+            ? "If your agent runs on another machine, ensure the Slaw hostname is reachable and allowed via `pnpm slaw allowed-hostname <host>`."
+            : "Ensure your agent can reach this Slaw API base URL for invite, claim, and skill bootstrap calls."
       },
       textInstructions: {
         path: onboardingTextPath,
@@ -1725,25 +1328,6 @@ export function buildInviteOnboardingTextDocument(
       "agentDefaultsPayload": {}
     }
 
-    OpenClaw Gateway payload example:
-    {
-      "requestType": "agent",
-      "agentName": "My OpenClaw Agent",
-      "adapterType": "openclaw_gateway",
-      "capabilities": "OpenClaw gateway agent",
-      "agentDefaultsPayload": {
-        "url": "wss://your-openclaw-gateway.example",
-        "slawApiUrl": "https://slaw-hostname-your-agent-can-reach:3100",
-        "headers": { "x-openclaw-token": "replace-me" },
-        "waitTimeoutMs": 120000,
-        "sessionKeyStrategy": "issue",
-        "role": "operator",
-        "scopes": ["operator.admin"]
-      }
-    }
-
-    For OpenClaw Gateway, include agentDefaultsPayload.headers.x-openclaw-token with your gateway token. Legacy x-openclaw-auth is also accepted, but x-openclaw-token is preferred. Do NOT use /v1/responses or /hooks/* in this gateway join flow.
-
     Expected response includes:
     - request id
     - one-time claimSecret
@@ -1781,7 +1365,7 @@ export function buildInviteOnboardingTextDocument(
     ## Connectivity guidance
     ${
       onboarding.connectivity?.guidance ??
-      "Ensure Slaw is reachable from your OpenClaw runtime."
+      "Ensure Slaw is reachable from your agent runtime."
     }
   `);
 
@@ -2786,28 +2370,6 @@ export function accessRoutes(
     if (!allowed) throw forbidden("Permission denied");
   }
 
-  async function assertCanGenerateOpenClawInvitePrompt(
-    req: Request,
-    companyId: string
-  ) {
-    assertCompanyAccess(req, companyId);
-    if (req.actor.type === "agent") {
-      if (!req.actor.agentId) throw forbidden("Agent authentication required");
-      const actorAgent = await agents.getById(req.actor.agentId);
-      if (!actorAgent || actorAgent.companyId !== companyId) {
-        throw forbidden("Agent key cannot access another company");
-      }
-      if (actorAgent.role !== "ceo") {
-        throw forbidden("Only CEO agents can generate OpenClaw invite prompts");
-      }
-      return;
-    }
-    if (req.actor.type !== "board") throw unauthorized();
-    if (isLocalImplicit(req)) return;
-    const allowed = await access.canUser(companyId, req.actor.userId, "users:invite");
-    if (!allowed) throw forbidden("Permission denied");
-  }
-
   async function createCompanyInviteForCompany(input: {
     req: Request;
     companyId: string;
@@ -3093,60 +2655,6 @@ export function accessRoutes(
           allowedJoinTypes: created.allowedJoinTypes,
           expiresAt: created.expiresAt.toISOString(),
           humanRole: extractInviteHumanRole(created),
-          hasAgentMessage: Boolean(normalizedAgentMessage)
-        }
-      });
-
-      const companyBranding = await getInviteCompanyBranding(created.companyId, token);
-      const inviteSummary = toInviteSummaryResponse(
-        req,
-        token,
-        created,
-        companyBranding
-      );
-      res.status(201).json({
-        ...created,
-        token,
-        invitePath: inviteSummary.invitePath,
-        inviteUrl: inviteSummary.inviteUrl,
-        companyName: companyBranding.name,
-        onboardingTextPath: inviteSummary.onboardingTextPath,
-        onboardingTextUrl: inviteSummary.onboardingTextUrl,
-        inviteMessage: inviteSummary.inviteMessage
-      });
-    }
-  );
-
-  router.post(
-    "/companies/:companyId/openclaw/invite-prompt",
-    validate(createOpenClawInvitePromptSchema),
-    async (req, res) => {
-      const companyId = req.params.companyId as string;
-      await assertCanGenerateOpenClawInvitePrompt(req, companyId);
-      const { token, created, normalizedAgentMessage } =
-        await createCompanyInviteForCompany({
-          req,
-          companyId,
-          allowedJoinTypes: "agent",
-          humanRole: null,
-          defaultsPayload: null,
-          agentMessage: req.body.agentMessage ?? null
-        });
-
-      await logActivity(db, {
-        companyId,
-        actorType: req.actor.type === "agent" ? "agent" : "user",
-        actorId:
-          req.actor.type === "agent"
-            ? req.actor.agentId ?? "unknown-agent"
-            : req.actor.userId ?? "board",
-        action: "invite.openclaw_prompt_created",
-        entityType: "invite",
-        entityId: created.id,
-        details: {
-          inviteType: created.inviteType,
-          allowedJoinTypes: created.allowedJoinTypes,
-          expiresAt: created.expiresAt.toISOString(),
           hasAgentMessage: Boolean(normalizedAgentMessage)
         }
       });
@@ -3509,15 +3017,7 @@ export function accessRoutes(
           })
         );
       const adapterType = req.body.adapterType ?? null;
-      if (
-        inviteAlreadyAccepted &&
-        !canReplayHumanInviteAccept &&
-        !canReplayOpenClawGatewayInviteAccept({
-          requestType,
-          adapterType,
-          existingJoinRequest: existingJoinRequestForInvite
-        })
-      ) {
+      if (inviteAlreadyAccepted && !canReplayHumanInviteAccept) {
         throw notFound("Invite not found");
       }
       const replayJoinRequestId = inviteAlreadyAccepted
@@ -3539,9 +3039,7 @@ export function accessRoutes(
           ? buildJoinDefaultsPayloadForAccept({
               adapterType,
               defaultsPayload: replayMergedDefaults,
-              slawApiUrl: req.body.slawApiUrl ?? null,
-              inboundOpenClawAuthHeader: req.header("x-openclaw-auth") ?? null,
-              inboundOpenClawTokenHeader: req.header("x-openclaw-token") ?? null
+              slawApiUrl: req.body.slawApiUrl ?? null
             })
           : null;
 
@@ -3563,22 +3061,6 @@ export function accessRoutes(
 
       if (requestType === "agent" && joinDefaults.fatalErrors.length > 0) {
         throw badRequest(joinDefaults.fatalErrors.join("; "));
-      }
-
-      if (requestType === "agent" && adapterType === "openclaw_gateway") {
-        logger.info(
-          {
-            inviteId: invite.id,
-            joinRequestDiagnostics: joinDefaults.diagnostics.map((diag) => ({
-              code: diag.code,
-              level: diag.level
-            })),
-            normalizedAgentDefaults: summarizeOpenClawGatewayDefaultsForLog(
-              joinDefaults.normalized
-            )
-          },
-          "invite accept normalized OpenClaw gateway defaults"
-        );
       }
 
       const claimSecret =
@@ -3693,107 +3175,6 @@ export function accessRoutes(
 
       if (!created) {
         throw conflict("Join request not found");
-      }
-
-      if (
-        inviteAlreadyAccepted &&
-        requestType === "agent" &&
-        adapterType === "openclaw_gateway" &&
-        created.status === "approved" &&
-        created.createdAgentId
-      ) {
-        const existingAgent = await agents.getById(created.createdAgentId);
-        if (!existingAgent) {
-          throw conflict("Approved join request agent not found");
-        }
-        const existingAdapterConfig = isPlainObject(existingAgent.adapterConfig)
-          ? (existingAgent.adapterConfig as Record<string, unknown>)
-          : {};
-        const nextAdapterConfig = {
-          ...existingAdapterConfig,
-          ...(joinDefaults.normalized ?? {})
-        };
-        const updatedAgent = await agents.update(created.createdAgentId, {
-          adapterType,
-          adapterConfig: nextAdapterConfig
-        });
-        if (!updatedAgent) {
-          throw conflict("Approved join request agent not found");
-        }
-        await logActivity(db, {
-          companyId,
-          actorType: req.actor.type === "agent" ? "agent" : "user",
-          actorId:
-            req.actor.type === "agent"
-              ? req.actor.agentId ?? "invite-agent"
-              : req.actor.userId ?? "board",
-          action: "agent.updated_from_join_replay",
-          entityType: "agent",
-          entityId: updatedAgent.id,
-          details: { inviteId: invite.id, joinRequestId: created.id }
-        });
-      }
-
-      if (requestType === "agent" && adapterType === "openclaw_gateway") {
-        const expectedDefaults = summarizeOpenClawGatewayDefaultsForLog(
-          joinDefaults.normalized
-        );
-        const persistedDefaults = summarizeOpenClawGatewayDefaultsForLog(
-          created.agentDefaultsPayload
-        );
-        const missingPersistedFields: string[] = [];
-
-        if (expectedDefaults.url && !persistedDefaults.url)
-          missingPersistedFields.push("url");
-        if (
-          expectedDefaults.slawApiUrl &&
-          !persistedDefaults.slawApiUrl
-        ) {
-          missingPersistedFields.push("slawApiUrl");
-        }
-        if (expectedDefaults.gatewayToken && !persistedDefaults.gatewayToken) {
-          missingPersistedFields.push("headers.x-openclaw-token");
-        }
-        if (
-          expectedDefaults.devicePrivateKeyPem &&
-          !persistedDefaults.devicePrivateKeyPem
-        ) {
-          missingPersistedFields.push("devicePrivateKeyPem");
-        }
-        if (
-          expectedDefaults.headerKeys.length > 0 &&
-          persistedDefaults.headerKeys.length === 0
-        ) {
-          missingPersistedFields.push("headers");
-        }
-
-        logger.info(
-          {
-            inviteId: invite.id,
-            joinRequestId: created.id,
-            joinRequestStatus: created.status,
-            expectedDefaults,
-            persistedDefaults,
-            diagnostics: joinDefaults.diagnostics.map((diag) => ({
-              code: diag.code,
-              level: diag.level,
-              message: diag.message,
-              hint: diag.hint ?? null
-            }))
-          },
-          "invite accept persisted OpenClaw gateway join request"
-        );
-
-        if (missingPersistedFields.length > 0) {
-          logger.warn(
-            {
-              inviteId: invite.id,
-              joinRequestId: created.id,
-              missingPersistedFields
-            },
-            "invite accept detected missing persisted OpenClaw gateway defaults"
-          );
-        }
       }
 
       await logActivity(db, {

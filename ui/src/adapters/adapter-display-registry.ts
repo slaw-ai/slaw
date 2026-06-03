@@ -108,14 +108,6 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Managed remote Cursor agent",
     icon: MousePointer2,
   },
-  openclaw_gateway: {
-    label: "OpenClaw Gateway",
-    description: "External gateway adapter",
-    icon: Bot,
-    comingSoon: true,
-    disabledLabel: "Invite external agents from the add-agent modal",
-    hideFromVisualSelection: true,
-  },
   process: {
     label: "Process",
     description: "Internal process adapter",

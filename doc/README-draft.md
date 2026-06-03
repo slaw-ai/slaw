@@ -27,7 +27,7 @@ It looks like a task manager but has specialized skills and agent coordination
 # Slaw is right for you if:
 
 - You want to build autonomous companies
-- You want to coordinate many different types agents (OpenClaw, Codex, Claude, Cursor, etc.) to collaborate towards a common goal
+- You want to coordinate many different types agents (Codex, Claude, Cursor, etc.) to collaborate towards a common goal
 - You have 20 simultaneous Claude Code terminals open (and lose track of what everyone is working on)
 - You want to let your agents run autonomously 24/7, but still audit their work and chime in when needed
 - You want to monitor costs

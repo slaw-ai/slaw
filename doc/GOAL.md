@@ -48,7 +48,6 @@ Agents run externally and report into the control plane. Adapters connect differ
 
 - **Local CLI/session adapters** — built-in adapters for tools such as Claude Code, Codex, Gemini, OpenCode, Pi, and Cursor
 - **HTTP/process-style adapters** — command or webhook/API integrations for custom runtimes
-- **OpenClaw gateway** — integration for OpenClaw-style remote agents
 - **External adapter plugins** — dynamically loaded adapters installed outside the core app
 
 The control plane doesn't run agents. It orchestrates them. Agents run wherever they run and phone home.

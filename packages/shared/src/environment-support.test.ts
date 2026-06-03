@@ -10,7 +10,7 @@ describe("isSandboxProviderSupportedForAdapter", () => {
 
   it("rejects providers for adapters without remote-managed environment support", () => {
     expect(
-      isSandboxProviderSupportedForAdapter("openclaw", "fake-plugin", ["fake-plugin"]),
+      isSandboxProviderSupportedForAdapter("unsupported_adapter", "fake-plugin", ["fake-plugin"]),
     ).toBe(false);
   });
 });

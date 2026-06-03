@@ -69,8 +69,8 @@ managed by the Slaw server itself.
 
 ### Tier 3: Agent Self-Registration (Invite Link)
 
-**Trust model:** The agent is an autonomous external system (e.g. an OpenClaw
-agent, a SWE-agent instance). There is no human in the loop during setup. The
+**Trust model:** The agent is an autonomous external system (e.g. a
+SWE-agent instance). There is no human in the loop during setup. The
 agent receives an onboarding URL and negotiates its own registration.
 
 **Approach:**
@@ -103,8 +103,6 @@ to the agent via its declared communication channel.
   agent collects credentials, polls for confirmation, stores key automatically.
 - [Allium x402](https://agents.allium.so/skills/x402-skill.md) -- multi-step
   credential setup driven entirely by the agent.
-- [OpenClaw webhooks](https://docs.openclaw.ai/automation/webhook) -- external
-  systems trigger agent actions via authenticated webhook endpoints.
 
 ---
 
@@ -155,27 +153,6 @@ This goes into a `pending_approval` state until someone approves it.
 
 ---
 
-## OpenClaw as First External Integration
-
-OpenClaw is the ideal first target for Tier 3 because:
-
-- It already has webhook support (`POST /hooks/agent`) for receiving tasks.
-- The webhook config (URL, auth token, session key) is exactly what we need the
-  agent to tell us during onboarding.
-- OpenClaw agents can read a URL, parse instructions, and make HTTP calls.
-
-**Workflow:**
-
-1. Generate a Slaw invite link for the company.
-2. Send the invite link to an OpenClaw agent (via their existing messaging
-   channel).
-3. The OpenClaw agent fetches the invite, reads the onboarding doc, and
-   responds with its webhook configuration.
-4. A Slaw company member approves the new agent.
-5. Slaw begins sending heartbeats to the OpenClaw webhook endpoint.
-
----
-
 ## Approval Model
 
 All self-registration requires approval. This is non-negotiable for security.
@@ -202,7 +179,7 @@ On approval, the approver sets:
 | **P0**   | Local adapter JWT injection       | Unblocks zero-config local auth. Mint a JWT per heartbeat, pass as `SLAW_API_KEY`.          |
 | **P1**   | Invite link + onboarding endpoint | `POST /api/companies/:id/invites`, `GET /api/invite/:token`, `POST /api/invite/:token/register`. |
 | **P1**   | Approval flow                     | UI + API for reviewing and approving pending agent registrations.                                |
-| **P2**   | OpenClaw integration              | First real external agent onboarding via invite link.                                            |
+| **P2**   | External agent integration        | First real external agent onboarding via invite link.                                            |
 | **P3**   | CLI auth flow                     | `slaw auth login` for developer-managed remote agents.                                      |
 
 ## P0 Implementation Plan

@@ -48,9 +48,6 @@ describe("buildInviteOnboardingTextDocument", () => {
     expect(text).toContain("http://localhost:3100");
     expect(text).toContain("host.docker.internal");
     expect(text).toContain("slawApiUrl");
-    expect(text).toContain('"adapterType": "openclaw_gateway"');
-    expect(text).toContain("headers.x-openclaw-token");
-    expect(text).toContain("Do NOT use /v1/responses or /hooks/*");
     expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.slawApiUrl");
     expect(text).toContain("SLAW_API_KEY");
     expect(text).toContain("Use your runtime's normal skill or instruction installation path.");

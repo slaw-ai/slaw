@@ -395,7 +395,6 @@ export {
 
 export {
   createCompanyInviteSchema,
-  createOpenClawInvitePromptSchema,
   acceptInviteSchema,
   listCompanyInvitesQuerySchema,
   listJoinRequestsQuerySchema,
@@ -414,7 +413,6 @@ export {
   searchAdminUsersQuerySchema,
   updateUserCompanyAccessSchema,
   type CreateCompanyInvite,
-  type CreateOpenClawInvitePrompt,
   type AcceptInvite,
   type ListCompanyInvitesQuery,
   type ListJoinRequestsQuery,

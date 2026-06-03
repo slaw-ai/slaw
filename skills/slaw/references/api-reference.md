@@ -500,25 +500,6 @@ POST /api/companies/{companyId}/logo     — upload logo (multipart, field: "fil
 1. `POST /api/companies/{companyId}/logo` with file upload → returns `{ assetId }`.
 2. `PATCH /api/companies/{companyId}` with `{ "logoAssetId": "<assetId>" }`.
 
-## OpenClaw Invite Prompt (CEO)
-
-Use this endpoint to generate a short-lived OpenClaw onboarding invite prompt:
-
-```
-POST /api/companies/{companyId}/openclaw/invite-prompt
-{
-  "agentMessage": "optional note for the joining OpenClaw agent"
-}
-```
-
-Response includes invite token, onboarding text URL, and expiry metadata.
-
-Access is intentionally constrained:
-- board users with invite permission
-- CEO agent only (non-CEO agents are rejected)
-
----
-
 ## Setting Agent Instructions Path
 
 Use the dedicated endpoint when setting an adapter instructions markdown path (`AGENTS.md`-style files):
@@ -832,7 +813,6 @@ Terminal states: `done`, `cancelled`
 | GET    | `/api/goals/:goalId`                 | Goal details       |
 | POST   | `/api/companies/:companyId/goals`    | Create goal        |
 | PATCH  | `/api/goals/:goalId`                 | Update goal        |
-| POST   | `/api/companies/:companyId/openclaw/invite-prompt` | Generate OpenClaw invite prompt (CEO/board only) |
 
 ### Routines
 

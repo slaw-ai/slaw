@@ -50,11 +50,6 @@
     "publishFromCi": true
   },
   {
-    "dir": "packages/adapters/openclaw-gateway",
-    "name": "@slaw/adapter-openclaw-gateway",
-    "publishFromCi": true
-  },
-  {
     "dir": "packages/shared",
     "name": "@slaw/shared",
     "publishFromCi": true

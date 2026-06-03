@@ -60,11 +60,11 @@ vi.mock("../api/adapters", () => ({
 }));
 
 vi.mock("../adapters", () => ({
-  listUIAdapters: () => [{ type: "claude_local" }, { type: "openclaw_gateway" }],
+  listUIAdapters: () => [{ type: "claude_local" }, { type: "http" }],
 }));
 
 vi.mock("../adapters/metadata", () => ({
-  isVisualAdapterChoice: (type: string) => type !== "openclaw_gateway",
+  isVisualAdapterChoice: (type: string) => type !== "http",
 }));
 
 vi.mock("../adapters/use-disabled-adapters", () => ({

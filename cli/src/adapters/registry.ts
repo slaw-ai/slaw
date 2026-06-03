@@ -8,7 +8,6 @@ import { printGeminiStreamEvent } from "@slaw/adapter-gemini-local/cli";
 import { printGrokStreamEvent } from "@slaw/adapter-grok-local/cli";
 import { printOpenCodeStreamEvent } from "@slaw/adapter-opencode-local/cli";
 import { printPiStreamEvent } from "@slaw/adapter-pi-local/cli";
-import { printOpenClawGatewayStreamEvent } from "@slaw/adapter-openclaw-gateway/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
 
@@ -57,11 +56,6 @@ const grokLocalCLIAdapter: CLIAdapterModule = {
   formatStdoutEvent: printGrokStreamEvent,
 };
 
-const openclawGatewayCLIAdapter: CLIAdapterModule = {
-  type: "openclaw_gateway",
-  formatStdoutEvent: printOpenClawGatewayStreamEvent,
-};
-
 const adaptersByType = new Map<string, CLIAdapterModule>(
   [
     acpxLocalCLIAdapter,
@@ -73,7 +67,6 @@ const adaptersByType = new Map<string, CLIAdapterModule>(
     cursorCloudCLIAdapter,
     geminiLocalCLIAdapter,
     grokLocalCLIAdapter,
-    openclawGatewayCLIAdapter,
     processCLIAdapter,
     httpCLIAdapter,
   ].map((a) => [a.type, a]),

@@ -21,7 +21,6 @@ const workspacePaths = [
   "packages/adapter-utils",
   "packages/adapters/claude-local",
   "packages/adapters/codex-local",
-  "packages/adapters/openclaw-gateway",
 ];
 
 // Workspace packages that should NOT be bundled — they'll be published

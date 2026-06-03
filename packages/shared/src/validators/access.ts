@@ -18,26 +18,13 @@ export const createCompanyInviteSchema = z.object({
 
 export type CreateCompanyInvite = z.infer<typeof createCompanyInviteSchema>;
 
-export const createOpenClawInvitePromptSchema = z.object({
-  agentMessage: z.string().max(4000).optional().nullable(),
-});
-
-export type CreateOpenClawInvitePrompt = z.infer<
-  typeof createOpenClawInvitePromptSchema
->;
-
 export const acceptInviteSchema = z.object({
   requestType: z.enum(JOIN_REQUEST_TYPES),
   agentName: z.string().min(1).max(120).optional(),
   adapterType: optionalAgentAdapterTypeSchema,
   capabilities: z.string().max(4000).optional().nullable(),
   agentDefaultsPayload: z.record(z.string(), z.unknown()).optional().nullable(),
-  // OpenClaw join compatibility fields accepted at top level.
-  responsesWebhookUrl: z.string().max(4000).optional().nullable(),
-  responsesWebhookMethod: z.string().max(32).optional().nullable(),
-  responsesWebhookHeaders: z.record(z.string(), z.unknown()).optional().nullable(),
   slawApiUrl: z.string().max(4000).optional().nullable(),
-  webhookAuthHeader: z.string().max(4000).optional().nullable(),
 });
 
 export type AcceptInvite = z.infer<typeof acceptInviteSchema>;

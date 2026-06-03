@@ -276,7 +276,7 @@ export function NewAgentDialog() {
                     Invite an external agent
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    (OpenClaw, Hermes, or any agent that can call the invite API.)
+                    (Hermes or any agent that can call the invite API.)
                   </p>
                 </div>
               </div>

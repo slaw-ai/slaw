@@ -44,7 +44,6 @@
     "@slaw/adapter-cursor-local": "workspace:*",
     "@slaw/adapter-gemini-local": "workspace:*",
     "@slaw/adapter-grok-local": "workspace:*",
-    "@slaw/adapter-openclaw-gateway": "workspace:*",
     "@slaw/adapter-opencode-local": "workspace:*",
     "@slaw/adapter-pi-local": "workspace:*",
     "@slaw/adapter-utils": "workspace:*",

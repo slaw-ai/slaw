@@ -324,9 +324,6 @@ export function registerAccessCommands(program: Command): void {
       }),
   );
 
-  const openclaw = program.command("openclaw").description("OpenClaw integration helpers");
-  addCompanyPost(openclaw, "invite-prompt", "Create an OpenClaw invite prompt", "openclaw/invite-prompt");
-
   const publicSkills = program.command("available-skill").description("Public skill catalog operations");
   addSimpleGet(publicSkills, "list", "List available skills", "/api/skills/available");
   addSimpleGet(publicSkills, "index", "Get available skill index", "/api/skills/index");

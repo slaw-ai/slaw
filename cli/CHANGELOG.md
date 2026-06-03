@@ -11,7 +11,6 @@
   - @slaw/adapter-codex-local@0.3.1
   - @slaw/adapter-cursor-local@0.3.1
   - @slaw/adapter-gemini-local@0.3.1
-  - @slaw/adapter-openclaw-gateway@0.3.1
   - @slaw/adapter-opencode-local@0.3.1
   - @slaw/adapter-pi-local@0.3.1
   - @slaw/db@0.3.1
@@ -33,7 +32,6 @@
   - @slaw/adapter-claude-local@0.3.0
   - @slaw/adapter-codex-local@0.3.0
   - @slaw/adapter-cursor-local@0.3.0
-  - @slaw/adapter-openclaw-gateway@0.3.0
   - @slaw/adapter-opencode-local@0.3.0
   - @slaw/adapter-pi-local@0.3.0
   - @slaw/db@0.3.0
@@ -50,7 +48,6 @@
   - @slaw/db@0.2.7
   - @slaw/adapter-claude-local@0.2.7
   - @slaw/adapter-codex-local@0.2.7
-  - @slaw/adapter-openclaw@0.2.7
   - @slaw/server@0.2.7
 
 ## 0.2.6
@@ -64,7 +61,6 @@
   - @slaw/db@0.2.6
   - @slaw/adapter-claude-local@0.2.6
   - @slaw/adapter-codex-local@0.2.6
-  - @slaw/adapter-openclaw@0.2.6
   - @slaw/server@0.2.6
 
 ## 0.2.5
@@ -78,7 +74,6 @@
   - @slaw/db@0.2.5
   - @slaw/adapter-claude-local@0.2.5
   - @slaw/adapter-codex-local@0.2.5
-  - @slaw/adapter-openclaw@0.2.5
   - @slaw/server@0.2.5
 
 ## 0.2.4
@@ -92,7 +87,6 @@
   - @slaw/db@0.2.4
   - @slaw/adapter-claude-local@0.2.4
   - @slaw/adapter-codex-local@0.2.4
-  - @slaw/adapter-openclaw@0.2.4
   - @slaw/server@0.2.4
 
 ## 0.2.3
@@ -106,7 +100,6 @@
   - @slaw/db@0.2.3
   - @slaw/adapter-claude-local@0.2.3
   - @slaw/adapter-codex-local@0.2.3
-  - @slaw/adapter-openclaw@0.2.3
   - @slaw/server@0.2.3
 
 ## 0.2.2
@@ -120,7 +113,6 @@
   - @slaw/db@0.2.2
   - @slaw/adapter-claude-local@0.2.2
   - @slaw/adapter-codex-local@0.2.2
-  - @slaw/adapter-openclaw@0.2.2
   - @slaw/server@0.2.2
 
 ## 0.2.1
@@ -134,5 +126,4 @@
   - @slaw/db@0.2.1
   - @slaw/adapter-claude-local@0.2.1
   - @slaw/adapter-codex-local@0.2.1
-  - @slaw/adapter-openclaw@0.2.1
   - @slaw/server@0.2.1

@@ -41,7 +41,6 @@ flowchart TD
   ClaimAvailable[Claim secret available]
   ClaimConsumed[Claim secret consumed]
   ClaimExpired[Claim secret expired]
-  OpenClawReplay[Special replay path:<br/>accepted invite can be POSTed again<br/>for openclaw_gateway only]
 
   Board --> HumanInvite --> Active
   Board --> AgentInvite --> Active
@@ -66,9 +65,6 @@ flowchart TD
   ClaimAvailable --> ClaimConsumed: POST claim-api-key succeeds
   ClaimAvailable --> ClaimExpired: secret expires
 
-  Accepted --> OpenClawReplay
-  OpenClawReplay --> AgentPending
-  OpenClawReplay --> AgentApproved
 ```
 
 ## Board-Side Screen States
@@ -293,5 +289,5 @@ sequenceDiagram
   - `rejected` renders the "This join request was not approved." error panel
   - `approved` becomes a success path for human invites after membership is visible to the current session
 - `GET /api/invites/:token/logo` still rejects accepted invites, so accepted-invite reload states may fall back to the generated company icon even though the summary payload still carries `companyLogoUrl`.
-- Accepted-invite replay is supported for matching human invitees to repair/complete membership, and for `agent` requests with `adapterType=openclaw_gateway` when the existing join request is still `pending_approval` or already `approved`.
+- Accepted-invite replay is supported for matching human invitees to repair/complete membership.
 - `bootstrap_ceo` invites are one-time and do not create join requests.

@@ -152,7 +152,6 @@ describe("CompanyInvites", () => {
     expect(container.textContent).not.toContain("Active invites");
     expect(container.textContent).not.toContain("Consumed invites");
     expect(container.textContent).not.toContain("Expired invites");
-    expect(container.textContent).not.toContain("OpenClaw shortcut");
 
     expect(container.textContent).toContain("Choose a role");
     expect(container.textContent).toContain("Each invite link is single-use.");

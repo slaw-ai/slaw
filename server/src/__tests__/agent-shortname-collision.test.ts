@@ -38,32 +38,32 @@ describe("hasAgentShortnameCollision", () => {
 
 describe("deduplicateAgentName", () => {
   it("returns original name when no collision", () => {
-    const name = deduplicateAgentName("OpenClaw", [
+    const name = deduplicateAgentName("Hermes", [
       { id: "a1", name: "other-agent", status: "idle" },
     ]);
-    expect(name).toBe("OpenClaw");
+    expect(name).toBe("Hermes");
   });
 
   it("appends suffix when name collides", () => {
-    const name = deduplicateAgentName("OpenClaw", [
-      { id: "a1", name: "openclaw", status: "idle" },
+    const name = deduplicateAgentName("Hermes", [
+      { id: "a1", name: "hermes", status: "idle" },
     ]);
-    expect(name).toBe("OpenClaw 2");
+    expect(name).toBe("Hermes 2");
   });
 
   it("increments suffix until unique", () => {
-    const name = deduplicateAgentName("OpenClaw", [
-      { id: "a1", name: "openclaw", status: "idle" },
-      { id: "a2", name: "openclaw-2", status: "idle" },
-      { id: "a3", name: "openclaw-3", status: "idle" },
+    const name = deduplicateAgentName("Hermes", [
+      { id: "a1", name: "hermes", status: "idle" },
+      { id: "a2", name: "hermes-2", status: "idle" },
+      { id: "a3", name: "hermes-3", status: "idle" },
     ]);
-    expect(name).toBe("OpenClaw 4");
+    expect(name).toBe("Hermes 4");
   });
 
   it("ignores terminated agents for collision", () => {
-    const name = deduplicateAgentName("OpenClaw", [
-      { id: "a1", name: "openclaw", status: "terminated" },
+    const name = deduplicateAgentName("Hermes", [
+      { id: "a1", name: "hermes", status: "terminated" },
     ]);
-    expect(name).toBe("OpenClaw");
+    expect(name).toBe("Hermes");
   });
 });

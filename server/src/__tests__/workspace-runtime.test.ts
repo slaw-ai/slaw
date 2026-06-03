@@ -3388,7 +3388,7 @@ describe("normalizeAdapterManagedRuntimeServices", () => {
     const now = new Date("2026-03-09T12:00:00.000Z");
 
     const first = normalizeAdapterManagedRuntimeServices({
-      adapterType: "openclaw_gateway",
+      adapterType: "claude_local",
       runId: "run-1",
       agent: {
         id: "agent-1",
@@ -3413,7 +3413,7 @@ describe("normalizeAdapterManagedRuntimeServices", () => {
     });
 
     const second = normalizeAdapterManagedRuntimeServices({
-      adapterType: "openclaw_gateway",
+      adapterType: "claude_local",
       runId: "run-1",
       agent: {
         id: "agent-1",
@@ -3457,7 +3457,7 @@ describe("normalizeAdapterManagedRuntimeServices", () => {
     const workspace = buildWorkspace("/tmp/project");
 
     const refs = normalizeAdapterManagedRuntimeServices({
-      adapterType: "openclaw_gateway",
+      adapterType: "claude_local",
       runId: "run-1",
       agent: {
         id: "agent-1",

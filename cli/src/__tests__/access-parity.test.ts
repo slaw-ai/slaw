@@ -103,7 +103,6 @@ describe("access parity commands", () => {
     await run(["inbox", "dismiss", "--company-id", COMPANY_ID, "--payload-json", "{\"itemKey\":\"run:1\"}"]);
     await run(["board-claim", "show", "claim-token"]);
     await run(["board-claim", "claim", "claim-token", "--payload-json", "{}"]);
-    await run(["openclaw", "invite-prompt", "--company-id", COMPANY_ID, "--payload-json", "{}"]);
     await run(["available-skill", "list"]);
     await run(["available-skill", "index"]);
     await run(["available-skill", "get", "slaw"]);
@@ -125,7 +124,6 @@ describe("access parity commands", () => {
       ["POST", `http://localhost:3100/api/companies/${COMPANY_ID}/inbox-dismissals`],
       ["GET", "http://localhost:3100/api/board-claim/claim-token"],
       ["POST", "http://localhost:3100/api/board-claim/claim-token/claim"],
-      ["POST", `http://localhost:3100/api/companies/${COMPANY_ID}/openclaw/invite-prompt`],
       ["GET", "http://localhost:3100/api/skills/available"],
       ["GET", "http://localhost:3100/api/skills/index"],
       ["GET", "http://localhost:3100/api/skills/slaw"],

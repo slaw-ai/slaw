@@ -99,7 +99,6 @@ Reduce:
 
 These workflows should remain available but should not dominate fresh-run context:
 
-- OpenClaw invite flow
 - project setup flow
 - planning `<plan/>` writeback flow
 - instructions-path update flow

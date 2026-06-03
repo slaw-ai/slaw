@@ -16,9 +16,9 @@ If you want to extend Slaw today, the best path is often the [plugin system](doc
 
 Slaw should keep a thin core and rich edges. Plugins are the path for optional capabilities like knowledge bases, custom tracing, queues, doc editors, and other product-specific surfaces that do not need to live in the control plane itself.
 
-### ✅ Get OpenClaw / claw-style agent employees
+### ✅ Get continuous agent employees
 
-Slaw should be able to hire and manage real claw-style agent workers, not just a narrow built-in runtime. This is part of the larger "bring your own agent" story and keeps the control plane useful across different agent ecosystems.
+Slaw should be able to hire and manage real continuous agent workers, not just a narrow built-in runtime. This is part of the larger "bring your own agent" story and keeps the control plane useful across different agent ecosystems.
 
 ### ✅ companies.sh - import and export entire organizations
 

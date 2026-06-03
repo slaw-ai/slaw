@@ -67,7 +67,7 @@ Every employee is an agent. Agents are the workforce.
 
 ### Agent Identity (Adapter-Level)
 
-Concepts like SOUL.md (identity/mission) and HEARTBEAT.md (loop definition) are **not part of the Slaw protocol**. They are adapter-specific configurations. For example, an OpenClaw adapter might use SOUL.md and HEARTBEAT.md files. A Claude Code adapter might use CLAUDE.md. A bare Python script might use command-line args.
+Concepts like SOUL.md (identity/mission) and HEARTBEAT.md (loop definition) are **not part of the Slaw protocol**. They are adapter-specific configurations. For example, one adapter might use SOUL.md and HEARTBEAT.md files. A Claude Code adapter might use CLAUDE.md. A bare Python script might use command-line args.
 
 Slaw doesn't prescribe how an agent defines its identity or behavior. It provides the control plane; the adapter defines the agent's inner workings.
 
@@ -89,7 +89,6 @@ At the protocol level, Slaw tracks:
 
 Each adapter type defines its own config schema. Examples:
 
-- **OpenClaw adapter**: SOUL.md content, HEARTBEAT.md content, OpenClaw-specific settings
 - **Process adapter**: command to run, environment variables, working directory
 - **HTTP adapter**: endpoint URL, auth headers, payload template
 
@@ -193,13 +192,12 @@ Agent configuration includes an **adapter** that defines how Slaw invokes the ag
 | Adapter | Mechanism | Example |
 | ---------------- | -------------------------- | -------------------------------------------------- |
 | `process` | Execute a child process | `python run_agent.py --agent-id {id}` |
-| `http` | Send an HTTP request | `POST https://openclaw.example.com/hook/{id}` |
+| `http` | Send an HTTP request | `POST https://agent.example.com/hook/{id}` |
 | `claude_local` | Local Claude Code process | Claude Code heartbeat worker |
 | `codex_local` | Local Codex process | Codex CLI heartbeat worker |
 | `opencode_local` | Local OpenCode process | OpenCode heartbeat worker |
 | `pi_local` | Local Pi process | Pi CLI heartbeat worker |
 | `cursor` | Cursor API/CLI bridge | Cursor-integrated heartbeat worker |
-| `openclaw_gateway` | OpenClaw gateway API | Managed OpenClaw agent via gateway |
 | `hermes_local` | Local Hermes process | Hermes agent heartbeat worker |
 
 The `process` and `http` adapters ship as generic defaults. Additional built-in adapters cover common local coding runtimes (see list above), and new adapter types can be registered via the plugin system (see Plugin / Extension Architecture).
@@ -400,7 +398,7 @@ No optimistic locking or CRDTs needed. The single-assignment model + atomic chec
 
 Agents can create tasks assigned to humans. The board member (or any human with access) can complete these tasks through the UI.
 
-When a human completes a task, if the requesting agent's adapter supports **pingbacks** (e.g. OpenClaw hooks), Slaw sends a notification to wake that agent. This keeps humans rare but possible participants in the workflow.
+When a human completes a task, if the requesting agent's adapter supports **pingbacks** (e.g. webhook hooks), Slaw sends a notification to wake that agent. This keeps humans rare but possible participants in the workflow.
 
 The agents are discouraged from assigning tasks to humans in the Slaw SKILL, but sometimes it's unavoidable.
 
@@ -486,7 +484,7 @@ Each is a distinct page/route:
 - [ ] **Web UI** — React/Vite: org chart, task board, dashboard, cost views
 - [ ] **Agent auth** — connection string generation with URL + key + instructions
 - [ ] **One-command dev setup** — embedded PGlite, everything local
-- [ ] **Multiple Adapter types** (HTTP, OpenClaw gateway, and local coding adapters)
+- [ ] **Multiple Adapter types** (HTTP and local coding adapters)
 
 ### Not V1
 

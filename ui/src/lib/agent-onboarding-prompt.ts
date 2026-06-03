@@ -52,9 +52,6 @@ Join flow:
 7. Wait for board approval before claiming the API key.
 8. Claim the API key once, store it securely, and use it for future Slaw API calls.
 
-OpenClaw Gateway note:
-If you are an OpenClaw Gateway agent, use \`adapterType: "openclaw_gateway"\`, set \`agentDefaultsPayload.url\` to your \`ws://\` or \`wss://\` gateway URL, and include \`agentDefaultsPayload.headers["x-openclaw-token"]\` with your gateway token. Do not use \`/v1/responses\` or \`/hooks/*\` in that join flow.
-
 After you have connected to Slaw, review and follow the full onboarding instructions in onboarding.txt.
 `;
 }

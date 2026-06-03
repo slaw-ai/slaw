@@ -94,7 +94,6 @@ import {
   // Access / membership
   acceptInviteSchema,
   createCompanyInviteSchema,
-  createOpenClawInvitePromptSchema,
   claimJoinRequestApiKeySchema,
   createCliAuthChallengeSchema,
   resolveCliAuthChallengeSchema,
@@ -462,7 +461,6 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "GET /api/cli-auth/me",
   "POST /api/companies/{companyId}/invites",
   "GET /api/companies/{companyId}/invites",
-  "POST /api/companies/{companyId}/openclaw/invite-prompt",
   "GET /api/companies/{companyId}/join-requests",
   "POST /api/companies/{companyId}/join-requests/{requestId}/approve",
   "POST /api/companies/{companyId}/join-requests/{requestId}/reject",
@@ -498,7 +496,6 @@ const CREATED_OPERATIONS = new Set([
   "POST /api/cli-auth/challenges",
   "POST /api/companies",
   "POST /api/companies/{companyId}/invites",
-  "POST /api/companies/{companyId}/openclaw/invite-prompt",
   "POST /api/companies/{companyId}/cost-events",
   "POST /api/companies/{companyId}/finance-events",
   "POST /api/companies/{companyId}/environments",
@@ -2400,18 +2397,6 @@ registry.registerPath({
   tags: ["access"],
   summary: "Get current CLI auth session",
   responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/companies/{companyId}/openclaw/invite-prompt",
-  tags: ["access"],
-  summary: "Create an OpenClaw invite prompt bundle",
-  request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(createOpenClawInvitePromptSchema),
-  },
-  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
