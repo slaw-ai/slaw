@@ -185,7 +185,7 @@ This is a fork of `slaw/slaw` with QoL patches and an **external-only** Hermes a
 
 ### Branch Strategy
 
-- `feat/externalize-hermes-adapter` → core has **no** `hermes-slaw-adapter` dependency and **no** built-in `hermes_local` registration. Install Hermes via the Adapter Plugin manager (`@henkey/hermes-slaw-adapter` or a `file:` path).
+- `feat/externalize-hermes-adapter` → core has **no** `hermes-paperclip-adapter` dependency and **no** built-in `hermes_local` registration. Install Hermes via the Adapter Plugin manager (`@henkey/hermes-paperclip-adapter` or a `file:` path).
 - Older fork branches may still document built-in Hermes; treat this file as authoritative for the externalize branch.
 
 ### Hermes (plugin only)
@@ -218,4 +218,4 @@ PR #2218 (`feat/external-adapter-phase1`) adds external adapter support. See roo
 - The plugin-loader should have ZERO hardcoded adapter imports — pure dynamic loading
 - `createServerAdapter()` must include ALL optional fields (especially `detectModel`)
 - Built-in UI adapters can shadow external plugin parsers — remove built-in when fully externalizing
-- Reference external adapters: Hermes (`@henkey/hermes-slaw-adapter` or `file:`) and Droid (npm)
+- Reference external adapters: Hermes (`@henkey/hermes-paperclip-adapter` or `file:`) and Droid (npm)

@@ -237,7 +237,7 @@ export function adapterRoutes() {
     }
 
     // Strip version suffix if the UI sends "pkg@1.2.3" instead of separating it
-    // e.g. "@henkey/hermes-slaw-adapter@0.3.0" → packageName + version
+    // e.g. "@henkey/hermes-paperclip-adapter@0.3.0" → packageName + version
     let canonicalName = packageName;
     let explicitVersion = version;
     const versionSuffix = packageName.match(/@(\d+\.\d+\.\d+.*)$/);

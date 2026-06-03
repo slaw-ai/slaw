@@ -10,7 +10,7 @@ const hermesExecuteMock = vi.hoisted(() =>
   })),
 );
 
-vi.mock("hermes-slaw-adapter/server", () => ({
+vi.mock("hermes-paperclip-adapter/server", () => ({
   execute: hermesExecuteMock,
   testEnvironment: async () => ({
     adapterType: "hermes_local",
