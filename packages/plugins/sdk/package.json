@@ -109,12 +109,12 @@
   },
   "dependencies": {
     "@slaw/shared": "workspace:*",
-    "zod": "^3.24.2"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.0.8",
-    "typescript": "^5.7.3"
+    "@types/node": "^24.12.4",
+    "@types/react": "^19.2.16",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "react": ">=18"

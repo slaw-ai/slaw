@@ -36,7 +36,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@clack/prompts": "^0.10.0",
+    "@clack/prompts": "^0.10.1",
     "@slaw/adapter-acpx-local": "workspace:*",
     "@slaw/adapter-claude-local": "workspace:*",
     "@slaw/adapter-codex-local": "workspace:*",
@@ -44,22 +44,22 @@
     "@slaw/adapter-cursor-local": "workspace:*",
     "@slaw/adapter-gemini-local": "workspace:*",
     "@slaw/adapter-grok-local": "workspace:*",
+    "@slaw/adapter-openclaw-gateway": "workspace:*",
     "@slaw/adapter-opencode-local": "workspace:*",
     "@slaw/adapter-pi-local": "workspace:*",
-    "@slaw/adapter-openclaw-gateway": "workspace:*",
     "@slaw/adapter-utils": "workspace:*",
     "@slaw/db": "workspace:*",
     "@slaw/server": "workspace:*",
     "@slaw/shared": "workspace:*",
-    "drizzle-orm": "0.45.2",
-    "dotenv": "^17.0.1",
     "commander": "^13.1.0",
-    "embedded-postgres": "^18.1.0-beta.16",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "0.45.2",
+    "embedded-postgres": "18.1.0-beta.16",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.12.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "@types/node": "^22.19.19",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3"
   }
 }

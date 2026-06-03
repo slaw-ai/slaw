@@ -52,18 +52,18 @@
     "postpack": "if [ -f package.dev.json ]; then mv package.dev.json package.json; fi"
   },
   "dependencies": {
-    "@slaw/plugin-sdk": "workspace:*",
-    "@pierre/diffs": "^1.1.22"
+    "@pierre/diffs": "^1.2.7",
+    "@slaw/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "esbuild": "^0.27.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "@types/node": "^24.12.4",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "esbuild": "^0.27.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.6"
   },
   "peerDependencies": {
     "react": ">=18",
