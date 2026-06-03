@@ -1,8 +1,8 @@
 import { gzipSync } from "node:zlib";
-import type { FeedbackTraceBundle } from "@paperclipai/shared";
+import type { FeedbackTraceBundle } from "@slaw/shared";
 import type { Config } from "../config.js";
 
-const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.paperclip.ing";
+const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.slaw.ing";
 
 function buildFeedbackShareObjectKey(bundle: FeedbackTraceBundle, exportedAt: Date) {
   const year = String(exportedAt.getUTCFullYear());

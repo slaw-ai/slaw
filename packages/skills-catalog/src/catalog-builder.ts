@@ -17,7 +17,7 @@ import type {
   CatalogTrustLevel,
 } from "./types.js";
 
-const CATALOG_PACKAGE_NAME = "@paperclipai/skills-catalog";
+const CATALOG_PACKAGE_NAME = "@slaw/skills-catalog";
 const CATALOG_SCHEMA_VERSION = 1;
 const SKILL_ENTRYPOINT = "SKILL.md";
 const MAX_CATALOG_FILE_BYTES = 1024 * 1024;
@@ -111,7 +111,7 @@ export async function validateCatalog(packageDir: string): Promise<BuildCatalogM
   if (generatedText !== null) {
     const expectedText = formatCatalogManifest(expected.manifest);
     if (generatedText !== expectedText) {
-      errors.push("generated/catalog.json is stale. Run pnpm --filter @paperclipai/skills-catalog build:manifest.");
+      errors.push("generated/catalog.json is stale. Run pnpm --filter @slaw/skills-catalog build:manifest.");
     }
   }
 
@@ -214,8 +214,8 @@ async function buildCatalogSkill(
   validateSlug("category", candidate.category, prefix, errors);
   validateSlug("slug", candidate.slug, prefix, errors);
 
-  const id = `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`;
-  const key = `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`;
+  const id = `slaw:${candidate.kind}:${candidate.category}:${candidate.slug}`;
+  const key = `slaw/${candidate.kind}/${candidate.category}/${candidate.slug}`;
   const skillMarkdownPath = path.join(candidate.absolutePath, SKILL_ENTRYPOINT);
   const parsed = parseFrontmatterMarkdown(await fs.readFile(skillMarkdownPath, "utf8"));
 
@@ -386,8 +386,8 @@ function collectUniquenessErrors(skills: CatalogSkill[], errors: string[]) {
 
 function collectCandidateUniquenessErrors(candidates: SkillCandidate[], errors: string[]) {
   const projected = candidates.map((candidate) => ({
-    id: `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`,
-    key: `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`,
+    id: `slaw:${candidate.kind}:${candidate.category}:${candidate.slug}`,
+    key: `slaw/${candidate.kind}/${candidate.category}/${candidate.slug}`,
     slug: candidate.slug,
     path: toPosixPath(path.join("catalog", candidate.kind, candidate.category, candidate.slug)),
   })) as CatalogSkill[];

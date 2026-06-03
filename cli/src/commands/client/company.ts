@@ -11,7 +11,7 @@ import type {
   CompanyPortabilityInclude,
   CompanyPortabilityPreviewResult,
   CompanyPortabilityImportResult,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { getTelemetryClient, trackCompanyImported } from "../../telemetry.js";
 import { ApiRequestError } from "../../client/http.js";
 import { openUrl } from "../../client/board-auth.js";
@@ -78,7 +78,7 @@ interface CompanyImportOptions extends BaseClientOptions {
   agents?: string;
   collision?: CompanyCollisionMode;
   ref?: string;
-  paperclipUrl?: string;
+  slawUrl?: string;
   yes?: boolean;
   dryRun?: boolean;
 }
@@ -206,15 +206,15 @@ function normalizePortablePath(filePath: string): string {
 function shouldIncludePortableFile(filePath: string): boolean {
   const baseName = path.basename(filePath);
   const isMarkdown = baseName.endsWith(".md");
-  const isPaperclipYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
+  const isSlawYaml = baseName === ".slaw.yaml" || baseName === ".slaw.yml";
   const contentType = binaryContentTypeByExtension[path.extname(baseName).toLowerCase()];
-  return isMarkdown || isPaperclipYaml || Boolean(contentType);
+  return isMarkdown || isSlawYaml || Boolean(contentType);
 }
 
 function findPortableExtensionPath(files: Record<string, CompanyPortabilityFileEntry>): string | null {
-  if (files[".paperclip.yaml"] !== undefined) return ".paperclip.yaml";
-  if (files[".paperclip.yml"] !== undefined) return ".paperclip.yml";
-  return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
+  if (files[".slaw.yaml"] !== undefined) return ".slaw.yaml";
+  if (files[".slaw.yml"] !== undefined) return ".slaw.yml";
+  return Object.keys(files).find((entry) => entry.endsWith("/.slaw.yaml") || entry.endsWith("/.slaw.yml")) ?? null;
 }
 
 function collectFilesUnderDirectory(
@@ -411,7 +411,7 @@ async function promptForImportSelection(preview: CompanyPortabilityPreviewResult
 
   while (true) {
     const choice = await p.select<ImportSelectableGroup | "company" | "confirm">({
-      message: "Select what Paperclip should import",
+      message: "Select what Slaw should import",
       options: [
         {
           value: "company",
@@ -1343,7 +1343,7 @@ export function registerCompanyCommands(program: Command): void {
               out: path.resolve(opts.out!),
               rootPath: exported.rootPath,
               filesWritten: Object.keys(exported.files).length,
-              paperclipExtensionPath: exported.paperclipExtensionPath,
+              slawExtensionPath: exported.slawExtensionPath,
               warningCount: exported.warnings.length,
             },
             { json: ctx.json },
@@ -1371,13 +1371,13 @@ export function registerCompanyCommands(program: Command): void {
       .option("--agents <list>", "Comma-separated agent slugs to import, or all", "all")
       .option("--collision <mode>", "Collision strategy: rename | skip | replace", "rename")
       .option("--ref <value>", "Git ref to use for GitHub imports (branch, tag, or commit)")
-      .option("--paperclip-url <url>", "Alias for --api-base on this command")
+      .option("--slaw-url <url>", "Alias for --api-base on this command")
       .option("--yes", "Accept default selection and skip the pre-import confirmation prompt", false)
       .option("--dry-run", "Run preview only without applying", false)
       .action(async (fromPathOrUrl: string, opts: CompanyImportOptions) => {
         try {
-          if (!opts.apiBase?.trim() && opts.paperclipUrl?.trim()) {
-            opts.apiBase = opts.paperclipUrl.trim();
+          if (!opts.apiBase?.trim() && opts.slawUrl?.trim()) {
+            opts.apiBase = opts.slawUrl.trim();
           }
           const ctx = resolveCommandContext(opts);
           const interactiveView = isInteractiveTerminal() && !ctx.json;

@@ -453,7 +453,7 @@ export type {
   PluginDatabaseDeclaration,
   PluginApiRouteCompanyResolution,
   PluginApiRouteDeclaration,
-  PaperclipPluginManifestV1,
+  SlawPluginManifestV1,
   PluginRecord,
   PluginDatabaseNamespaceRecord,
   PluginMigrationRecord,

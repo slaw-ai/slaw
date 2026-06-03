@@ -5,35 +5,35 @@ summary: Onboard, run, doctor, and configure
 
 Instance setup and diagnostics commands.
 
-## `paperclipai run`
+## `slaw run`
 
 One-command bootstrap and start:
 
 ```sh
-pnpm paperclipai run
+pnpm slaw run
 ```
 
 Does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `slaw doctor` with repair enabled
 3. Starts the server when checks pass
 
 Choose a specific instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm slaw run --instance dev
 ```
 
-## `paperclipai onboard`
+## `slaw onboard`
 
 Interactive first-time setup:
 
 ```sh
-pnpm paperclipai onboard
+pnpm slaw onboard
 ```
 
-If Paperclip is already configured, rerunning `onboard` keeps the existing config in place. Use `paperclipai configure` to change settings on an existing install.
+If Slaw is already configured, rerunning `onboard` keeps the existing config in place. Use `slaw configure` to change settings on an existing install.
 
 First prompt:
 
@@ -43,24 +43,24 @@ First prompt:
 Start immediately after onboarding:
 
 ```sh
-pnpm paperclipai onboard --run
+pnpm slaw onboard --run
 ```
 
 Non-interactive defaults + immediate start (opens browser on server listen):
 
 ```sh
-pnpm paperclipai onboard --yes
+pnpm slaw onboard --yes
 ```
 
-On an existing install, `--yes` now preserves the current config and just starts Paperclip with that setup.
+On an existing install, `--yes` now preserves the current config and just starts Slaw with that setup.
 
-## `paperclipai doctor`
+## `slaw doctor`
 
 Health checks with optional auto-repair:
 
 ```sh
-pnpm paperclipai doctor
-pnpm paperclipai doctor --repair
+pnpm slaw doctor
+pnpm slaw doctor --repair
 ```
 
 Validates:
@@ -72,14 +72,14 @@ Validates:
 - Storage configuration
 - Missing key files
 
-## `paperclipai configure`
+## `slaw configure`
 
 Update configuration sections:
 
 ```sh
-pnpm paperclipai configure --section server
-pnpm paperclipai configure --section secrets
-pnpm paperclipai configure --section storage
+pnpm slaw configure --section server
+pnpm slaw configure --section secrets
+pnpm slaw configure --section storage
 ```
 
 `--section secrets` updates the deployment-level provider used as the fallback
@@ -89,43 +89,43 @@ coming-soon GCP/Vault) live in the board UI under
 `Company Settings → Secrets → Provider vaults` and the
 `/api/companies/{companyId}/secret-provider-configs` API.
 
-## `paperclipai env`
+## `slaw env`
 
 Show resolved environment configuration:
 
 ```sh
-pnpm paperclipai env
+pnpm slaw env
 ```
 
-This now includes bind-oriented deployment settings such as `PAPERCLIP_BIND` and `PAPERCLIP_BIND_HOST` when configured.
+This now includes bind-oriented deployment settings such as `SLAW_BIND` and `SLAW_BIND_HOST` when configured.
 
-## `paperclipai allowed-hostname`
+## `slaw allowed-hostname`
 
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-pnpm paperclipai allowed-hostname my-tailscale-host
+pnpm slaw allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
 
 | Data | Default Path |
 |------|-------------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Logs | `~/.paperclip/instances/default/logs` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
+| Config | `~/.slaw/instances/default/config.json` |
+| Database | `~/.slaw/instances/default/db` |
+| Logs | `~/.slaw/instances/default/logs` |
+| Storage | `~/.slaw/instances/default/data/storage` |
+| Secrets key | `~/.slaw/instances/default/secrets/master.key` |
 
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+SLAW_HOME=/custom/home SLAW_INSTANCE_ID=dev pnpm slaw run
 ```
 
 Or pass `--data-dir` directly on any command:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai doctor --data-dir ./tmp/paperclip-dev
+pnpm slaw run --data-dir ./tmp/slaw-dev
+pnpm slaw doctor --data-dir ./tmp/slaw-dev
 ```

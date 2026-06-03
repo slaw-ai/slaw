@@ -19,19 +19,19 @@ const VIEWPORTS = [
 
 const STORIES = [
   {
-    id: "paperclip-source-issue-recovery--recovery-action-card-states",
+    id: "slaw-source-issue-recovery--recovery-action-card-states",
     label: "card-states",
   },
   {
-    id: "paperclip-source-issue-recovery--inbox-row-chips",
+    id: "slaw-source-issue-recovery--inbox-row-chips",
     label: "inbox-rows",
   },
   {
-    id: "paperclip-source-issue-recovery--blocker-notice-recovery-indicators",
+    id: "slaw-source-issue-recovery--blocker-notice-recovery-indicators",
     label: "blocker-notice",
   },
   {
-    id: "paperclip-source-issue-recovery--active-run-panel-recovery-chips",
+    id: "slaw-source-issue-recovery--active-run-panel-recovery-chips",
     label: "active-run-panel",
   },
 ];

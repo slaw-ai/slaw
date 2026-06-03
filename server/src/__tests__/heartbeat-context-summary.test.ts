@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildPaperclipTaskMarkdown,
+  buildSlawTaskMarkdown,
   mergeCoalescedContextSnapshot,
   summarizeHeartbeatRunContextSnapshot,
   summarizeHeartbeatRunListResultJson,
 } from "../services/heartbeat.js";
 
-describe("buildPaperclipTaskMarkdown", () => {
+describe("buildSlawTaskMarkdown", () => {
   it("adds planning directives for assignment and comment task context", () => {
-    const assignment = buildPaperclipTaskMarkdown({
+    const assignment = buildSlawTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -21,7 +21,7 @@ describe("buildPaperclipTaskMarkdown", () => {
     expect(assignment).toContain("- Work mode: \"planning\"");
     expect(assignment).toContain("Make the plan only. Do not write code or perform implementation work.");
 
-    const commentWake = buildPaperclipTaskMarkdown({
+    const commentWake = buildSlawTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -37,7 +37,7 @@ describe("buildPaperclipTaskMarkdown", () => {
 
     expect(commentWake).toContain("Update the plan only. Do not write code or perform implementation work.");
 
-    const acceptedConfirmation = buildPaperclipTaskMarkdown({
+    const acceptedConfirmation = buildSlawTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -56,7 +56,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("adds accepted-plan continuation guidance for standard-work issues when the wake is flagged as a plan continuation", () => {
-    const acceptedConfirmation = buildPaperclipTaskMarkdown({
+    const acceptedConfirmation = buildSlawTaskMarkdown({
       issue: {
         id: "issue-2",
         identifier: "PAP-415",
@@ -73,7 +73,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("prefers ordinary comment planning guidance over stale accepted confirmation state", () => {
-    const commentWake = buildPaperclipTaskMarkdown({
+    const commentWake = buildSlawTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -156,7 +156,7 @@ describe("summarizeHeartbeatRunContextSnapshot", () => {
       wakeReason: "retry_failed_run",
       wakeSource: "on_demand",
       wakeTriggerDetail: "manual",
-      paperclipWake: {
+      slawWake: {
         comments: [
           {
             body: "x".repeat(50_000),
@@ -183,7 +183,7 @@ describe("summarizeHeartbeatRunContextSnapshot", () => {
   it("returns null when no allowed fields are present", () => {
     expect(
       summarizeHeartbeatRunContextSnapshot({
-        paperclipWake: { comments: [{ body: "hello" }] },
+        slawWake: { comments: [{ body: "hello" }] },
       }),
     ).toBeNull();
   });

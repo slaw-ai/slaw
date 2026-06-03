@@ -3,7 +3,7 @@ import type {
   ResourceMembershipResourceType,
   ResourceMembershipState,
   ResourceMemberships,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { resourceMembershipsApi } from "../api/resourceMemberships";
 import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";

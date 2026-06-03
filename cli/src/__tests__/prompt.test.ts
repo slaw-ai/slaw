@@ -8,7 +8,7 @@ import { runAgentPrompt } from "../commands/client/prompt.js";
 const ORIGINAL_ENV = { ...process.env };
 
 function createTempContextPath(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-prompt-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "slaw-cli-prompt-"));
   return path.join(dir, "context.json");
 }
 
@@ -27,7 +27,7 @@ function agent(overrides: Record<string, unknown> = {}) {
 describe("prompt handoff", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_API_KEY;
+    delete process.env.SLAW_API_KEY;
     vi.restoreAllMocks();
   });
 

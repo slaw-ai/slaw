@@ -4,7 +4,7 @@ import type {
   DocumentAnnotationComment,
   DocumentAnnotationThreadStatus,
   DocumentAnnotationThreadWithComments,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import {
   Check,
   Copy,
@@ -26,7 +26,7 @@ import { cn, relativeTime } from "@/lib/utils";
 import { documentAnnotationsApi } from "@/api/document-annotations";
 import { MarkdownBody } from "./MarkdownBody";
 import type { PendingAnchor } from "./DocumentAnnotationLayer";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@slaw/shared";
 import type { CompanyUserProfile } from "@/lib/company-members";
 
 type AnnotationFilter = "open" | "resolved" | "stale" | "orphan";
@@ -75,7 +75,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
         <SheetContent
           side="bottom"
           showCloseButton={false}
-          className="paperclip-doc-annotation-sheet flex max-h-[88vh] flex-col rounded-none border-t border-border bg-background p-0"
+          className="slaw-doc-annotation-sheet flex max-h-[88vh] flex-col rounded-none border-t border-border bg-background p-0"
         >
           <SheetTitle className="sr-only">
             Comments on {props.documentKey} revision {props.documentRevisionNumber}

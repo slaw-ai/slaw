@@ -3,17 +3,17 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { onboard } from "../commands/onboard.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { SlawConfig } from "../config/schema.js";
 
 const ORIGINAL_ENV = { ...process.env };
 const ORIGINAL_CWD = process.cwd();
 const ORIGINAL_PATH = process.env.PATH;
 
 function createExistingConfigFixture() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "slaw-onboard-"));
   const runtimeRoot = path.join(root, "runtime");
-  const configPath = path.join(root, ".paperclip", "config.json");
-  const config: PaperclipConfig = {
+  const configPath = path.join(root, ".slaw", "config.json");
+  const config: SlawConfig = {
     $meta: {
       version: 1,
       updatedAt: "2026-03-29T00:00:00.000Z",
@@ -55,7 +55,7 @@ function createExistingConfigFixture() {
         baseDir: path.join(runtimeRoot, "storage"),
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "slaw",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -77,22 +77,22 @@ function createExistingConfigFixture() {
 }
 
 function createFreshConfigPath() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-fresh-"));
-  return path.join(root, ".paperclip", "config.json");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "slaw-onboard-fresh-"));
+  return path.join(root, ".slaw", "config.json");
 }
 
 describe("onboard", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    delete process.env.PAPERCLIP_SECRETS_MASTER_KEY;
-    delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    delete process.env.PAPERCLIP_HOME;
-    delete process.env.PAPERCLIP_CONFIG;
-    delete process.env.PAPERCLIP_INSTANCE_ID;
-    delete process.env.PAPERCLIP_BIND;
-    delete process.env.PAPERCLIP_BIND_HOST;
-    delete process.env.PAPERCLIP_TAILNET_BIND_HOST;
+    delete process.env.SLAW_AGENT_JWT_SECRET;
+    delete process.env.SLAW_SECRETS_MASTER_KEY;
+    delete process.env.SLAW_SECRETS_MASTER_KEY_FILE;
+    delete process.env.SLAW_HOME;
+    delete process.env.SLAW_CONFIG;
+    delete process.env.SLAW_INSTANCE_ID;
+    delete process.env.SLAW_BIND;
+    delete process.env.SLAW_BIND_HOST;
+    delete process.env.SLAW_TAILNET_BIND_HOST;
     delete process.env.HOST;
   });
 
@@ -124,28 +124,28 @@ describe("onboard", () => {
   it("keeps --yes onboarding on local trusted loopback defaults", async () => {
     const configPath = createFreshConfigPath();
     process.env.HOST = "0.0.0.0";
-    process.env.PAPERCLIP_BIND = "lan";
+    process.env.SLAW_BIND = "lan";
 
     await onboard({ config: configPath, yes: true, invokedByRun: true });
 
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as PaperclipConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as SlawConfig;
     expect(raw.server.deploymentMode).toBe("local_trusted");
     expect(raw.server.exposure).toBe("private");
     expect(raw.server.bind).toBe("loopback");
     expect(raw.server.host).toBe("127.0.0.1");
   });
 
-  it("creates instance-root config and data paths for a fresh PAPERCLIP_HOME", async () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-home-"));
-    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-cwd-"));
+  it("creates instance-root config and data paths for a fresh SLAW_HOME", async () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "slaw-onboard-home-"));
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "slaw-onboard-cwd-"));
     process.chdir(cwd);
-    process.env.PAPERCLIP_HOME = home;
+    process.env.SLAW_HOME = home;
 
     await onboard({ yes: true, invokedByRun: true });
 
     const instanceRoot = path.join(home, "instances", "default");
     const configPath = path.join(instanceRoot, "config.json");
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as PaperclipConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as SlawConfig;
 
     expect(raw.database.embeddedPostgresDataDir).toBe(path.join(instanceRoot, "db"));
     expect(raw.database.backup.dir).toBe(path.join(instanceRoot, "data", "backups"));
@@ -158,11 +158,11 @@ describe("onboard", () => {
 
   it("supports authenticated/private quickstart bind presets", async () => {
     const configPath = createFreshConfigPath();
-    process.env.PAPERCLIP_TAILNET_BIND_HOST = "100.64.0.8";
+    process.env.SLAW_TAILNET_BIND_HOST = "100.64.0.8";
 
     await onboard({ config: configPath, yes: true, invokedByRun: true, bind: "tailnet" });
 
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as PaperclipConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as SlawConfig;
     expect(raw.server.deploymentMode).toBe("authenticated");
     expect(raw.server.exposure).toBe("private");
     expect(raw.server.bind).toBe("tailnet");
@@ -171,7 +171,7 @@ describe("onboard", () => {
 
   it("keeps tailnet quickstart on loopback until tailscale is available", async () => {
     const configPath = createFreshConfigPath();
-    delete process.env.PAPERCLIP_TAILNET_BIND_HOST;
+    delete process.env.SLAW_TAILNET_BIND_HOST;
     process.env.PATH = "";
 
     try {
@@ -180,7 +180,7 @@ describe("onboard", () => {
       process.env.PATH = ORIGINAL_PATH;
     }
 
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as PaperclipConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as SlawConfig;
     expect(raw.server.deploymentMode).toBe("authenticated");
     expect(raw.server.exposure).toBe("private");
     expect(raw.server.bind).toBe("tailnet");
@@ -189,11 +189,11 @@ describe("onboard", () => {
 
   it("ignores deployment env overrides during --yes quickstart", async () => {
     const configPath = createFreshConfigPath();
-    process.env.PAPERCLIP_DEPLOYMENT_MODE = "authenticated";
+    process.env.SLAW_DEPLOYMENT_MODE = "authenticated";
 
     await onboard({ config: configPath, yes: true, invokedByRun: true });
 
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as PaperclipConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as SlawConfig;
     expect(raw.server.deploymentMode).toBe("local_trusted");
     expect(raw.server.exposure).toBe("private");
     expect(raw.server.bind).toBe("loopback");

@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { and, asc, desc, eq, gt, inArray, isNull, like, lt, ne, notInArray, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import {
   activityLog,
   agentWakeupRequests,
@@ -31,7 +31,7 @@ import {
   projectWorkspaces,
   projects,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import type {
   AcceptedPlanDecomposition,
   IssueCommentAuthorType,
@@ -44,7 +44,7 @@ import type {
   IssueProductivityReviewTrigger,
   IssueRelationIssueSummary,
   SuccessfulRunHandoffState,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import {
   clampIssueRequestDepth,
   extractAgentMentionIds,
@@ -54,7 +54,7 @@ import {
   issueCommentPresentationSchema,
   isUuidLike,
   normalizeIssueIdentifier as normalizeIssueReferenceIdentifier,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { conflict, HttpError, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { parseObject } from "../adapters/utils.js";
@@ -977,9 +977,9 @@ function inboxVisibleForUserCondition(companyId: string, userId: string) {
 }
 
 const LEGACY_PLUGIN_OPERATION_ORIGIN_KINDS = [
-  "plugin:paperclipai.content-machine:case",
-  "plugin:paperclipai.content-machine:evaluation",
-  "plugin:paperclipai.content-machine:source-sync",
+  "plugin:slaw.content-machine:case",
+  "plugin:slaw.content-machine:evaluation",
+  "plugin:slaw.content-machine:source-sync",
 ] as const;
 
 function nonPluginOperationIssueCondition() {

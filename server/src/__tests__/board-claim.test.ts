@@ -8,7 +8,7 @@ import {
   createDb,
   instanceUserRoles,
   principalPermissionGrants,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   claimBoardOwnership,
   getBoardClaimWarningUrl,
@@ -28,7 +28,7 @@ describeEmbeddedPostgres("board claim", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-board-claim-");
+    tempDb = await startEmbeddedPostgresTestDatabase("slaw-board-claim-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

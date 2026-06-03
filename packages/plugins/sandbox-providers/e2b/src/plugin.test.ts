@@ -189,11 +189,11 @@ describe("E2B sandbox provider plugin", () => {
       providerLeaseId: "sandbox-123",
       metadata: {
         provider: "e2b",
-        remoteCwd: "/home/user/paperclip-workspace",
+        remoteCwd: "/home/user/slaw-workspace",
       },
     });
     expect(sandbox.commands.run).toHaveBeenNthCalledWith(1, "pwd");
-    expect(sandbox.commands.run).toHaveBeenNthCalledWith(2, "mkdir -p '/home/user/paperclip-workspace'");
+    expect(sandbox.commands.run).toHaveBeenNthCalledWith(2, "mkdir -p '/home/user/slaw-workspace'");
   });
 
   it("kills the sandbox if acquire setup fails after creation", async () => {
@@ -302,19 +302,19 @@ describe("E2B sandbox provider plugin", () => {
     });
 
     expect(mockConnect).toHaveBeenCalledWith("sandbox-123", expect.objectContaining({ apiKey: "resolved-key" }));
-    expect(sandbox.files.write).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/), "input");
+    expect(sandbox.files.write).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/slaw-stdin-/), "input");
     const stdinCall = sandbox.commands.run.mock.calls.find(([cmd]: [string]) => cmd.includes("'printf'"));
     expect(stdinCall).toBeDefined();
     if (!stdinCall) throw new Error("stdinCall not found");
     expect(stdinCall[0]).toMatch(/\.profile/);
-    expect(stdinCall[0]).toMatch(/exec env FOO='bar' 'printf' 'hello' < '\/tmp\/paperclip-stdin-/);
+    expect(stdinCall[0]).toMatch(/exec env FOO='bar' 'printf' 'hello' < '\/tmp\/slaw-stdin-/);
     expect(stdinCall[1]).toEqual(expect.objectContaining({ cwd: "/workspace", timeoutMs: 1000 }));
     expect(stdinCall[1]).not.toHaveProperty("envs");
     expect(stdinCall[1]).not.toHaveProperty("background");
     expect(sandbox.commands.sendStdin).not.toHaveBeenCalled();
     expect(sandbox.commands.closeStdin).not.toHaveBeenCalled();
     expect(sandbox.handle.wait).not.toHaveBeenCalled();
-    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/));
+    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/slaw-stdin-/));
     expect(result).toEqual({
       exitCode: 0,
       timedOut: false,
@@ -457,7 +457,7 @@ describe("E2B sandbox provider plugin", () => {
       timeoutMs: 1000,
     })).rejects.toThrow("write failed");
 
-    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/));
+    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/slaw-stdin-/));
     expect(sandbox.commands.sendStdin).not.toHaveBeenCalled();
     expect(sandbox.handle.wait).not.toHaveBeenCalled();
   });
@@ -627,21 +627,21 @@ describe("E2B sandbox provider plugin", () => {
       },
       lease: {
         providerLeaseId: "sandbox-realize",
-        metadata: { remoteCwd: "/home/user/paperclip-workspace" },
+        metadata: { remoteCwd: "/home/user/slaw-workspace" },
       },
       workspace: {
-        localPath: "/tmp/paperclip-workspace",
+        localPath: "/tmp/slaw-workspace",
       },
     })).resolves.toEqual({
-      cwd: "/home/user/paperclip-workspace",
+      cwd: "/home/user/slaw-workspace",
       metadata: {
         provider: "e2b",
-        remoteCwd: "/home/user/paperclip-workspace",
+        remoteCwd: "/home/user/slaw-workspace",
       },
     });
 
     expect(mockConnect).toHaveBeenCalledWith("sandbox-realize", expect.objectContaining({ apiKey: "resolved-key" }));
-    expect(sandbox.commands.run).toHaveBeenCalledWith("mkdir -p '/home/user/paperclip-workspace'");
+    expect(sandbox.commands.run).toHaveBeenCalledWith("mkdir -p '/home/user/slaw-workspace'");
   });
 
   it("swallows destroy kill errors after logging them", async () => {

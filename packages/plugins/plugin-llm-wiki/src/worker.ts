@@ -5,34 +5,34 @@ import {
   type PluginContext,
   type PluginManagedRoutineDeclaration,
   type PluginManagedRoutineResolution,
-} from "@paperclipai/plugin-sdk";
+} from "@slaw/plugin-sdk";
 import {
-  PAPERCLIP_DISTILL_SKILL_KEY,
+  SLAW_DISTILL_SKILL_KEY,
   WIKI_MAINTENANCE_ROUTINE_KEYS,
   WIKI_ROOT_FOLDER_KEY,
 } from "./manifest.js";
 import {
   bootstrapWikiRoot,
   bootstrapSpace,
-  assemblePaperclipSourceBundle,
+  assembleSlawSourceBundle,
   archiveSpace,
   captureWikiSource,
   createSpace,
-  createPaperclipDistillationRun,
-  createPaperclipDistillationWorkItem,
+  createSlawDistillationRun,
+  createSlawDistillationWorkItem,
   createOperationIssue,
-  distillPaperclipProjectPage,
+  distillSlawProjectPage,
   enableActiveProjectDistillation,
   fileQueryAnswerAsPage,
   getDistillationOverview,
   getDistillationPageProvenance,
   getDistillationAutoApplyRestriction,
   getEventIngestionSettings,
-  listPaperclipIngestionCandidates,
-  getPaperclipIngestionProfile,
+  listSlawIngestionCandidates,
+  getSlawIngestionProfile,
   getOverview,
   listSpaces,
-  handlePaperclipEventIngestion,
+  handleSlawEventIngestion,
   listWikiAgentOptions,
   listWikiProjectOptions,
   listOperations,
@@ -41,7 +41,7 @@ import {
   readCompanyIdFromParams,
   readTemplate,
   readWikiPage,
-  recordPaperclipDistillationOutcome,
+  recordSlawDistillationOutcome,
   reconcileWikiAgentResource,
   reconcileWikiProjectResource,
   reconcileWikiRoutineResources,
@@ -55,7 +55,7 @@ import {
   startWikiQuerySession,
   spaceFolderStatus,
   updateEventIngestionSettings,
-  updatePaperclipIngestionProfile,
+  updateSlawIngestionProfile,
   updateSpace,
   writeTemplate,
   writeWikiPage,
@@ -86,7 +86,7 @@ function routineOverridesFromParams(params: Record<string, unknown>) {
 }
 
 let activeContext: PluginContext | null = null;
-const PAPERCLIP_EVENT_INGESTION_EVENTS = [
+const SLAW_EVENT_INGESTION_EVENTS = [
   "issue.created",
   "issue.updated",
   "issue.comment.created",
@@ -126,8 +126,8 @@ function buildManualDistillPrompt(input: { companyId: string; projectId?: string
   return [
     "Manual LLM Wiki distillation requested outside recurring cadence.",
     "",
-    "Prompt source: LLM Wiki plugin action `distill-paperclip-now` (`packages/plugins/plugin-llm-wiki/src/worker.ts`).",
-    `Required skill: use the installed \`${PAPERCLIP_DISTILL_SKILL_KEY}\` skill before changing wiki files.`,
+    "Prompt source: LLM Wiki plugin action `distill-slaw-now` (`packages/plugins/plugin-llm-wiki/src/worker.ts`).",
+    `Required skill: use the installed \`${SLAW_DISTILL_SKILL_KEY}\` skill before changing wiki files.`,
     "",
     "Scope:",
     `- Company ID: ${input.companyId}`,
@@ -135,13 +135,13 @@ function buildManualDistillPrompt(input: { companyId: string; projectId?: string
     input.projectId ? `- Source project ID: ${input.projectId}` : null,
     input.rootIssueId ? `- Source root issue ID: ${input.rootIssueId}` : null,
     !input.projectId && !input.rootIssueId
-      ? "- Do not hardcode a single project. Find non-plugin Paperclip issues/comments/documents that changed in any project after the last processed cursor and are old enough for the stale/debounce threshold."
+      ? "- Do not hardcode a single project. Find non-plugin Slaw issues/comments/documents that changed in any project after the last processed cursor and are old enough for the stale/debounce threshold."
       : null,
     "",
     "Process:",
     "1. Read the wiki root AGENTS.md, wiki/index.md, and recent wiki/log.md entries.",
-    "2. Assemble bounded Paperclip source bundles for every eligible project or root issue, excluding LLM Wiki plugin-operation issues.",
-    "3. Turn durable signal into project standups, wiki-insightful project pages, decisions, history, index, and log updates per the paperclip-distill skill.",
+    "2. Assemble bounded Slaw source bundles for every eligible project or root issue, excluding LLM Wiki plugin-operation issues.",
+    "3. Turn durable signal into project standups, wiki-insightful project pages, decisions, history, index, and log updates per the slaw-distill skill.",
     "4. Surface clipped, low-signal, stale-hash, or source-window warnings instead of hiding them.",
   ].filter((line): line is string => line !== null).join("\n");
 }
@@ -188,11 +188,11 @@ const plugin = definePlugin({
     activeContext = ctx;
     await registerWikiTools(ctx);
 
-    for (const eventName of PAPERCLIP_EVENT_INGESTION_EVENTS) {
+    for (const eventName of SLAW_EVENT_INGESTION_EVENTS) {
       ctx.events.on(eventName, async (event) => {
-        const result = await handlePaperclipEventIngestion(ctx, event);
+        const result = await handleSlawEventIngestion(ctx, event);
         if (result.status === "recorded") {
-          ctx.logger.info("LLM Wiki recorded Paperclip event for cursor discovery", {
+          ctx.logger.info("LLM Wiki recorded Slaw event for cursor discovery", {
             eventType: event.eventType,
             companyId: event.companyId,
             sourceKind: result.sourceKind,
@@ -371,16 +371,16 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.data.register("paperclip-ingestion-profile", async (params) => {
-      return getPaperclipIngestionProfile(ctx, {
+    ctx.data.register("slaw-ingestion-profile", async (params) => {
+      return getSlawIngestionProfile(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
       });
     });
 
-    ctx.data.register("paperclip-ingestion-candidates", async (params) => {
-      return listPaperclipIngestionCandidates(ctx, {
+    ctx.data.register("slaw-ingestion-candidates", async (params) => {
+      return listSlawIngestionCandidates(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -388,8 +388,8 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("update-paperclip-ingestion-profile", async (params) => {
-      return updatePaperclipIngestionProfile(ctx, {
+    ctx.actions.register("update-slaw-ingestion-profile", async (params) => {
+      return updateSlawIngestionProfile(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -397,7 +397,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("queue-paperclip-ingestion-backfill", async (params) => {
+    ctx.actions.register("queue-slaw-ingestion-backfill", async (params) => {
       const companyId = readCompanyIdFromParams(params);
       const sourceScope = typeof params.sourceScope === "object" && params.sourceScope != null && !Array.isArray(params.sourceScope)
         ? params.sourceScope as Record<string, unknown>
@@ -427,7 +427,7 @@ const plugin = definePlugin({
       const queued: Array<{ workItemId: string; issueId: string; projectId: string | null; rootIssueId: string | null }> = [];
       for (const scope of scopes) {
         const idempotencyScope = scope.rootIssueId ? `root:${scope.rootIssueId}` : `project:${scope.projectId}`;
-        const workItem = await createPaperclipDistillationWorkItem(ctx, {
+        const workItem = await createSlawDistillationWorkItem(ctx, {
           companyId,
           wikiId,
           spaceSlug,
@@ -439,17 +439,17 @@ const plugin = definePlugin({
           idempotencyKey: idempotencyKey && scopes.length === 1
             ? idempotencyKey
             : `${idempotencyKey ?? "profile-backfill"}:${idempotencyScope}:${backfillStartAt ?? "begin"}:${backfillEndAt ?? "now"}`,
-          metadata: { backfillStartAt, backfillEndAt, requestedFrom: "queue-paperclip-ingestion-backfill" },
+          metadata: { backfillStartAt, backfillEndAt, requestedFrom: "queue-slaw-ingestion-backfill" },
         });
         const operation = await createOperationIssue(ctx, {
           companyId,
           wikiId,
           spaceSlug,
           operationType: "backfill",
-          title: scope.rootIssueId ? "Backfill Paperclip root issue wiki history" : "Backfill Paperclip project wiki history",
+          title: scope.rootIssueId ? "Backfill Slaw root issue wiki history" : "Backfill Slaw project wiki history",
           useCheapModelProfile: params.useCheapModelProfile === true,
           prompt: [
-            "Backfill LLM Wiki distillation was queued from a per-space Paperclip ingestion profile.",
+            "Backfill LLM Wiki distillation was queued from a per-space Slaw ingestion profile.",
             scope.projectId ? `Project ID: ${scope.projectId}` : null,
             scope.rootIssueId ? `Root issue ID: ${scope.rootIssueId}` : null,
             backfillStartAt ? `Start: ${backfillStartAt}` : null,
@@ -510,8 +510,8 @@ const plugin = definePlugin({
       return { status: "ok", source: captured, operation: op };
     });
 
-    ctx.actions.register("assemble-paperclip-source-bundle", async (params) => {
-      return assemblePaperclipSourceBundle(ctx, {
+    ctx.actions.register("assemble-slaw-source-bundle", async (params) => {
+      return assembleSlawSourceBundle(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -527,8 +527,8 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("create-paperclip-distillation-run", async (params) => {
-      return createPaperclipDistillationRun(ctx, {
+    ctx.actions.register("create-slaw-distillation-run", async (params) => {
+      return createSlawDistillationRun(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -546,14 +546,14 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("record-paperclip-distillation-outcome", async (params) => {
+    ctx.actions.register("record-slaw-distillation-outcome", async (params) => {
       const status = stringField(params.status);
       if (status !== "succeeded" && status !== "failed" && status !== "review_required") {
         throw new Error("status must be succeeded, failed, or review_required");
       }
       const runId = stringField(params.runId);
       if (!runId) throw new Error("runId is required");
-      return recordPaperclipDistillationOutcome(ctx, {
+      return recordSlawDistillationOutcome(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -568,8 +568,8 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("distill-paperclip-project-page", async (params) => {
-      return distillPaperclipProjectPage(ctx, {
+    ctx.actions.register("distill-slaw-project-page", async (params) => {
+      return distillSlawProjectPage(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -590,13 +590,13 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("distill-paperclip-now", async (params) => {
+    ctx.actions.register("distill-slaw-now", async (params) => {
       const companyId = readCompanyIdFromParams(params);
       const spaceSlug = stringField(params.spaceSlug);
       const projectId = stringField(params.projectId);
       const rootIssueId = stringField(params.rootIssueId);
       const idempotencyScope = rootIssueId ? `root:${rootIssueId}` : projectId ? `project:${projectId}` : "company";
-      const workItem = await createPaperclipDistillationWorkItem(ctx, {
+      const workItem = await createSlawDistillationWorkItem(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
@@ -606,7 +606,7 @@ const plugin = definePlugin({
         requestedByIssueId: stringField(params.requestedByIssueId),
         priority: "medium",
         idempotencyKey: stringField(params.idempotencyKey) ?? `manual:${idempotencyScope}`,
-        metadata: { requestedFrom: "distill-paperclip-now" },
+        metadata: { requestedFrom: "distill-slaw-now" },
       });
       const operation = await createOperationIssue(ctx, {
         companyId,
@@ -614,17 +614,17 @@ const plugin = definePlugin({
         spaceSlug,
         operationType: "distill",
         title: rootIssueId
-          ? "Distill Paperclip root issue into wiki"
+          ? "Distill Slaw root issue into wiki"
           : projectId
-            ? "Distill Paperclip project into wiki"
-            : "Distill Paperclip changes into wiki",
+            ? "Distill Slaw project into wiki"
+            : "Distill Slaw changes into wiki",
         useCheapModelProfile: params.useCheapModelProfile === true,
         prompt: buildManualDistillPrompt({ companyId, projectId, rootIssueId }),
       });
       return { status: "queued", workItem, operation };
     });
 
-    ctx.actions.register("enable-paperclip-distillation-active-projects", async (params) => {
+    ctx.actions.register("enable-slaw-distillation-active-projects", async (params) => {
       return enableActiveProjectDistillation(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -633,7 +633,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("backfill-paperclip-distillation", async (params) => {
+    ctx.actions.register("backfill-slaw-distillation", async (params) => {
       const companyId = readCompanyIdFromParams(params);
       const spaceSlug = stringField(params.spaceSlug);
       const projectId = stringField(params.projectId);
@@ -642,7 +642,7 @@ const plugin = definePlugin({
       const backfillStartAt = stringField(params.backfillStartAt);
       const backfillEndAt = stringField(params.backfillEndAt);
       const idempotencyScope = rootIssueId ? `root:${rootIssueId}` : `project:${projectId}`;
-      const workItem = await createPaperclipDistillationWorkItem(ctx, {
+      const workItem = await createSlawDistillationWorkItem(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
@@ -652,17 +652,17 @@ const plugin = definePlugin({
         requestedByIssueId: stringField(params.requestedByIssueId),
         priority: "low",
         idempotencyKey: stringField(params.idempotencyKey) ?? `backfill:${idempotencyScope}:${backfillStartAt ?? "begin"}:${backfillEndAt ?? "now"}`,
-        metadata: { backfillStartAt, backfillEndAt, requestedFrom: "backfill-paperclip-distillation" },
+        metadata: { backfillStartAt, backfillEndAt, requestedFrom: "backfill-slaw-distillation" },
       });
       const operation = await createOperationIssue(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
         operationType: "backfill",
-        title: rootIssueId ? "Backfill Paperclip root issue wiki history" : "Backfill Paperclip project wiki history",
+        title: rootIssueId ? "Backfill Slaw root issue wiki history" : "Backfill Slaw project wiki history",
         useCheapModelProfile: params.useCheapModelProfile === true,
         prompt: [
-          "Backfill LLM Wiki distillation requested for a bounded Paperclip source window.",
+          "Backfill LLM Wiki distillation requested for a bounded Slaw source window.",
           projectId ? `Project ID: ${projectId}` : null,
           rootIssueId ? `Root issue ID: ${rootIssueId}` : null,
           backfillStartAt ? `Start: ${backfillStartAt}` : null,
@@ -670,7 +670,7 @@ const plugin = definePlugin({
           "Do not process whole-company history; stay within the selected project/root issue and date window.",
         ].filter(Boolean).join("\n"),
       });
-      const result = await distillPaperclipProjectPage(ctx, {
+      const result = await distillSlawProjectPage(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
@@ -692,7 +692,7 @@ const plugin = definePlugin({
       return { ...result, workItem, operation };
     });
 
-    ctx.actions.register("create-paperclip-distillation-work-item", async (params) => {
+    ctx.actions.register("create-slaw-distillation-work-item", async (params) => {
       const kind = stringField(params.kind);
       if (
         kind !== "manual" &&
@@ -707,7 +707,7 @@ const plugin = definePlugin({
       if (priority && priority !== "critical" && priority !== "high" && priority !== "medium" && priority !== "low") {
         throw new Error("priority must be critical, high, medium, or low");
       }
-      return createPaperclipDistillationWorkItem(ctx, {
+      return createSlawDistillationWorkItem(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),

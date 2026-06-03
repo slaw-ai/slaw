@@ -7,33 +7,33 @@ import {
   resolveDefaultSecretsKeyFilePath as resolveSharedDefaultSecretsKeyFilePath,
   resolveDefaultStorageDir as resolveSharedDefaultStorageDir,
   resolveHomeAwarePath,
-  resolvePaperclipConfigPathForInstance,
-  resolvePaperclipHomeDir,
-  resolvePaperclipInstanceId,
-  resolvePaperclipInstanceRoot as resolveSharedPaperclipInstanceRoot,
-} from "@paperclipai/shared/home-paths";
+  resolveSlawConfigPathForInstance,
+  resolveSlawHomeDir,
+  resolveSlawInstanceId,
+  resolveSlawInstanceRoot as resolveSharedSlawInstanceRoot,
+} from "@slaw/shared/home-paths";
 
 export {
   expandHomePrefix,
   resolveHomeAwarePath,
-  resolvePaperclipHomeDir,
-  resolvePaperclipInstanceId,
+  resolveSlawHomeDir,
+  resolveSlawInstanceId,
 };
 
-export function resolvePaperclipInstanceRoot(instanceId?: string): string {
-  return resolveSharedPaperclipInstanceRoot({ instanceId });
+export function resolveSlawInstanceRoot(instanceId?: string): string {
+  return resolveSharedSlawInstanceRoot({ instanceId });
 }
 
 export function resolveDefaultConfigPath(instanceId?: string): string {
-  return resolvePaperclipConfigPathForInstance({ instanceId });
+  return resolveSlawConfigPathForInstance({ instanceId });
 }
 
 export function resolveDefaultContextPath(): string {
-  return path.resolve(resolvePaperclipHomeDir(), "context.json");
+  return path.resolve(resolveSlawHomeDir(), "context.json");
 }
 
 export function resolveDefaultCliAuthPath(): string {
-  return path.resolve(resolvePaperclipHomeDir(), "auth.json");
+  return path.resolve(resolveSlawHomeDir(), "auth.json");
 }
 
 export function resolveDefaultEmbeddedPostgresDir(instanceId?: string): string {
@@ -57,10 +57,10 @@ export function resolveDefaultBackupDir(instanceId?: string): string {
 }
 
 export function describeLocalInstancePaths(instanceId?: string) {
-  const resolvedInstanceId = resolvePaperclipInstanceId(instanceId);
-  const instanceRoot = resolvePaperclipInstanceRoot(resolvedInstanceId);
+  const resolvedInstanceId = resolveSlawInstanceId(instanceId);
+  const instanceRoot = resolveSlawInstanceRoot(resolvedInstanceId);
   return {
-    homeDir: resolvePaperclipHomeDir(),
+    homeDir: resolveSlawHomeDir(),
     instanceId: resolvedInstanceId,
     instanceRoot,
     configPath: resolveDefaultConfigPath(resolvedInstanceId),

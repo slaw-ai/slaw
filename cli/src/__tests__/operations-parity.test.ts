@@ -32,8 +32,8 @@ async function run(args: string[]): Promise<void> {
 describe("operations parity commands", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_API_URL;
+    delete process.env.SLAW_API_KEY;
+    delete process.env.SLAW_API_URL;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   });

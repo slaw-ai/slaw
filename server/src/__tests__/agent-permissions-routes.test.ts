@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@paperclipai/adapter-opencode-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@slaw/adapter-opencode-local";
 
 vi.mock("acpx/runtime", () => ({
   createAcpRuntime: vi.fn(),
@@ -110,15 +110,15 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@paperclipai/adapter-opencode-local/server", async () => {
-    const actual = await vi.importActual<typeof import("@paperclipai/adapter-opencode-local/server")>("@paperclipai/adapter-opencode-local/server");
+  vi.doMock("@slaw/adapter-opencode-local/server", async () => {
+    const actual = await vi.importActual<typeof import("@slaw/adapter-opencode-local/server")>("@slaw/adapter-opencode-local/server");
     return {
       ...actual,
       ensureOpenCodeModelConfiguredAndAvailable: mockEnsureOpenCodeModelConfiguredAndAvailable,
     };
   });
 
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@slaw/shared/telemetry", () => ({
     trackAgentCreated: mockTrackAgentCreated,
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -211,7 +211,7 @@ function createDbStub(options: { requireBoardApprovalForNewAgents?: boolean } = 
           then: vi.fn((resolve) =>
             Promise.resolve(resolve([{
               id: companyId,
-              name: "Paperclip",
+              name: "Slaw",
               requireBoardApprovalForNewAgents: options.requireBoardApprovalForNewAgents ?? false,
             }])),
           ),
@@ -270,7 +270,7 @@ async function requestApp(
 describe.sequential("agent permission routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@paperclipai/shared/telemetry");
+    vi.doUnmock("@slaw/shared/telemetry");
     vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
@@ -291,7 +291,7 @@ describe.sequential("agent permission routes", () => {
     vi.doUnmock("../routes/agents.js");
     vi.doUnmock("../routes/authz.js");
     vi.doUnmock("../middleware/index.js");
-    vi.doUnmock("@paperclipai/adapter-opencode-local/server");
+    vi.doUnmock("@slaw/adapter-opencode-local/server");
     registerModuleMocks();
     vi.resetAllMocks();
     mockAgentService.getById.mockReset();
@@ -504,7 +504,7 @@ describe.sequential("agent permission routes", () => {
         adapterConfig: {
           workspaceStrategy: {
             type: "git_worktree",
-            provisionCommand: "touch /tmp/paperclip-rce",
+            provisionCommand: "touch /tmp/slaw-rce",
           },
         },
       }));
@@ -537,7 +537,7 @@ describe.sequential("agent permission routes", () => {
               adapterConfig: {
                 workspaceStrategy: {
                   type: "git_worktree",
-                  provisionCommand: "touch /tmp/paperclip-rce",
+                  provisionCommand: "touch /tmp/slaw-rce",
                 },
               },
             },

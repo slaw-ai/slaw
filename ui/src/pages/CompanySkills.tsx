@@ -15,7 +15,7 @@ import type {
   CompanySkillSourceBadge,
   CompanySkillTrustLevel,
   CompanySkillUpdateStatus,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { companySkillsApi } from "../api/companySkills";
 import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
@@ -79,7 +79,7 @@ import {
   HelpCircle,
   Link2,
   ExternalLink,
-  Paperclip,
+  Slaw,
   Pencil,
   Plus,
   Copy,
@@ -196,8 +196,8 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
       return { icon: Link2, label: sourceLabel ?? "URL", managedLabel: "URL managed" };
     case "local":
       return { icon: Folder, label: sourceLabel ?? "Folder", managedLabel: "Folder managed" };
-    case "paperclip":
-      return { icon: Paperclip, label: sourceLabel ?? "Paperclip", managedLabel: "Paperclip managed" };
+    case "slaw":
+      return { icon: Slaw, label: sourceLabel ?? "Slaw", managedLabel: "Slaw managed" };
     default:
       return { icon: Boxes, label: sourceLabel ?? "Catalog", managedLabel: "Catalog managed" };
   }
@@ -319,7 +319,7 @@ function classifySource(skill: {
   catalogKind?: "bundled" | "optional" | null;
   metadata?: Record<string, unknown> | null;
 }): SourceFilter {
-  if (skill.sourceBadge === "paperclip") return "company";
+  if (skill.sourceBadge === "slaw") return "company";
   if (skill.sourceType === "local_path" && !skill.sourceBadge.toString().includes("github")) {
     return "company";
   }
@@ -473,7 +473,7 @@ function CompatChip({ compatibility }: { compatibility: CompanySkillCompatibilit
     unknown: {
       icon: HelpCircle,
       label: "Unknown format",
-      tooltip: "Paperclip could not validate this skill as Agent Skills markdown. Install at your own risk.",
+      tooltip: "Slaw could not validate this skill as Agent Skills markdown. Install at your own risk.",
       className: "border-yellow-500/40 bg-yellow-500/10 text-yellow-200",
     },
     invalid: {
@@ -1901,7 +1901,7 @@ export function CompanySkills() {
       pushToast({
         tone: "success",
         title: "Skill created",
-        body: `${skill.name} is now editable in the Paperclip workspace.`,
+        body: `${skill.name} is now editable in the Slaw workspace.`,
       });
     },
     onError: (error) => {

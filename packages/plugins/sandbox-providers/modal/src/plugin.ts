@@ -8,7 +8,7 @@ import {
   type Sandbox,
   type SandboxCreateParams,
 } from "modal";
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@slaw/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -23,9 +23,9 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@paperclipai/plugin-sdk";
+} from "@slaw/plugin-sdk";
 
-const DEFAULT_WORKDIR = "/workspace/paperclip";
+const DEFAULT_WORKDIR = "/workspace/slaw";
 const DEFAULT_SANDBOX_TIMEOUT_MS = 3_600_000;
 const DEFAULT_EXEC_TIMEOUT_MS = 300_000;
 const MAX_SANDBOX_TIMEOUT_MS = 86_400_000;
@@ -94,7 +94,7 @@ function resolveAuth(config: ModalDriverConfig): { tokenId: string; tokenSecret:
   // The plugin worker runs in a child process that does not inherit host env
   // vars (see PluginWorkerManager.spawnProcess), so MODAL_TOKEN_ID /
   // MODAL_TOKEN_SECRET cannot be read here. Credentials must come from the
-  // environment config, which Paperclip stores as company secrets.
+  // environment config, which Slaw stores as company secrets.
   const tokenId = config.tokenId ?? "";
   const tokenSecret = config.tokenSecret ?? "";
   if (!tokenId && !tokenSecret) return null;
@@ -153,11 +153,11 @@ function buildSandboxTags(input: {
   reuseLease: boolean;
 }): Record<string, string> {
   return {
-    "paperclip-provider": "modal",
-    "paperclip-company-id": input.companyId,
-    "paperclip-environment-id": input.environmentId,
-    "paperclip-reuse-lease": input.reuseLease ? "true" : "false",
-    ...(input.runId ? { "paperclip-run-id": input.runId } : {}),
+    "slaw-provider": "modal",
+    "slaw-company-id": input.companyId,
+    "slaw-environment-id": input.environmentId,
+    "slaw-reuse-lease": input.reuseLease ? "true" : "false",
+    ...(input.runId ? { "slaw-run-id": input.runId } : {}),
   };
 }
 
@@ -403,9 +403,9 @@ const plugin = definePlugin({
       const sandbox = await createSandboxFor(client, app, config, tags);
       try {
         await ensureRemoteWorkspace(sandbox, config.workdir);
-        const proc = await sandbox.exec(["sh", "-lc", "printf paperclip-probe"]);
+        const proc = await sandbox.exec(["sh", "-lc", "printf slaw-probe"]);
         const { stdout, exitCode } = await readProcessStreams(proc);
-        if (exitCode !== 0 || stdout.trim() !== "paperclip-probe") {
+        if (exitCode !== 0 || stdout.trim() !== "slaw-probe") {
           return {
             ok: false,
             summary: `Modal sandbox probe failed: exit ${exitCode}, stdout=${JSON.stringify(stdout)}`,
@@ -611,7 +611,7 @@ const plugin = definePlugin({
         };
       }
       const stdinPath = params.stdin != null
-        ? `/tmp/paperclip-stdin-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+        ? `/tmp/slaw-stdin-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
         : null;
       try {
         if (stdinPath && params.stdin != null) {

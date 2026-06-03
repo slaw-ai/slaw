@@ -53,7 +53,7 @@ export function isLinkedGitWorktreeCheckout(rootDir: string): boolean {
 }
 
 export function resolveWorktreeEnvFilePath(rootDir: string): string {
-  return path.resolve(rootDir, ".paperclip", ".env");
+  return path.resolve(rootDir, ".slaw", ".env");
 }
 
 function expandHomePrefix(value: string): string {
@@ -67,7 +67,7 @@ function resolveHomeAwarePath(value: string): string {
 }
 
 function resolveDefaultWorktreeHome(env: NodeJS.ProcessEnv): string {
-  return path.resolve(expandHomePrefix(env.PAPERCLIP_WORKTREES_DIR?.trim() || "~/.paperclip-worktrees"));
+  return path.resolve(expandHomePrefix(env.SLAW_WORKTREES_DIR?.trim() || "~/.slaw-worktrees"));
 }
 
 function repairStaleMigratedWorktreeEnvEntries(
@@ -75,8 +75,8 @@ function repairStaleMigratedWorktreeEnvEntries(
   entries: Record<string, string>,
   env: NodeJS.ProcessEnv,
 ): Record<string, string> {
-  const localConfigPath = path.resolve(rootDir, ".paperclip", "config.json");
-  const configuredPath = entries.PAPERCLIP_CONFIG?.trim();
+  const localConfigPath = path.resolve(rootDir, ".slaw", "config.json");
+  const configuredPath = entries.SLAW_CONFIG?.trim();
   if (!configuredPath) return entries;
 
   const resolvedConfiguredPath = resolveHomeAwarePath(configuredPath);
@@ -89,9 +89,9 @@ function repairStaleMigratedWorktreeEnvEntries(
   const homeDir = resolveDefaultWorktreeHome(env);
   return {
     ...entries,
-    PAPERCLIP_HOME: homeDir,
-    PAPERCLIP_CONFIG: localConfigPath,
-    PAPERCLIP_CONTEXT: path.resolve(homeDir, "context.json"),
+    SLAW_HOME: homeDir,
+    SLAW_CONFIG: localConfigPath,
+    SLAW_CONTEXT: path.resolve(homeDir, "context.json"),
   };
 }
 

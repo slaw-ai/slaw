@@ -32,4 +32,4 @@ export type {
   AdapterConfigSchema,
   AdapterRuntimeCommandSpec,
   ServerAdapterModule,
-} from "@paperclipai/adapter-utils";
+} from "@slaw/adapter-utils";

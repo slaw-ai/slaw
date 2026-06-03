@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import type { Goal } from "@paperclipai/shared";
-import { createGoalSchema, updateGoalSchema } from "@paperclipai/shared";
+import type { Goal } from "@slaw/shared";
+import { createGoalSchema, updateGoalSchema } from "@slaw/shared";
 import {
   addCommonClientOptions,
   apiPath,

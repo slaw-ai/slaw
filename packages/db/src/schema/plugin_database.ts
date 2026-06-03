@@ -10,7 +10,7 @@ import type {
   PluginDatabaseMigrationStatus,
   PluginDatabaseNamespaceMode,
   PluginDatabaseNamespaceStatus,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { plugins } from "./plugins.js";
 
 /**

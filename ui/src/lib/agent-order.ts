@@ -1,9 +1,9 @@
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@slaw/shared";
 
-export const AGENT_ORDER_UPDATED_EVENT = "paperclip:agent-order-updated";
-export const AGENT_SORT_MODE_UPDATED_EVENT = "paperclip:agent-sort-mode-updated";
-const AGENT_ORDER_STORAGE_PREFIX = "paperclip.agentOrder";
-const AGENT_SORT_MODE_STORAGE_PREFIX = "paperclip.agentSortMode";
+export const AGENT_ORDER_UPDATED_EVENT = "slaw:agent-order-updated";
+export const AGENT_SORT_MODE_UPDATED_EVENT = "slaw:agent-sort-mode-updated";
+const AGENT_ORDER_STORAGE_PREFIX = "slaw.agentOrder";
+const AGENT_SORT_MODE_STORAGE_PREFIX = "slaw.agentSortMode";
 const ANONYMOUS_USER_ID = "anonymous";
 
 export type AgentSidebarSortMode = "top" | "alphabetical" | "recent";

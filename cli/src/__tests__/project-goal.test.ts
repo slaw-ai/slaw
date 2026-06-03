@@ -22,8 +22,8 @@ function createProgram(): Command {
 describe("project and goal commands", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_API_URL;
+    delete process.env.SLAW_API_KEY;
+    delete process.env.SLAW_API_URL;
   });
 
   afterEach(() => {

@@ -1,6 +1,6 @@
 import pc from "picocolors";
 
-const PAPERCLIP_ART = [
+const SLAW_ART = [
   "██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ",
   "██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗",
   "██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝",
@@ -11,10 +11,10 @@ const PAPERCLIP_ART = [
 
 const TAGLINE = "Open-source orchestration for zero-human companies";
 
-export function printPaperclipCliBanner(): void {
+export function printSlawCliBanner(): void {
   const lines = [
     "",
-    ...PAPERCLIP_ART.map((line) => pc.cyan(line)),
+    ...SLAW_ART.map((line) => pc.cyan(line)),
     pc.blue("  ───────────────────────────────────────────────────────"),
     pc.bold(pc.white(`  ${TAGLINE}`)),
     "",

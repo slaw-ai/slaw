@@ -89,10 +89,10 @@
   --chip-match-identifier-bg: var(--muted);
   --chip-match-identifier-fg: var(--muted-foreground);
   --chip-match-identifier-border: var(--border);
-  --paperclip-doc-annotation-highlight-open: #fef08a;
-  --paperclip-doc-annotation-highlight-focused: #fde047;
-  --paperclip-doc-annotation-highlight-stale: #fef08a;
-  --paperclip-doc-annotation-highlight-resolved: #fef9c3;
+  --slaw-doc-annotation-highlight-open: #fef08a;
+  --slaw-doc-annotation-highlight-focused: #fde047;
+  --slaw-doc-annotation-highlight-stale: #fef08a;
+  --slaw-doc-annotation-highlight-resolved: #fef9c3;
 }
 
 .dark {
@@ -140,29 +140,29 @@
   --chip-match-identifier-bg: var(--muted);
   --chip-match-identifier-fg: var(--muted-foreground);
   --chip-match-identifier-border: var(--border);
-  --paperclip-doc-annotation-highlight-open: #a16207;
-  --paperclip-doc-annotation-highlight-focused: #ca8a04;
-  --paperclip-doc-annotation-highlight-stale: #854d0e;
-  --paperclip-doc-annotation-highlight-resolved: #713f12;
+  --slaw-doc-annotation-highlight-open: #a16207;
+  --slaw-doc-annotation-highlight-focused: #ca8a04;
+  --slaw-doc-annotation-highlight-stale: #854d0e;
+  --slaw-doc-annotation-highlight-resolved: #713f12;
 }
 
-::highlight(paperclip-doc-annotation-open) {
-  background-color: var(--paperclip-doc-annotation-highlight-open);
+::highlight(slaw-doc-annotation-open) {
+  background-color: var(--slaw-doc-annotation-highlight-open);
   color: inherit;
 }
 
-::highlight(paperclip-doc-annotation-focused) {
-  background-color: var(--paperclip-doc-annotation-highlight-focused);
+::highlight(slaw-doc-annotation-focused) {
+  background-color: var(--slaw-doc-annotation-highlight-focused);
   color: inherit;
 }
 
-::highlight(paperclip-doc-annotation-stale) {
-  background-color: var(--paperclip-doc-annotation-highlight-stale);
+::highlight(slaw-doc-annotation-stale) {
+  background-color: var(--slaw-doc-annotation-highlight-stale);
   color: inherit;
 }
 
-::highlight(paperclip-doc-annotation-resolved) {
-  background-color: var(--paperclip-doc-annotation-highlight-resolved);
+::highlight(slaw-doc-annotation-resolved) {
+  background-color: var(--slaw-doc-annotation-highlight-resolved);
   color: inherit;
 }
 
@@ -195,8 +195,8 @@
     touch-action: manipulation;
   }
   /* Let font-mono (utilities layer) override for monospace editors */
-  .paperclip-mdxeditor [class*="_placeholder_"],
-  .paperclip-mdxeditor-content {
+  .slaw-mdxeditor [class*="_placeholder_"],
+  .slaw-mdxeditor-content {
     font-family: inherit;
   }
 }
@@ -405,8 +405,8 @@
 }
 
 /* MDXEditor theme integration */
-.paperclip-mdxeditor-scope,
-.paperclip-mdxeditor {
+.slaw-mdxeditor-scope,
+.slaw-mdxeditor {
   --baseBase: var(--background);
   --baseBg: transparent;
   --baseBgSubtle: color-mix(in oklab, var(--accent) 35%, transparent);
@@ -438,83 +438,83 @@
 }
 
 @media (min-width: 768px) {
-  .paperclip-mdxeditor-scope,
-  .paperclip-mdxeditor {
+  .slaw-mdxeditor-scope,
+  .slaw-mdxeditor {
     font-size: 0.875rem;
   }
 }
 
-.paperclip-mdxeditor-scope [class*="_iconButton_"],
-.paperclip-mdxeditor [class*="_iconButton_"] {
+.slaw-mdxeditor-scope [class*="_iconButton_"],
+.slaw-mdxeditor [class*="_iconButton_"] {
   color: var(--baseText);
 }
 
-.paperclip-mdxeditor-scope [class*="_iconButton_"]:hover,
-.paperclip-mdxeditor [class*="_iconButton_"]:hover {
+.slaw-mdxeditor-scope [class*="_iconButton_"]:hover,
+.slaw-mdxeditor [class*="_iconButton_"]:hover {
   color: var(--baseTextContrast);
 }
 
-.paperclip-mdxeditor .mdxeditor-root-contenteditable {
+.slaw-mdxeditor .mdxeditor-root-contenteditable {
   min-height: 2.5rem;
   padding: 0;
   line-height: 1.5;
 }
 
-.paperclip-mdxeditor [class*="_contentEditable_"] {
+.slaw-mdxeditor [class*="_contentEditable_"] {
   padding: 0.375rem 0.625rem !important;
 }
 
-.paperclip-mdxeditor--borderless [class*="_contentEditable_"] {
+.slaw-mdxeditor--borderless [class*="_contentEditable_"] {
   padding: 0 !important;
 }
 
-.paperclip-mdxeditor [class*="_placeholder_"] {
+.slaw-mdxeditor [class*="_placeholder_"] {
   font-size: inherit;
   line-height: 1.5;
   color: var(--muted-foreground);
 }
 
-.paperclip-mdxeditor-content {
+.slaw-mdxeditor-content {
   font-size: inherit;
   line-height: inherit;
   color: inherit;
 }
 
-.paperclip-edit-in-place-content {
+.slaw-edit-in-place-content {
   font-size: 0.9375rem;
   line-height: 1.75rem;
 }
 
-.paperclip-mdxeditor-content > *:first-child {
+.slaw-mdxeditor-content > *:first-child {
   margin-top: 0;
 }
 
-.paperclip-mdxeditor-content > *:last-child {
+.slaw-mdxeditor-content > *:last-child {
   margin-bottom: 0;
 }
 
-.paperclip-mdxeditor-content p {
+.slaw-mdxeditor-content p {
   margin: 0;
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content p + p {
+.slaw-mdxeditor-content p + p {
   margin-top: 1.1em;
 }
 
-.paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
+.slaw-mdxeditor-content a:not(.slaw-mention-chip):not(.slaw-project-mention-chip) {
   color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
 
-.dark .paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
+.dark .slaw-mdxeditor-content a:not(.slaw-mention-chip):not(.slaw-project-mention-chip) {
   color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip,
-.paperclip-mdxeditor-content a.paperclip-project-mention-chip {
+.slaw-mdxeditor-content a.slaw-mention-chip,
+.slaw-mdxeditor-content a.slaw-project-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -534,35 +534,35 @@
 
 /* Strip the MDXEditor's default inline-code styling from the text inside chips
    (the link label otherwise picks up a monospace font + gray tint). */
-.paperclip-mdxeditor-content a.paperclip-mention-chip code,
-.paperclip-mdxeditor-content a.paperclip-project-mention-chip code {
+.slaw-mdxeditor-content a.slaw-mention-chip code,
+.slaw-mdxeditor-content a.slaw-project-mention-chip code {
   font-family: inherit;
   background: none;
   color: inherit;
   padding: 0;
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip::before,
-a.paperclip-mention-chip::before {
+.slaw-mdxeditor-content a.slaw-mention-chip::before,
+a.slaw-mention-chip::before {
   content: "";
   flex: none;
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip[data-mention-kind="project"]::before,
-a.paperclip-mention-chip[data-mention-kind="project"]::before {
+.slaw-mdxeditor-content a.slaw-mention-chip[data-mention-kind="project"]::before,
+a.slaw-mention-chip[data-mention-kind="project"]::before {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 999px;
-  background-color: var(--paperclip-mention-project-color, currentColor);
+  background-color: var(--slaw-mention-project-color, currentColor);
 }
 
-.paperclip-mdxeditor-content a.paperclip-mention-chip[data-mention-kind="agent"]::before,
-a.paperclip-mention-chip[data-mention-kind="agent"]::before {
+.slaw-mdxeditor-content a.slaw-mention-chip[data-mention-kind="agent"]::before,
+a.slaw-mention-chip[data-mention-kind="agent"]::before {
   width: 0.75rem;
   height: 0.75rem;
   background-color: currentColor;
-  -webkit-mask-image: var(--paperclip-mention-icon-mask);
-  mask-image: var(--paperclip-mention-icon-mask);
+  -webkit-mask-image: var(--slaw-mention-icon-mask);
+  mask-image: var(--slaw-mention-icon-mask);
   -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-repeat: no-repeat;
@@ -571,57 +571,57 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   mask-size: contain;
 }
 
-.paperclip-mdxeditor-content ul,
-.paperclip-mdxeditor-content ol {
+.slaw-mdxeditor-content ul,
+.slaw-mdxeditor-content ol {
   margin: 1.1em 0;
   padding-left: 1.6em;
 }
 
-.paperclip-mdxeditor-content ul {
+.slaw-mdxeditor-content ul {
   list-style: disc;
 }
 
-.paperclip-mdxeditor-content ol {
+.slaw-mdxeditor-content ol {
   list-style: decimal;
 }
 
-.paperclip-mdxeditor-content li {
+.slaw-mdxeditor-content li {
   display: list-item;
   margin: 0.3em 0;
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content li::marker {
+.slaw-mdxeditor-content li::marker {
   color: var(--muted-foreground);
 }
 
-.paperclip-mdxeditor-content h1 {
+.slaw-mdxeditor-content h1 {
   margin: 1.4em 0 0.9em;
   font-size: 1.75em;
   font-weight: 700;
   line-height: 1.2;
 }
 
-.paperclip-mdxeditor-content h2 {
+.slaw-mdxeditor-content h2 {
   margin: 1.3em 0 0.85em;
   font-size: 1.35em;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.paperclip-mdxeditor-content h3 {
+.slaw-mdxeditor-content h3 {
   margin: 1.2em 0 0.8em;
   font-size: 1.15em;
   font-weight: 600;
   line-height: 1.35;
 }
 
-.paperclip-mdxeditor-content img {
+.slaw-mdxeditor-content img {
   max-height: 18rem;
   border-radius: calc(var(--radius) - 2px);
 }
 
-.paperclip-mdxeditor-content blockquote {
+.slaw-mdxeditor-content blockquote {
   margin: 1.2em 0;
   padding-left: 1em;
   border-left: 3px solid var(--border);
@@ -629,12 +629,12 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content code {
+.slaw-mdxeditor-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 1em;
 }
 
-.paperclip-mdxeditor-content pre {
+.slaw-mdxeditor-content pre {
   margin: 0.4rem 0;
   padding: 0;
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
@@ -646,50 +646,50 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 /* Dark theme for CodeMirror code blocks inside the MDXEditor.
    Overrides the default cm6-theme-basic-light that MDXEditor bundles. */
-.paperclip-mdxeditor .cm-editor {
+.slaw-mdxeditor .cm-editor {
   background-color: #1e1e2e !important;
   color: #cdd6f4 !important;
   font-size: 1em;
 }
 
-.paperclip-mdxeditor .cm-gutters {
+.slaw-mdxeditor .cm-gutters {
   background-color: #181825 !important;
   color: #585b70 !important;
   border-right: 1px solid #313244 !important;
 }
 
-.paperclip-mdxeditor .cm-activeLineGutter {
+.slaw-mdxeditor .cm-activeLineGutter {
   background-color: #1e1e2e !important;
 }
 
-.paperclip-mdxeditor .cm-activeLine {
+.slaw-mdxeditor .cm-activeLine {
   background-color: color-mix(in oklab, #cdd6f4 5%, transparent) !important;
 }
 
-.paperclip-mdxeditor .cm-cursor,
-.paperclip-mdxeditor .cm-dropCursor {
+.slaw-mdxeditor .cm-cursor,
+.slaw-mdxeditor .cm-dropCursor {
   border-left-color: #cdd6f4 !important;
 }
 
-.paperclip-mdxeditor .cm-selectionBackground {
+.slaw-mdxeditor .cm-selectionBackground {
   background-color: color-mix(in oklab, #89b4fa 25%, transparent) !important;
 }
 
-.paperclip-mdxeditor .cm-focused .cm-selectionBackground {
+.slaw-mdxeditor .cm-focused .cm-selectionBackground {
   background-color: color-mix(in oklab, #89b4fa 30%, transparent) !important;
 }
 
-.paperclip-mdxeditor .cm-content {
+.slaw-mdxeditor .cm-content {
   caret-color: #cdd6f4;
 }
 
 /* MDXEditor code block language selector – show on hover only */
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"] {
+.slaw-mdxeditor-content [class*="_codeMirrorWrapper_"] {
   position: relative;
 }
 
-.paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeBlockToolbar_"] {
+.slaw-mdxeditor-content [class*="_codeMirrorToolbar_"],
+.slaw-mdxeditor-content [class*="_codeBlockToolbar_"] {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
@@ -698,31 +698,31 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   transition: opacity 150ms ease;
 }
 
-.paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"] select,
-.paperclip-mdxeditor-content [class*="_codeBlockToolbar_"] select {
+.slaw-mdxeditor-content [class*="_codeMirrorToolbar_"] select,
+.slaw-mdxeditor-content [class*="_codeBlockToolbar_"] select {
   background-color: #313244;
   color: #cdd6f4;
   border-color: #45475a;
 }
 
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeMirrorToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeBlockToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeMirrorToolbar_"],
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeBlockToolbar_"] {
+.slaw-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeMirrorToolbar_"],
+.slaw-mdxeditor-content [class*="_codeMirrorWrapper_"]:hover [class*="_codeBlockToolbar_"],
+.slaw-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeMirrorToolbar_"],
+.slaw-mdxeditor-content [class*="_codeMirrorWrapper_"]:focus-within [class*="_codeBlockToolbar_"] {
   opacity: 1;
 }
 
 /* Rendered markdown code blocks & inline code (prose/MarkdownBody context).
    Dark theme code blocks with compact sizing.
    Override prose CSS variables so prose-invert can't revert to defaults. */
-.paperclip-markdown {
+.slaw-markdown {
   --tw-prose-pre-bg: #1e1e2e;
   --tw-prose-pre-code: #cdd6f4;
   --tw-prose-invert-pre-bg: #1e1e2e;
   --tw-prose-invert-pre-code: #cdd6f4;
 }
 
-.paperclip-markdown pre {
+.slaw-markdown pre {
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent) !important;
   border-radius: calc(var(--radius) - 3px) !important;
   background-color: #1e1e2e !important;
@@ -734,23 +734,23 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   white-space: pre;
 }
 
-.paperclip-markdown code {
+.slaw-markdown code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 1em;
 }
 
-.paperclip-markdown pre code {
+.slaw-markdown pre code {
   font-size: inherit;
   color: inherit;
   background: none;
 }
 
 /* Actions for fenced and indented preformatted markdown blocks */
-.paperclip-markdown-codeblock {
+.slaw-markdown-codeblock {
   position: relative;
 }
 
-.paperclip-markdown-codeblock-actions {
+.slaw-markdown-codeblock-actions {
   position: absolute;
   top: 0.4rem;
   right: 0.4rem;
@@ -761,7 +761,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   transition: opacity 0.12s ease;
 }
 
-.paperclip-markdown-codeblock-action {
+.slaw-markdown-codeblock-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -778,28 +778,28 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
-.paperclip-markdown-codeblock:hover .paperclip-markdown-codeblock-actions,
-.paperclip-markdown-codeblock-actions:focus-within,
-.paperclip-markdown-codeblock-actions[data-active] {
+.slaw-markdown-codeblock:hover .slaw-markdown-codeblock-actions,
+.slaw-markdown-codeblock-actions:focus-within,
+.slaw-markdown-codeblock-actions[data-active] {
   opacity: 1;
 }
 
-.paperclip-markdown-codeblock-action:hover {
+.slaw-markdown-codeblock-action:hover {
   background-color: var(--accent);
   color: var(--accent-foreground);
 }
 
-.paperclip-markdown-codeblock-action[data-active],
-.paperclip-markdown-codeblock-action[data-copied] {
+.slaw-markdown-codeblock-action[data-active],
+.slaw-markdown-codeblock-action[data-copied] {
   border-color: color-mix(in oklab, var(--primary) 38%, transparent);
   color: var(--primary);
 }
 
-.paperclip-markdown-codeblock-action[data-failed] {
+.slaw-markdown-codeblock-action[data-failed] {
   color: var(--destructive);
 }
 
-.paperclip-markdown-codeblock-action-label {
+.slaw-markdown-codeblock-action-label {
   font-weight: 500;
 }
 
@@ -821,55 +821,55 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   background-color: #ffffff0f;
 }
 
-.paperclip-markdown {
+.slaw-markdown {
   color: var(--foreground);
   font-size: 0.9375rem;
   line-height: 1.6;
 }
 
-.paperclip-markdown > :first-child {
+.slaw-markdown > :first-child {
   margin-top: 0;
 }
 
-.paperclip-markdown > :last-child {
+.slaw-markdown > :last-child {
   margin-bottom: 0;
 }
 
-.paperclip-markdown :where(p, ul, ol, blockquote, pre, .paperclip-markdown-table-scroll) {
+.slaw-markdown :where(p, ul, ol, blockquote, pre, .slaw-markdown-table-scroll) {
   margin-top: 0.7rem;
   margin-bottom: 0.7rem;
 }
 
-.paperclip-markdown :where(ul, ol) {
+.slaw-markdown :where(ul, ol) {
   padding-left: 1.15rem;
 }
 
-.paperclip-markdown ul {
+.slaw-markdown ul {
   list-style-type: disc;
 }
 
-.paperclip-markdown ol {
+.slaw-markdown ol {
   list-style-type: decimal;
 }
 
-.paperclip-markdown li {
+.slaw-markdown li {
   margin: 0.14rem 0;
   padding-left: 0.2rem;
 }
 
-.paperclip-markdown li > :where(p, ul, ol) {
+.slaw-markdown li > :where(p, ul, ol) {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.paperclip-markdown li::marker {
+.slaw-markdown li::marker {
   color: var(--muted-foreground);
 }
 
-.paperclip-markdown h1,
-.paperclip-markdown h2,
-.paperclip-markdown h3,
-.paperclip-markdown h4 {
+.slaw-markdown h1,
+.slaw-markdown h2,
+.slaw-markdown h3,
+.slaw-markdown h4 {
   margin-top: 1.75rem;
   margin-bottom: 0.45rem;
   color: var(--foreground);
@@ -878,101 +878,101 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   line-height: 1.3;
 }
 
-.paperclip-markdown h1 {
+.slaw-markdown h1 {
   font-size: 1.5rem;
 }
 
-.paperclip-markdown h2 {
+.slaw-markdown h2 {
   font-size: 1.25rem;
 }
 
-.paperclip-markdown h3 {
+.slaw-markdown h3 {
   font-size: 1.05rem;
 }
 
-.paperclip-markdown h4 {
+.slaw-markdown h4 {
   font-size: 0.95rem;
 }
 
-.paperclip-markdown :where(strong, b) {
+.slaw-markdown :where(strong, b) {
   color: var(--foreground);
   font-weight: 600;
 }
 
-.paperclip-markdown a {
+.slaw-markdown a {
   color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
 
-.paperclip-markdown a.paperclip-mention-chip {
+.slaw-markdown a.slaw-mention-chip {
   text-decoration: none;
 }
 
-.paperclip-markdown a.paperclip-mention-chip[data-mention-kind="issue"] {
+.slaw-markdown a.slaw-mention-chip[data-mention-kind="issue"] {
   border-color: color-mix(in oklab, var(--foreground) 14%, var(--border) 86%);
   background: color-mix(in oklab, var(--accent) 42%, transparent);
 }
 
 /* Inline issue references in markdown: no pill chrome, just a status icon
    beside the link label — keeps the pair from splitting across lines. */
-.paperclip-markdown-issue-ref {
+.slaw-markdown-issue-ref {
   display: inline;
   white-space: nowrap;
 }
 
-.dark .paperclip-markdown a {
+.dark .slaw-markdown a {
   color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
 }
 
-.paperclip-markdown blockquote {
+.slaw-markdown blockquote {
   margin-left: 0;
   padding-left: 0.95rem;
   border-left: 0.24rem solid color-mix(in oklab, var(--border) 84%, var(--muted-foreground) 16%);
   color: var(--muted-foreground);
 }
 
-.paperclip-markdown hr {
+.slaw-markdown hr {
   margin: 1.25rem 0;
   border-color: var(--border);
 }
 
-.paperclip-markdown img {
+.slaw-markdown img {
   border-radius: calc(var(--radius) + 2px);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 
-.paperclip-markdown-table-scroll {
+.slaw-markdown-table-scroll {
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-.paperclip-markdown-table-scroll:focus-visible {
+.slaw-markdown-table-scroll:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
-.paperclip-markdown-table-scroll table {
+.slaw-markdown-table-scroll table {
   width: max-content;
   min-width: 100%;
   margin: 0;
 }
 
-.paperclip-markdown-table-scroll :where(th, td) {
+.slaw-markdown-table-scroll :where(th, td) {
   min-width: 8rem;
   max-width: 18rem;
   vertical-align: top;
 }
 
-.paperclip-markdown th {
+.slaw-markdown th {
   font-weight: 600;
   text-align: left;
 }
 
-.paperclip-mermaid {
+.slaw-mermaid {
   margin: 0.5rem 0;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
@@ -981,7 +981,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   overflow-x: auto;
 }
 
-.paperclip-mermaid svg {
+.slaw-mermaid svg {
   display: block;
   width: max-content;
   max-width: none;
@@ -989,17 +989,17 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   height: auto;
 }
 
-.paperclip-mermaid-status {
+.slaw-mermaid-status {
   margin: 0 0 0.45rem;
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
 
-.paperclip-mermaid-status-error {
+.slaw-mermaid-status-error {
   color: var(--destructive);
 }
 
-.paperclip-mermaid-source {
+.slaw-mermaid-source {
   margin: 0;
   padding: 0;
   border: 0;
@@ -1007,10 +1007,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 /* Mention chips rendered inline in prose (MarkdownBody or inline anchors) */
-a.paperclip-mention-chip,
-a.paperclip-project-mention-chip,
-span.paperclip-mention-chip,
-span.paperclip-project-mention-chip {
+a.slaw-mention-chip,
+a.slaw-project-mention-chip,
+span.slaw-mention-chip,
+span.slaw-project-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -1033,10 +1033,10 @@ span.paperclip-project-mention-chip {
 
 /* When the identifier inside a chip is backtick-wrapped in markdown, strip the
    inline-code monospace/gray styling so the pill label reads cleanly. */
-.paperclip-markdown a.paperclip-mention-chip code,
-.paperclip-markdown a.paperclip-project-mention-chip code,
-.paperclip-markdown span.paperclip-mention-chip code,
-.paperclip-markdown span.paperclip-project-mention-chip code {
+.slaw-markdown a.slaw-mention-chip code,
+.slaw-markdown a.slaw-project-mention-chip code,
+.slaw-markdown span.slaw-mention-chip code,
+.slaw-markdown span.slaw-project-mention-chip code {
   font-family: inherit;
   background: none;
   color: inherit;

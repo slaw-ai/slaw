@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   listGrokSkills,
   syncGrokSkills,
-} from "@paperclipai/adapter-grok-local/server";
+} from "@slaw/adapter-grok-local/server";
 
 describe("grok local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
-  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
+  const slawKey = "slaw/slaw/slaw";
+  const createAgentKey = "slaw/slaw/slaw-create-agent";
 
   it("reports Grok skills as ephemeral workspace-mounted state", async () => {
     const snapshot = await listGrokSkills({
@@ -14,8 +14,8 @@ describe("grok local skill sync", () => {
       companyId: "company-1",
       adapterType: "grok_local",
       config: {
-        paperclipSkillSync: {
-          desiredSkills: [paperclipKey],
+        slawSkillSync: {
+          desiredSkills: [slawKey],
         },
       },
     });
@@ -23,9 +23,9 @@ describe("grok local skill sync", () => {
     expect(snapshot.adapterType).toBe("grok_local");
     expect(snapshot.supported).toBe(true);
     expect(snapshot.mode).toBe("ephemeral");
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
+    expect(snapshot.desiredSkills).toContain(slawKey);
     expect(snapshot.desiredSkills).toContain(createAgentKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)).toMatchObject({
+    expect(snapshot.entries.find((entry) => entry.key === slawKey)).toMatchObject({
       required: true,
       state: "configured",
       detail: "Will be copied into `.claude/skills` in the execution workspace on the next run.",
@@ -38,8 +38,8 @@ describe("grok local skill sync", () => {
       companyId: "company-1",
       adapterType: "grok_local",
       config: {
-        paperclipRuntimeSkills: [],
-        paperclipSkillSync: {
+        slawRuntimeSkills: [],
+        slawSkillSync: {
           desiredSkills: ["unknown-skill"],
         },
       },
@@ -47,7 +47,7 @@ describe("grok local skill sync", () => {
 
     expect(snapshot.mode).toBe("ephemeral");
     expect(snapshot.warnings).toContain(
-      'Desired skill "unknown-skill" is not available from the Paperclip skills directory.',
+      'Desired skill "unknown-skill" is not available from the Slaw skills directory.',
     );
     expect(snapshot.entries).toContainEqual(expect.objectContaining({
       key: "unknown-skill",

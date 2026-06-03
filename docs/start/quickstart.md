@@ -1,31 +1,31 @@
 ---
 title: Quickstart
-summary: Get Paperclip running in minutes
+summary: Get Slaw running in minutes
 ---
 
-Get Paperclip running locally in under 5 minutes.
+Get Slaw running locally in under 5 minutes.
 
 ## Quick Start (Recommended)
 
 ```sh
-npx paperclipai onboard --yes
+npx slaw onboard --yes
 ```
 
-This walks you through setup, configures your environment, and gets Paperclip running.
+This walks you through setup, configures your environment, and gets Slaw running.
 
-If you already have a Paperclip install, rerunning `onboard` keeps your current config and data paths intact. Use `paperclipai configure` if you want to edit settings.
+If you already have a Slaw install, rerunning `onboard` keeps your current config and data paths intact. Use `slaw configure` if you want to edit settings.
 
-To start Paperclip again later:
+To start Slaw again later:
 
 ```sh
-npx paperclipai run
+npx slaw run
 ```
 
-> **Note:** If you used `npx` for setup, always use `npx paperclipai` to run commands. The `pnpm paperclipai` form only works inside a cloned copy of the Paperclip repository (see Local Development below).
+> **Note:** If you used `npx` for setup, always use `npx slaw` to run commands. The `pnpm slaw` form only works inside a cloned copy of the Slaw repository (see Local Development below).
 
 ## Local Development
 
-For contributors working on Paperclip itself. Prerequisites: Node.js 20+ and pnpm 9+.
+For contributors working on Slaw itself. Prerequisites: Node.js 20+ and pnpm 9+.
 
 Clone the repository, then:
 
@@ -36,19 +36,19 @@ pnpm dev
 
 This starts the API server and UI at [http://localhost:3100](http://localhost:3100).
 
-No external database required — Paperclip uses an embedded PostgreSQL instance by default.
+No external database required — Slaw uses an embedded PostgreSQL instance by default.
 
 When working from the cloned repo, you can also use:
 
 ```sh
-pnpm paperclipai run
+pnpm slaw run
 ```
 
 This auto-onboards if config is missing, runs health checks with auto-repair, and starts the server.
 
 ## What's Next
 
-Once Paperclip is running:
+Once Slaw is running:
 
 1. Create your first company in the web UI
 2. Define a company goal
@@ -58,5 +58,5 @@ Once Paperclip is running:
 6. Hit go — agents start their heartbeats and the company runs
 
 <Card title="Core Concepts" href="/start/core-concepts">
-  Learn the key concepts behind Paperclip
+  Learn the key concepts behind Slaw
 </Card>

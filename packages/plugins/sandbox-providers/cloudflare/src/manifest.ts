@@ -1,16 +1,16 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
 
-const PLUGIN_ID = "paperclip.cloudflare-sandbox-provider";
+const PLUGIN_ID = "slaw.cloudflare-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: SlawPluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Cloudflare Sandbox Provider",
   description:
     "First-party sandbox provider plugin that provisions Cloudflare sandboxes through an operator-deployed Worker bridge.",
-  author: "Paperclip",
+  author: "Slaw",
   categories: ["automation"],
   capabilities: ["environment.drivers.register"],
   entrypoints: {
@@ -22,7 +22,7 @@ const manifest: PaperclipPluginManifestV1 = {
       kind: "sandbox_provider",
       displayName: "Cloudflare Sandbox",
       description:
-        "Runs Paperclip sandbox environments through a Cloudflare Worker bridge backed by the Sandbox SDK and Durable Objects.",
+        "Runs Slaw sandbox environments through a Cloudflare Worker bridge backed by the Sandbox SDK and Durable Objects.",
       configSchema: {
         type: "object",
         properties: {
@@ -60,7 +60,7 @@ const manifest: PaperclipPluginManifestV1 = {
           },
           requestedCwd: {
             type: "string",
-            default: "/workspace/paperclip",
+            default: "/workspace/slaw",
             description: "Workspace directory to create inside the sandbox lease.",
           },
           sessionStrategy: {
@@ -71,7 +71,7 @@ const manifest: PaperclipPluginManifestV1 = {
           },
           sessionId: {
             type: "string",
-            default: "paperclip",
+            default: "slaw",
             description: "Named Cloudflare session ID used when sessionStrategy is named.",
           },
           timeoutMs: {

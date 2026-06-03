@@ -1,6 +1,6 @@
 # CLI Reference
 
-Paperclip CLI now supports both:
+Slaw CLI now supports both:
 
 - instance setup/diagnostics (`onboard`, `doctor`, `configure`, `env`, `allowed-hostname`, `env-lab`)
 - control-plane client operations (issues, approvals, agents, activity, dashboard)
@@ -10,19 +10,19 @@ Paperclip CLI now supports both:
 Use repo script in development:
 
 ```sh
-pnpm paperclipai --help
+pnpm slaw --help
 ```
 
 First-time local bootstrap + run:
 
 ```sh
-pnpm paperclipai run
+pnpm slaw run
 ```
 
 Choose local instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm slaw run --instance dev
 ```
 
 ## Deployment Modes
@@ -31,27 +31,27 @@ Mode taxonomy and design intent are documented in `doc/DEPLOYMENT-MODES.md`.
 
 Current CLI behavior:
 
-- `paperclipai onboard` and `paperclipai configure --section server` set deployment mode in config
+- `slaw onboard` and `slaw configure --section server` set deployment mode in config
 - server onboarding/configure ask for reachability intent and write `server.bind`
-- `paperclipai run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
-- runtime can override mode with `PAPERCLIP_DEPLOYMENT_MODE`
-- `paperclipai run` and `paperclipai doctor` still do not expose a direct low-level `--mode` flag
+- `slaw run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
+- runtime can override mode with `SLAW_DEPLOYMENT_MODE`
+- `slaw run` and `slaw doctor` still do not expose a direct low-level `--mode` flag
 
 Canonical behavior is documented in `doc/DEPLOYMENT-MODES.md`.
 
 Allow an authenticated/private hostname (for example custom Tailscale DNS):
 
 ```sh
-pnpm paperclipai allowed-hostname dotta-macbook-pro
+pnpm slaw allowed-hostname dotta-macbook-pro
 ```
 
 Bring up the default local SSH fixture for environment testing:
 
 ```sh
-pnpm paperclipai env-lab up
-pnpm paperclipai env-lab doctor
-pnpm paperclipai env-lab status --json
-pnpm paperclipai env-lab down
+pnpm slaw env-lab up
+pnpm slaw env-lab doctor
+pnpm slaw env-lab status --json
+pnpm slaw env-lab down
 ```
 
 All client commands support:
@@ -68,9 +68,9 @@ Company-scoped commands also support `--company-id <id>`.
 API base resolution order:
 
 1. `--api-base <url>`
-2. `PAPERCLIP_API_URL`
+2. `SLAW_API_URL`
 3. selected context profile `apiBase`
-4. local Paperclip config server port
+4. local Slaw config server port
 5. `http://localhost:3100`
 
 Connection failures include the attempted URL and a `GET /api/health` check hint.
@@ -78,7 +78,7 @@ Connection failures include the attempted URL and a `GET /api/health` check hint
 ## Connect Wizard
 
 ```sh
-pnpm paperclipai connect
+pnpm slaw connect
 ```
 
 `connect` confirms the resolved API base, verifies `GET /api/health`, authenticates board access when needed, and saves a persona-aware profile:
@@ -88,222 +88,222 @@ pnpm paperclipai connect
 
 Profiles store token env-var names, not plaintext tokens. The wizard prints shell exports for the newly created token.
 
-Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.paperclip`:
+Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.slaw`:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai issue list --data-dir ./tmp/paperclip-dev
+pnpm slaw run --data-dir ./tmp/slaw-dev
+pnpm slaw issue list --data-dir ./tmp/slaw-dev
 ```
 
 ## Context Profiles
 
-Store local defaults in `~/.paperclip/context.json`:
+Store local defaults in `~/.slaw/context.json`:
 
 ```sh
-pnpm paperclipai context set --api-base http://localhost:3100 --company-id <company-id>
-pnpm paperclipai context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLIP_API_KEY
-pnpm paperclipai context show
-pnpm paperclipai context list
-pnpm paperclipai context use default
+pnpm slaw context set --api-base http://localhost:3100 --company-id <company-id>
+pnpm slaw context set --persona agent --agent-id <agent-id> --api-key-env-var-name SLAW_API_KEY
+pnpm slaw context show
+pnpm slaw context list
+pnpm slaw context use default
 ```
 
 To avoid storing secrets in context, set `apiKeyEnvVarName` and keep the key in env:
 
 ```sh
-pnpm paperclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
-export PAPERCLIP_API_KEY=...
+pnpm slaw context set --api-key-env-var-name SLAW_API_KEY
+export SLAW_API_KEY=...
 ```
 
 ## Company Commands
 
 ```sh
-pnpm paperclipai company list
-pnpm paperclipai company get <company-id>
-pnpm paperclipai company stats
-pnpm paperclipai company create --payload-json '{...}'
-pnpm paperclipai company update <company-id> --payload-json '{...}'
-pnpm paperclipai company branding:update <company-id> --payload-json '{...}'
-pnpm paperclipai company archive <company-id>
-pnpm paperclipai company export <company-id> --out ./company --include company,agents,projects,issues,skills
-pnpm paperclipai company export:preview <company-id> --payload-json '{...}'
-pnpm paperclipai company export:api <company-id> --payload-json '{...}'
-pnpm paperclipai company import ./company --target new --new-company-name "Imported Company"
-pnpm paperclipai company import:preview <company-id> --payload-json '{...}'
-pnpm paperclipai company import:apply <company-id> --payload-json '{...}'
-pnpm paperclipai company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
+pnpm slaw company list
+pnpm slaw company get <company-id>
+pnpm slaw company stats
+pnpm slaw company create --payload-json '{...}'
+pnpm slaw company update <company-id> --payload-json '{...}'
+pnpm slaw company branding:update <company-id> --payload-json '{...}'
+pnpm slaw company archive <company-id>
+pnpm slaw company export <company-id> --out ./company --include company,agents,projects,issues,skills
+pnpm slaw company export:preview <company-id> --payload-json '{...}'
+pnpm slaw company export:api <company-id> --payload-json '{...}'
+pnpm slaw company import ./company --target new --new-company-name "Imported Company"
+pnpm slaw company import:preview <company-id> --payload-json '{...}'
+pnpm slaw company import:apply <company-id> --payload-json '{...}'
+pnpm slaw company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
 ```
 
 Examples:
 
 ```sh
-pnpm paperclipai company delete PAP --yes --confirm PAP
-pnpm paperclipai company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
+pnpm slaw company delete PAP --yes --confirm PAP
+pnpm slaw company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
 ```
 
 Notes:
 
-- Deletion is server-gated by `PAPERCLIP_ENABLE_COMPANY_DELETION`.
-- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `PAPERCLIP_COMPANY_ID`), not another company.
+- Deletion is server-gated by `SLAW_ENABLE_COMPANY_DELETION`.
+- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `SLAW_COMPANY_ID`), not another company.
 
 ## Issue Commands
 
 ```sh
-pnpm paperclipai issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
-pnpm paperclipai issue get <issue-id-or-identifier>
-pnpm paperclipai issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
-pnpm paperclipai issue update <issue-id> [--status in_progress] [--comment "..."]
-pnpm paperclipai issue delete <issue-id> --yes
-pnpm paperclipai issue comment <issue-id> --body "..." [--reopen]
-pnpm paperclipai issue comments <issue-id> [--limit 50]
-pnpm paperclipai issue comment:get <issue-id> <comment-id>
-pnpm paperclipai issue comment:delete <issue-id> <comment-id>
-pnpm paperclipai issue runs <issue-id-or-identifier>
-pnpm paperclipai issue live-runs <issue-id-or-identifier>
-pnpm paperclipai issue active-run <issue-id-or-identifier>
-pnpm paperclipai issue heartbeat-context <issue-id>
-pnpm paperclipai issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
-pnpm paperclipai issue release <issue-id>
-pnpm paperclipai issue force-release <issue-id>
+pnpm slaw issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
+pnpm slaw issue get <issue-id-or-identifier>
+pnpm slaw issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
+pnpm slaw issue update <issue-id> [--status in_progress] [--comment "..."]
+pnpm slaw issue delete <issue-id> --yes
+pnpm slaw issue comment <issue-id> --body "..." [--reopen]
+pnpm slaw issue comments <issue-id> [--limit 50]
+pnpm slaw issue comment:get <issue-id> <comment-id>
+pnpm slaw issue comment:delete <issue-id> <comment-id>
+pnpm slaw issue runs <issue-id-or-identifier>
+pnpm slaw issue live-runs <issue-id-or-identifier>
+pnpm slaw issue active-run <issue-id-or-identifier>
+pnpm slaw issue heartbeat-context <issue-id>
+pnpm slaw issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
+pnpm slaw issue release <issue-id>
+pnpm slaw issue force-release <issue-id>
 ```
 
-Issue subresources are exposed as Paperclip API wrappers. Commands that map to broad server schemas accept JSON payloads and validate them with shared schemas before sending.
+Issue subresources are exposed as Slaw API wrappers. Commands that map to broad server schemas accept JSON payloads and validate them with shared schemas before sending.
 
 ```sh
-pnpm paperclipai issue child:create <issue-id> --payload-json '{"title":"Child task"}'
-pnpm paperclipai issue approvals <issue-id>
-pnpm paperclipai issue approval:link <issue-id> <approval-id>
-pnpm paperclipai issue approval:unlink <issue-id> <approval-id>
-pnpm paperclipai issue read <issue-id>
-pnpm paperclipai issue unread <issue-id>
-pnpm paperclipai issue archive <issue-id>
-pnpm paperclipai issue unarchive <issue-id>
-pnpm paperclipai issue recovery-actions <issue-id>
-pnpm paperclipai issue recovery:resolve <issue-id> --outcome restored --source-issue-status todo
-```
-
-```sh
-pnpm paperclipai issue documents <issue-id> [--include-system]
-pnpm paperclipai issue document:get <issue-id> <key>
-pnpm paperclipai issue document:put <issue-id> <key> --body-file ./plan.md [--title Plan]
-pnpm paperclipai issue document:lock <issue-id> <key>
-pnpm paperclipai issue document:unlock <issue-id> <key>
-pnpm paperclipai issue document:revisions <issue-id> <key>
-pnpm paperclipai issue document:restore <issue-id> <key> <revision-id>
-pnpm paperclipai issue document:delete <issue-id> <key>
+pnpm slaw issue child:create <issue-id> --payload-json '{"title":"Child task"}'
+pnpm slaw issue approvals <issue-id>
+pnpm slaw issue approval:link <issue-id> <approval-id>
+pnpm slaw issue approval:unlink <issue-id> <approval-id>
+pnpm slaw issue read <issue-id>
+pnpm slaw issue unread <issue-id>
+pnpm slaw issue archive <issue-id>
+pnpm slaw issue unarchive <issue-id>
+pnpm slaw issue recovery-actions <issue-id>
+pnpm slaw issue recovery:resolve <issue-id> --outcome restored --source-issue-status todo
 ```
 
 ```sh
-pnpm paperclipai issue work-products <issue-id>
-pnpm paperclipai issue work-product:create <issue-id> --payload-json '{"type":"pull_request","provider":"github","title":"PR"}'
-pnpm paperclipai issue work-product:update <work-product-id> --payload-json '{"status":"archived"}'
-pnpm paperclipai issue work-product:delete <work-product-id>
-pnpm paperclipai issue interactions <issue-id>
-pnpm paperclipai issue interaction:create <issue-id> --payload-json '{"kind":"request_confirmation","payload":{"version":1,"prompt":"Continue?"}}'
-pnpm paperclipai issue interaction:accept <issue-id> <interaction-id> [--selected-client-keys key1,key2]
-pnpm paperclipai issue interaction:reject <issue-id> <interaction-id> [--reason "..."]
-pnpm paperclipai issue interaction:respond <issue-id> <interaction-id> --answers-json '[{"questionId":"q1","optionIds":["yes"]}]'
-pnpm paperclipai issue interaction:cancel <issue-id> <interaction-id> [--reason "..."]
+pnpm slaw issue documents <issue-id> [--include-system]
+pnpm slaw issue document:get <issue-id> <key>
+pnpm slaw issue document:put <issue-id> <key> --body-file ./plan.md [--title Plan]
+pnpm slaw issue document:lock <issue-id> <key>
+pnpm slaw issue document:unlock <issue-id> <key>
+pnpm slaw issue document:revisions <issue-id> <key>
+pnpm slaw issue document:restore <issue-id> <key> <revision-id>
+pnpm slaw issue document:delete <issue-id> <key>
 ```
 
 ```sh
-pnpm paperclipai issue tree-state <issue-id>
-pnpm paperclipai issue tree-preview <issue-id> --payload-json '{"mode":"pause"}'
-pnpm paperclipai issue tree-holds <issue-id> [--status active] [--include-members]
-pnpm paperclipai issue tree-hold:create <issue-id> --payload-json '{"mode":"pause","reason":"review"}'
-pnpm paperclipai issue tree-hold:get <issue-id> <hold-id>
-pnpm paperclipai issue tree-hold:release <issue-id> <hold-id> [--payload-json '{"reason":"done"}']
-pnpm paperclipai issue attachments <issue-id>
-pnpm paperclipai issue attachment:upload <issue-id> --company-id <company-id> --file ./artifact.txt
-pnpm paperclipai issue attachment:download <attachment-id> [--out ./artifact.txt]
-pnpm paperclipai issue attachment:delete <attachment-id>
-pnpm paperclipai issue label:list --company-id <company-id>
-pnpm paperclipai issue label:create --company-id <company-id> --name bug --color '#ff0000'
-pnpm paperclipai issue label:delete <label-id>
-pnpm paperclipai issue feedback:votes <issue-id>
-pnpm paperclipai issue feedback:vote <issue-id> --payload-json '{"targetType":"issue_comment","targetId":"...","vote":"up"}'
+pnpm slaw issue work-products <issue-id>
+pnpm slaw issue work-product:create <issue-id> --payload-json '{"type":"pull_request","provider":"github","title":"PR"}'
+pnpm slaw issue work-product:update <work-product-id> --payload-json '{"status":"archived"}'
+pnpm slaw issue work-product:delete <work-product-id>
+pnpm slaw issue interactions <issue-id>
+pnpm slaw issue interaction:create <issue-id> --payload-json '{"kind":"request_confirmation","payload":{"version":1,"prompt":"Continue?"}}'
+pnpm slaw issue interaction:accept <issue-id> <interaction-id> [--selected-client-keys key1,key2]
+pnpm slaw issue interaction:reject <issue-id> <interaction-id> [--reason "..."]
+pnpm slaw issue interaction:respond <issue-id> <interaction-id> --answers-json '[{"questionId":"q1","optionIds":["yes"]}]'
+pnpm slaw issue interaction:cancel <issue-id> <interaction-id> [--reason "..."]
+```
+
+```sh
+pnpm slaw issue tree-state <issue-id>
+pnpm slaw issue tree-preview <issue-id> --payload-json '{"mode":"pause"}'
+pnpm slaw issue tree-holds <issue-id> [--status active] [--include-members]
+pnpm slaw issue tree-hold:create <issue-id> --payload-json '{"mode":"pause","reason":"review"}'
+pnpm slaw issue tree-hold:get <issue-id> <hold-id>
+pnpm slaw issue tree-hold:release <issue-id> <hold-id> [--payload-json '{"reason":"done"}']
+pnpm slaw issue attachments <issue-id>
+pnpm slaw issue attachment:upload <issue-id> --company-id <company-id> --file ./artifact.txt
+pnpm slaw issue attachment:download <attachment-id> [--out ./artifact.txt]
+pnpm slaw issue attachment:delete <attachment-id>
+pnpm slaw issue label:list --company-id <company-id>
+pnpm slaw issue label:create --company-id <company-id> --name bug --color '#ff0000'
+pnpm slaw issue label:delete <label-id>
+pnpm slaw issue feedback:votes <issue-id>
+pnpm slaw issue feedback:vote <issue-id> --payload-json '{"targetType":"issue_comment","targetId":"...","vote":"up"}'
 ```
 
 ## Project Commands
 
 ```sh
-pnpm paperclipai project list --company-id <company-id>
-pnpm paperclipai project get <project-id-or-shortname> [--company-id <company-id>]
-pnpm paperclipai project create --company-id <company-id> --name "Launch Site" [--goal-ids <id1,id2>] [--lead-agent-id <id>]
-pnpm paperclipai project update <project-id-or-shortname> [--status in_progress] [--company-id <company-id>]
-pnpm paperclipai project delete <project-id-or-shortname> --yes [--company-id <company-id>]
+pnpm slaw project list --company-id <company-id>
+pnpm slaw project get <project-id-or-shortname> [--company-id <company-id>]
+pnpm slaw project create --company-id <company-id> --name "Launch Site" [--goal-ids <id1,id2>] [--lead-agent-id <id>]
+pnpm slaw project update <project-id-or-shortname> [--status in_progress] [--company-id <company-id>]
+pnpm slaw project delete <project-id-or-shortname> --yes [--company-id <company-id>]
 ```
 
 Advanced project fields accept JSON:
 
 ```sh
-pnpm paperclipai project create --company-id <company-id> --name "Ops" --env-json '{"OPENAI_API_KEY":{"kind":"secret","secretName":"openai-api-key"}}'
-pnpm paperclipai project update <project-id> --execution-workspace-policy-json '{"enabled":true,"defaultMode":"shared_workspace"}'
+pnpm slaw project create --company-id <company-id> --name "Ops" --env-json '{"OPENAI_API_KEY":{"kind":"secret","secretName":"openai-api-key"}}'
+pnpm slaw project update <project-id> --execution-workspace-policy-json '{"enabled":true,"defaultMode":"shared_workspace"}'
 ```
 
 ## Goal Commands
 
 ```sh
-pnpm paperclipai goal list --company-id <company-id>
-pnpm paperclipai goal get <goal-id>
-pnpm paperclipai goal create --company-id <company-id> --title "Grow revenue" [--level company] [--status active]
-pnpm paperclipai goal update <goal-id> [--title "..."] [--status achieved]
-pnpm paperclipai goal delete <goal-id> --yes
+pnpm slaw goal list --company-id <company-id>
+pnpm slaw goal get <goal-id>
+pnpm slaw goal create --company-id <company-id> --title "Grow revenue" [--level company] [--status active]
+pnpm slaw goal update <goal-id> [--title "..."] [--status achieved]
+pnpm slaw goal delete <goal-id> --yes
 ```
 
 ## Agent Commands
 
 ```sh
-pnpm paperclipai agent list --company-id <company-id>
-pnpm paperclipai agent get <agent-id>
-pnpm paperclipai agent create --company-id <company-id> --payload-json '{"name":"Builder","adapterType":"codex_local"}'
-pnpm paperclipai agent hire --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai agent update <agent-id> --payload-json '{"title":"Senior Builder"}'
-pnpm paperclipai agent delete <agent-id> --yes
-pnpm paperclipai agent me
-pnpm paperclipai agent inbox
-pnpm paperclipai agent inbox-mine --user-id <board-user-id>
-pnpm paperclipai agent wake <agent-id-or-shortname> [--company-id <company-id>] [--reason "..."] [--payload '{"issueId":"..."}']
-pnpm paperclipai agent pause <agent-id>
-pnpm paperclipai agent resume <agent-id>
-pnpm paperclipai agent approve <agent-id>
-pnpm paperclipai agent terminate <agent-id>
-pnpm paperclipai agent heartbeat:invoke <agent-id>
-pnpm paperclipai agent claude-login <agent-id>
-pnpm paperclipai agent local-cli <agent-id-or-shortname> --company-id <company-id>
+pnpm slaw agent list --company-id <company-id>
+pnpm slaw agent get <agent-id>
+pnpm slaw agent create --company-id <company-id> --payload-json '{"name":"Builder","adapterType":"codex_local"}'
+pnpm slaw agent hire --company-id <company-id> --payload-json '{...}'
+pnpm slaw agent update <agent-id> --payload-json '{"title":"Senior Builder"}'
+pnpm slaw agent delete <agent-id> --yes
+pnpm slaw agent me
+pnpm slaw agent inbox
+pnpm slaw agent inbox-mine --user-id <board-user-id>
+pnpm slaw agent wake <agent-id-or-shortname> [--company-id <company-id>] [--reason "..."] [--payload '{"issueId":"..."}']
+pnpm slaw agent pause <agent-id>
+pnpm slaw agent resume <agent-id>
+pnpm slaw agent approve <agent-id>
+pnpm slaw agent terminate <agent-id>
+pnpm slaw agent heartbeat:invoke <agent-id>
+pnpm slaw agent claude-login <agent-id>
+pnpm slaw agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
 
 Agent configuration and runtime endpoints:
 
 ```sh
-pnpm paperclipai agent permissions:update <agent-id> --payload-json '{"canCreateAgents":true,"canAssignTasks":true}'
-pnpm paperclipai agent configuration <agent-id>
-pnpm paperclipai agent config-revisions <agent-id>
-pnpm paperclipai agent config-revision:get <agent-id> <revision-id>
-pnpm paperclipai agent config-revision:rollback <agent-id> <revision-id>
-pnpm paperclipai agent runtime-state <agent-id>
-pnpm paperclipai agent runtime-state:reset-session <agent-id> [--task-key <key>]
-pnpm paperclipai agent task-sessions <agent-id>
-pnpm paperclipai agent skills <agent-id>
-pnpm paperclipai agent skills:sync <agent-id> --desired-skills paperclip,github
-pnpm paperclipai agent instructions-path:update <agent-id> --payload-json '{"path":"/path/to/AGENTS.md"}'
-pnpm paperclipai agent instructions-bundle <agent-id>
-pnpm paperclipai agent instructions-bundle:update <agent-id> --payload-json '{"mode":"managed"}'
-pnpm paperclipai agent instructions-file:get <agent-id> --path AGENTS.md
-pnpm paperclipai agent instructions-file:put <agent-id> --path AGENTS.md --content-file ./AGENTS.md
-pnpm paperclipai agent instructions-file:delete <agent-id> --path AGENTS.md
+pnpm slaw agent permissions:update <agent-id> --payload-json '{"canCreateAgents":true,"canAssignTasks":true}'
+pnpm slaw agent configuration <agent-id>
+pnpm slaw agent config-revisions <agent-id>
+pnpm slaw agent config-revision:get <agent-id> <revision-id>
+pnpm slaw agent config-revision:rollback <agent-id> <revision-id>
+pnpm slaw agent runtime-state <agent-id>
+pnpm slaw agent runtime-state:reset-session <agent-id> [--task-key <key>]
+pnpm slaw agent task-sessions <agent-id>
+pnpm slaw agent skills <agent-id>
+pnpm slaw agent skills:sync <agent-id> --desired-skills slaw,github
+pnpm slaw agent instructions-path:update <agent-id> --payload-json '{"path":"/path/to/AGENTS.md"}'
+pnpm slaw agent instructions-bundle <agent-id>
+pnpm slaw agent instructions-bundle:update <agent-id> --payload-json '{"mode":"managed"}'
+pnpm slaw agent instructions-file:get <agent-id> --path AGENTS.md
+pnpm slaw agent instructions-file:put <agent-id> --path AGENTS.md --content-file ./AGENTS.md
+pnpm slaw agent instructions-file:delete <agent-id> --path AGENTS.md
 ```
 
-`agent local-cli` is the quickest way to run local Claude/Codex manually as a Paperclip agent:
+`agent local-cli` is the quickest way to run local Claude/Codex manually as a Slaw agent:
 
 - creates a new long-lived agent API key
-- installs missing Paperclip skills into `~/.codex/skills` and `~/.claude/skills`
-- prints `export ...` lines for `PAPERCLIP_API_URL`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_API_KEY`
+- installs missing Slaw skills into `~/.codex/skills` and `~/.claude/skills`
+- prints `export ...` lines for `SLAW_API_URL`, `SLAW_COMPANY_ID`, `SLAW_AGENT_ID`, and `SLAW_API_KEY`
 
 Example for shortname-based local setup:
 
 ```sh
-pnpm paperclipai agent local-cli codexcoder --company-id <company-id>
-pnpm paperclipai agent local-cli claudecoder --company-id <company-id>
+pnpm slaw agent local-cli codexcoder --company-id <company-id>
+pnpm slaw agent local-cli claudecoder --company-id <company-id>
 ```
 
 ## Token Commands
@@ -311,73 +311,73 @@ pnpm paperclipai agent local-cli claudecoder --company-id <company-id>
 Agent API keys are scoped to one company and one agent. Plaintext tokens are printed once at creation.
 
 ```sh
-pnpm paperclipai token agent create --company-id <company-id> --agent <agent-id-or-name> --name external-worker
-pnpm paperclipai token agent list --company-id <company-id> --agent <agent-id-or-name>
-pnpm paperclipai token agent revoke --company-id <company-id> --agent <agent-id-or-name> <key-id>
+pnpm slaw token agent create --company-id <company-id> --agent <agent-id-or-name> --name external-worker
+pnpm slaw token agent list --company-id <company-id> --agent <agent-id-or-name>
+pnpm slaw token agent revoke --company-id <company-id> --agent <agent-id-or-name> <key-id>
 ```
 
 Named board API keys use the board authorization model, support revocation and expiration metadata, and are audited server-side.
 
 ```sh
-pnpm paperclipai token board create --company-id <company-id> --name external-admin
-pnpm paperclipai token board create --name short-lived --ttl-days 7
-pnpm paperclipai token board list
-pnpm paperclipai token board revoke <key-id>
+pnpm slaw token board create --company-id <company-id> --name external-admin
+pnpm slaw token board create --name short-lived --ttl-days 7
+pnpm slaw token board list
+pnpm slaw token board revoke <key-id>
 ```
 
 ## Run Commands
 
-`paperclipai run` without a subcommand still bootstraps and starts a local Paperclip instance. The subcommands below inspect and control API heartbeat runs.
+`slaw run` without a subcommand still bootstraps and starts a local Slaw instance. The subcommands below inspect and control API heartbeat runs.
 
 ```sh
-pnpm paperclipai run list --company-id <company-id> [--agent-id <agent-id>] [--limit 50]
-pnpm paperclipai run live --company-id <company-id> [--limit 50] [--min-count 0]
-pnpm paperclipai run get <run-id>
-pnpm paperclipai run events <run-id> [--after-seq 0] [--limit 200]
-pnpm paperclipai run log <run-id> [--offset 0] [--limit-bytes 16384] [--text]
-pnpm paperclipai run cancel <run-id>
-pnpm paperclipai run issues <run-id>
-pnpm paperclipai run workspace-operations <run-id>
-pnpm paperclipai run workspace-log <operation-id> [--offset 0] [--limit-bytes 16384] [--text]
-pnpm paperclipai run watchdog-decision <run-id> --decision continue [--reason "..."]
+pnpm slaw run list --company-id <company-id> [--agent-id <agent-id>] [--limit 50]
+pnpm slaw run live --company-id <company-id> [--limit 50] [--min-count 0]
+pnpm slaw run get <run-id>
+pnpm slaw run events <run-id> [--after-seq 0] [--limit 200]
+pnpm slaw run log <run-id> [--offset 0] [--limit-bytes 16384] [--text]
+pnpm slaw run cancel <run-id>
+pnpm slaw run issues <run-id>
+pnpm slaw run workspace-operations <run-id>
+pnpm slaw run workspace-log <operation-id> [--offset 0] [--limit-bytes 16384] [--text]
+pnpm slaw run watchdog-decision <run-id> --decision continue [--reason "..."]
 ```
 
 ## Routine Commands
 
-`paperclipai routines disable-all` remains the local maintenance command. The singular `routine` group maps to the REST API.
+`slaw routines disable-all` remains the local maintenance command. The singular `routine` group maps to the REST API.
 
 ```sh
-pnpm paperclipai routine list --company-id <company-id> [--project-id <project-id>]
-pnpm paperclipai routine create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai routine get <routine-id>
-pnpm paperclipai routine update <routine-id> --payload-json '{...}'
-pnpm paperclipai routine revisions <routine-id>
-pnpm paperclipai routine revision:restore <routine-id> <revision-id>
-pnpm paperclipai routine runs <routine-id> [--limit 50]
-pnpm paperclipai routine run <routine-id> [--payload-json '{...}']
-pnpm paperclipai routine trigger:create <routine-id> --payload-json '{...}'
-pnpm paperclipai routine trigger:update <trigger-id> --payload-json '{...}'
-pnpm paperclipai routine trigger:delete <trigger-id>
-pnpm paperclipai routine trigger:rotate-secret <trigger-id>
-pnpm paperclipai routine trigger:fire <public-id> [--payload-json '{...}']
+pnpm slaw routine list --company-id <company-id> [--project-id <project-id>]
+pnpm slaw routine create --company-id <company-id> --payload-json '{...}'
+pnpm slaw routine get <routine-id>
+pnpm slaw routine update <routine-id> --payload-json '{...}'
+pnpm slaw routine revisions <routine-id>
+pnpm slaw routine revision:restore <routine-id> <revision-id>
+pnpm slaw routine runs <routine-id> [--limit 50]
+pnpm slaw routine run <routine-id> [--payload-json '{...}']
+pnpm slaw routine trigger:create <routine-id> --payload-json '{...}'
+pnpm slaw routine trigger:update <trigger-id> --payload-json '{...}'
+pnpm slaw routine trigger:delete <trigger-id>
+pnpm slaw routine trigger:rotate-secret <trigger-id>
+pnpm slaw routine trigger:fire <public-id> [--payload-json '{...}']
 ```
 
 ## Prompt Handoff
 
-Prompt handoff creates Paperclip work. It does not create a chat session.
+Prompt handoff creates Slaw work. It does not create a chat session.
 
 ```sh
-pnpm paperclipai agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
-pnpm paperclipai agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
-pnpm paperclipai agent prompt --profile my-agent "Prompt here"
-pnpm paperclipai board prompt --company-id <company-id> --agent <agent-name-or-id> "Prompt here"
+pnpm slaw agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
+pnpm slaw agent prompt --agent <agent-name-or-id> --api-key-env SLAW_API_KEY "Prompt here"
+pnpm slaw agent prompt --profile my-agent "Prompt here"
+pnpm slaw board prompt --company-id <company-id> --agent <agent-name-or-id> "Prompt here"
 ```
 
 By default the command creates a `todo` issue assigned to the target agent and wakes the agent. Use `--issue <issue-id>` to add a comment to existing work, and `--no-wake` to skip the wakeup.
 
 ## Skills Commands
 
-`paperclipai skills` covers three distinct operations:
+`slaw skills` covers three distinct operations:
 
 1. **Company install** — adds or updates a row in `company_skills` for the
    whole company. This is what `skills install`, `skills import`, `skills create`,
@@ -389,27 +389,27 @@ By default the command creates a `todo` issue assigned to the target agent and w
    with files on disk and reports an `AgentSkillSnapshot` (`skills agent list`).
    `skills agent sync` triggers this automatically after updating desired state.
 
-Required Paperclip runtime skills (heartbeat, etc.) remain server-enforced and
+Required Slaw runtime skills (heartbeat, etc.) remain server-enforced and
 are added on top of whatever the desired set names.
 
 ### Catalog (app-shipped skills)
 
-The Paperclip app ships a curated catalog under `@paperclipai/skills-catalog`.
+The Slaw app ships a curated catalog under `@slaw/skills-catalog`.
 Browse and inspect commands never mutate company state; `install` adds a catalog
 skill to the company library.
 
 ```sh
-pnpm paperclipai skills browse [--kind bundled|optional] [--category <slug>] [--query <text>]
-pnpm paperclipai skills search "<text>" [--kind bundled|optional] [--category <slug>]
-pnpm paperclipai skills inspect <catalog-id-or-key-or-slug>
-pnpm paperclipai skills install <catalog-id-or-key-or-slug> [--as <slug>] [--force] --company-id <company-id>
+pnpm slaw skills browse [--kind bundled|optional] [--category <slug>] [--query <text>]
+pnpm slaw skills search "<text>" [--kind bundled|optional] [--category <slug>]
+pnpm slaw skills inspect <catalog-id-or-key-or-slug>
+pnpm slaw skills install <catalog-id-or-key-or-slug> [--as <slug>] [--force] --company-id <company-id>
 ```
 
 Catalog semantics:
 
 - **Bundled** skills live in `packages/skills-catalog/catalog/bundled/<category>/<slug>`
   and are recommended defaults for most companies. They use canonical key
-  `paperclipai/bundled/<category>/<slug>`.
+  `slaw/bundled/<category>/<slug>`.
 - **Optional** skills live in `packages/skills-catalog/catalog/optional/<category>/<slug>`
   and are role-specific or domain-specific (browser, AWS ops, etc.). Same key
   shape with `optional` in place of `bundled`.
@@ -423,11 +423,11 @@ Catalog semantics:
 Examples:
 
 ```sh
-pnpm paperclipai skills browse --kind bundled --company-id <company-id>
-pnpm paperclipai skills search "pull request" --kind bundled
-pnpm paperclipai skills inspect github-pr-workflow
-pnpm paperclipai skills install github-pr-workflow --company-id <company-id>
-pnpm paperclipai skills install paperclipai:optional:browser:agent-browser --company-id <company-id>
+pnpm slaw skills browse --kind bundled --company-id <company-id>
+pnpm slaw skills search "pull request" --kind bundled
+pnpm slaw skills inspect github-pr-workflow
+pnpm slaw skills install github-pr-workflow --company-id <company-id>
+pnpm slaw skills install slaw:optional:browser:agent-browser --company-id <company-id>
 ```
 
 External GitHub, skills.sh, local-path, and URL sources still go through
@@ -436,18 +436,18 @@ External GitHub, skills.sh, local-path, and URL sources still go through
 ### Company library
 
 ```sh
-pnpm paperclipai skills list --company-id <company-id>
-pnpm paperclipai skills show <skill-id-or-key-or-slug> --company-id <company-id>
-pnpm paperclipai skills file <skill-id-or-key-or-slug> [--path SKILL.md] --company-id <company-id>
-pnpm paperclipai skills import <source> --company-id <company-id>
-pnpm paperclipai skills create --name "Review PRs" [--slug review-prs] [--description "..."] [--body-file SKILL.md] --company-id <company-id>
-pnpm paperclipai skills scan-projects [--project-id <id>...] [--workspace-id <id>...] --company-id <company-id>
-pnpm paperclipai skills check [skill-id-or-key-or-slug] --company-id <company-id>
-pnpm paperclipai skills update <skill-id-or-key-or-slug> [--force] --company-id <company-id>
-pnpm paperclipai skills update --all [--force] --company-id <company-id>
-pnpm paperclipai skills audit [skill-id-or-key-or-slug] --company-id <company-id>
-pnpm paperclipai skills reset <skill-id-or-key-or-slug> [--yes] [--force] --company-id <company-id>
-pnpm paperclipai skills remove <skill-id-or-key-or-slug> --yes --company-id <company-id>
+pnpm slaw skills list --company-id <company-id>
+pnpm slaw skills show <skill-id-or-key-or-slug> --company-id <company-id>
+pnpm slaw skills file <skill-id-or-key-or-slug> [--path SKILL.md] --company-id <company-id>
+pnpm slaw skills import <source> --company-id <company-id>
+pnpm slaw skills create --name "Review PRs" [--slug review-prs] [--description "..."] [--body-file SKILL.md] --company-id <company-id>
+pnpm slaw skills scan-projects [--project-id <id>...] [--workspace-id <id>...] --company-id <company-id>
+pnpm slaw skills check [skill-id-or-key-or-slug] --company-id <company-id>
+pnpm slaw skills update <skill-id-or-key-or-slug> [--force] --company-id <company-id>
+pnpm slaw skills update --all [--force] --company-id <company-id>
+pnpm slaw skills audit [skill-id-or-key-or-slug] --company-id <company-id>
+pnpm slaw skills reset <skill-id-or-key-or-slug> [--yes] [--force] --company-id <company-id>
+pnpm slaw skills remove <skill-id-or-key-or-slug> --yes --company-id <company-id>
 ```
 
 `skills import <source>` accepts a skills.sh URL, the equivalent
@@ -473,14 +473,14 @@ maintenance loop for catalog-installed skills:
 ### Agent attach
 
 ```sh
-pnpm paperclipai skills agent list <agent-id-or-shortname> --company-id <company-id>
-pnpm paperclipai skills agent sync <agent-id-or-shortname> --skill <skill-id-or-key-or-slug> [--skill <skill-id-or-key-or-slug>...] --company-id <company-id>
-pnpm paperclipai skills agent clear <agent-id-or-shortname> --yes --company-id <company-id>
+pnpm slaw skills agent list <agent-id-or-shortname> --company-id <company-id>
+pnpm slaw skills agent sync <agent-id-or-shortname> --skill <skill-id-or-key-or-slug> [--skill <skill-id-or-key-or-slug>...] --company-id <company-id>
+pnpm slaw skills agent clear <agent-id-or-shortname> --yes --company-id <company-id>
 ```
 
 `skills agent sync` replaces the agent's non-required desired skill set (it is
 not additive) and returns the resulting adapter `AgentSkillSnapshot`.
-`skills agent clear` sends an empty desired list. Required Paperclip skills are
+`skills agent clear` sends an empty desired list. Required Slaw skills are
 still enforced by the server in both cases.
 
 ### Notes
@@ -496,30 +496,30 @@ still enforced by the server in both cases.
 ## Secrets Commands
 
 ```sh
-pnpm paperclipai secrets list --company-id <company-id>
-pnpm paperclipai secrets declarations --company-id <company-id> [--include agents,projects] [--kind secret]
-pnpm paperclipai secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
-pnpm paperclipai secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
-pnpm paperclipai secrets doctor --company-id <company-id>
-pnpm paperclipai secrets provider-configs --company-id <company-id>
-pnpm paperclipai secrets provider-config:create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai secrets provider-config:discovery-preview --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai secrets provider-config:get <config-id>
-pnpm paperclipai secrets provider-config:update <config-id> --payload-json '{...}'
-pnpm paperclipai secrets provider-config:default <config-id>
-pnpm paperclipai secrets provider-config:health <config-id>
-pnpm paperclipai secrets provider-config:delete <config-id>
-pnpm paperclipai secrets remote-import:preview --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai secrets remote-import --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai secrets migrate-inline-env --company-id <company-id> [--apply]
+pnpm slaw secrets list --company-id <company-id>
+pnpm slaw secrets declarations --company-id <company-id> [--include agents,projects] [--kind secret]
+pnpm slaw secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+pnpm slaw secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+pnpm slaw secrets doctor --company-id <company-id>
+pnpm slaw secrets provider-configs --company-id <company-id>
+pnpm slaw secrets provider-config:create --company-id <company-id> --payload-json '{...}'
+pnpm slaw secrets provider-config:discovery-preview --company-id <company-id> --payload-json '{...}'
+pnpm slaw secrets provider-config:get <config-id>
+pnpm slaw secrets provider-config:update <config-id> --payload-json '{...}'
+pnpm slaw secrets provider-config:default <config-id>
+pnpm slaw secrets provider-config:health <config-id>
+pnpm slaw secrets provider-config:delete <config-id>
+pnpm slaw secrets remote-import:preview --company-id <company-id> --payload-json '{...}'
+pnpm slaw secrets remote-import --company-id <company-id> --payload-json '{...}'
+pnpm slaw secrets migrate-inline-env --company-id <company-id> [--apply]
 ```
 
 Secret listing and declarations never print secret values. `create` accepts
 `--value-env` so shell history does not capture the value. `link` records
-provider-owned references without copying the secret value into Paperclip.
+provider-owned references without copying the secret value into Slaw.
 For AWS-backed secrets, `secrets doctor` reports missing non-secret provider
 env and the expected AWS SDK runtime credential source; do not store AWS
-bootstrap credentials in Paperclip secrets.
+bootstrap credentials in Slaw secrets.
 
 Per-company provider vaults (multiple vault instances per provider, default
 vault selection, coming-soon GCP/Vault) can be configured from the board UI under
@@ -531,205 +531,205 @@ commands above. See the
 ## Approval Commands
 
 ```sh
-pnpm paperclipai approval list --company-id <company-id> [--status pending]
-pnpm paperclipai approval get <approval-id>
-pnpm paperclipai approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
-pnpm paperclipai approval approve <approval-id> [--decision-note "..."]
-pnpm paperclipai approval reject <approval-id> [--decision-note "..."]
-pnpm paperclipai approval request-revision <approval-id> [--decision-note "..."]
-pnpm paperclipai approval resubmit <approval-id> [--payload '{"...":"..."}']
-pnpm paperclipai approval comment <approval-id> --body "..."
+pnpm slaw approval list --company-id <company-id> [--status pending]
+pnpm slaw approval get <approval-id>
+pnpm slaw approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
+pnpm slaw approval approve <approval-id> [--decision-note "..."]
+pnpm slaw approval reject <approval-id> [--decision-note "..."]
+pnpm slaw approval request-revision <approval-id> [--decision-note "..."]
+pnpm slaw approval resubmit <approval-id> [--payload '{"...":"..."}']
+pnpm slaw approval comment <approval-id> --body "..."
 ```
 
 ## Activity Commands
 
 ```sh
-pnpm paperclipai activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
-pnpm paperclipai activity create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai activity issue <issue-id>
+pnpm slaw activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
+pnpm slaw activity create --company-id <company-id> --payload-json '{...}'
+pnpm slaw activity issue <issue-id>
 ```
 
 ## Dashboard Commands
 
 ```sh
-pnpm paperclipai dashboard get --company-id <company-id>
+pnpm slaw dashboard get --company-id <company-id>
 ```
 
 ## Org And Agent Config Commands
 
 ```sh
-pnpm paperclipai whoami
-pnpm paperclipai openapi
-pnpm paperclipai org get --company-id <company-id>
-pnpm paperclipai org svg --company-id <company-id> [--out org.svg]
-pnpm paperclipai org png --company-id <company-id> [--out org.png]
-pnpm paperclipai agent-config list --company-id <company-id>
+pnpm slaw whoami
+pnpm slaw openapi
+pnpm slaw org get --company-id <company-id>
+pnpm slaw org svg --company-id <company-id> [--out org.svg]
+pnpm slaw org png --company-id <company-id> [--out org.png]
+pnpm slaw agent-config list --company-id <company-id>
 ```
 
 ## Access, Profile, And Instance Commands
 
 ```sh
-pnpm paperclipai profile session
-pnpm paperclipai profile get
-pnpm paperclipai profile update --payload-json '{...}'
-pnpm paperclipai profile company-user <user-slug> --company-id <company-id>
-pnpm paperclipai invite list --company-id <company-id>
-pnpm paperclipai invite create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai invite revoke <invite-id>
-pnpm paperclipai invite show <token>
-pnpm paperclipai invite accept <token> [--payload-json '{...}']
-pnpm paperclipai invite onboarding:text <token>
-pnpm paperclipai join list --company-id <company-id> [--status pending_approval]
-pnpm paperclipai join approve <request-id> --company-id <company-id>
-pnpm paperclipai join reject <request-id> --company-id <company-id>
-pnpm paperclipai join claim-key <request-id> --claim-secret <secret>
-pnpm paperclipai member list --company-id <company-id>
-pnpm paperclipai member update <member-id> --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai member role-and-grants <member-id> --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai member permissions <member-id> --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai member archive <member-id> --company-id <company-id> [--payload-json '{...}']
-pnpm paperclipai admin user list [--query <text>]
-pnpm paperclipai admin user promote <user-id>
-pnpm paperclipai admin user demote <user-id>
-pnpm paperclipai admin user company-access <user-id>
-pnpm paperclipai admin user company-access:update <user-id> --payload-json '{...}'
+pnpm slaw profile session
+pnpm slaw profile get
+pnpm slaw profile update --payload-json '{...}'
+pnpm slaw profile company-user <user-slug> --company-id <company-id>
+pnpm slaw invite list --company-id <company-id>
+pnpm slaw invite create --company-id <company-id> --payload-json '{...}'
+pnpm slaw invite revoke <invite-id>
+pnpm slaw invite show <token>
+pnpm slaw invite accept <token> [--payload-json '{...}']
+pnpm slaw invite onboarding:text <token>
+pnpm slaw join list --company-id <company-id> [--status pending_approval]
+pnpm slaw join approve <request-id> --company-id <company-id>
+pnpm slaw join reject <request-id> --company-id <company-id>
+pnpm slaw join claim-key <request-id> --claim-secret <secret>
+pnpm slaw member list --company-id <company-id>
+pnpm slaw member update <member-id> --company-id <company-id> --payload-json '{...}'
+pnpm slaw member role-and-grants <member-id> --company-id <company-id> --payload-json '{...}'
+pnpm slaw member permissions <member-id> --company-id <company-id> --payload-json '{...}'
+pnpm slaw member archive <member-id> --company-id <company-id> [--payload-json '{...}']
+pnpm slaw admin user list [--query <text>]
+pnpm slaw admin user promote <user-id>
+pnpm slaw admin user demote <user-id>
+pnpm slaw admin user company-access <user-id>
+pnpm slaw admin user company-access:update <user-id> --payload-json '{...}'
 ```
 
 CLI auth challenge endpoints are also exposed for tooling that needs the raw challenge lifecycle:
 
 ```sh
-pnpm paperclipai auth challenge create --payload-json '{...}'
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> pnpm paperclipai auth challenge get <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> pnpm paperclipai auth challenge approve <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> pnpm paperclipai auth challenge cancel <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-pnpm paperclipai auth revoke-current
+pnpm slaw auth challenge create --payload-json '{...}'
+SLAW_CHALLENGE_SECRET=<challenge-secret> pnpm slaw auth challenge get <challenge-id> --token-env SLAW_CHALLENGE_SECRET
+SLAW_CHALLENGE_SECRET=<challenge-secret> pnpm slaw auth challenge approve <challenge-id> --token-env SLAW_CHALLENGE_SECRET
+SLAW_CHALLENGE_SECRET=<challenge-secret> pnpm slaw auth challenge cancel <challenge-id> --token-env SLAW_CHALLENGE_SECRET
+pnpm slaw auth revoke-current
 ```
 
 `--token <challenge-secret>` is still supported for compatibility, but `--token-env` avoids putting challenge secrets in shell history or process arguments.
 
 ```sh
-pnpm paperclipai instance scheduler-heartbeats
-pnpm paperclipai instance settings:general
-pnpm paperclipai instance settings:general:update --payload-json '{...}'
-pnpm paperclipai instance settings:experimental
-pnpm paperclipai instance settings:experimental:update --payload-json '{...}'
-pnpm paperclipai instance database-backup
-pnpm paperclipai sidebar preferences
-pnpm paperclipai sidebar preferences:update --payload-json '{...}'
-pnpm paperclipai sidebar project-preferences --company-id <company-id>
-pnpm paperclipai sidebar project-preferences:update --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai sidebar badges --company-id <company-id>
-pnpm paperclipai inbox dismissals --company-id <company-id>
-pnpm paperclipai inbox dismiss --company-id <company-id> --payload-json '{"itemKey":"run:<run-id>"}'
-pnpm paperclipai board-claim show <token>
-pnpm paperclipai board-claim claim <token> [--payload-json '{...}']
-pnpm paperclipai openclaw invite-prompt --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai available-skill list
-pnpm paperclipai available-skill index
-pnpm paperclipai available-skill get <skill-name>
-pnpm paperclipai llm agent-configuration
-pnpm paperclipai llm agent-configuration:adapter <adapter-type>
-pnpm paperclipai llm agent-icons
+pnpm slaw instance scheduler-heartbeats
+pnpm slaw instance settings:general
+pnpm slaw instance settings:general:update --payload-json '{...}'
+pnpm slaw instance settings:experimental
+pnpm slaw instance settings:experimental:update --payload-json '{...}'
+pnpm slaw instance database-backup
+pnpm slaw sidebar preferences
+pnpm slaw sidebar preferences:update --payload-json '{...}'
+pnpm slaw sidebar project-preferences --company-id <company-id>
+pnpm slaw sidebar project-preferences:update --company-id <company-id> --payload-json '{...}'
+pnpm slaw sidebar badges --company-id <company-id>
+pnpm slaw inbox dismissals --company-id <company-id>
+pnpm slaw inbox dismiss --company-id <company-id> --payload-json '{"itemKey":"run:<run-id>"}'
+pnpm slaw board-claim show <token>
+pnpm slaw board-claim claim <token> [--payload-json '{...}']
+pnpm slaw openclaw invite-prompt --company-id <company-id> --payload-json '{...}'
+pnpm slaw available-skill list
+pnpm slaw available-skill index
+pnpm slaw available-skill get <skill-name>
+pnpm slaw llm agent-configuration
+pnpm slaw llm agent-configuration:adapter <adapter-type>
+pnpm slaw llm agent-icons
 ```
 
 ## Adapter, Asset, And Skill Commands
 
 ```sh
-pnpm paperclipai adapter list
-pnpm paperclipai adapter install --payload-json '{"packageName":"@scope/adapter","version":"1.2.3"}'
-pnpm paperclipai adapter get <adapter-type>
-pnpm paperclipai adapter update <adapter-type> --payload-json '{"disabled":true}'
-pnpm paperclipai adapter override <adapter-type> --payload-json '{"paused":true}'
-pnpm paperclipai adapter reload <adapter-type>
-pnpm paperclipai adapter reinstall <adapter-type>
-pnpm paperclipai adapter delete <adapter-type>
-pnpm paperclipai adapter config-schema <adapter-type>
-pnpm paperclipai adapter ui-parser <adapter-type>
-pnpm paperclipai adapter models <adapter-type> --company-id <company-id> [--refresh] [--environment-id <id>]
-pnpm paperclipai adapter model-profiles <adapter-type> --company-id <company-id>
-pnpm paperclipai adapter detect-model <adapter-type> --company-id <company-id>
-pnpm paperclipai adapter test-environment <adapter-type> --company-id <company-id> --payload-json '{...}'
+pnpm slaw adapter list
+pnpm slaw adapter install --payload-json '{"packageName":"@scope/adapter","version":"1.2.3"}'
+pnpm slaw adapter get <adapter-type>
+pnpm slaw adapter update <adapter-type> --payload-json '{"disabled":true}'
+pnpm slaw adapter override <adapter-type> --payload-json '{"paused":true}'
+pnpm slaw adapter reload <adapter-type>
+pnpm slaw adapter reinstall <adapter-type>
+pnpm slaw adapter delete <adapter-type>
+pnpm slaw adapter config-schema <adapter-type>
+pnpm slaw adapter ui-parser <adapter-type>
+pnpm slaw adapter models <adapter-type> --company-id <company-id> [--refresh] [--environment-id <id>]
+pnpm slaw adapter model-profiles <adapter-type> --company-id <company-id>
+pnpm slaw adapter detect-model <adapter-type> --company-id <company-id>
+pnpm slaw adapter test-environment <adapter-type> --company-id <company-id> --payload-json '{...}'
 ```
 
 ```sh
-pnpm paperclipai asset image:upload --company-id <company-id> --file ./image.png [--namespace docs] [--alt "..."]
-pnpm paperclipai asset logo:upload --company-id <company-id> --file ./logo.svg
-pnpm paperclipai asset content <asset-id> --out ./asset.bin
+pnpm slaw asset image:upload --company-id <company-id> --file ./image.png [--namespace docs] [--alt "..."]
+pnpm slaw asset logo:upload --company-id <company-id> --file ./logo.svg
+pnpm slaw asset content <asset-id> --out ./asset.bin
 ```
 
 ```sh
-pnpm paperclipai skill list --company-id <company-id>
-pnpm paperclipai skill get <skill-id> --company-id <company-id>
-pnpm paperclipai skill file <skill-id> --company-id <company-id> [--path SKILL.md]
-pnpm paperclipai skill create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai skill file:update <skill-id> --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai skill import --company-id <company-id> --payload-json '{"source":"github:owner/repo/path"}'
-pnpm paperclipai skill scan-projects --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai skill update-status <skill-id> --company-id <company-id>
-pnpm paperclipai skill install-update <skill-id> --company-id <company-id>
-pnpm paperclipai skill delete <skill-id> --company-id <company-id>
+pnpm slaw skill list --company-id <company-id>
+pnpm slaw skill get <skill-id> --company-id <company-id>
+pnpm slaw skill file <skill-id> --company-id <company-id> [--path SKILL.md]
+pnpm slaw skill create --company-id <company-id> --payload-json '{...}'
+pnpm slaw skill file:update <skill-id> --company-id <company-id> --payload-json '{...}'
+pnpm slaw skill import --company-id <company-id> --payload-json '{"source":"github:owner/repo/path"}'
+pnpm slaw skill scan-projects --company-id <company-id> --payload-json '{...}'
+pnpm slaw skill update-status <skill-id> --company-id <company-id>
+pnpm slaw skill install-update <skill-id> --company-id <company-id>
+pnpm slaw skill delete <skill-id> --company-id <company-id>
 ```
 
 ## Cost, Finance, And Budget Commands
 
 ```sh
-pnpm paperclipai cost summary --company-id <company-id>
-pnpm paperclipai cost by-agent --company-id <company-id>
-pnpm paperclipai cost by-agent-model --company-id <company-id>
-pnpm paperclipai cost by-provider --company-id <company-id>
-pnpm paperclipai cost by-biller --company-id <company-id>
-pnpm paperclipai cost by-project --company-id <company-id>
-pnpm paperclipai cost window-spend --company-id <company-id>
-pnpm paperclipai cost quota-windows --company-id <company-id>
-pnpm paperclipai cost issue <issue-id>
-pnpm paperclipai cost event:create --company-id <company-id> --payload-json '{...}'
+pnpm slaw cost summary --company-id <company-id>
+pnpm slaw cost by-agent --company-id <company-id>
+pnpm slaw cost by-agent-model --company-id <company-id>
+pnpm slaw cost by-provider --company-id <company-id>
+pnpm slaw cost by-biller --company-id <company-id>
+pnpm slaw cost by-project --company-id <company-id>
+pnpm slaw cost window-spend --company-id <company-id>
+pnpm slaw cost quota-windows --company-id <company-id>
+pnpm slaw cost issue <issue-id>
+pnpm slaw cost event:create --company-id <company-id> --payload-json '{...}'
 ```
 
 ```sh
-pnpm paperclipai finance event:create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai finance events --company-id <company-id>
-pnpm paperclipai finance summary --company-id <company-id>
-pnpm paperclipai finance by-biller --company-id <company-id>
-pnpm paperclipai finance by-kind --company-id <company-id>
-pnpm paperclipai budget overview --company-id <company-id>
-pnpm paperclipai budget policy:upsert --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai budget company:update --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai budget agent:update <agent-id> --payload-json '{...}'
-pnpm paperclipai budget incident:resolve <incident-id> --company-id <company-id> [--payload-json '{...}']
+pnpm slaw finance event:create --company-id <company-id> --payload-json '{...}'
+pnpm slaw finance events --company-id <company-id>
+pnpm slaw finance summary --company-id <company-id>
+pnpm slaw finance by-biller --company-id <company-id>
+pnpm slaw finance by-kind --company-id <company-id>
+pnpm slaw budget overview --company-id <company-id>
+pnpm slaw budget policy:upsert --company-id <company-id> --payload-json '{...}'
+pnpm slaw budget company:update --company-id <company-id> --payload-json '{...}'
+pnpm slaw budget agent:update <agent-id> --payload-json '{...}'
+pnpm slaw budget incident:resolve <incident-id> --company-id <company-id> [--payload-json '{...}']
 ```
 
 ## Workspace And Environment Commands
 
 ```sh
-pnpm paperclipai workspace list --company-id <company-id>
-pnpm paperclipai workspace get <execution-workspace-id>
-pnpm paperclipai workspace close-readiness <execution-workspace-id>
-pnpm paperclipai workspace operations <execution-workspace-id>
-pnpm paperclipai workspace update <execution-workspace-id> --payload-json '{...}'
-pnpm paperclipai workspace runtime-service <execution-workspace-id> start --payload-json '{...}'
-pnpm paperclipai workspace runtime-command <execution-workspace-id> run --payload-json '{...}'
+pnpm slaw workspace list --company-id <company-id>
+pnpm slaw workspace get <execution-workspace-id>
+pnpm slaw workspace close-readiness <execution-workspace-id>
+pnpm slaw workspace operations <execution-workspace-id>
+pnpm slaw workspace update <execution-workspace-id> --payload-json '{...}'
+pnpm slaw workspace runtime-service <execution-workspace-id> start --payload-json '{...}'
+pnpm slaw workspace runtime-command <execution-workspace-id> run --payload-json '{...}'
 ```
 
 ```sh
-pnpm paperclipai environment list --company-id <company-id>
-pnpm paperclipai environment capabilities --company-id <company-id>
-pnpm paperclipai environment create --company-id <company-id> --payload-json '{...}'
-pnpm paperclipai environment get <environment-id>
-pnpm paperclipai environment leases <environment-id>
-pnpm paperclipai environment lease <lease-id>
-pnpm paperclipai environment update <environment-id> --payload-json '{...}'
-pnpm paperclipai environment delete <environment-id>
-pnpm paperclipai environment probe <environment-id>
-pnpm paperclipai environment probe-config --company-id <company-id> --payload-json '{...}'
+pnpm slaw environment list --company-id <company-id>
+pnpm slaw environment capabilities --company-id <company-id>
+pnpm slaw environment create --company-id <company-id> --payload-json '{...}'
+pnpm slaw environment get <environment-id>
+pnpm slaw environment leases <environment-id>
+pnpm slaw environment lease <lease-id>
+pnpm slaw environment update <environment-id> --payload-json '{...}'
+pnpm slaw environment delete <environment-id>
+pnpm slaw environment probe <environment-id>
+pnpm slaw environment probe-config --company-id <company-id> --payload-json '{...}'
 ```
 
 ```sh
-pnpm paperclipai project-workspace list <project-id>
-pnpm paperclipai project-workspace create <project-id> --payload-json '{...}'
-pnpm paperclipai project-workspace update <project-id> <workspace-id> --payload-json '{...}'
-pnpm paperclipai project-workspace delete <project-id> <workspace-id>
-pnpm paperclipai project-workspace runtime-service <project-id> <workspace-id> restart --payload-json '{...}'
-pnpm paperclipai project-workspace runtime-command <project-id> <workspace-id> run --payload-json '{...}'
+pnpm slaw project-workspace list <project-id>
+pnpm slaw project-workspace create <project-id> --payload-json '{...}'
+pnpm slaw project-workspace update <project-id> <workspace-id> --payload-json '{...}'
+pnpm slaw project-workspace delete <project-id> <workspace-id>
+pnpm slaw project-workspace runtime-service <project-id> <workspace-id> restart --payload-json '{...}'
+pnpm slaw project-workspace runtime-command <project-id> <workspace-id> run --payload-json '{...}'
 ```
 
 ## Plugin Commands
@@ -737,36 +737,36 @@ pnpm paperclipai project-workspace runtime-command <project-id> <workspace-id> r
 Existing plugin lifecycle commands remain available: `plugin init`, `list`, `install`, `uninstall`, `enable`, `disable`, `inspect`, and `examples`.
 
 ```sh
-pnpm paperclipai plugin ui-contributions
-pnpm paperclipai plugin tools
-pnpm paperclipai plugin tool:execute --payload-json '{...}'
-pnpm paperclipai plugin health <plugin-id>
-pnpm paperclipai plugin logs <plugin-id>
-pnpm paperclipai plugin upgrade <plugin-id>
-pnpm paperclipai plugin config <plugin-id>
-pnpm paperclipai plugin config:set <plugin-id> --payload-json '{"configJson":{...}}'
-pnpm paperclipai plugin config:test <plugin-id> --payload-json '{"configJson":{...}}'
-pnpm paperclipai plugin jobs <plugin-id>
-pnpm paperclipai plugin job:runs <plugin-id> <job-id>
-pnpm paperclipai plugin job:trigger <plugin-id> <job-id> [--payload-json '{...}']
-pnpm paperclipai plugin webhook <plugin-id> <endpoint-key> [--payload-json '{...}']
-pnpm paperclipai plugin dashboard <plugin-id>
-pnpm paperclipai plugin bridge:data <plugin-id> --payload-json '{...}'
-pnpm paperclipai plugin bridge:action <plugin-id> --payload-json '{...}'
-pnpm paperclipai plugin bridge:stream <plugin-id> <channel> [--duration-ms 10000]
-pnpm paperclipai plugin data <plugin-id> <key> --payload-json '{...}'
-pnpm paperclipai plugin action <plugin-id> <key> --payload-json '{...}'
-pnpm paperclipai plugin local-folders <plugin-id> --company-id <company-id>
-pnpm paperclipai plugin local-folder:status <plugin-id> <folder-key> --company-id <company-id>
-pnpm paperclipai plugin local-folder:validate <plugin-id> <folder-key> --company-id <company-id> [--payload-json '{...}']
-pnpm paperclipai plugin local-folder:set <plugin-id> <folder-key> --company-id <company-id> --payload-json '{...}'
+pnpm slaw plugin ui-contributions
+pnpm slaw plugin tools
+pnpm slaw plugin tool:execute --payload-json '{...}'
+pnpm slaw plugin health <plugin-id>
+pnpm slaw plugin logs <plugin-id>
+pnpm slaw plugin upgrade <plugin-id>
+pnpm slaw plugin config <plugin-id>
+pnpm slaw plugin config:set <plugin-id> --payload-json '{"configJson":{...}}'
+pnpm slaw plugin config:test <plugin-id> --payload-json '{"configJson":{...}}'
+pnpm slaw plugin jobs <plugin-id>
+pnpm slaw plugin job:runs <plugin-id> <job-id>
+pnpm slaw plugin job:trigger <plugin-id> <job-id> [--payload-json '{...}']
+pnpm slaw plugin webhook <plugin-id> <endpoint-key> [--payload-json '{...}']
+pnpm slaw plugin dashboard <plugin-id>
+pnpm slaw plugin bridge:data <plugin-id> --payload-json '{...}'
+pnpm slaw plugin bridge:action <plugin-id> --payload-json '{...}'
+pnpm slaw plugin bridge:stream <plugin-id> <channel> [--duration-ms 10000]
+pnpm slaw plugin data <plugin-id> <key> --payload-json '{...}'
+pnpm slaw plugin action <plugin-id> <key> --payload-json '{...}'
+pnpm slaw plugin local-folders <plugin-id> --company-id <company-id>
+pnpm slaw plugin local-folder:status <plugin-id> <folder-key> --company-id <company-id>
+pnpm slaw plugin local-folder:validate <plugin-id> <folder-key> --company-id <company-id> [--payload-json '{...}']
+pnpm slaw plugin local-folder:set <plugin-id> <folder-key> --company-id <company-id> --payload-json '{...}'
 ```
 
 Feedback traces can be fetched directly by ID when automating export workflows:
 
 ```sh
-pnpm paperclipai feedback trace <trace-id>
-pnpm paperclipai feedback bundle <trace-id>
+pnpm slaw feedback trace <trace-id>
+pnpm slaw feedback bundle <trace-id>
 ```
 
 ## Heartbeat Command
@@ -774,17 +774,17 @@ pnpm paperclipai feedback bundle <trace-id>
 `heartbeat run` now also supports context/api-key options and uses the shared client stack:
 
 ```sh
-pnpm paperclipai heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
+pnpm slaw heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
 ```
 
 ## Local Storage Defaults
 
-Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` chooses the home directory and `PAPERCLIP_INSTANCE_ID` chooses the instance.
+Local Slaw data lives under the selected instance root. `SLAW_HOME` chooses the home directory and `SLAW_INSTANCE_ID` chooses the instance.
 
 ```text
-~/.paperclip/                                     # PAPERCLIP_HOME
+~/.slaw/                                     # SLAW_HOME
 └── instances/
-    └── default/                                  # instance root (PAPERCLIP_INSTANCE_ID)
+    └── default/                                  # instance root (SLAW_INSTANCE_ID)
         ├── config.json                           # runtime config
         ├── .env                                  # instance env file
         ├── db/                                   # embedded PostgreSQL data
@@ -802,16 +802,16 @@ Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` ch
 
 Default paths for the canonical install:
 
-- config: `~/.paperclip/instances/default/config.json`
-- embedded db: `~/.paperclip/instances/default/db`
-- logs: `~/.paperclip/instances/default/logs`
-- storage: `~/.paperclip/instances/default/data/storage`
-- secrets key: `~/.paperclip/instances/default/secrets/master.key`
+- config: `~/.slaw/instances/default/config.json`
+- embedded db: `~/.slaw/instances/default/db`
+- logs: `~/.slaw/instances/default/logs`
+- storage: `~/.slaw/instances/default/data/storage`
+- secrets key: `~/.slaw/instances/default/secrets/master.key`
 
 Override base home or instance with env vars:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+SLAW_HOME=/custom/home SLAW_INSTANCE_ID=dev pnpm slaw run
 ```
 
 ## Storage Configuration
@@ -819,7 +819,7 @@ PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
 Configure storage provider and settings:
 
 ```sh
-pnpm paperclipai configure --section storage
+pnpm slaw configure --section storage
 ```
 
 Supported providers:

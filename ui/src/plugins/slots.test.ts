@@ -39,7 +39,7 @@ describe("plugin slot export registration", () => {
       {
         Page: () => null,
         RouteSidebar: () => null,
-        webComponentTag: "paperclip-widget",
+        webComponentTag: "slaw-widget",
         metadata: { ignored: true },
         count: 1,
         default: () => null,
@@ -78,10 +78,10 @@ describe("plugin slot export registration", () => {
     expect(container.textContent).toContain("Content Machine: Content");
 
     flushSync(() => {
-      registerPluginWebComponent("content-machine", "ContentMachineRouteSidebar", "paperclip-test-sidebar");
+      registerPluginWebComponent("content-machine", "ContentMachineRouteSidebar", "slaw-test-sidebar");
     });
 
     expect(container.textContent).not.toContain("Content Machine: Content");
-    expect(container.querySelector("paperclip-test-sidebar")).not.toBeNull();
+    expect(container.querySelector("slaw-test-sidebar")).not.toBeNull();
   });
 });

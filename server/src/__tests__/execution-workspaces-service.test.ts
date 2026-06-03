@@ -13,7 +13,7 @@ import {
   issues,
   projectWorkspaces,
   projects,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -132,10 +132,10 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createTempRepo() {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-execution-workspace-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slaw-execution-workspace-"));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
-  await runGit(repoRoot, ["config", "user.email", "test@paperclip.local"]);
+  await runGit(repoRoot, ["config", "user.name", "Slaw Test"]);
+  await runGit(repoRoot, ["config", "user.email", "test@slaw.local"]);
   await fs.writeFile(path.join(repoRoot, "README.md"), "# Test repo\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
   await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
@@ -150,7 +150,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
   const tempDirs = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-execution-workspaces-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("slaw-execution-workspaces-service-");
     db = createDb(tempDb.connectionString);
     svc = executionWorkspaceService(db);
   }, 20_000);
@@ -180,7 +180,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
@@ -200,7 +200,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       name: "Primary",
       sourceType: "local_path",
       isPrimary: true,
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/slaw-primary",
     });
     await db.insert(executionWorkspaces).values({
       id: executionWorkspaceId,
@@ -212,7 +212,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       name: "Shared workspace",
       status: "active",
       providerType: "local_fs",
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/slaw-primary",
       metadata: {
         config: {
           teardownCommand: "bash ./scripts/teardown.sh",
@@ -255,7 +255,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
@@ -352,7 +352,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
@@ -376,7 +376,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         status: "idle",
         providerType: "git_worktree",
         cwd: "/tmp/open-workspace",
-        branchName: "paperclip/open",
+        branchName: "slaw/open",
       },
       {
         id: sharedWorkspaceId,
@@ -415,7 +415,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         mode: "isolated_workspace",
         status: "idle",
         cwd: "/tmp/open-workspace",
-        branchName: "paperclip/open",
+        branchName: "slaw/open",
       }),
     ]);
   });
@@ -423,11 +423,11 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
   it("warns about dirty and unmerged git worktrees and reports cleanup actions", async () => {
     const repoRoot = await createTempRepo();
     tempDirs.add(repoRoot);
-    const worktreePath = path.join(path.dirname(repoRoot), `paperclip-worktree-${randomUUID()}`);
+    const worktreePath = path.join(path.dirname(repoRoot), `slaw-worktree-${randomUUID()}`);
     tempDirs.add(worktreePath);
 
-    await runGit(repoRoot, ["branch", "paperclip-close-check"]);
-    await runGit(repoRoot, ["worktree", "add", worktreePath, "paperclip-close-check"]);
+    await runGit(repoRoot, ["branch", "slaw-close-check"]);
+    await runGit(repoRoot, ["worktree", "add", worktreePath, "slaw-close-check"]);
     await fs.writeFile(path.join(worktreePath, "feature.txt"), "hello\n", "utf8");
     await runGit(worktreePath, ["add", "feature.txt"]);
     await runGit(worktreePath, ["commit", "-m", "Feature commit"]);
@@ -440,7 +440,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
@@ -479,7 +479,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       providerType: "git_worktree",
       cwd: worktreePath,
       providerRef: worktreePath,
-      branchName: "paperclip-close-check",
+      branchName: "slaw-close-check",
       baseRef: "main",
       metadata: {
         createdByRuntime: true,
@@ -499,7 +499,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       isDestructiveCloseAllowed: true,
       git: {
         workspacePath: worktreePath,
-        branchName: "paperclip-close-check",
+        branchName: "slaw-close-check",
         baseRef: "main",
         createdByRuntime: true,
         hasDirtyTrackedFiles: false,

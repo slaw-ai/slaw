@@ -2,11 +2,11 @@
 
 Status: User-facing guide
 Last updated: 2026-03-26
-Audience: Operators setting up and running agents in Paperclip
+Audience: Operators setting up and running agents in Slaw
 
 ## 1. What this system does
 
-Agents in Paperclip do not run continuously.  
+Agents in Slaw do not run continuously.  
 They run in **heartbeats**: short execution windows triggered by a wakeup.
 
 Each heartbeat:
@@ -39,16 +39,16 @@ Built-in adapters:
 - `opencode_local`: runs your local `opencode` CLI
 - `cursor`: runs Cursor in background mode
 - `pi_local`: runs an embedded Pi agent locally
-- `hermes_local`: runs your local `hermes` CLI (`hermes-paperclip-adapter`)
+- `hermes_local`: runs your local `hermes` CLI (`hermes-slaw-adapter`)
 - `openclaw_gateway`: connects to an OpenClaw gateway endpoint
 - `process`: generic shell command adapter
 - `http`: calls an external HTTP endpoint
 
 External plugin adapters (install via the adapter manager or API):
 
-- `droid_local`: runs your local Factory Droid CLI (`@henkey/droid-paperclip-adapter`)
+- `droid_local`: runs your local Factory Droid CLI (`@henkey/droid-slaw-adapter`)
 
-For local CLI adapters (`claude_local`, `codex_local`, `opencode_local`, `hermes_local`, `droid_local`), Paperclip assumes the CLI is already installed and authenticated on the host machine.
+For local CLI adapters (`claude_local`, `codex_local`, `opencode_local`, `hermes_local`, `droid_local`), Slaw assumes the CLI is already installed and authenticated on the host machine.
 
 ## 3.2 Runtime behavior
 
@@ -82,7 +82,7 @@ Templates support variables like `{{agent.id}}`, `{{agent.name}}`, and run conte
 
 ## 4. Session resume behavior
 
-Paperclip stores session IDs for resumable adapters.
+Slaw stores session IDs for resumable adapters.
 
 - Next heartbeat reuses the saved session automatically.
 - This gives continuity across heartbeats.
@@ -107,7 +107,7 @@ In local/dev setups, full logs are stored on disk under the configured run-log p
 
 ## 6. Live updates in the UI
 
-Paperclip pushes runtime/activity updates to the browser in real time.
+Slaw pushes runtime/activity updates to the browser in real time.
 
 You should see live changes for:
 
@@ -161,7 +161,7 @@ Typical failure causes:
 
 Claude-specific note:
 
-- If `ANTHROPIC_API_KEY` is set in adapter env or host environment, Claude uses API-key auth instead of subscription login. Paperclip surfaces this as a warning in environment tests, not a hard error.
+- If `ANTHROPIC_API_KEY` is set in adapter env or host environment, Claude uses API-key auth instead of subscription login. Slaw surfaces this as a warning in environment tests, not a hard error.
 
 ## 9. Security and risk notes
 

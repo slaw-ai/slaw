@@ -3,7 +3,7 @@ title: Database
 summary: Embedded PGlite vs Docker Postgres vs hosted
 ---
 
-Paperclip uses PostgreSQL via Drizzle ORM. There are three ways to run the database.
+Slaw uses PostgreSQL via Drizzle ORM. There are three ways to run the database.
 
 ## 1. Embedded PostgreSQL (Default)
 
@@ -15,12 +15,12 @@ pnpm dev
 
 On first start, the server:
 
-1. Creates `~/.paperclip/instances/default/db/` for storage
-2. Ensures the `paperclip` database exists
+1. Creates `~/.slaw/instances/default/db/` for storage
+2. Ensures the `slaw` database exists
 3. Runs migrations automatically
 4. Starts serving requests
 
-Data persists across restarts. To reset: `rm -rf ~/.paperclip/instances/default/db`.
+Data persists across restarts. To reset: `rm -rf ~/.slaw/instances/default/db`.
 
 The Docker quickstart also uses embedded PostgreSQL by default.
 
@@ -36,13 +36,13 @@ This starts PostgreSQL 17 on `localhost:5432`. Set the connection string:
 
 ```sh
 cp .env.example .env
-# DATABASE_URL=postgres://paperclip:paperclip@localhost:5432/paperclip
+# DATABASE_URL=postgres://slaw:slaw@localhost:5432/slaw
 ```
 
 Push the schema:
 
 ```sh
-DATABASE_URL=postgres://paperclip:paperclip@localhost:5432/paperclip \
+DATABASE_URL=postgres://slaw:slaw@localhost:5432/slaw \
   npx drizzle-kit push
 ```
 

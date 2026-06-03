@@ -10,9 +10,9 @@ import type {
   IssueLabel,
   Project,
   WorkspaceRuntimeService,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@slaw/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueProperties } from "./IssueProperties";
 
@@ -207,7 +207,7 @@ function createRuntimeService(overrides: Partial<WorkspaceRuntimeService> = {}):
     lifecycle: "shared",
     reuseKey: null,
     command: "pnpm dev",
-    cwd: "/tmp/paperclip",
+    cwd: "/tmp/slaw",
     port: 62475,
     url: "http://127.0.0.1:62475",
     provider: "local_process",
@@ -236,12 +236,12 @@ function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): 
     strategyType: "git_worktree",
     name: "PAP-1 workspace",
     status: "active",
-    cwd: "/tmp/paperclip/PAP-1",
+    cwd: "/tmp/slaw/PAP-1",
     repoUrl: null,
     baseRef: "master",
     branchName: "pap-1-workspace",
     providerType: "git_worktree",
-    providerRef: "/tmp/paperclip/PAP-1",
+    providerRef: "/tmp/slaw/PAP-1",
     derivedFromExecutionWorkspaceId: null,
     lastUsedAt: new Date("2026-04-06T12:04:00.000Z"),
     openedAt: new Date("2026-04-06T12:01:00.000Z"),
@@ -264,7 +264,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
     projectId: "project-1",
     name: "Main",
     sourceType: "local_path" as const,
-    cwd: "/tmp/paperclip",
+    cwd: "/tmp/slaw",
     repoUrl: null,
     repoRef: null,
     defaultRef: "master",
@@ -304,9 +304,9 @@ function createProject(overrides: Partial<Project> = {}): Project {
       repoRef: null,
       defaultRef: "master",
       repoName: null,
-      localFolder: "/tmp/paperclip",
-      managedFolder: "/tmp/paperclip",
-      effectiveLocalFolder: "/tmp/paperclip",
+      localFolder: "/tmp/slaw",
+      managedFolder: "/tmp/slaw",
+      effectiveLocalFolder: "/tmp/slaw",
       origin: "local_folder",
     },
     workspaces: [primaryWorkspace],

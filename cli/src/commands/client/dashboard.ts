@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { DashboardSummary } from "@paperclipai/shared";
+import type { DashboardSummary } from "@slaw/shared";
 import {
   addCommonClientOptions,
   apiPath,

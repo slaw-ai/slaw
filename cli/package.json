@@ -1,13 +1,13 @@
 {
-  "name": "paperclipai",
+  "name": "slaw",
   "version": "0.3.1",
-  "description": "Paperclip CLI — orchestrate AI agent teams to run a business",
+  "description": "Slaw CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "paperclipai": "./dist/index.js"
+    "slaw": "./dist/index.js"
   },
   "keywords": [
-    "paperclip",
+    "slaw",
     "ai",
     "agents",
     "orchestration",
@@ -16,12 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/slaw/slaw",
     "directory": "cli"
   },
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/slaw/slaw",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/slaw/slaw/issues"
   },
   "files": [
     "dist"
@@ -37,20 +37,20 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
-    "@paperclipai/adapter-acpx-local": "workspace:*",
-    "@paperclipai/adapter-claude-local": "workspace:*",
-    "@paperclipai/adapter-codex-local": "workspace:*",
-    "@paperclipai/adapter-cursor-cloud": "workspace:*",
-    "@paperclipai/adapter-cursor-local": "workspace:*",
-    "@paperclipai/adapter-gemini-local": "workspace:*",
-    "@paperclipai/adapter-grok-local": "workspace:*",
-    "@paperclipai/adapter-opencode-local": "workspace:*",
-    "@paperclipai/adapter-pi-local": "workspace:*",
-    "@paperclipai/adapter-openclaw-gateway": "workspace:*",
-    "@paperclipai/adapter-utils": "workspace:*",
-    "@paperclipai/db": "workspace:*",
-    "@paperclipai/server": "workspace:*",
-    "@paperclipai/shared": "workspace:*",
+    "@slaw/adapter-acpx-local": "workspace:*",
+    "@slaw/adapter-claude-local": "workspace:*",
+    "@slaw/adapter-codex-local": "workspace:*",
+    "@slaw/adapter-cursor-cloud": "workspace:*",
+    "@slaw/adapter-cursor-local": "workspace:*",
+    "@slaw/adapter-gemini-local": "workspace:*",
+    "@slaw/adapter-grok-local": "workspace:*",
+    "@slaw/adapter-opencode-local": "workspace:*",
+    "@slaw/adapter-pi-local": "workspace:*",
+    "@slaw/adapter-openclaw-gateway": "workspace:*",
+    "@slaw/adapter-utils": "workspace:*",
+    "@slaw/db": "workspace:*",
+    "@slaw/server": "workspace:*",
+    "@slaw/shared": "workspace:*",
     "drizzle-orm": "0.45.2",
     "dotenv": "^17.0.1",
     "commander": "^13.1.0",

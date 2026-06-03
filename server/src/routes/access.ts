@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import type { Request } from "express";
 import { and, desc, eq, gt, inArray, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import {
   assets,
   agentApiKeys,
@@ -27,7 +27,7 @@ import {
   invites,
   joinRequests,
   principalPermissionGrants,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   acceptInviteSchema,
   createCliAuthChallengeSchema,
@@ -46,8 +46,8 @@ import {
   updateUserCompanyAccessSchema,
   PERMISSION_KEYS,
   isUuidLike,
-} from "@paperclipai/shared";
-import type { DeploymentExposure, DeploymentMode, HumanCompanyMembershipRole, PermissionKey } from "@paperclipai/shared";
+} from "@slaw/shared";
+import type { DeploymentExposure, DeploymentMode, HumanCompanyMembershipRole, PermissionKey } from "@slaw/shared";
 import {
   forbidden,
   conflict,
@@ -166,8 +166,8 @@ function isSafeSkillName(skillName: string): boolean {
   return /^[a-z0-9][a-z0-9._-]*$/.test(skillName);
 }
 
-/** Resolve the Paperclip repo skills directory (built-in / managed skills). */
-function resolvePaperclipSkillsDir(): string | null {
+/** Resolve the Slaw repo skills directory (built-in / managed skills). */
+function resolveSlawSkillsDir(): string | null {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
     path.resolve(moduleDir, "../../skills"),         // published
@@ -206,7 +206,7 @@ function parseSkillFrontmatter(markdown: string): { description: string } {
 interface AvailableSkill {
   name: string;
   description: string;
-  isPaperclipManaged: boolean;
+  isSlawManaged: boolean;
 }
 
 /** Discover all available Claude Code skills from CLAUDE_HOME or ~/.claude. */
@@ -220,14 +220,14 @@ function resolveClaudeSkillsDir(): string {
 
 function listAvailableSkills(): AvailableSkill[] {
   const claudeSkillsDir = resolveClaudeSkillsDir();
-  const paperclipSkillsDir = resolvePaperclipSkillsDir();
+  const slawSkillsDir = resolveSlawSkillsDir();
 
-  // Build set of Paperclip-managed skill names
-  const paperclipSkillNames = new Set<string>();
-  if (paperclipSkillsDir) {
+  // Build set of Slaw-managed skill names
+  const slawSkillNames = new Set<string>();
+  if (slawSkillsDir) {
     try {
-      for (const entry of fs.readdirSync(paperclipSkillsDir, { withFileTypes: true })) {
-        if (entry.isDirectory()) paperclipSkillNames.add(entry.name);
+      for (const entry of fs.readdirSync(slawSkillsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) slawSkillNames.add(entry.name);
       }
     } catch { /* skip */ }
   }
@@ -248,17 +248,17 @@ function listAvailableSkills(): AvailableSkill[] {
       skills.push({
         name: entry.name,
         description,
-        isPaperclipManaged: paperclipSkillNames.has(entry.name),
+        isSlawManaged: slawSkillNames.has(entry.name),
       });
     }
   } catch { /* Claude skills directory doesn't exist */ }
 
-  if (paperclipSkillsDir) {
+  if (slawSkillsDir) {
     const existingNames = new Set(skills.map((skill) => skill.name));
     try {
-      for (const entry of fs.readdirSync(paperclipSkillsDir, { withFileTypes: true })) {
+      for (const entry of fs.readdirSync(slawSkillsDir, { withFileTypes: true })) {
         if (!entry.isDirectory() || entry.name.startsWith(".") || existingNames.has(entry.name)) continue;
-        const skillMdPath = path.join(paperclipSkillsDir, entry.name, "SKILL.md");
+        const skillMdPath = path.join(slawSkillsDir, entry.name, "SKILL.md");
         let description = "";
         try {
           const md = fs.readFileSync(skillMdPath, "utf8");
@@ -267,10 +267,10 @@ function listAvailableSkills(): AvailableSkill[] {
         skills.push({
           name: entry.name,
           description,
-          isPaperclipManaged: true,
+          isSlawManaged: true,
         });
       }
-    } catch { /* skip Paperclip skills directory */ }
+    } catch { /* skip Slaw skills directory */ }
   }
 
   skills.sort((a, b) => a.name.localeCompare(b.name));
@@ -489,7 +489,7 @@ function generateEd25519PrivateKeyPem(): string {
 export function buildJoinDefaultsPayloadForAccept(input: {
   adapterType: string | null;
   defaultsPayload: unknown;
-  paperclipApiUrl?: unknown;
+  slawApiUrl?: unknown;
   inboundOpenClawAuthHeader?: string | null;
   inboundOpenClawTokenHeader?: string | null;
 }): unknown {
@@ -501,9 +501,9 @@ export function buildJoinDefaultsPayloadForAccept(input: {
     ? { ...(input.defaultsPayload as Record<string, unknown>) }
     : ({} as Record<string, unknown>);
 
-  if (!nonEmptyTrimmedString(merged.paperclipApiUrl)) {
-    const legacyPaperclipApiUrl = nonEmptyTrimmedString(input.paperclipApiUrl);
-    if (legacyPaperclipApiUrl) merged.paperclipApiUrl = legacyPaperclipApiUrl;
+  if (!nonEmptyTrimmedString(merged.slawApiUrl)) {
+    const legacySlawApiUrl = nonEmptyTrimmedString(input.slawApiUrl);
+    if (legacySlawApiUrl) merged.slawApiUrl = legacySlawApiUrl;
   }
   const mergedHeaders = normalizeHeaderMap(merged.headers) ?? {};
 
@@ -645,8 +645,8 @@ function summarizeOpenClawGatewayDefaultsForLog(defaultsPayload: unknown) {
     present: Boolean(defaults),
     keys: defaults ? Object.keys(defaults).sort() : [],
     url: defaults ? nonEmptyTrimmedString(defaults.url) : null,
-    paperclipApiUrl: defaults
-      ? nonEmptyTrimmedString(defaults.paperclipApiUrl)
+    slawApiUrl: defaults
+      ? nonEmptyTrimmedString(defaults.slawApiUrl)
       : null,
     headerKeys: headers ? Object.keys(headers).sort() : [],
     sessionKeyStrategy: defaults
@@ -883,35 +883,35 @@ export function normalizeAgentDefaultsForJoin(input: {
     }
   }
 
-  const rawPaperclipApiUrl =
-    typeof defaults.paperclipApiUrl === "string"
-      ? defaults.paperclipApiUrl.trim()
+  const rawSlawApiUrl =
+    typeof defaults.slawApiUrl === "string"
+      ? defaults.slawApiUrl.trim()
       : "";
-  if (rawPaperclipApiUrl) {
+  if (rawSlawApiUrl) {
     try {
-      const parsedPaperclipApiUrl = new URL(rawPaperclipApiUrl);
+      const parsedSlawApiUrl = new URL(rawSlawApiUrl);
       if (
-        parsedPaperclipApiUrl.protocol !== "http:" &&
-        parsedPaperclipApiUrl.protocol !== "https:"
+        parsedSlawApiUrl.protocol !== "http:" &&
+        parsedSlawApiUrl.protocol !== "https:"
       ) {
         diagnostics.push({
-          code: "openclaw_gateway_paperclip_api_url_protocol",
+          code: "openclaw_gateway_slaw_api_url_protocol",
           level: "warn",
-          message: `paperclipApiUrl must use http:// or https:// (got ${parsedPaperclipApiUrl.protocol}).`
+          message: `slawApiUrl must use http:// or https:// (got ${parsedSlawApiUrl.protocol}).`
         });
       } else {
-        normalized.paperclipApiUrl = parsedPaperclipApiUrl.toString();
+        normalized.slawApiUrl = parsedSlawApiUrl.toString();
         diagnostics.push({
-          code: "openclaw_gateway_paperclip_api_url_configured",
+          code: "openclaw_gateway_slaw_api_url_configured",
           level: "info",
-          message: `paperclipApiUrl set to ${parsedPaperclipApiUrl.toString()}`
+          message: `slawApiUrl set to ${parsedSlawApiUrl.toString()}`
         });
       }
     } catch {
       diagnostics.push({
-        code: "openclaw_gateway_paperclip_api_url_invalid",
+        code: "openclaw_gateway_slaw_api_url_invalid",
         level: "warn",
-        message: `Invalid paperclipApiUrl: ${rawPaperclipApiUrl}`
+        message: `Invalid slawApiUrl: ${rawSlawApiUrl}`
       });
     }
   }
@@ -1458,7 +1458,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
       code: "openclaw_onboarding_api_loopback",
       level: "warn",
       message:
-        "Onboarding URL resolves to loopback hostname. Remote OpenClaw agents cannot reach localhost on your Paperclip host.",
+        "Onboarding URL resolves to loopback hostname. Remote OpenClaw agents cannot reach localhost on your Slaw host.",
       hint: "Use a reachable hostname/IP (for example Tailscale hostname, Docker host alias, or public domain)."
     });
   }
@@ -1471,7 +1471,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
     diagnostics.push({
       code: "openclaw_onboarding_private_loopback_bind",
       level: "warn",
-      message: "Paperclip is bound to loopback in authenticated/private mode.",
+      message: "Slaw is bound to loopback in authenticated/private mode.",
       hint: "Use a reachable private bind mode such as `pnpm dev --bind lan` or `pnpm dev --bind tailnet` for private-network onboarding."
     });
   }
@@ -1488,7 +1488,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
       code: "openclaw_onboarding_private_host_not_allowed",
       level: "warn",
       message: `Onboarding host "${apiHost}" is not in allowed hostnames for authenticated/private mode.`,
-      hint: `Run pnpm paperclipai allowed-hostname ${apiHost}`
+      hint: `Run pnpm slaw allowed-hostname ${apiHost}`
     });
   }
 
@@ -1553,7 +1553,7 @@ function buildInviteOnboardingManifest(
   }
 ) {
   const baseUrl = requestBaseUrl(req);
-  const skillPath = `/api/invites/${token}/skills/paperclip`;
+  const skillPath = `/api/invites/${token}/skills/slaw`;
   const skillUrl = baseUrl ? `${baseUrl}${skillPath}` : skillPath;
   const registrationEndpointPath = `/api/invites/${token}/accept`;
   const registrationEndpointUrl = baseUrl
@@ -1585,7 +1585,7 @@ function buildInviteOnboardingManifest(
     ),
     onboarding: {
       instructions:
-        "Join as an external Paperclip agent, save your one-time claim secret, wait for board approval, then claim your API key. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable. OpenClaw Gateway agents must use adapterType='openclaw_gateway', set agentDefaultsPayload.url to a ws:// or wss:// gateway endpoint, and include agentDefaultsPayload.headers.x-openclaw-token.",
+        "Join as an external Slaw agent, save your one-time claim secret, wait for board approval, then claim your API key. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable. OpenClaw Gateway agents must use adapterType='openclaw_gateway', set agentDefaultsPayload.url to a ws:// or wss:// gateway endpoint, and include agentDefaultsPayload.headers.x-openclaw-token.",
       inviteMessage: extractInviteMessage(invite),
       recommendedAdapterType: null,
       requiredFields: {
@@ -1620,8 +1620,8 @@ function buildInviteOnboardingManifest(
         guidance:
           opts.deploymentMode === "authenticated" &&
           opts.deploymentExposure === "private"
-            ? "If OpenClaw runs on another machine, ensure the Paperclip hostname is reachable and allowed via `pnpm paperclipai allowed-hostname <host>`."
-            : "Ensure OpenClaw can reach this Paperclip API base URL for invite, claim, and skill bootstrap calls."
+            ? "If OpenClaw runs on another machine, ensure the Slaw hostname is reachable and allowed via `pnpm slaw allowed-hostname <host>`."
+            : "Ensure OpenClaw can reach this Slaw API base URL for invite, claim, and skill bootstrap calls."
       },
       textInstructions: {
         path: onboardingTextPath,
@@ -1629,10 +1629,10 @@ function buildInviteOnboardingManifest(
         contentType: "text/plain"
       },
       skill: {
-        name: "paperclip",
+        name: "slaw",
         path: skillPath,
         url: skillUrl,
-        installPath: "runtime-specific Paperclip skill location"
+        installPath: "runtime-specific Slaw skill location"
       }
     }
   };
@@ -1683,7 +1683,7 @@ export function buildInviteOnboardingTextDocument(
   };
 
   appendBlock(`
-    # Paperclip Agent Onboarding
+    # Slaw Agent Onboarding
 
     This document is meant to be readable by both humans and agents.
 
@@ -1707,9 +1707,9 @@ export function buildInviteOnboardingTextDocument(
   appendBlock(`
     ## Step 0
 
-    Decide which Paperclip adapter type matches your runtime.
+    Decide which Slaw adapter type matches your runtime.
 
-    Use adapterType only when there is a matching Paperclip adapter. Put runtime-specific settings in agentDefaultsPayload.
+    Use adapterType only when there is a matching Slaw adapter. Put runtime-specific settings in agentDefaultsPayload.
 
     ## Step 1: Submit agent join request
     ${onboarding.registrationEndpoint.method} ${
@@ -1733,7 +1733,7 @@ export function buildInviteOnboardingTextDocument(
       "capabilities": "OpenClaw gateway agent",
       "agentDefaultsPayload": {
         "url": "wss://your-openclaw-gateway.example",
-        "paperclipApiUrl": "https://paperclip-hostname-your-agent-can-reach:3100",
+        "slawApiUrl": "https://slaw-hostname-your-agent-can-reach:3100",
         "headers": { "x-openclaw-token": "replace-me" },
         "waitTimeoutMs": 120000,
         "sessionKeyStrategy": "issue",
@@ -1750,7 +1750,7 @@ export function buildInviteOnboardingTextDocument(
     - claimApiKeyPath
 
     ## Step 2: Wait for board approval
-    The board approves the join request in Paperclip before key claim is allowed.
+    The board approves the join request in Slaw before key claim is allowed.
 
     ## Step 3: Claim API key (one-time)
     ${
@@ -1762,14 +1762,14 @@ export function buildInviteOnboardingTextDocument(
       "claimSecret": "<one-time-claim-secret>"
     }
 
-    On successful claim, save the full JSON response somewhere private for your runtime and set PAPERCLIP_API_KEY and PAPERCLIP_API_URL for future Paperclip API calls.
+    On successful claim, save the full JSON response somewhere private for your runtime and set SLAW_API_KEY and SLAW_API_URL for future Slaw API calls.
 
     Important:
     - claim secrets expire
     - claim secrets are single-use
     - claim fails before board approval
 
-    ## Step 4: Install Paperclip skill
+    ## Step 4: Install Slaw skill
     GET ${onboarding.skill.url}
     Install path: ${onboarding.skill.installPath}
 
@@ -1781,7 +1781,7 @@ export function buildInviteOnboardingTextDocument(
     ## Connectivity guidance
     ${
       onboarding.connectivity?.guidance ??
-      "Ensure Paperclip is reachable from your OpenClaw runtime."
+      "Ensure Slaw is reachable from your OpenClaw runtime."
     }
   `);
 
@@ -1794,7 +1794,7 @@ export function buildInviteOnboardingTextDocument(
     : [];
 
   if (connectionCandidates.length > 0) {
-    lines.push("## Suggested Paperclip base URLs to try");
+    lines.push("## Suggested Slaw base URLs to try");
     for (const candidate of connectionCandidates) {
       lines.push(`- ${candidate}`);
     }
@@ -1802,12 +1802,12 @@ export function buildInviteOnboardingTextDocument(
 
       Test each candidate with:
       - GET <candidate>/api/health
-      - set the first reachable candidate as agentDefaultsPayload.paperclipApiUrl when submitting your join request
+      - set the first reachable candidate as agentDefaultsPayload.slawApiUrl when submitting your join request
 
       If none are reachable: ask your human operator for a reachable hostname/address and help them update network configuration.
       For authenticated/private mode, they may need:
-      - pnpm paperclipai allowed-hostname <host>
-      - then restart Paperclip and retry onboarding.
+      - pnpm slaw allowed-hostname <host>
+      - then restart Slaw and retry onboarding.
     `);
   }
 
@@ -1926,7 +1926,7 @@ function toUserProfile(
 }
 
 async function resolveActorEmail(db: Db, req: Request): Promise<string | null> {
-  if (isLocalImplicit(req)) return "local@paperclip.local";
+  if (isLocalImplicit(req)) return "local@slaw.local";
   const userId = req.actor.userId;
   if (!userId) return null;
   const user = await db
@@ -3037,18 +3037,18 @@ export function accessRoutes(
     assertAuthenticated(req);
     res.json({
       skills: [
-        { name: "paperclip", path: "/api/skills/paperclip" },
+        { name: "slaw", path: "/api/skills/slaw" },
         {
           name: "para-memory-files",
           path: "/api/skills/para-memory-files"
         },
         {
-          name: "paperclip-create-agent",
-          path: "/api/skills/paperclip-create-agent"
+          name: "slaw-create-agent",
+          path: "/api/skills/slaw-create-agent"
         },
         {
-          name: "paperclip-converting-plans-to-tasks",
-          path: "/api/skills/paperclip-converting-plans-to-tasks"
+          name: "slaw-converting-plans-to-tasks",
+          path: "/api/skills/slaw-converting-plans-to-tasks"
         }
       ]
     });
@@ -3314,8 +3314,8 @@ export function accessRoutes(
     res.json({
       skills: [
         {
-          name: "paperclip",
-          path: `/api/invites/${token}/skills/paperclip`,
+          name: "slaw",
+          path: `/api/invites/${token}/skills/slaw`,
         },
       ],
     });
@@ -3334,7 +3334,7 @@ export function accessRoutes(
     }
 
     const skillName = (req.params.skillName as string).trim().toLowerCase();
-    if (skillName !== "paperclip") throw notFound("Skill not found");
+    if (skillName !== "slaw") throw notFound("Skill not found");
     const markdown = readSkillMarkdown(skillName);
     if (!markdown) throw notFound("Skill not found");
     res.type("text/markdown").send(markdown);
@@ -3539,7 +3539,7 @@ export function accessRoutes(
           ? buildJoinDefaultsPayloadForAccept({
               adapterType,
               defaultsPayload: replayMergedDefaults,
-              paperclipApiUrl: req.body.paperclipApiUrl ?? null,
+              slawApiUrl: req.body.slawApiUrl ?? null,
               inboundOpenClawAuthHeader: req.header("x-openclaw-auth") ?? null,
               inboundOpenClawTokenHeader: req.header("x-openclaw-token") ?? null
             })
@@ -3746,10 +3746,10 @@ export function accessRoutes(
         if (expectedDefaults.url && !persistedDefaults.url)
           missingPersistedFields.push("url");
         if (
-          expectedDefaults.paperclipApiUrl &&
-          !persistedDefaults.paperclipApiUrl
+          expectedDefaults.slawApiUrl &&
+          !persistedDefaults.slawApiUrl
         ) {
-          missingPersistedFields.push("paperclipApiUrl");
+          missingPersistedFields.push("slawApiUrl");
         }
         if (expectedDefaults.gatewayToken && !persistedDefaults.gatewayToken) {
           missingPersistedFields.push("headers.x-openclaw-token");

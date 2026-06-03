@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import {
   catalogSkillListQuerySchema,
   companySkillCreateSchema,
@@ -9,8 +9,8 @@ import {
   companySkillInstallUpdateSchema,
   companySkillProjectScanRequestSchema,
   companySkillResetSchema,
-} from "@paperclipai/shared";
-import { trackSkillImported } from "@paperclipai/shared/telemetry";
+} from "@slaw/shared";
+import { trackSkillImported } from "@slaw/shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { accessService, agentService, companySkillService, logActivity } from "../services/index.js";
 import { getCatalogSkillOrThrow, listCatalogSkills, readCatalogSkillFile } from "../services/skills-catalog.js";

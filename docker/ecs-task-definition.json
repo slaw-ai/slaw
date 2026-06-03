@@ -1,15 +1,15 @@
 {
-  "family": "paperclip-server",
+  "family": "slaw-server",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "2048",
   "memory": "4096",
-  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/paperclip-ecs-execution",
-  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/paperclip-ecs-task",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/slaw-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/slaw-ecs-task",
   "containerDefinitions": [
     {
-      "name": "paperclip-server",
-      "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/paperclip-server:latest",
+      "name": "slaw-server",
+      "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/slaw-server:latest",
       "essential": true,
       "portMappings": [
         {
@@ -22,41 +22,41 @@
         { "name": "HOST", "value": "0.0.0.0" },
         { "name": "PORT", "value": "3100" },
         { "name": "SERVE_UI", "value": "true" },
-        { "name": "PAPERCLIP_HOME", "value": "/paperclip" },
-        { "name": "PAPERCLIP_INSTANCE_ID", "value": "default" },
-        { "name": "PAPERCLIP_CONFIG", "value": "/paperclip/instances/default/config.json" },
-        { "name": "PAPERCLIP_DEPLOYMENT_MODE", "value": "authenticated" },
-        { "name": "PAPERCLIP_DEPLOYMENT_EXPOSURE", "value": "public" },
-        { "name": "PAPERCLIP_PUBLIC_URL", "value": "https://<DOMAIN>" },
-        { "name": "PAPERCLIP_MIGRATION_AUTO_APPLY", "value": "true" },
+        { "name": "SLAW_HOME", "value": "/slaw" },
+        { "name": "SLAW_INSTANCE_ID", "value": "default" },
+        { "name": "SLAW_CONFIG", "value": "/slaw/instances/default/config.json" },
+        { "name": "SLAW_DEPLOYMENT_MODE", "value": "authenticated" },
+        { "name": "SLAW_DEPLOYMENT_EXPOSURE", "value": "public" },
+        { "name": "SLAW_PUBLIC_URL", "value": "https://<DOMAIN>" },
+        { "name": "SLAW_MIGRATION_AUTO_APPLY", "value": "true" },
         { "name": "HEARTBEAT_SCHEDULER_ENABLED", "value": "true" }
       ],
       "secrets": [
         {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:paperclip/database-url"
+          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:slaw/database-url"
         },
         {
           "name": "BETTER_AUTH_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:paperclip/better-auth-secret"
+          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:slaw/better-auth-secret"
         },
         {
           "name": "ANTHROPIC_API_KEY",
-          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:paperclip/anthropic-api-key"
+          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:slaw/anthropic-api-key"
         },
         {
           "name": "OPENAI_API_KEY",
-          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:paperclip/openai-api-key"
+          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:slaw/openai-api-key"
         },
         {
           "name": "GITHUB_TOKEN",
-          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:paperclip/github-token"
+          "valueFrom": "arn:aws:secretsmanager:<REGION>:<ACCOUNT_ID>:secret:slaw/github-token"
         }
       ],
       "mountPoints": [
         {
-          "sourceVolume": "paperclip-data",
-          "containerPath": "/paperclip",
+          "sourceVolume": "slaw-data",
+          "containerPath": "/slaw",
           "readOnly": false
         }
       ],
@@ -70,7 +70,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/paperclip",
+          "awslogs-group": "/ecs/slaw",
           "awslogs-region": "<REGION>",
           "awslogs-stream-prefix": "server"
         }
@@ -79,7 +79,7 @@
   ],
   "volumes": [
     {
-      "name": "paperclip-data",
+      "name": "slaw-data",
       "efsVolumeConfiguration": {
         "fileSystemId": "<EFS_ID>",
         "rootDirectory": "/",

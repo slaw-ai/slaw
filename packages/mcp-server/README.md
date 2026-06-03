@@ -1,30 +1,30 @@
-# Paperclip MCP Server
+# Slaw MCP Server
 
-Model Context Protocol server for Paperclip.
+Model Context Protocol server for Slaw.
 
-This package is a thin MCP wrapper over the existing Paperclip REST API. It does
+This package is a thin MCP wrapper over the existing Slaw REST API. It does
 not talk to the database directly and it does not reimplement business logic.
 
 ## Authentication
 
 The server reads its configuration from environment variables:
 
-- `PAPERCLIP_API_URL` - Paperclip base URL, for example `http://localhost:3100`
-- `PAPERCLIP_API_KEY` - bearer token used for `/api` requests
-- `PAPERCLIP_COMPANY_ID` - optional default company for company-scoped tools
-- `PAPERCLIP_AGENT_ID` - optional default agent for checkout helpers
-- `PAPERCLIP_RUN_ID` - optional run id forwarded on mutating requests
+- `SLAW_API_URL` - Slaw base URL, for example `http://localhost:3100`
+- `SLAW_API_KEY` - bearer token used for `/api` requests
+- `SLAW_COMPANY_ID` - optional default company for company-scoped tools
+- `SLAW_AGENT_ID` - optional default agent for checkout helpers
+- `SLAW_RUN_ID` - optional run id forwarded on mutating requests
 
 ## Usage
 
 ```sh
-npx -y @paperclipai/mcp-server
+npx -y @slaw/mcp-server
 ```
 
 Or locally in this repo:
 
 ```sh
-pnpm --filter @paperclipai/mcp-server build
+pnpm --filter @slaw/mcp-server build
 node packages/mcp-server/dist/stdio.js
 ```
 
@@ -32,52 +32,52 @@ node packages/mcp-server/dist/stdio.js
 
 Read tools:
 
-- `paperclipMe`
-- `paperclipInboxLite`
-- `paperclipListAgents`
-- `paperclipGetAgent`
-- `paperclipListIssues`
-- `paperclipGetIssue`
-- `paperclipGetHeartbeatContext`
-- `paperclipListComments`
-- `paperclipGetComment`
-- `paperclipListIssueApprovals`
-- `paperclipListDocuments`
-- `paperclipGetDocument`
-- `paperclipListDocumentRevisions`
-- `paperclipListProjects`
-- `paperclipGetProject`
-- `paperclipGetIssueWorkspaceRuntime`
-- `paperclipWaitForIssueWorkspaceService`
-- `paperclipListGoals`
-- `paperclipGetGoal`
-- `paperclipListApprovals`
-- `paperclipGetApproval`
-- `paperclipGetApprovalIssues`
-- `paperclipListApprovalComments`
+- `slawMe`
+- `slawInboxLite`
+- `slawListAgents`
+- `slawGetAgent`
+- `slawListIssues`
+- `slawGetIssue`
+- `slawGetHeartbeatContext`
+- `slawListComments`
+- `slawGetComment`
+- `slawListIssueApprovals`
+- `slawListDocuments`
+- `slawGetDocument`
+- `slawListDocumentRevisions`
+- `slawListProjects`
+- `slawGetProject`
+- `slawGetIssueWorkspaceRuntime`
+- `slawWaitForIssueWorkspaceService`
+- `slawListGoals`
+- `slawGetGoal`
+- `slawListApprovals`
+- `slawGetApproval`
+- `slawGetApprovalIssues`
+- `slawListApprovalComments`
 
 Write tools:
 
-- `paperclipCreateIssue`
-- `paperclipUpdateIssue`
-- `paperclipCheckoutIssue`
-- `paperclipReleaseIssue`
-- `paperclipAddComment`
-- `paperclipSuggestTasks`
-- `paperclipAskUserQuestions`
-- `paperclipRequestConfirmation`
-- `paperclipUpsertIssueDocument`
-- `paperclipRestoreIssueDocumentRevision`
-- `paperclipControlIssueWorkspaceServices`
-- `paperclipCreateApproval`
-- `paperclipLinkIssueApproval`
-- `paperclipUnlinkIssueApproval`
-- `paperclipApprovalDecision`
-- `paperclipAddApprovalComment`
+- `slawCreateIssue`
+- `slawUpdateIssue`
+- `slawCheckoutIssue`
+- `slawReleaseIssue`
+- `slawAddComment`
+- `slawSuggestTasks`
+- `slawAskUserQuestions`
+- `slawRequestConfirmation`
+- `slawUpsertIssueDocument`
+- `slawRestoreIssueDocumentRevision`
+- `slawControlIssueWorkspaceServices`
+- `slawCreateApproval`
+- `slawLinkIssueApproval`
+- `slawUnlinkIssueApproval`
+- `slawApprovalDecision`
+- `slawAddApprovalComment`
 
 Escape hatch:
 
-- `paperclipApiRequest`
+- `slawApiRequest`
 
-`paperclipApiRequest` is limited to paths under `/api` and JSON bodies. It is
+`slawApiRequest` is limited to paths under `/api` and JSON bodies. It is
 meant for endpoints that do not yet have a dedicated MCP tool.

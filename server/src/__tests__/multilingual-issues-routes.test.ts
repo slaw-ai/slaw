@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { companies, createDb } from "@paperclipai/db";
+import { companies, createDb } from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -51,7 +51,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
   ].join("\n");
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-multilingual-issues-");
+    tempDb = await startEmbeddedPostgresTestDatabase("slaw-multilingual-issues-");
     db = createDb(tempDb.connectionString);
     companyId = randomUUID();
     app = createApp(companyId);

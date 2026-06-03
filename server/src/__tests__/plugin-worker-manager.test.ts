@@ -1,14 +1,14 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+import type { SlawPluginManifestV1 } from "@slaw/shared";
 import {
   createHostClientHandlers,
   JsonRpcCallError,
   PLUGIN_RPC_ERROR_CODES,
   type HostServices,
   type HostToWorkerMethods,
-} from "@paperclipai/plugin-sdk";
+} from "@slaw/plugin-sdk";
 import {
   appendStderrExcerpt,
   createPluginWorkerHandle,
@@ -23,13 +23,13 @@ const INVOCATION_SCOPE_WORKER_ENTRYPOINT = path.join(
 );
 const TERMINATED_WORKER_ENTRYPOINT = path.join(FIXTURES_DIR, "plugin-worker-terminated.cjs");
 
-const TEST_MANIFEST: PaperclipPluginManifestV1 = {
+const TEST_MANIFEST: SlawPluginManifestV1 = {
   id: "test.plugin",
   apiVersion: 1,
   version: "1.0.0",
   displayName: "Test plugin",
   description: "Test plugin",
-  author: "Paperclip",
+  author: "Slaw",
   categories: ["automation"],
   capabilities: [],
   entrypoints: { worker: "dist/worker.js" },

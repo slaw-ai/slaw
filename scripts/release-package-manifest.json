@@ -1,132 +1,132 @@
 [
   {
     "dir": "packages/adapter-utils",
-    "name": "@paperclipai/adapter-utils",
+    "name": "@slaw/adapter-utils",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/acpx-local",
-    "name": "@paperclipai/adapter-acpx-local",
+    "name": "@slaw/adapter-acpx-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/claude-local",
-    "name": "@paperclipai/adapter-claude-local",
+    "name": "@slaw/adapter-claude-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/codex-local",
-    "name": "@paperclipai/adapter-codex-local",
+    "name": "@slaw/adapter-codex-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/cursor-cloud",
-    "name": "@paperclipai/adapter-cursor-cloud",
+    "name": "@slaw/adapter-cursor-cloud",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/cursor-local",
-    "name": "@paperclipai/adapter-cursor-local",
+    "name": "@slaw/adapter-cursor-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/gemini-local",
-    "name": "@paperclipai/adapter-gemini-local",
+    "name": "@slaw/adapter-gemini-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/grok-local",
-    "name": "@paperclipai/adapter-grok-local",
+    "name": "@slaw/adapter-grok-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/opencode-local",
-    "name": "@paperclipai/adapter-opencode-local",
+    "name": "@slaw/adapter-opencode-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/pi-local",
-    "name": "@paperclipai/adapter-pi-local",
+    "name": "@slaw/adapter-pi-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/openclaw-gateway",
-    "name": "@paperclipai/adapter-openclaw-gateway",
+    "name": "@slaw/adapter-openclaw-gateway",
     "publishFromCi": true
   },
   {
     "dir": "packages/shared",
-    "name": "@paperclipai/shared",
+    "name": "@slaw/shared",
     "publishFromCi": true
   },
   {
     "dir": "packages/skills-catalog",
-    "name": "@paperclipai/skills-catalog",
+    "name": "@slaw/skills-catalog",
     "publishFromCi": false
   },
   {
     "dir": "packages/db",
-    "name": "@paperclipai/db",
+    "name": "@slaw/db",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sdk",
-    "name": "@paperclipai/plugin-sdk",
+    "name": "@slaw/plugin-sdk",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/plugin-workspace-diff",
-    "name": "@paperclipai/plugin-workspace-diff",
+    "name": "@slaw/plugin-workspace-diff",
     "publishFromCi": false
   },
   {
     "dir": "server",
-    "name": "@paperclipai/server",
+    "name": "@slaw/server",
     "publishFromCi": true
   },
   {
     "dir": "cli",
-    "name": "paperclipai",
+    "name": "slaw",
     "publishFromCi": true
   },
   {
     "dir": "packages/mcp-server",
-    "name": "@paperclipai/mcp-server",
+    "name": "@slaw/mcp-server",
     "publishFromCi": true
   },
   {
-    "dir": "packages/plugins/create-paperclip-plugin",
-    "name": "@paperclipai/create-paperclip-plugin",
+    "dir": "packages/plugins/create-slaw-plugin",
+    "name": "@slaw/create-slaw-plugin",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/cloudflare",
-    "name": "@paperclipai/plugin-cloudflare-sandbox",
+    "name": "@slaw/plugin-cloudflare-sandbox",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/daytona",
-    "name": "@paperclipai/plugin-daytona",
+    "name": "@slaw/plugin-daytona",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/exe-dev",
-    "name": "@paperclipai/plugin-exe-dev",
+    "name": "@slaw/plugin-exe-dev",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/e2b",
-    "name": "@paperclipai/plugin-e2b",
+    "name": "@slaw/plugin-e2b",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/modal",
-    "name": "@paperclipai/plugin-modal",
+    "name": "@slaw/plugin-modal",
     "publishFromCi": true
   },
   {
     "dir": "ui",
-    "name": "@paperclipai/ui",
+    "name": "@slaw/ui",
     "publishFromCi": true
   }
 ]

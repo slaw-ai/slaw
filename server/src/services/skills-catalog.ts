@@ -6,7 +6,7 @@ import type {
   CatalogSkill,
   CatalogSkillFileDetail,
   CatalogSkillListQuery,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { HttpError, conflict, notFound } from "../errors.js";
 import { normalizePortablePath } from "./portable-path.js";
 
@@ -29,7 +29,7 @@ let cachedCatalogManifest: {
 function loadCatalogManifest(): CatalogManifestFile {
   if (!existsSync(catalogManifestPath)) {
     throw new Error(
-      `Skills catalog manifest not found at ${catalogManifestPath}. Run pnpm --filter @paperclipai/skills-catalog build:manifest.`,
+      `Skills catalog manifest not found at ${catalogManifestPath}. Run pnpm --filter @slaw/skills-catalog build:manifest.`,
     );
   }
   return JSON.parse(readFileSync(catalogManifestPath, "utf8")) as CatalogManifestFile;
@@ -38,7 +38,7 @@ function loadCatalogManifest(): CatalogManifestFile {
 function getCatalogManifest() {
   if (!existsSync(catalogManifestPath)) {
     throw new Error(
-      `Skills catalog manifest not found at ${catalogManifestPath}. Run pnpm --filter @paperclipai/skills-catalog build:manifest.`,
+      `Skills catalog manifest not found at ${catalogManifestPath}. Run pnpm --filter @slaw/skills-catalog build:manifest.`,
     );
   }
   const stats = statSync(catalogManifestPath);

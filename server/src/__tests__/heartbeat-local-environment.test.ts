@@ -7,7 +7,7 @@ import {
   createDb,
   environmentLeases,
   environments,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -94,7 +94,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
     });
@@ -136,7 +136,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
     expect(leases[0]?.releasedAt).not.toBeNull();
 
     const context = finished?.contextSnapshot as Record<string, unknown>;
-    expect(context.paperclipEnvironment).toMatchObject({
+    expect(context.slawEnvironment).toMatchObject({
       id: localRows[0]?.id,
       name: "Local",
       driver: "local",

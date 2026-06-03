@@ -22,7 +22,7 @@ import type {
   PreviewIssueTreeControl,
   ReleaseIssueTreeHold,
   UpsertIssueDocument,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { api } from "./client";
 
 export type IssueUpdateResponse = Issue & {

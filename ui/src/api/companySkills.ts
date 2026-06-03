@@ -13,7 +13,7 @@ import type {
   CompanySkillProjectScanRequest,
   CompanySkillProjectScanResult,
   CompanySkillUpdateStatus,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { api } from "./client";
 
 export interface CatalogListQuery {

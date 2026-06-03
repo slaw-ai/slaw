@@ -42,12 +42,12 @@ import { fileURLToPath } from "node:url";
 
 import type {
   AskUserQuestionsInteraction,
-  PaperclipPluginManifestV1,
+  SlawPluginManifestV1,
   RequestConfirmationInteraction,
   SuggestTasksInteraction,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 
-import type { PaperclipPlugin } from "./define-plugin.js";
+import type { SlawPlugin } from "./define-plugin.js";
 import type {
   PluginApiRequestInput,
   PluginHealthDiagnostics,
@@ -125,7 +125,7 @@ export interface WorkerRpcHostOptions {
    *
    * The worker entrypoint should import its plugin and pass it here.
    */
-  plugin: PaperclipPlugin;
+  plugin: SlawPlugin;
 
   /**
    * Input stream to read JSON-RPC messages from.
@@ -228,7 +228,7 @@ export interface RunWorkerOptions {
  * ```
  */
 export function runWorker(
-  plugin: PaperclipPlugin,
+  plugin: SlawPlugin,
   moduleUrl: string,
   options?: RunWorkerOptions,
 ): WorkerRpcHost | void {
@@ -258,7 +258,7 @@ export function runWorker(
  * ```ts
  * // worker-bootstrap.ts
  * import plugin from "./worker.js";
- * import { startWorkerRpcHost } from "@paperclipai/plugin-sdk";
+ * import { startWorkerRpcHost } from "@slaw/plugin-sdk";
  *
  * startWorkerRpcHost({ plugin });
  * ```
@@ -281,7 +281,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
 
   let running = true;
   let initialized = false;
-  let manifest: PaperclipPluginManifestV1 | null = null;
+  let manifest: SlawPluginManifestV1 | null = null;
   let currentConfig: Record<string, unknown> = {};
   let databaseNamespace: string | null = null;
   const invocationContextStorage = new AsyncLocalStorage<PluginInvocationContext>();
@@ -296,7 +296,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
     (params: Record<string, unknown>, context: PluginPerformActionContext) => Promise<unknown>
   >();
   const toolHandlers = new Map<string, {
-    declaration: Pick<import("@paperclipai/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">;
+    declaration: Pick<import("@slaw/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">;
     fn: (params: unknown, runCtx: ToolRunContext) => Promise<ToolResult>;
   }>();
 
@@ -377,7 +377,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         const activeInvocation = invocationContextStorage.getStore();
         const request = {
           ...createRequest(method, params, id),
-          ...(activeInvocation ? { paperclipInvocationId: activeInvocation.id } : {}),
+          ...(activeInvocation ? { slawInvocationId: activeInvocation.id } : {}),
         };
         sendMessage(request);
       } catch (err) {
@@ -394,7 +394,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       const activeInvocation = invocationContextStorage.getStore();
       sendMessage({
         ...createNotification(method, params),
-        ...(activeInvocation ? { paperclipInvocationId: activeInvocation.id } : {}),
+        ...(activeInvocation ? { slawInvocationId: activeInvocation.id } : {}),
       });
     } catch {
       // Swallow — the host may have closed stdin
@@ -1220,7 +1220,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       tools: {
         register(
           name: string,
-          declaration: Pick<import("@paperclipai/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">,
+          declaration: Pick<import("@slaw/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">,
           fn: (params: unknown, runCtx: ToolRunContext) => Promise<ToolResult>,
         ): void {
           toolHandlers.set(name, { declaration, fn });
@@ -1275,8 +1275,8 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
 
     try {
       const invoke = () => dispatchMethod(method, params);
-      const result = request.paperclipInvocation
-        ? await invocationContextStorage.run(request.paperclipInvocation, invoke)
+      const result = request.slawInvocation
+        ? await invocationContextStorage.run(request.slawInvocation, invoke)
         : await invoke();
       sendMessage(createSuccessResponse(id, result ?? null));
     } catch (err) {
@@ -1729,8 +1729,8 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       // Dispatch host→worker push notifications
       const notif = message as JsonRpcNotification & { method: string; params?: unknown };
       const runNotification = (fn: () => void | Promise<void>) => {
-        if (notif.paperclipInvocation) {
-          return invocationContextStorage.run(notif.paperclipInvocation, fn);
+        if (notif.slawInvocation) {
+          return invocationContextStorage.run(notif.slawInvocation, fn);
         }
         return fn();
       };

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import {
   createSecretProviderConfigSchema,
   createSecretSchema,
@@ -9,7 +9,7 @@ import {
   secretProviderConfigDiscoveryPreviewSchema,
   updateSecretProviderConfigSchema,
   updateSecretSchema,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { assertBoard, assertCompanyAccess } from "./authz.js";
 import { logActivity, secretService } from "../services/index.js";

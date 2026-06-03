@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildSkillMentionHref } from "@paperclipai/shared";
+import { buildSkillMentionHref } from "@slaw/shared";
 import {
   applyRunScopedMentionedSkillKeys,
   extractMentionedSkillIdsFromSources,
@@ -104,7 +104,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
     });
   });
 
-  it("drops Paperclip runtime-owned env before resolving agent, project, and routine overlays", async () => {
+  it("drops Slaw runtime-owned env before resolving agent, project, and routine overlays", async () => {
     const resolveAdapterConfigForRuntime = vi.fn(async (_companyId, config: Record<string, unknown>) => ({
       config: {
         ...config,
@@ -126,19 +126,19 @@ describe("resolveExecutionRunAdapterConfig", () => {
       agentId: "agent-1",
       executionRunConfig: {
         env: {
-          PAPERCLIP_API_KEY: { type: "secret_ref", secretId: "secret-api-key", version: "latest" },
-          PAPERCLIP_AGENT_ID: "spoofed-agent",
+          SLAW_API_KEY: { type: "secret_ref", secretId: "secret-api-key", version: "latest" },
+          SLAW_AGENT_ID: "spoofed-agent",
           AGENT_ONLY: "agent-only",
         },
       },
       projectEnv: {
-        PAPERCLIP_API_KEY: "project-api-key",
-        PAPERCLIP_COMPANY_ID: "spoofed-company",
+        SLAW_API_KEY: "project-api-key",
+        SLAW_COMPANY_ID: "spoofed-company",
         PROJECT_ONLY: "project-only",
       },
       routineEnv: {
-        PAPERCLIP_API_KEY: "routine-api-key",
-        PAPERCLIP_RUN_ID: "spoofed-run",
+        SLAW_API_KEY: "routine-api-key",
+        SLAW_RUN_ID: "spoofed-run",
         ROUTINE_ONLY: "routine-only",
       },
       routineId: "routine-1",
@@ -164,7 +164,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
       PROJECT_ONLY: "project-only",
       ROUTINE_ONLY: "routine-only",
     });
-    expect(JSON.stringify(result.resolvedConfig.env)).not.toContain("PAPERCLIP_");
+    expect(JSON.stringify(result.resolvedConfig.env)).not.toContain("SLAW_");
   });
 
   it("skips project env resolution when the project has no bindings", async () => {
@@ -210,30 +210,30 @@ describe("applyRunScopedMentionedSkillKeys", () => {
   it("adds mentioned skills without mutating the original config", () => {
     const originalConfig = {
       command: "codex",
-      paperclipSkillSync: {
-        desiredSkills: ["paperclipai/paperclip/paperclip"],
+      slawSkillSync: {
+        desiredSkills: ["slaw/slaw/slaw"],
       },
     };
 
     const updatedConfig = applyRunScopedMentionedSkillKeys(originalConfig, [
       "company/company-1/release-changelog",
-      "paperclipai/paperclip/paperclip",
+      "slaw/slaw/slaw",
       "company/company-1/release-changelog",
     ]);
 
     expect(updatedConfig).toEqual({
       command: "codex",
-      paperclipSkillSync: {
+      slawSkillSync: {
         desiredSkills: [
-          "paperclipai/paperclip/paperclip",
+          "slaw/slaw/slaw",
           "company/company-1/release-changelog",
         ],
       },
     });
     expect(originalConfig).toEqual({
       command: "codex",
-      paperclipSkillSync: {
-        desiredSkills: ["paperclipai/paperclip/paperclip"],
+      slawSkillSync: {
+        desiredSkills: ["slaw/slaw/slaw"],
       },
     });
   });

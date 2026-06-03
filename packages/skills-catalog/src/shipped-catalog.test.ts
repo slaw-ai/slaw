@@ -3,18 +3,18 @@ import { catalogManifest, catalogSkills, resolveCatalogSkillRef } from "./index.
 import type { CatalogSkill } from "./types.js";
 
 const EXPECTED_BUNDLED_KEYS = [
-  "paperclipai/bundled/docs/doc-maintenance",
-  "paperclipai/bundled/paperclip-operations/issue-triage",
-  "paperclipai/bundled/paperclip-operations/task-planning",
-  "paperclipai/bundled/product/wireframe",
-  "paperclipai/bundled/quality/qa-acceptance",
-  "paperclipai/bundled/software-development/github-pr-workflow",
+  "slaw/bundled/docs/doc-maintenance",
+  "slaw/bundled/slaw-operations/issue-triage",
+  "slaw/bundled/slaw-operations/task-planning",
+  "slaw/bundled/product/wireframe",
+  "slaw/bundled/quality/qa-acceptance",
+  "slaw/bundled/software-development/github-pr-workflow",
 ];
 
 const EXPECTED_OPTIONAL_KEYS = [
-  "paperclipai/optional/browser/agent-browser",
-  "paperclipai/optional/content/release-announcement",
-  "paperclipai/optional/product/design-critique",
+  "slaw/optional/browser/agent-browser",
+  "slaw/optional/content/release-announcement",
+  "slaw/optional/product/design-critique",
 ];
 
 describe("shipped skills catalog", () => {
@@ -59,11 +59,11 @@ describe("shipped skills catalog", () => {
     expect(issues).toEqual([]);
   });
 
-  it("uses canonical paperclipai keys derived from kind/category/slug", () => {
+  it("uses canonical slaw keys derived from kind/category/slug", () => {
     const violations: string[] = [];
     for (const skill of catalogSkills) {
-      const expectedKey = `paperclipai/${skill.kind}/${skill.category}/${skill.slug}`;
-      const expectedId = `paperclipai:${skill.kind}:${skill.category}:${skill.slug}`;
+      const expectedKey = `slaw/${skill.kind}/${skill.category}/${skill.slug}`;
+      const expectedId = `slaw:${skill.kind}:${skill.category}:${skill.slug}`;
       if (skill.key !== expectedKey) violations.push(`${skill.key} should be ${expectedKey}`);
       if (skill.id !== expectedId) violations.push(`${skill.id} should be ${expectedId}`);
     }
@@ -72,12 +72,12 @@ describe("shipped skills catalog", () => {
 
   it("exposes a stable manifest header for downstream consumers", () => {
     expect(catalogManifest.schemaVersion).toBe(1);
-    expect(catalogManifest.packageName).toBe("@paperclipai/skills-catalog");
+    expect(catalogManifest.packageName).toBe("@slaw/skills-catalog");
     expect(catalogSkills.length).toBe(EXPECTED_BUNDLED_KEYS.length + EXPECTED_OPTIONAL_KEYS.length);
   });
 
   it("resolves shipped skills by id, key, and unique slug", () => {
-    const sample = catalogSkills.find((skill) => skill.key === "paperclipai/bundled/software-development/github-pr-workflow");
+    const sample = catalogSkills.find((skill) => skill.key === "slaw/bundled/software-development/github-pr-workflow");
     expect(sample, "expected github-pr-workflow to ship in the bundled catalog").toBeDefined();
     if (!sample) return;
 

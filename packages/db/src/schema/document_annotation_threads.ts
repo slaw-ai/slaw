@@ -3,7 +3,7 @@ import type {
   DocumentAnnotationAnchorSelector,
   DocumentAnnotationAnchorState,
   DocumentAnnotationThreadStatus,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
 import { companies } from "./companies.js";

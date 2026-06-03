@@ -1,6 +1,6 @@
-import type { Environment, EnvironmentProbeResult } from "@paperclipai/shared";
-import type { Db } from "@paperclipai/db";
-import { ensureSshWorkspaceReady } from "@paperclipai/adapter-utils/ssh";
+import type { Environment, EnvironmentProbeResult } from "@slaw/shared";
+import type { Db } from "@slaw/db";
+import { ensureSshWorkspaceReady } from "@slaw/adapter-utils/ssh";
 import {
   resolveEnvironmentDriverConfigForRuntime,
   type ParsedEnvironmentConfig,
@@ -21,7 +21,7 @@ export async function probeEnvironment(
     return {
       ok: true,
       driver: "local",
-      summary: "Local environment is available on this Paperclip host.",
+      summary: "Local environment is available on this Slaw host.",
       details: {
         hostname: os.hostname(),
         cwd: process.cwd(),

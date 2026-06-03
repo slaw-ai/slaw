@@ -44,7 +44,7 @@ import { cn } from "../lib/utils";
 import { NotFoundPage } from "../pages/NotFound";
 import { PluginSlotMount, resolveRouteSidebarSlot, usePluginSlots } from "../plugins/slots";
 
-const INSTANCE_SETTINGS_MEMORY_KEY = "paperclip.lastInstanceSettingsPath";
+const INSTANCE_SETTINGS_MEMORY_KEY = "slaw.lastInstanceSettingsPath";
 
 function getCompanyRouteSegment(pathname: string, companyPrefix: string | undefined): string | null {
   if (!companyPrefix) return null;

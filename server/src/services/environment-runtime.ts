@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { environmentLeases } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
+import { environmentLeases } from "@slaw/db";
 import type {
   Environment,
   EnvironmentLease,
@@ -9,13 +9,13 @@ import type {
   ExecutionWorkspace,
   PluginEnvironmentConfig,
   SandboxEnvironmentConfig,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import type {
   PluginEnvironmentExecuteResult,
   PluginEnvironmentLease,
   PluginEnvironmentRealizeWorkspaceResult,
-} from "@paperclipai/plugin-sdk";
-import { ensureSshWorkspaceReady } from "@paperclipai/adapter-utils/ssh";
+} from "@slaw/plugin-sdk";
+import { ensureSshWorkspaceReady } from "@slaw/adapter-utils/ssh";
 import { environmentService } from "./environments.js";
 import {
   parseEnvironmentDriverConfig,

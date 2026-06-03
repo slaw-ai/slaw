@@ -131,7 +131,7 @@ test('findExistingDraftAdvisory: returns matching draft advisory from paginated 
     return [];
   };
 
-  const advisory = await findExistingDraftAdvisory(fakeFetch, 'token', 'paperclipai/paperclip', 6469);
+  const advisory = await findExistingDraftAdvisory(fakeFetch, 'token', 'slaw/slaw', 6469);
 
   assert.deepEqual(advisory, { summary: '🚨 Security flag — PR #6469: ci-tampering' });
   assert.equal(calls.length, 2);
@@ -139,7 +139,7 @@ test('findExistingDraftAdvisory: returns matching draft advisory from paginated 
 
 test('findExistingDraftAdvisory: returns null when no matching draft advisory exists', async () => {
   const fakeFetch = async () => [{ summary: 'Completely different advisory' }];
-  const advisory = await findExistingDraftAdvisory(fakeFetch, 'token', 'paperclipai/paperclip', 6469);
+  const advisory = await findExistingDraftAdvisory(fakeFetch, 'token', 'slaw/slaw', 6469);
   assert.equal(advisory, null);
 });
 
@@ -156,10 +156,10 @@ test('syncDraftAdvisory: patches an existing advisory with the latest flags', as
       return [{ ghsa_id: 'GHSA-test-1234', summary: '🚨 Security flag — PR #6469: ci-tampering' }];
     }
     return { ok: true };
-  }, 'token', 'paperclipai/paperclip', 6469, 'My PR', flags);
+  }, 'token', 'slaw/slaw', 6469, 'My PR', flags);
 
   assert.equal(calls.length, 2);
-  assert.equal(calls[1].path, '/repos/paperclipai/paperclip/security-advisories/GHSA-test-1234');
+  assert.equal(calls[1].path, '/repos/slaw/slaw/security-advisories/GHSA-test-1234');
   assert.equal(calls[1].options.method, 'PATCH');
   assert.deepEqual(JSON.parse(calls[1].options.body), buildAdvisoryPayload(6469, 'My PR', flags));
 });
@@ -174,10 +174,10 @@ test('syncDraftAdvisory: creates a new advisory when none exists', async () => {
       return [];
     }
     return { ok: true };
-  }, 'token', 'paperclipai/paperclip', 6469, 'My PR', flags);
+  }, 'token', 'slaw/slaw', 6469, 'My PR', flags);
 
   assert.equal(calls.length, 2);
-  assert.equal(calls[1].path, '/repos/paperclipai/paperclip/security-advisories');
+  assert.equal(calls[1].path, '/repos/slaw/slaw/security-advisories');
   assert.equal(calls[1].options.method, 'POST');
   assert.deepEqual(JSON.parse(calls[1].options.body), buildAdvisoryPayload(6469, 'My PR', flags));
 });
@@ -188,10 +188,10 @@ test('postSecurityCheckRun: uses the injected fetch implementation', async () =>
   await postSecurityCheckRun(async (path, token, options) => {
     calls.push({ path, token, options });
     return { ok: true };
-  }, 'token', 'paperclipai/paperclip', 'deadbeef', true);
+  }, 'token', 'slaw/slaw', 'deadbeef', true);
 
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].path, '/repos/paperclipai/paperclip/check-runs');
+  assert.equal(calls[0].path, '/repos/slaw/slaw/check-runs');
   assert.equal(calls[0].options.method, 'POST');
   assert.deepEqual(JSON.parse(calls[0].options.body), {
     name: 'security-review',
@@ -208,7 +208,7 @@ test('validateSensitivePaths: checks paths against the resolved base ref instead
   const seenPaths = [];
   const stale = await validateSensitivePaths(
     'token',
-    'paperclipai/paperclip',
+    'slaw/slaw',
     6469,
     'release/1.2',
     async (path) => {
@@ -226,7 +226,7 @@ test('validateSensitivePaths: returns only 404 paths and rethrows non-404 errors
   let seen404 = false;
   const stale = await validateSensitivePaths(
     'token',
-    'paperclipai/paperclip',
+    'slaw/slaw',
     6469,
     'main',
     async (path) => {
@@ -243,7 +243,7 @@ test('validateSensitivePaths: returns only 404 paths and rethrows non-404 errors
   await assert.rejects(
     validateSensitivePaths(
       'token',
-      'paperclipai/paperclip',
+      'slaw/slaw',
       6469,
       'main',
       async () => {

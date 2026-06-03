@@ -4,13 +4,13 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@paperclipai/adapter-utils";
+} from "@slaw/adapter-utils";
 import {
   buildRuntimeMountedSkillSnapshot,
-  readPaperclipRuntimeSkillEntries,
+  readSlawRuntimeSkillEntries,
   readInstalledSkillTargets,
-  resolvePaperclipDesiredSkillNames,
-} from "@paperclipai/adapter-utils/server-utils";
+  resolveSlawDesiredSkillNames,
+} from "@slaw/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,18 +29,18 @@ function resolveClaudeSkillsHome(config: Record<string, unknown>) {
 }
 
 async function buildClaudeSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperclipDesiredSkillNames(config, availableEntries);
+  const availableEntries = await readSlawRuntimeSkillEntries(config, __moduleDir);
+  const desiredSkills = resolveSlawDesiredSkillNames(config, availableEntries);
   const skillsHome = resolveClaudeSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
   return buildRuntimeMountedSkillSnapshot({
     adapterType: "claude_local",
     availableEntries,
     desiredSkills,
-    configuredDetail: "Will be materialized into the stable Paperclip-managed Claude prompt bundle on the next run.",
+    configuredDetail: "Will be materialized into the stable Slaw-managed Claude prompt bundle on the next run.",
     externalInstalled: installed,
     externalLocationLabel: "~/.claude/skills",
-    externalDetail: "Installed outside Paperclip management in the Claude skills home.",
+    externalDetail: "Installed outside Slaw management in the Claude skills home.",
     skillsHome,
   });
 }
@@ -60,5 +60,5 @@ export function resolveClaudeDesiredSkillNames(
   config: Record<string, unknown>,
   availableEntries: Array<{ key: string; required?: boolean }>,
 ) {
-  return resolvePaperclipDesiredSkillNames(config, availableEntries);
+  return resolveSlawDesiredSkillNames(config, availableEntries);
 }

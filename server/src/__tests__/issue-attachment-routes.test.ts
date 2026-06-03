@@ -22,7 +22,7 @@ const mockWorkProductService = vi.hoisted(() => ({
 const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
 
 function registerRouteMocks() {
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@slaw/shared/telemetry", () => ({
     trackAgentTaskCompleted: vi.fn(),
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -192,8 +192,8 @@ function makeAttachment(contentType: string, originalFilename: string) {
 
 describe("normalizeIssueAttachmentMaxBytes", () => {
   it("keeps the process-level attachment cap as the final cap", async () => {
-    const previous = process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES;
-    process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES = "5";
+    const previous = process.env.SLAW_ATTACHMENT_MAX_BYTES;
+    process.env.SLAW_ATTACHMENT_MAX_BYTES = "5";
     vi.resetModules();
     try {
       const { normalizeIssueAttachmentMaxBytes } = await import("../attachment-types.js");
@@ -202,9 +202,9 @@ describe("normalizeIssueAttachmentMaxBytes", () => {
       expect(normalizeIssueAttachmentMaxBytes(3)).toBe(3);
     } finally {
       if (previous === undefined) {
-        delete process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES;
+        delete process.env.SLAW_ATTACHMENT_MAX_BYTES;
       } else {
-        process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES = previous;
+        process.env.SLAW_ATTACHMENT_MAX_BYTES = previous;
       }
       vi.resetModules();
     }
@@ -214,7 +214,7 @@ describe("normalizeIssueAttachmentMaxBytes", () => {
 describe("issue attachment routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@paperclipai/shared/telemetry");
+    vi.doUnmock("@slaw/shared/telemetry");
     vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/issues.js");
     vi.doUnmock("../services/index.js");
@@ -467,7 +467,7 @@ describe("issue attachment routes", () => {
     expect(storage.getObject).not.toHaveBeenCalled();
   });
 
-  it("canonicalizes paperclip artifact metadata before creating a work product", async () => {
+  it("canonicalizes slaw artifact metadata before creating a work product", async () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
@@ -487,7 +487,7 @@ describe("issue attachment routes", () => {
       issueId: issue.id,
       companyId: issue.companyId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "slaw",
       title: "Clip",
       metadata: null,
     });
@@ -497,7 +497,7 @@ describe("issue attachment routes", () => {
       .post(`/api/issues/${issue.id}/work-products`)
       .send({
         type: "artifact",
-        provider: "paperclip",
+        provider: "slaw",
         title: "Clip",
         metadata: {
           attachmentId: "22222222-2222-4222-8222-222222222222",
@@ -516,7 +516,7 @@ describe("issue attachment routes", () => {
       issue.companyId,
       expect.objectContaining({
         type: "artifact",
-        provider: "paperclip",
+        provider: "slaw",
         metadata: {
           attachmentId: "22222222-2222-4222-8222-222222222222",
           contentType: "video/mp4",
@@ -530,7 +530,7 @@ describe("issue attachment routes", () => {
     );
   });
 
-  it("rejects paperclip artifact metadata that references another issue's attachment", async () => {
+  it("rejects slaw artifact metadata that references another issue's attachment", async () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
@@ -550,7 +550,7 @@ describe("issue attachment routes", () => {
       .post(`/api/issues/${issue.id}/work-products`)
       .send({
         type: "artifact",
-        provider: "paperclip",
+        provider: "slaw",
         title: "Clip",
         metadata: {
           attachmentId: "22222222-2222-4222-8222-222222222222",
@@ -562,7 +562,7 @@ describe("issue attachment routes", () => {
     expect(mockWorkProductService.createForIssue).not.toHaveBeenCalled();
   });
 
-  it("canonicalizes paperclip artifact metadata on work product updates", async () => {
+  it("canonicalizes slaw artifact metadata on work product updates", async () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
@@ -575,7 +575,7 @@ describe("issue attachment routes", () => {
       issueId: issue.id,
       companyId: issue.companyId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "slaw",
       title: "Clip",
       metadata: null,
     });
@@ -591,7 +591,7 @@ describe("issue attachment routes", () => {
       issueId: issue.id,
       companyId: issue.companyId,
       type: "artifact",
-      provider: "paperclip",
+      provider: "slaw",
       title: "Clip",
       metadata: null,
     });

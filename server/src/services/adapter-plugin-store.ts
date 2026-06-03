@@ -2,7 +2,7 @@
  * JSON-file-backed store for external adapter registrations.
  *
  * Stores metadata about externally installed adapter packages at
- * ~/.paperclip/adapter-plugins.json. This is the source of truth for which
+ * ~/.slaw/adapter-plugins.json. This is the source of truth for which
  * external adapters should be loaded at startup.
  *
  * Both the plugin store and the settings store are cached in memory after
@@ -14,14 +14,14 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { resolvePaperclipHomeDir } from "../home-paths.js";
+import { resolveSlawHomeDir } from "../home-paths.js";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface AdapterPluginRecord {
-  /** npm package name (e.g., "droid-paperclip-adapter") */
+  /** npm package name (e.g., "droid-slaw-adapter") */
   packageName: string;
   /** Absolute local filesystem path (for locally linked adapters) */
   localPath?: string;
@@ -44,11 +44,11 @@ interface AdapterSettings {
 // ---------------------------------------------------------------------------
 
 function adapterPluginPaths() {
-  const paperclipDir = resolvePaperclipHomeDir();
+  const slawDir = resolveSlawHomeDir();
   return {
-    adapterPluginsDir: path.join(paperclipDir, "adapter-plugins"),
-    adapterPluginsStorePath: path.join(paperclipDir, "adapter-plugins.json"),
-    adapterSettingsPath: path.join(paperclipDir, "adapter-settings.json"),
+    adapterPluginsDir: path.join(slawDir, "adapter-plugins"),
+    adapterPluginsStorePath: path.join(slawDir, "adapter-plugins.json"),
+    adapterSettingsPath: path.join(slawDir, "adapter-settings.json"),
   };
 }
 
@@ -69,10 +69,10 @@ function ensureDirs(): string {
   const pkgJsonPath = path.join(adapterPluginsDir, "package.json");
   if (!fs.existsSync(pkgJsonPath)) {
     fs.writeFileSync(pkgJsonPath, JSON.stringify({
-      name: "paperclip-adapter-plugins",
+      name: "slaw-adapter-plugins",
       version: "0.0.0",
       private: true,
-      description: "Managed directory for Paperclip external adapter plugins. Do not edit manually.",
+      description: "Managed directory for Slaw external adapter plugins. Do not edit manually.",
     }, null, 2) + "\n");
   }
   return adapterPluginsDir;

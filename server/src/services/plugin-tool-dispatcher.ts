@@ -22,12 +22,12 @@
  * @see PLUGIN_SPEC.md §13.10 — `executeTool`
  */
 
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import type {
-  PaperclipPluginManifestV1,
+  SlawPluginManifestV1,
   PluginRecord,
-} from "@paperclipai/shared";
-import type { ToolRunContext, ToolResult } from "@paperclipai/plugin-sdk";
+} from "@slaw/shared";
+import type { ToolRunContext, ToolResult } from "@slaw/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import {
@@ -156,7 +156,7 @@ export interface PluginToolDispatcher {
    */
   registerPluginTools(
     pluginId: string,
-    manifest: PaperclipPluginManifestV1,
+    manifest: SlawPluginManifestV1,
     pluginDbId?: string,
   ): void;
 
@@ -430,7 +430,7 @@ export function createPluginToolDispatcher(
 
     registerPluginTools(
       pluginId: string,
-      manifest: PaperclipPluginManifestV1,
+      manifest: SlawPluginManifestV1,
       pluginDbId?: string,
     ): void {
       registry.registerPlugin(pluginId, manifest, pluginDbId);

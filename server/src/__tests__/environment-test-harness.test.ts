@@ -8,10 +8,10 @@ import {
   assertWorkspaceRealizationLifecycle,
   assertExecutionLifecycle,
   assertEnvironmentError,
-} from "@paperclipai/plugin-sdk/testing";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+} from "@slaw/plugin-sdk/testing";
+import type { SlawPluginManifestV1 } from "@slaw/shared";
 
-const FAKE_MANIFEST: PaperclipPluginManifestV1 = {
+const FAKE_MANIFEST: SlawPluginManifestV1 = {
   id: "test-env-plugin",
   apiVersion: 1,
   version: "0.1.0",

@@ -25,11 +25,11 @@ function createDb() {
 }
 
 describe("actorMiddleware authenticated session profile", () => {
-  const originalCloudTenantToken = process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN;
+  const originalCloudTenantToken = process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN;
 
   afterEach(() => {
-    if (originalCloudTenantToken === undefined) delete process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN;
-    else process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = originalCloudTenantToken;
+    if (originalCloudTenantToken === undefined) delete process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN;
+    else process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN = originalCloudTenantToken;
   });
 
   it("preserves the signed-in user name and email on the board actor", async () => {
@@ -67,7 +67,7 @@ describe("actorMiddleware authenticated session profile", () => {
   });
 
   it("trusts Cloud tenant identity headers and seeds board access", async () => {
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "tenant-token";
+    process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN = "tenant-token";
     const inserts: Array<{ values: Record<string, unknown> }> = [];
     const db = {
       insert: vi.fn(() => {
@@ -107,13 +107,13 @@ describe("actorMiddleware authenticated session profile", () => {
 
     const res = await request(app)
       .get("/actor")
-      .set("x-paperclip-cloud-tenant-token", "tenant-token")
-      .set("x-paperclip-cloud-user-id", "global-user-1")
-      .set("x-paperclip-cloud-user-email", "owner@example.com")
-      .set("x-paperclip-cloud-user-name", "Stack Owner")
-      .set("x-paperclip-cloud-stack-id", "stack-alpha")
-      .set("x-paperclip-cloud-paperclip-company-id", "paperclip-stack-alpha")
-      .set("x-paperclip-cloud-stack-role", "owner");
+      .set("x-slaw-cloud-tenant-token", "tenant-token")
+      .set("x-slaw-cloud-user-id", "global-user-1")
+      .set("x-slaw-cloud-user-email", "owner@example.com")
+      .set("x-slaw-cloud-user-name", "Stack Owner")
+      .set("x-slaw-cloud-stack-id", "stack-alpha")
+      .set("x-slaw-cloud-slaw-company-id", "slaw-stack-alpha")
+      .set("x-slaw-cloud-stack-role", "owner");
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({

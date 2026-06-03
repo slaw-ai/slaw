@@ -10,11 +10,11 @@ describe("codex managed home", () => {
   });
 
   it("treats a concurrently-created expected auth symlink as success", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "slaw-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "paperclip-home");
+    const slawHome = path.join(root, "slaw-home");
     const managedCodexHome = path.join(
-      paperclipHome,
+      slawHome,
       "instances",
       "default",
       "companies",
@@ -40,8 +40,8 @@ describe("codex managed home", () => {
         prepareManagedCodexHome(
           {
             CODEX_HOME: sharedCodexHome,
-            PAPERCLIP_HOME: paperclipHome,
-            PAPERCLIP_INSTANCE_ID: "default",
+            SLAW_HOME: slawHome,
+            SLAW_INSTANCE_ID: "default",
           },
           async () => {},
           "company-1",

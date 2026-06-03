@@ -11,7 +11,7 @@ drizzle/meta/
 coverage/
 .DS_Store
 data/
-.paperclip/
+.slaw/
 .pnpm-store/
 tmp-*
 cli/tmp/
@@ -44,7 +44,7 @@ diagnostics/
 *.tmp
 .vscode/
 .claude/settings.local.json
-.paperclip-local/
+.slaw-local/
 /.idea/
 /.agents/
 

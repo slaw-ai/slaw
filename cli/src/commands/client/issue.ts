@@ -26,7 +26,7 @@ import {
   type IssueComment,
   upsertIssueDocumentSchema,
   upsertIssueFeedbackVoteSchema,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import {
   addCommonClientOptions,
   apiPath,

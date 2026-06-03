@@ -62,7 +62,7 @@ const mockAdapter = vi.hoisted(() => ({
   syncSkills: vi.fn(),
 }));
 
-vi.mock("@paperclipai/shared/telemetry", () => ({
+vi.mock("@slaw/shared/telemetry", () => ({
   trackAgentCreated: mockTrackAgentCreated,
   trackErrorHandlerCrash: vi.fn(),
 }));
@@ -96,7 +96,7 @@ vi.mock("../adapters/index.js", () => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@slaw/shared/telemetry", () => ({
     trackAgentCreated: mockTrackAgentCreated,
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -243,9 +243,9 @@ describe.sequential("agent skill routes", () => {
     mockSecretService.resolveAdapterConfigForRuntime.mockResolvedValue({ config: { env: {} } });
     mockCompanySkillService.listRuntimeSkillEntries.mockResolvedValue([
       {
-        key: "paperclipai/paperclip/paperclip",
-        runtimeName: "paperclip",
-        source: "/tmp/paperclip",
+        key: "slaw/slaw/slaw",
+        runtimeName: "slaw",
+        source: "/tmp/slaw",
         required: true,
         requiredReason: "required",
       },
@@ -253,8 +253,8 @@ describe.sequential("agent skill routes", () => {
     mockCompanySkillService.resolveRequestedSkillKeys.mockImplementation(
       async (_companyId: string, requested: string[]) =>
         requested.map((value) =>
-          value === "paperclip"
-            ? "paperclipai/paperclip/paperclip"
+          value === "slaw"
+            ? "slaw/slaw/slaw"
             : value,
         ),
     );
@@ -262,7 +262,7 @@ describe.sequential("agent skill routes", () => {
       adapterType: "claude_local",
       supported: true,
       mode: "ephemeral",
-      desiredSkills: ["paperclipai/paperclip/paperclip"],
+      desiredSkills: ["slaw/slaw/slaw"],
       entries: [],
       warnings: [],
     });
@@ -270,7 +270,7 @@ describe.sequential("agent skill routes", () => {
       adapterType: "claude_local",
       supported: true,
       mode: "ephemeral",
-      desiredSkills: ["paperclipai/paperclip/paperclip"],
+      desiredSkills: ["slaw/slaw/slaw"],
       entries: [],
       warnings: [],
     });
@@ -345,7 +345,7 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         adapterType: "claude_local",
         config: expect.objectContaining({
-          paperclipRuntimeSkills: expect.any(Array),
+          slawRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -357,7 +357,7 @@ describe.sequential("agent skill routes", () => {
       adapterType: "codex_local",
       supported: true,
       mode: "ephemeral",
-      desiredSkills: ["paperclipai/paperclip/paperclip"],
+      desiredSkills: ["slaw/slaw/slaw"],
       entries: [],
       warnings: [],
     });
@@ -386,7 +386,7 @@ describe.sequential("agent skill routes", () => {
       adapterType: "acpx_local",
       supported: true,
       mode: "ephemeral",
-      desiredSkills: ["paperclipai/paperclip/paperclip"],
+      desiredSkills: ["slaw/slaw/slaw"],
       entries: [],
       warnings: [],
     });
@@ -406,7 +406,7 @@ describe.sequential("agent skill routes", () => {
         adapterType: "acpx_local",
         config: expect.objectContaining({
           agent: "claude",
-          paperclipRuntimeSkills: expect.any(Array),
+          slawRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -424,8 +424,8 @@ describe.sequential("agent skill routes", () => {
     mockSecretService.resolveAdapterConfigForRuntime.mockResolvedValueOnce({
       config: {
         agent: "codex",
-        paperclipSkillSync: {
-          desiredSkills: ["paperclipai/paperclip/paperclip"],
+        slawSkillSync: {
+          desiredSkills: ["slaw/slaw/slaw"],
         },
       },
     });
@@ -433,14 +433,14 @@ describe.sequential("agent skill routes", () => {
       adapterType: "acpx_local",
       supported: true,
       mode: "ephemeral",
-      desiredSkills: ["paperclipai/paperclip/paperclip"],
+      desiredSkills: ["slaw/slaw/slaw"],
       entries: [],
       warnings: [],
     });
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
       .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
-      .send({ desiredSkills: ["paperclip"] }));
+      .send({ desiredSkills: ["slaw"] }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(mockAgentService.update).toHaveBeenCalledWith(
@@ -448,8 +448,8 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
           agent: "codex",
-          paperclipSkillSync: expect.objectContaining({
-            desiredSkills: ["paperclipai/paperclip/paperclip"],
+          slawSkillSync: expect.objectContaining({
+            desiredSkills: ["slaw/slaw/slaw"],
           }),
         }),
       }),
@@ -460,10 +460,10 @@ describe.sequential("agent skill routes", () => {
         adapterType: "acpx_local",
         config: expect.objectContaining({
           agent: "codex",
-          paperclipRuntimeSkills: expect.any(Array),
+          slawRuntimeSkills: expect.any(Array),
         }),
       }),
-      ["paperclipai/paperclip/paperclip"],
+      ["slaw/slaw/slaw"],
     );
   });
 
@@ -473,7 +473,7 @@ describe.sequential("agent skill routes", () => {
       adapterType: "cursor",
       supported: true,
       mode: "persistent",
-      desiredSkills: ["paperclipai/paperclip/paperclip"],
+      desiredSkills: ["slaw/slaw/slaw"],
       entries: [],
       warnings: [],
     });
@@ -495,7 +495,7 @@ describe.sequential("agent skill routes", () => {
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
       .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
-      .send({ desiredSkills: ["paperclipai/paperclip/paperclip"] }));
+      .send({ desiredSkills: ["slaw/slaw/slaw"] }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(mockAdapter.syncSkills).toHaveBeenCalled();
@@ -506,15 +506,15 @@ describe.sequential("agent skill routes", () => {
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
       .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
-      .send({ desiredSkills: ["paperclip"] }));
+      .send({ desiredSkills: ["slaw"] }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(mockAgentService.update).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
-          paperclipSkillSync: expect.objectContaining({
-            desiredSkills: ["paperclipai/paperclip/paperclip"],
+          slawSkillSync: expect.objectContaining({
+            desiredSkills: ["slaw/slaw/slaw"],
           }),
         }),
       }),
@@ -529,7 +529,7 @@ describe.sequential("agent skill routes", () => {
         name: "QA Agent",
         role: "engineer",
         adapterType: "claude_local",
-        desiredSkills: ["paperclip"],
+        desiredSkills: ["slaw"],
         adapterConfig: {},
       }));
 
@@ -538,8 +538,8 @@ describe.sequential("agent skill routes", () => {
       "company-1",
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
-          paperclipSkillSync: expect.objectContaining({
-            desiredSkills: ["paperclipai/paperclip/paperclip"],
+          slawSkillSync: expect.objectContaining({
+            desiredSkills: ["slaw/slaw/slaw"],
           }),
         }),
       }),
@@ -702,7 +702,7 @@ describe.sequential("agent skill routes", () => {
       expect(mockAgentInstructionsService.materializeManagedBundle).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({
-          "AGENTS.md": expect.stringContaining("skills/paperclip/scripts/paperclip-upload-artifact.sh"),
+          "AGENTS.md": expect.stringContaining("skills/slaw/scripts/slaw-upload-artifact.sh"),
         }),
         expect.any(Object),
       );
@@ -718,7 +718,7 @@ describe.sequential("agent skill routes", () => {
         name: "QA Agent",
         role: "engineer",
         adapterType: "claude_local",
-        desiredSkills: ["paperclip"],
+        desiredSkills: ["slaw"],
         adapterConfig: {},
       });
 
@@ -727,9 +727,9 @@ describe.sequential("agent skill routes", () => {
       "company-1",
       expect.objectContaining({
         payload: expect.objectContaining({
-          desiredSkills: ["paperclipai/paperclip/paperclip"],
+          desiredSkills: ["slaw/slaw/slaw"],
           requestedConfigurationSnapshot: expect.objectContaining({
-            desiredSkills: ["paperclipai/paperclip/paperclip"],
+            desiredSkills: ["slaw/slaw/slaw"],
           }),
         }),
       }),
@@ -747,7 +747,7 @@ describe.sequential("agent skill routes", () => {
         role: "engineer",
         icon: "crown",
         adapterType: "claude_local",
-        desiredSkills: ["paperclip"],
+        desiredSkills: ["slaw"],
         adapterConfig: {},
         sourceIssueId,
       });
@@ -758,8 +758,8 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         icon: "crown",
         adapterConfig: expect.objectContaining({
-          paperclipSkillSync: expect.objectContaining({
-            desiredSkills: ["paperclipai/paperclip/paperclip"],
+          slawSkillSync: expect.objectContaining({
+            desiredSkills: ["slaw/slaw/slaw"],
           }),
         }),
       }),
@@ -769,9 +769,9 @@ describe.sequential("agent skill routes", () => {
       expect.objectContaining({
         payload: expect.objectContaining({
           icon: "crown",
-          desiredSkills: ["paperclipai/paperclip/paperclip"],
+          desiredSkills: ["slaw/slaw/slaw"],
           requestedConfigurationSnapshot: expect.objectContaining({
-            desiredSkills: ["paperclipai/paperclip/paperclip"],
+            desiredSkills: ["slaw/slaw/slaw"],
           }),
         }),
       }),

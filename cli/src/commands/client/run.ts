@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { HeartbeatRun, HeartbeatRunEvent, Issue, WorkspaceOperation } from "@paperclipai/shared";
+import type { HeartbeatRun, HeartbeatRunEvent, Issue, WorkspaceOperation } from "@slaw/shared";
 import {
   addCommonClientOptions,
   apiPath,

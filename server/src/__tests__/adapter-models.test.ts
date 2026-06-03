@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { models as claudeFallbackModels } from "@paperclipai/adapter-claude-local";
-import { resetClaudeModelsCacheForTests } from "@paperclipai/adapter-claude-local/server";
-import { models as codexFallbackModels } from "@paperclipai/adapter-codex-local";
-import { models as cursorFallbackModels } from "@paperclipai/adapter-cursor-local";
-import { models as opencodeFallbackModels } from "@paperclipai/adapter-opencode-local";
-import { resetOpenCodeModelsCacheForTests } from "@paperclipai/adapter-opencode-local/server";
+import { models as claudeFallbackModels } from "@slaw/adapter-claude-local";
+import { resetClaudeModelsCacheForTests } from "@slaw/adapter-claude-local/server";
+import { models as codexFallbackModels } from "@slaw/adapter-codex-local";
+import { models as cursorFallbackModels } from "@slaw/adapter-cursor-local";
+import { models as opencodeFallbackModels } from "@slaw/adapter-opencode-local";
+import { resetOpenCodeModelsCacheForTests } from "@slaw/adapter-opencode-local/server";
 import { listAdapterModels, listServerAdapters, refreshAdapterModels } from "../adapters/index.js";
 import { resetCodexModelsCacheForTests } from "../adapters/codex-models.js";
 import { resetCursorModelsCacheForTests, setCursorModelsRunnerForTests } from "../adapters/cursor-models.js";
@@ -23,7 +23,7 @@ describe("adapter model listing", () => {
     delete process.env.ANTHROPIC_BASE_URL;
     delete process.env.ANTHROPIC_BEDROCK_BASE_URL;
     delete process.env.CLAUDE_CODE_USE_BEDROCK;
-    delete process.env.PAPERCLIP_OPENCODE_COMMAND;
+    delete process.env.SLAW_OPENCODE_COMMAND;
     resetClaudeModelsCacheForTests();
     resetCodexModelsCacheForTests();
     resetCursorModelsCacheForTests();
@@ -189,7 +189,7 @@ describe("adapter model listing", () => {
   });
 
   it("returns opencode fallback models including gpt-5.4", async () => {
-    process.env.PAPERCLIP_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
+    process.env.SLAW_OPENCODE_COMMAND = "__slaw_missing_opencode_command__";
 
     const models = await listAdapterModels("opencode_local");
 

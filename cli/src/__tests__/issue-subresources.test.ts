@@ -37,8 +37,8 @@ async function run(args: string[]): Promise<void> {
 describe("issue subresource commands", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_API_URL;
+    delete process.env.SLAW_API_KEY;
+    delete process.env.SLAW_API_URL;
     vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
@@ -143,7 +143,7 @@ describe("issue subresource commands", () => {
   });
 
   it("wraps interactions, tree holds, labels, feedback votes, and attachments", async () => {
-    const tmp = await mkdtemp(join(tmpdir(), "paperclip-cli-test-"));
+    const tmp = await mkdtemp(join(tmpdir(), "slaw-cli-test-"));
     const filePath = join(tmp, "attachment.txt");
     await writeFile(filePath, "hello", "utf8");
     const fetchMock = vi

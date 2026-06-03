@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@slaw/shared";
 import { IssueMonitorActivityCard } from "@/components/IssueMonitorActivityCard";
 import { IssueProperties } from "@/components/IssueProperties";
 import {
   storybookExecutionWorkspaces,
   storybookIssueDocuments,
   storybookIssues,
-} from "../fixtures/paperclipData";
+} from "../fixtures/slawData";
 
 const issueDocumentSummaries = storybookIssueDocuments.map(({ body: _body, ...summary }) => summary);
 

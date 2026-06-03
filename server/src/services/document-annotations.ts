@@ -1,12 +1,12 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import {
   documentAnnotationAnchorSnapshots,
   documentAnnotationComments,
   documentAnnotationThreads,
   documents,
   issueDocuments,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   anchorSnapshotToSelector,
   remapDocumentAnchor,
@@ -18,7 +18,7 @@ import {
   CreateDocumentAnnotationComment,
   CreateDocumentAnnotationThread,
   UpdateDocumentAnnotationThread,
-} from "@paperclipai/shared";
+} from "@slaw/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 type ActorInput = {

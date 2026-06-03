@@ -1,0 +1,23 @@
+[Unit]
+Description=Slaw AI Agent Orchestrator
+Requires=slaw-db.service
+After=slaw-db.service
+
+[Container]
+Image=slaw-local
+ContainerName=slaw
+Pod=slaw.pod
+Volume=%h/.local/share/slaw:/slaw:Z
+Environment=HOST=0.0.0.0
+Environment=SLAW_HOME=/slaw
+Environment=SLAW_DEPLOYMENT_MODE=authenticated
+Environment=SLAW_DEPLOYMENT_EXPOSURE=private
+Environment=SLAW_PUBLIC_URL=http://localhost:3100
+EnvironmentFile=%h/.config/containers/systemd/slaw.env
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

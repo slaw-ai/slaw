@@ -1,11 +1,11 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
 
-const manifest: PaperclipPluginManifestV1 = {
-  id: "paperclipai.plugin-authoring-smoke-example",
+const manifest: SlawPluginManifestV1 = {
+  id: "slaw.plugin-authoring-smoke-example",
   apiVersion: 1,
   version: "0.1.0",
   displayName: "Plugin Authoring Smoke Example",
-  description: "A Paperclip plugin",
+  description: "A Slaw plugin",
   author: "Plugin Author",
   categories: ["connector"],
   capabilities: [

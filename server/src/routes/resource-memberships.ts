@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@paperclipai/db";
-import { updateResourceMembershipSchema } from "@paperclipai/shared";
+import type { Db } from "@slaw/db";
+import { updateResourceMembershipSchema } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { getActorInfo } from "./authz.js";
 import { logActivity, resourceMembershipService } from "../services/index.js";

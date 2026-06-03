@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Project, ProjectWorkspace } from "@paperclipai/shared";
+import type { Project, ProjectWorkspace } from "@slaw/shared";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,13 +33,13 @@ vi.mock("@/lib/router", () => ({
     <a href={to} className={className}>{children}</a>
   ),
   useLocation: () => ({
-    pathname: "/PAP/projects/paperclip-app/workspaces/workspace-1",
+    pathname: "/PAP/projects/slaw-app/workspaces/workspace-1",
     search: mockRouteSearch.value,
     hash: "",
     state: null,
   }),
   useNavigate: () => mockNavigate,
-  useParams: () => ({ companyPrefix: "PAP", projectId: "paperclip-app", workspaceId: "workspace-1" }),
+  useParams: () => ({ companyPrefix: "PAP", projectId: "slaw-app", workspaceId: "workspace-1" }),
 }));
 
 vi.mock("../context/CompanyContext", () => ({
@@ -101,8 +101,8 @@ function projectWorkspace(overrides: Partial<ProjectWorkspace> = {}): ProjectWor
     projectId: "project-1",
     name: "Primary checkout",
     sourceType: "local_path",
-    cwd: "/tmp/paperclip",
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    cwd: "/tmp/slaw",
+    repoUrl: "https://github.com/slaw/slaw",
     repoRef: "master",
     defaultRef: "origin/main",
     visibility: "default",
@@ -127,11 +127,11 @@ function project(overrides: Partial<Project> = {}): Project {
   return {
     id: "project-1",
     companyId: "company-1",
-    urlKey: "paperclip-app",
+    urlKey: "slaw-app",
     goalId: null,
     goalIds: [],
     goals: [],
-    name: "Paperclip App",
+    name: "Slaw App",
     description: null,
     status: "in_progress",
     leadAgentId: null,
@@ -146,10 +146,10 @@ function project(overrides: Partial<Project> = {}): Project {
       repoUrl: workspace.repoUrl,
       repoRef: workspace.repoRef,
       defaultRef: workspace.defaultRef,
-      repoName: "paperclip",
+      repoName: "slaw",
       localFolder: workspace.cwd,
-      managedFolder: workspace.cwd ?? "/tmp/paperclip",
-      effectiveLocalFolder: workspace.cwd ?? "/tmp/paperclip",
+      managedFolder: workspace.cwd ?? "/tmp/slaw",
+      effectiveLocalFolder: workspace.cwd ?? "/tmp/slaw",
       origin: "local_folder",
     },
     workspaces: [workspace],
@@ -175,7 +175,7 @@ function pluginSlot(overrides: Record<string, unknown> = {}) {
     exportName: "ProjectWorkspaceQualityTab",
     entityTypes: ["project_workspace"],
     pluginId: "plugin-1",
-    pluginKey: "paperclip.quality",
+    pluginKey: "slaw.quality",
     pluginDisplayName: "Quality Plugin",
     pluginVersion: "0.1.0",
     ...overrides,
@@ -234,17 +234,17 @@ describe("ProjectWorkspaceDetail plugin tabs", () => {
 
   it("renders an arbitrary project_workspace plugin detail tab from the generic URL value", async () => {
     mockPluginSlotState.slots = [pluginSlot()];
-    mockRouteSearch.value = "?tab=plugin%3Apaperclip.quality%3Aquality-tab&diffView=head&baseRef=origin%2Fmaster";
+    mockRouteSearch.value = "?tab=plugin%3Aslaw.quality%3Aquality-tab&diffView=head&baseRef=origin%2Fmaster";
 
     await render();
 
     expect(container.querySelector('[data-tab-value="configuration"]')?.textContent).toBe("Configuration");
-    expect(container.querySelector('[data-tab-value="plugin:paperclip.quality:quality-tab"]')?.textContent).toBe("Quality");
+    expect(container.querySelector('[data-tab-value="plugin:slaw.quality:quality-tab"]')?.textContent).toBe("Quality");
     expect(container.querySelector('[data-tab-value="changes"]')).toBeNull();
     expect(container.querySelector('[data-testid="plugin-slot-mount"]')).not.toBeNull();
     expect(mockPluginSlotMount).toHaveBeenCalledWith(
       expect.objectContaining({
-        slot: expect.objectContaining({ pluginKey: "paperclip.quality", id: "quality-tab" }),
+        slot: expect.objectContaining({ pluginKey: "slaw.quality", id: "quality-tab" }),
         context: expect.objectContaining({ entityType: "project_workspace", entityId: "workspace-1" }),
       }),
     );
@@ -252,7 +252,7 @@ describe("ProjectWorkspaceDetail plugin tabs", () => {
 
   it("keeps the project workspace heading visible on plugin tabs", async () => {
     mockPluginSlotState.slots = [pluginSlot({ displayName: "Changes" })];
-    mockRouteSearch.value = "?tab=plugin%3Apaperclip.quality%3Aquality-tab";
+    mockRouteSearch.value = "?tab=plugin%3Aslaw.quality%3Aquality-tab";
 
     await render();
 
@@ -283,11 +283,11 @@ describe("ProjectWorkspaceDetail plugin tabs", () => {
     await render();
 
     await act(async () => {
-      (container.querySelector('[data-tab-value="plugin:paperclip.quality:quality-tab"]') as HTMLButtonElement).click();
+      (container.querySelector('[data-tab-value="plugin:slaw.quality:quality-tab"]') as HTMLButtonElement).click();
     });
 
     expect(mockNavigate).toHaveBeenCalledWith(
-      "/projects/paperclip-app/workspaces/workspace-1?tab=plugin%3Apaperclip.quality%3Aquality-tab",
+      "/projects/slaw-app/workspaces/workspace-1?tab=plugin%3Aslaw.quality%3Aquality-tab",
     );
     expect(mockNavigate).not.toHaveBeenCalledWith(expect.stringContaining("diffView"));
     expect(mockNavigate).not.toHaveBeenCalledWith(expect.stringContaining("baseRef"));
@@ -310,7 +310,7 @@ describe("ProjectWorkspaceDetail plugin tabs", () => {
     await render();
 
     expect(container.textContent).toContain("Workspace plugin tab is not available.");
-    expect(container.querySelector('a[href="/projects/paperclip-app/workspaces/workspace-1?tab=configuration"]')?.textContent).toBe(
+    expect(container.querySelector('a[href="/projects/slaw-app/workspaces/workspace-1?tab=configuration"]')?.textContent).toBe(
       "Back to configuration",
     );
     expect(container.querySelector('[data-testid="plugin-slot-mount"]')).toBeNull();
@@ -320,7 +320,7 @@ describe("ProjectWorkspaceDetail plugin tabs", () => {
 
   it("shows loading and error states for plugin tab manifests", async () => {
     mockPluginSlotState.isLoading = true;
-    mockRouteSearch.value = "?tab=plugin%3Apaperclip.quality%3Aquality-tab";
+    mockRouteSearch.value = "?tab=plugin%3Aslaw.quality%3Aquality-tab";
 
     await render();
 

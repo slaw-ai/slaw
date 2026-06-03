@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
 import {
   DEFAULT_CONFIG,
   EXPORT_NAMES,
@@ -11,13 +11,13 @@ import {
   WEBHOOK_KEYS,
 } from "./constants.js";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: SlawPluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Kitchen Sink (Example)",
-  description: "Reference plugin that demonstrates the current Paperclip plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
-  author: "Paperclip",
+  description: "Reference plugin that demonstrates the current Slaw plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
+  author: "Slaw",
   categories: ["ui", "automation", "workspace", "connector"],
   capabilities: [
     "companies.read",
@@ -159,7 +159,7 @@ const manifest: PaperclipPluginManifestV1 = {
     {
       name: TOOL_NAMES.companySummary,
       displayName: "Kitchen Sink Company Summary",
-      description: "Summarizes the current company using the Paperclip domain APIs.",
+      description: "Summarizes the current company using the Slaw domain APIs.",
       parametersSchema: {
         type: "object",
         properties: {},

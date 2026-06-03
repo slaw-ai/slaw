@@ -4,7 +4,7 @@ Guidance for human and AI contributors working in this repository.
 
 ## 1. Purpose
 
-Paperclip is a control plane for AI-agent companies.
+Slaw is a control plane for AI-agent companies.
 The current implementation target is V1 and is defined in `doc/SPEC-implementation.md`.
 
 ## 2. Read This First
@@ -82,10 +82,10 @@ If you change schema/API behavior, update all impacted layers:
 Prefer additive updates. Keep `doc/SPEC.md` and `doc/SPEC-implementation.md` aligned.
 
 5. Keep repo plan docs dated and centralized.
-When you are creating a plan file in the repository itself, new plan documents belong in `doc/plans/` and should use `YYYY-MM-DD-slug.md` filenames. This does not replace Paperclip issue planning: if a Paperclip issue asks for a plan, update the issue `plan` document per the `paperclip` skill instead of creating a repo markdown file.
+When you are creating a plan file in the repository itself, new plan documents belong in `doc/plans/` and should use `YYYY-MM-DD-slug.md` filenames. This does not replace Slaw issue planning: if a Slaw issue asks for a plan, update the issue `plan` document per the `slaw` skill instead of creating a repo markdown file.
 
 6. Attach inspectable generated artifacts.
-When your task produces a user-inspectable file, follow the Paperclip skill's "Generated Artifacts and Work Products" workflow before final disposition. In this repo, prefer the self-contained skill helper at `skills/paperclip/scripts/paperclip-upload-artifact.sh` so the file is available through the Paperclip API, create/update an artifact work product when the file is the deliverable, link the uploaded artifact in the final issue comment, and then set status. Do not rely on local filesystem paths as the only access path. See `doc/AGENT-ARTIFACTS.md` for `.mp4` and `.webm` examples.
+When your task produces a user-inspectable file, follow the Slaw skill's "Generated Artifacts and Work Products" workflow before final disposition. In this repo, prefer the self-contained skill helper at `skills/slaw/scripts/slaw-upload-artifact.sh` so the file is available through the Slaw API, create/update an artifact work product when the file is the deliverable, link the uploaded artifact in the final issue comment, and then set status. Do not rely on local filesystem paths as the only access path. See `doc/AGENT-ARTIFACTS.md` for `.mp4` and `.webm` examples.
 
 ## 6. Database Change Workflow
 
@@ -179,27 +179,27 @@ A change is done when all are true:
 4. Docs updated when behavior or commands change
 5. PR description follows the [PR template](.github/PULL_REQUEST_TEMPLATE.md) with all sections filled in (including Model Used)
 
-## 11. Fork-Specific: HenkDz/paperclip
+## 11. Fork-Specific: HenkDz/slaw
 
-This is a fork of `paperclipai/paperclip` with QoL patches and an **external-only** Hermes adapter story on branch `feat/externalize-hermes-adapter` ([tree](https://github.com/HenkDz/paperclip/tree/feat/externalize-hermes-adapter)).
+This is a fork of `slaw/slaw` with QoL patches and an **external-only** Hermes adapter story on branch `feat/externalize-hermes-adapter` ([tree](https://github.com/HenkDz/slaw/tree/feat/externalize-hermes-adapter)).
 
 ### Branch Strategy
 
-- `feat/externalize-hermes-adapter` → core has **no** `hermes-paperclip-adapter` dependency and **no** built-in `hermes_local` registration. Install Hermes via the Adapter Plugin manager (`@henkey/hermes-paperclip-adapter` or a `file:` path).
+- `feat/externalize-hermes-adapter` → core has **no** `hermes-slaw-adapter` dependency and **no** built-in `hermes_local` registration. Install Hermes via the Adapter Plugin manager (`@henkey/hermes-slaw-adapter` or a `file:` path).
 - Older fork branches may still document built-in Hermes; treat this file as authoritative for the externalize branch.
 
 ### Hermes (plugin only)
 
 - Register through **Board → Adapter manager** (same as Droid). Type remains `hermes_local` once the package is loaded.
 - UI uses generic **config-schema** + **ui-parser.js** from the package — no Hermes imports in `server/` or `ui/` source.
-- Optional: `file:` entry in `~/.paperclip/adapter-plugins.json` for local dev of the adapter repo.
+- Optional: `file:` entry in `~/.slaw/adapter-plugins.json` for local dev of the adapter repo.
 
 ### Local Dev
 
 - Fork runs on port 3101+ (auto-detects if 3100 is taken by upstream instance)
 - `npx vite build` hangs on NTFS — use `node node_modules/vite/bin/vite.js build` instead
 - Server startup from NTFS takes 30-60s — don't assume failure immediately
-- Kill ALL paperclip processes before starting: `pkill -f "paperclip"; pkill -f "tsx.*index.ts"`
+- Kill ALL slaw processes before starting: `pkill -f "slaw"; pkill -f "tsx.*index.ts"`
 - Vite cache survives `rm -rf dist` — delete both: `rm -rf ui/dist ui/node_modules/.vite`
 
 ### Fork QoL Patches (not in upstream)
@@ -214,8 +214,8 @@ These are local modifications in the fork's UI. If re-copying source, these must
 
 PR #2218 (`feat/external-adapter-phase1`) adds external adapter support. See root `AGENTS.md` for full details.
 
-- Adapters can be loaded as external plugins via `~/.paperclip/adapter-plugins.json`
+- Adapters can be loaded as external plugins via `~/.slaw/adapter-plugins.json`
 - The plugin-loader should have ZERO hardcoded adapter imports — pure dynamic loading
 - `createServerAdapter()` must include ALL optional fields (especially `detectModel`)
 - Built-in UI adapters can shadow external plugin parsers — remove built-in when fully externalizing
-- Reference external adapters: Hermes (`@henkey/hermes-paperclip-adapter` or `file:`) and Droid (npm)
+- Reference external adapters: Hermes (`@henkey/hermes-slaw-adapter` or `file:`) and Droid (npm)

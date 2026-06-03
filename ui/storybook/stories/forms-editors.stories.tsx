@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, CompanySecret, EnvBinding, Project, RoutineVariable } from "@paperclipai/shared";
+import type { Agent, CompanySecret, EnvBinding, Project, RoutineVariable } from "@slaw/shared";
 import { Code2, FileText, ListPlus, RotateCcw, Table2 } from "lucide-react";
 import { EnvVarEditor } from "@/components/EnvVarEditor";
 import { ExecutionParticipantPicker } from "@/components/ExecutionParticipantPicker";
@@ -20,7 +20,7 @@ import { ScheduleEditor, describeSchedule } from "@/components/ScheduleEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildExecutionPolicy } from "@/lib/issue-execution-policy";
-import { createIssue, storybookAgents } from "../fixtures/paperclipData";
+import { createIssue, storybookAgents } from "../fixtures/slawData";
 
 function Section({
   eyebrow,
@@ -34,9 +34,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="slaw-story__frame overflow-hidden">
       <div className="border-b border-border px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="slaw-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
@@ -78,8 +78,8 @@ function StatePanel({
 
 function StoryShell({ children }: { children: ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">{children}</main>
+    <div className="slaw-story">
+      <main className="slaw-story__inner space-y-6">{children}</main>
     </div>
   );
 }
@@ -103,7 +103,7 @@ Tooling: lean on [/react-perf-optimizer](skill://skill-react-perf?s=react-perf-o
 const shouldRun = issue.status === "in_progress" && issue.companyId === company.id;
 \`\`\`
 
-See [the implementation notes](https://github.com/paperclipai/paperclip).`;
+See [the implementation notes](https://github.com/slaw/slaw).`;
 
 const editorMentions: MentionOption[] = [
   { id: "agent-codex", name: "CodexCoder", kind: "agent", agentId: "agent-codex", agentIcon: "code" },
@@ -133,7 +133,7 @@ const adapterSchema: JsonSchemaNode = {
       type: "string",
       title: "API key",
       format: "secret-ref",
-      description: "Stored with the active Paperclip secret provider.",
+      description: "Stored with the active Slaw secret provider.",
     },
     concurrency: {
       type: "integer",
@@ -181,7 +181,7 @@ const validAdapterValues = {
   concurrency: 2,
   dryRun: true,
   notes: "Use the project worktree and post a concise task update before handoff.",
-  allowedCommands: ["pnpm --filter @paperclipai/ui typecheck", "pnpm build-storybook"],
+  allowedCommands: ["pnpm --filter @slaw/ui typecheck", "pnpm build-storybook"],
   advanced: { timeoutSeconds: 900, requireApproval: false },
 };
 
@@ -206,7 +206,7 @@ const storybookSecrets: CompanySecret[] = [
 	    name: "OPENAI_API_KEY",
 	    provider: "local_encrypted",
 	    status: "active",
-	    managedMode: "paperclip_managed",
+	    managedMode: "slaw_managed",
 	    externalRef: null,
 	    providerConfigId: null,
 	    providerMetadata: null,
@@ -227,7 +227,7 @@ const storybookSecrets: CompanySecret[] = [
 	    name: "GITHUB_TOKEN",
 	    provider: "local_encrypted",
 	    status: "active",
-	    managedMode: "paperclip_managed",
+	    managedMode: "slaw_managed",
 	    externalRef: null,
 	    providerConfigId: null,
 	    providerMetadata: null,
@@ -253,7 +253,7 @@ const routineVariables: RoutineVariable[] = [
     name: "repo",
     label: "Repository",
     type: "text",
-    defaultValue: "paperclipai/paperclip",
+    defaultValue: "slaw/slaw",
     required: true,
     options: [],
   },
@@ -289,7 +289,7 @@ const storybookProject: Project = {
   urlKey: "board-ui",
   goalId: "goal-company",
   goalIds: ["goal-company"],
-  goals: [{ id: "goal-company", title: "We're building Paperclip" }],
+  goals: [{ id: "goal-company", title: "We're building Slaw" }],
   name: "Board UI",
   description: "Control-plane interface, Storybook review surfaces, and operator workflows.",
   status: "in_progress",
@@ -302,13 +302,13 @@ const storybookProject: Project = {
   executionWorkspacePolicy: null,
   codebase: {
     workspaceId: "workspace-board-ui",
-    repoUrl: "https://github.com/paperclipai/paperclip",
+    repoUrl: "https://github.com/slaw/slaw",
     repoRef: "master",
     defaultRef: "master",
-    repoName: "paperclip",
-    localFolder: "/Users/dotta/paperclip",
-    managedFolder: "paperclip",
-    effectiveLocalFolder: "/Users/dotta/paperclip",
+    repoName: "slaw",
+    localFolder: "/Users/dotta/slaw",
+    managedFolder: "slaw",
+    effectiveLocalFolder: "/Users/dotta/slaw",
     origin: "local_folder",
   },
   workspaces: [],
@@ -631,11 +631,11 @@ function PickerGallery() {
 function FormsEditorsShowcase() {
   return (
     <StoryShell>
-      <section className="paperclip-story__frame p-6">
+      <section className="slaw-story__frame p-6">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <div className="paperclip-story__label">Forms and editors</div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Paperclip form controls under realistic state</h1>
+            <div className="slaw-story__label">Forms and editors</div>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Slaw form controls under realistic state</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               Dense control-plane forms need to hold empty, filled, validation, and disabled states without losing scan
               speed. These fixtures keep the components reviewable outside production routes.
@@ -710,7 +710,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Fixture-backed stories for Paperclip form controls, markdown editors, inline editors, schedule controls, runtime-variable dialogs, and selection pickers.",
+          "Fixture-backed stories for Slaw form controls, markdown editors, inline editors, schedule controls, runtime-variable dialogs, and selection pickers.",
       },
     },
   },
@@ -731,7 +731,7 @@ export const RoutineRunVariablesDialogOpen: Story = {
 };
 
 const foldCurtainLongMarkdown = [
-  "# paperclip-bench",
+  "# slaw-bench",
   "",
   "Ship criteria for the benchmark harness — these notes are intentionally lengthy so the fold-curtain clips them.",
   "",

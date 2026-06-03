@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
-import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
+import { createTestHarness } from "@slaw/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin, { resolveDefaultBaseRef } from "../src/worker.js";
 
@@ -16,12 +16,12 @@ async function git(cwd: string, args: string[]) {
 }
 
 async function createGitWorkspace() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-workspace-diff-plugin-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "slaw-workspace-diff-plugin-"));
   tempRoots.push(root);
   await fs.mkdir(path.join(root, "src"), { recursive: true });
   await git(root, ["init"]);
-  await git(root, ["config", "user.email", "paperclip@example.com"]);
-  await git(root, ["config", "user.name", "Paperclip Test"]);
+  await git(root, ["config", "user.email", "slaw@example.com"]);
+  await git(root, ["config", "user.name", "Slaw Test"]);
   await fs.writeFile(path.join(root, "src/app.ts"), "export const value = 1;\n");
   await git(root, ["add", "src/app.ts"]);
   await git(root, ["commit", "-m", "initial"]);

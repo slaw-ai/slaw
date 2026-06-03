@@ -3,7 +3,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildProjectMentionHref, buildRoutineMentionHref, buildSkillMentionHref } from "@paperclipai/shared";
+import { buildProjectMentionHref, buildRoutineMentionHref, buildSkillMentionHref } from "@slaw/shared";
 import {
   computeMentionMenuPosition,
   findClosestAutocompleteAnchor,
@@ -540,12 +540,12 @@ describe("MarkdownEditor", () => {
   });
 
   it("keeps mention queries active across spaces", () => {
-    expect(findMentionMatch("Ping @Paperclip App", "Ping @Paperclip App".length)).toEqual({
+    expect(findMentionMatch("Ping @Slaw App", "Ping @Slaw App".length)).toEqual({
       trigger: "mention",
       marker: "@",
-      query: "Paperclip App",
+      query: "Slaw App",
       atPos: 5,
-      endPos: "Ping @Paperclip App".length,
+      endPos: "Ping @Slaw App".length,
     });
   });
 
@@ -690,7 +690,7 @@ describe("MarkdownEditor", () => {
       {
         id: "project:project-123",
         kind: "project" as const,
-        name: "Paperclip App",
+        name: "Slaw App",
         projectId: "project-123",
         projectColor: "#336699",
       },
@@ -728,7 +728,7 @@ describe("MarkdownEditor", () => {
     await flush();
 
     const option = Array.from(document.body.querySelectorAll('button[type="button"]'))
-      .find((node) => node.textContent?.includes("Paperclip App")) as HTMLButtonElement | undefined;
+      .find((node) => node.textContent?.includes("Slaw App")) as HTMLButtonElement | undefined;
     expect(option).toBeTruthy();
     const menu = document.body.querySelector('[data-testid="mention-autocomplete-menu"]') as HTMLElement | null;
     expect(menu).toBeTruthy();
@@ -748,7 +748,7 @@ describe("MarkdownEditor", () => {
     });
 
     expect(handleChange).toHaveBeenCalledWith(
-      `[@Paperclip App](${buildProjectMentionHref("project-123", "#336699")}) `,
+      `[@Slaw App](${buildProjectMentionHref("project-123", "#336699")}) `,
     );
 
     await act(async () => {
@@ -760,7 +760,7 @@ describe("MarkdownEditor", () => {
     const handleChange = vi.fn();
     const { option, root } = await openMentionMenuFor(handleChange);
 
-    const menu = option.closest("[data-paperclip-floating-ui]");
+    const menu = option.closest("[data-slaw-floating-ui]");
     expect(menu).toBeTruthy();
     expect(menu?.className).toContain("pointer-events-auto");
 
@@ -791,7 +791,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 12 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Paperclip App ${index}`,
+      name: `Slaw App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));
@@ -819,7 +819,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 60 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Paperclip App ${index}`,
+      name: `Slaw App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));
@@ -845,7 +845,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 12 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Paperclip App ${index}`,
+      name: `Slaw App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));

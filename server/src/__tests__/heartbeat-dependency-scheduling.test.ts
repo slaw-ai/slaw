@@ -22,7 +22,7 @@ import {
   issueTreeHolds,
   issues,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -93,7 +93,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-dependency-scheduling-");
+    tempDb = await startEmbeddedPostgresTestDatabase("slaw-heartbeat-dependency-scheduling-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
     await ensureIssueRelationsTable(db);
@@ -162,7 +162,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -424,7 +424,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -558,7 +558,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -754,7 +754,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -883,7 +883,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Slaw",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

@@ -155,11 +155,11 @@ describe("CloudAccessGate", () => {
     mockAuthApi.getSession.mockResolvedValue(null);
 
     const root = renderGate(container);
-    await waitForText(container, "Finish setting up this Paperclip");
+    await waitForText(container, "Finish setting up this Slaw");
 
-    expect(container.textContent).toContain("Finish setting up this Paperclip");
+    expect(container.textContent).toContain("Finish setting up this Slaw");
     expect(container.textContent).toContain("Sign in / Create account");
-    expect(container.textContent).toContain("pnpm paperclipai auth bootstrap-ceo");
+    expect(container.textContent).toContain("pnpm slaw auth bootstrap-ceo");
     expect(mockAccessApi.getCurrentBoardAccess).not.toHaveBeenCalled();
 
     unmountRoot(root);
@@ -216,9 +216,9 @@ describe("CloudAccessGate", () => {
     });
 
     const root = renderGate(container);
-    await waitForText(container, "This Paperclip is waiting on its first admin");
+    await waitForText(container, "This Slaw is waiting on its first admin");
 
-    expect(container.textContent).toContain("This Paperclip is waiting on its first admin");
+    expect(container.textContent).toContain("This Slaw is waiting on its first admin");
     expect(container.textContent).toContain("invite-only mode");
     expect(container.textContent).not.toContain("Claim this instance");
     expect(container.textContent).not.toContain("Sign in / Create account");

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CatalogSkill } from "@paperclipai/shared";
+import type { CatalogSkill } from "@slaw/shared";
 
 const mockExistsSync = vi.hoisted(() => vi.fn());
 const mockReadFileSync = vi.hoisted(() => vi.fn());
@@ -22,8 +22,8 @@ vi.doMock("node:fs", async () => {
 
 function catalogSkill(slug: string, name = slug): CatalogSkill {
   return {
-    id: `paperclipai:bundled:software-development:${slug}`,
-    key: `paperclipai/bundled/software-development/${slug}`,
+    id: `slaw:bundled:software-development:${slug}`,
+    key: `slaw/bundled/software-development/${slug}`,
     kind: "bundled",
     category: "software-development",
     slug,
@@ -45,7 +45,7 @@ function catalogSkill(slug: string, name = slug): CatalogSkill {
 function manifest(skills: CatalogSkill[], packageVersion = "0.3.1") {
   return JSON.stringify({
     schemaVersion: 1,
-    packageName: "@paperclipai/skills-catalog",
+    packageName: "@slaw/skills-catalog",
     packageVersion,
     generatedAt: "2026-05-28T00:00:00.000Z",
     skills,
@@ -74,10 +74,10 @@ describe("skills catalog service", () => {
     const service = await import("../services/skills-catalog.js");
 
     expect(service.listCatalogSkills().map((skill) => skill.key)).toEqual([
-      "paperclipai/bundled/software-development/old-skill",
+      "slaw/bundled/software-development/old-skill",
     ]);
     expect(service.listCatalogSkills().map((skill) => skill.key)).toEqual([
-      "paperclipai/bundled/software-development/old-skill",
+      "slaw/bundled/software-development/old-skill",
     ]);
     expect(mockReadFileSync).toHaveBeenCalledTimes(1);
 
@@ -85,12 +85,12 @@ describe("skills catalog service", () => {
     manifestMtimeMs += 1;
 
     expect(service.listCatalogSkills().map((skill) => skill.key)).toEqual([
-      "paperclipai/bundled/software-development/new-skill",
+      "slaw/bundled/software-development/new-skill",
     ]);
     expect(mockReadFileSync).toHaveBeenCalledTimes(2);
     expect(() => service.getCatalogSkillOrThrow("old-skill")).toThrow("Catalog skill not found");
     expect(service.getCatalogPackageMetadata()).toEqual({
-      packageName: "@paperclipai/skills-catalog",
+      packageName: "@slaw/skills-catalog",
       packageVersion: "0.3.2",
     });
   });

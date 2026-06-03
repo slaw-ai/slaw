@@ -1,14 +1,14 @@
 import { and, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@paperclipai/db";
-import { issues, projects, projectWorkspaces } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
+import { issues, projects, projectWorkspaces } from "@slaw/db";
 import {
   findWorkspaceCommandDefinition,
   matchWorkspaceRuntimeServiceToCommand,
   updateExecutionWorkspaceSchema,
   workspaceRuntimeControlTargetSchema,
-} from "@paperclipai/shared";
-import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@paperclipai/shared";
+} from "@slaw/shared";
+import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { executionWorkspaceService, logActivity, workspaceOperationService } from "../services/index.js";
 import { mergeExecutionWorkspaceConfig, readExecutionWorkspaceConfig } from "../services/execution-workspaces.js";
@@ -116,7 +116,7 @@ export function executionWorkspaceRoutes(db: Db) {
 
     const workspaceCwd = existing.cwd;
     if (!workspaceCwd) {
-      res.status(422).json({ error: "Execution workspace needs a local path before Paperclip can run workspace commands" });
+      res.status(422).json({ error: "Execution workspace needs a local path before Slaw can run workspace commands" });
       return;
     }
 
@@ -280,7 +280,7 @@ export function executionWorkspaceRoutes(db: Db) {
           }
           const availableWorkspace = await ensureWorkspaceAvailable();
           if (!availableWorkspace) {
-            throw new Error("Execution workspace needs a local path before Paperclip can run workspace commands");
+            throw new Error("Execution workspace needs a local path before Slaw can run workspace commands");
           }
           return await runWorkspaceJobForControl({
             actor: {
@@ -331,7 +331,7 @@ export function executionWorkspaceRoutes(db: Db) {
         if (action === "start" || action === "restart") {
           const availableWorkspace = await ensureWorkspaceAvailable();
           if (!availableWorkspace) {
-            throw new Error("Execution workspace needs a local path before Paperclip can manage local runtime services");
+            throw new Error("Execution workspace needs a local path before Slaw can manage local runtime services");
           }
           const startedServices = await startRuntimeServicesForWorkspaceControl({
             db,

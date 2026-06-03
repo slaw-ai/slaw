@@ -8,17 +8,17 @@ const repoRoot = process.cwd();
 const serverRoot = path.join(repoRoot, "server");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const nonServerProjects = [
-  "@paperclipai/shared",
-  "@paperclipai/skills-catalog",
-  "@paperclipai/db",
-  "@paperclipai/adapter-utils",
-  "@paperclipai/adapter-acpx-local",
-  "@paperclipai/adapter-codex-local",
-  "@paperclipai/adapter-opencode-local",
-  "@paperclipai/plugin-sdk",
-  "@paperclipai/create-paperclip-plugin",
-  "@paperclipai/ui",
-  "paperclipai",
+  "@slaw/shared",
+  "@slaw/skills-catalog",
+  "@slaw/db",
+  "@slaw/adapter-utils",
+  "@slaw/adapter-acpx-local",
+  "@slaw/adapter-codex-local",
+  "@slaw/adapter-opencode-local",
+  "@slaw/plugin-sdk",
+  "@slaw/create-slaw-plugin",
+  "@slaw/ui",
+  "slaw",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -54,7 +54,7 @@ const allModeName = "all";
 const generalServerGroupName = "general-server";
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@paperclipai/ui", "paperclipai"];
+const generalWorkspacesAProjects = ["@slaw/ui", "slaw"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const serializedServerVitestArgs = [
@@ -249,11 +249,11 @@ function runVitest(args, label) {
   const env = {
     ...process.env,
     NODE_ENV: "test",
-    PAPERCLIP_HOME: path.join(testRoot, "h"),
-    PAPERCLIP_INSTANCE_ID: `vt-${process.pid}-${invocationIndex}`,
+    SLAW_HOME: path.join(testRoot, "h"),
+    SLAW_INSTANCE_ID: `vt-${process.pid}-${invocationIndex}`,
     TMPDIR: path.join(testRoot, "t"),
   };
-  mkdirSync(env.PAPERCLIP_HOME, { recursive: true });
+  mkdirSync(env.SLAW_HOME, { recursive: true });
   mkdirSync(env.TMPDIR, { recursive: true });
   const result = spawnSync("pnpm", ["exec", "vitest", "run", ...args], {
     cwd: repoRoot,
@@ -287,7 +287,7 @@ function runGeneralGroup(routeTests, groupName) {
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@slaw/server",
         ...serializedServerVitestArgs,
         ...excludeRouteArgs,
       ],
@@ -319,7 +319,7 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@slaw/server",
         routeTest.repoPath,
         "--pool=forks",
         "--poolOptions.forks.isolate=true",

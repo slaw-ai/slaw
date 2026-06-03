@@ -3,7 +3,7 @@ import { Router, type Request, type Response } from "express";
 import multer from "multer";
 import { z } from "zod";
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@slaw/db";
 import {
   activityLog,
   executionWorkspaces,
@@ -12,7 +12,7 @@ import {
   issueRelations,
   issues as issueRows,
   projectWorkspaces,
-} from "@paperclipai/db";
+} from "@slaw/db";
 import {
   addIssueCommentSchema,
   acceptIssueThreadInteractionSchema,
@@ -53,8 +53,8 @@ import {
   type ExecutionWorkspace,
   type IssueRelationIssueSummary,
   type SuccessfulRunHandoffState,
-} from "@paperclipai/shared";
-import { trackAgentTaskCompleted } from "@paperclipai/shared/telemetry";
+} from "@slaw/shared";
+import { trackAgentTaskCompleted } from "@slaw/shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import type { StorageService } from "../storage/types.js";
 import { validate } from "../middleware/validate.js";
@@ -209,7 +209,7 @@ function resolveAttachmentResponseContentType(input: {
   return inferVideoContentTypeFromFilename(input.originalFilename) ?? storedContentType;
 }
 
-function requiresPaperclipAttachmentMetadata(input: {
+function requiresSlawAttachmentMetadata(input: {
   type?: unknown;
   provider?: unknown;
 }, fallback?: {
@@ -218,7 +218,7 @@ function requiresPaperclipAttachmentMetadata(input: {
 }) {
   const type = typeof input.type === "string" ? input.type : fallback?.type ?? null;
   const provider = typeof input.provider === "string" ? input.provider : fallback?.provider ?? null;
-  return type === "artifact" && provider === "paperclip";
+  return type === "artifact" && provider === "slaw";
 }
 
 const attachmentArtifactMetadataInputSchema = z.object({
@@ -1256,7 +1256,7 @@ export function issueRoutes(
     }, "failed to wake assignee on document annotation comment"));
   }
 
-  async function canonicalizePaperclipArtifactMetadata(input: {
+  async function canonicalizeSlawArtifactMetadata(input: {
     issue: { id: string; companyId: string };
     metadata: Record<string, unknown> | null | undefined;
   }) {
@@ -3304,8 +3304,8 @@ export function issueRoutes(
       ...req.body,
       projectId: req.body.projectId ?? issue.projectId ?? null,
     };
-    if (requiresPaperclipAttachmentMetadata(createInput)) {
-      createInput.metadata = await canonicalizePaperclipArtifactMetadata({
+    if (requiresSlawAttachmentMetadata(createInput)) {
+      createInput.metadata = await canonicalizeSlawArtifactMetadata({
         issue,
         metadata: req.body.metadata ?? null,
       });
@@ -3352,13 +3352,13 @@ export function issueRoutes(
     if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
     if (!(await assertDeliverableMutationAllowedByRunContext(req, res, issue))) return;
     const patch = { ...req.body };
-    if (requiresPaperclipAttachmentMetadata(patch, existing)) {
+    if (requiresSlawAttachmentMetadata(patch, existing)) {
       if (patch.metadata !== undefined) {
-        patch.metadata = await canonicalizePaperclipArtifactMetadata({
+        patch.metadata = await canonicalizeSlawArtifactMetadata({
           issue,
           metadata: patch.metadata ?? null,
         });
-      } else if (!requiresPaperclipAttachmentMetadata(existing)) {
+      } else if (!requiresSlawAttachmentMetadata(existing)) {
         res.status(422).json({ error: "Attachment-backed artifact metadata is required" });
         return;
       }

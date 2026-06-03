@@ -9,38 +9,38 @@ Client-side commands for managing issues, agents, approvals, and more.
 
 ```sh
 # List issues
-pnpm paperclipai issue list [--status todo,in_progress] [--assignee-agent-id <id>] [--match text]
+pnpm slaw issue list [--status todo,in_progress] [--assignee-agent-id <id>] [--match text]
 
 # Get issue details
-pnpm paperclipai issue get <issue-id-or-identifier>
+pnpm slaw issue get <issue-id-or-identifier>
 
 # Create issue
-pnpm paperclipai issue create --title "..." [--description "..."] [--status todo] [--priority high]
+pnpm slaw issue create --title "..." [--description "..."] [--status todo] [--priority high]
 
 # Update issue
-pnpm paperclipai issue update <issue-id> [--status in_progress] [--comment "..."]
+pnpm slaw issue update <issue-id> [--status in_progress] [--comment "..."]
 
 # Add comment
-pnpm paperclipai issue comment <issue-id> --body "..." [--reopen]
+pnpm slaw issue comment <issue-id> --body "..." [--reopen]
 
 # Checkout task
-pnpm paperclipai issue checkout <issue-id> --agent-id <agent-id>
+pnpm slaw issue checkout <issue-id> --agent-id <agent-id>
 
 # Release task
-pnpm paperclipai issue release <issue-id>
+pnpm slaw issue release <issue-id>
 ```
 
 ## Company Commands
 
 ```sh
-pnpm paperclipai company list
-pnpm paperclipai company get <company-id>
+pnpm slaw company list
+pnpm slaw company get <company-id>
 
 # Export to portable folder package (writes manifest + markdown files)
-pnpm paperclipai company export <company-id> --out ./exports/acme --include company,agents
+pnpm slaw company export <company-id> --out ./exports/acme --include company,agents
 
 # Preview import (no writes)
-pnpm paperclipai company import \
+pnpm slaw company import \
   <owner>/<repo>/<path> \
   --target existing \
   --company-id <company-id> \
@@ -49,7 +49,7 @@ pnpm paperclipai company import \
   --dry-run
 
 # Apply import
-pnpm paperclipai company import \
+pnpm slaw company import \
   ./exports/acme \
   --target new \
   --new-company-name "Acme Imported" \
@@ -59,75 +59,75 @@ pnpm paperclipai company import \
 ## Agent Commands
 
 ```sh
-pnpm paperclipai agent list
-pnpm paperclipai agent get <agent-id>
+pnpm slaw agent list
+pnpm slaw agent get <agent-id>
 ```
 
 ## Skills Commands
 
 ```sh
 # Browse app-shipped catalog skills without changing company state
-pnpm paperclipai skills browse [--kind bundled|optional] [--category software-development] [--query github]
-pnpm paperclipai skills search "pull request" [--json]
+pnpm slaw skills browse [--kind bundled|optional] [--category software-development] [--query github]
+pnpm slaw skills search "pull request" [--json]
 
 # Inspect catalog metadata and file inventory before install
-pnpm paperclipai skills inspect github-pr-workflow
+pnpm slaw skills inspect github-pr-workflow
 
 # Install a catalog skill into the company skill library
 # This does not attach the skill to any agent.
-pnpm paperclipai skills install github-pr-workflow --company-id <company-id>
-pnpm paperclipai skills install github-pr-workflow --as pr-flow --force --company-id <company-id>
+pnpm slaw skills install github-pr-workflow --company-id <company-id>
+pnpm slaw skills install github-pr-workflow --as pr-flow --force --company-id <company-id>
 
 # External sources still use import instead of catalog install
-pnpm paperclipai skills import ./skills/my-skill --company-id <company-id>
-pnpm paperclipai skills import owner/repo/path/to/skill --company-id <company-id>
+pnpm slaw skills import ./skills/my-skill --company-id <company-id>
+pnpm slaw skills import owner/repo/path/to/skill --company-id <company-id>
 
 # Attach desired company skills to an agent after install/import
-pnpm paperclipai skills agent sync <agent-id> --skill github-pr-workflow --company-id <company-id>
+pnpm slaw skills agent sync <agent-id> --skill github-pr-workflow --company-id <company-id>
 ```
 
 ## Approval Commands
 
 ```sh
 # List approvals
-pnpm paperclipai approval list [--status pending]
+pnpm slaw approval list [--status pending]
 
 # Get approval
-pnpm paperclipai approval get <approval-id>
+pnpm slaw approval get <approval-id>
 
 # Create approval
-pnpm paperclipai approval create --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
+pnpm slaw approval create --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
 
 # Approve
-pnpm paperclipai approval approve <approval-id> [--decision-note "..."]
+pnpm slaw approval approve <approval-id> [--decision-note "..."]
 
 # Reject
-pnpm paperclipai approval reject <approval-id> [--decision-note "..."]
+pnpm slaw approval reject <approval-id> [--decision-note "..."]
 
 # Request revision
-pnpm paperclipai approval request-revision <approval-id> [--decision-note "..."]
+pnpm slaw approval request-revision <approval-id> [--decision-note "..."]
 
 # Resubmit
-pnpm paperclipai approval resubmit <approval-id> [--payload '{"..."}']
+pnpm slaw approval resubmit <approval-id> [--payload '{"..."}']
 
 # Comment
-pnpm paperclipai approval comment <approval-id> --body "..."
+pnpm slaw approval comment <approval-id> --body "..."
 ```
 
 ## Activity Commands
 
 ```sh
-pnpm paperclipai activity list [--agent-id <id>] [--entity-type issue] [--entity-id <id>]
+pnpm slaw activity list [--agent-id <id>] [--entity-type issue] [--entity-id <id>]
 ```
 
 ## Dashboard
 
 ```sh
-pnpm paperclipai dashboard get
+pnpm slaw dashboard get
 ```
 
 ## Heartbeat
 
 ```sh
-pnpm paperclipai heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100]
+pnpm slaw heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100]
 ```

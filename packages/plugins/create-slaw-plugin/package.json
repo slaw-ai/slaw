@@ -1,0 +1,51 @@
+{
+  "name": "@slaw/create-slaw-plugin",
+  "version": "0.1.0",
+  "license": "MIT",
+  "homepage": "https://github.com/slaw/slaw",
+  "bugs": {
+    "url": "https://github.com/slaw/slaw/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/slaw/slaw",
+    "directory": "packages/plugins/create-slaw-plugin"
+  },
+  "type": "module",
+  "bin": {
+    "create-slaw-plugin": "./dist/bin.js"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public",
+    "bin": {
+      "create-slaw-plugin": "./dist/bin.js"
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "pnpm -w exec vitest run --root packages/plugins/create-slaw-plugin --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@slaw/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.7.3"
+  }
+}
