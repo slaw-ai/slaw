@@ -39,6 +39,7 @@ import {
   routineService,
 } from "./services/index.js";
 import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
+import { BotfatherService } from "./services/botfather/service.js";
 import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
 import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
 import { createStorageServiceFromConfig } from "./storage/index.js";
@@ -627,8 +628,14 @@ export async function startServer(): Promise<StartedServer> {
     }
   };
   const pluginWorkerManager = createPluginWorkerManager();
+
+  // Botfather control-tower reporting. Constructed always; a no-op shell when
+  // no botfather.url is configured (standalone). started() after the app boots.
+  const botfatherService = new BotfatherService(db as any, config.botfather, logger);
+
   const app = await createApp(db as any, {
     uiMode,
+    botfatherService,
     serverPort: listenPort,
     storageService,
     feedbackExportService: feedback,
@@ -831,7 +838,10 @@ export async function startServer(): Promise<StartedServer> {
         });
     }, config.heartbeatSchedulerIntervalMs);
   }
-  
+
+  // Botfather reporter: enrollment + heartbeat/sync loops (no-op when standalone).
+  botfatherService.start();
+
   if (config.databaseBackupEnabled) {
     const backupIntervalMs = config.databaseBackupIntervalMinutes * 60 * 1000;
 

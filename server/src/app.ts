@@ -42,6 +42,8 @@ import { assetRoutes } from "./routes/assets.js";
 import { accessRoutes } from "./routes/access.js";
 import { pluginRoutes } from "./routes/plugins.js";
 import { adapterRoutes } from "./routes/adapters.js";
+import { botfatherRoutes } from "./routes/botfather.js";
+import type { BotfatherService } from "./services/botfather/service.js";
 import { pluginUiStaticRoutes } from "./routes/plugin-ui-static.js";
 import { readBrandedStaticIndexHtml } from "./static-index-html.js";
 import { applyUiBranding } from "./ui-branding.js";
@@ -150,6 +152,7 @@ export async function createApp(
     pluginWorkerManager?: PluginWorkerManager;
     betterAuthHandler?: express.RequestHandler;
     resolveSession?: (req: ExpressRequest) => Promise<BetterAuthSessionResult | null>;
+    botfatherService?: BotfatherService;
   },
 ) {
   const app = express();
@@ -309,6 +312,7 @@ export async function createApp(
     ),
   );
   api.use(adapterRoutes());
+  api.use(botfatherRoutes(opts.botfatherService));
   api.use(
     accessRoutes(db, {
       deploymentMode: opts.deploymentMode,

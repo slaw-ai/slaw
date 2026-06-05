@@ -131,7 +131,7 @@ export const slawConfigSchema = z
     logging: loggingConfigSchema,
     server: serverConfigSchema,
     telemetry: telemetryConfigSchema,
-    botfather: botfatherConfigSchema,
+    botfather: botfatherConfigSchema.optional(),
     auth: authConfigSchema.default({
       baseUrlMode: "auto",
       disableSignUp: false,
