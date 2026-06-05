@@ -1257,6 +1257,7 @@ export { loadOrCreateMachineIdentity } from "./machine-id.js";
 export type { MachineIdentity } from "./machine-id.js";
 
 export {
+  resolveSlawInstanceId,
   resolveSlawMachineFilePath,
   resolveBotfatherStateDir,
   resolveBotfatherCredentialsPath,
