@@ -1207,6 +1207,8 @@ export {
   slawConfigSchema,
   configMetaSchema,
   llmConfigSchema,
+  botfatherConfigSchema,
+  type BotfatherConfig,
   databaseBackupConfigSchema,
   databaseConfigSchema,
   loggingConfigSchema,
@@ -1250,3 +1252,13 @@ export type {
   EnvironmentProviderCapability,
   EnvironmentSupportStatus,
 } from "./environment-support.js";
+
+export { loadOrCreateMachineIdentity } from "./machine-id.js";
+export type { MachineIdentity } from "./machine-id.js";
+
+export {
+  resolveSlawMachineFilePath,
+  resolveBotfatherStateDir,
+  resolveBotfatherCredentialsPath,
+  resolveBotfatherSpoolDir,
+} from "./home-paths.js";

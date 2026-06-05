@@ -21,6 +21,7 @@ import {
   inferBindModeFromHost,
   resolveRuntimeBind,
   validateConfiguredBindMode,
+  type BotfatherConfig,
 } from "@slaw/shared";
 import {
   resolveDefaultBackupDir,
@@ -87,6 +88,8 @@ export interface Config {
   heartbeatSchedulerIntervalMs: number;
   squadDeletionEnabled: boolean;
   telemetryEnabled: boolean;
+  /** resolved control-tower reporting config; url undefined = standalone (no gate, no reporter) */
+  botfather: BotfatherConfig;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -333,5 +336,26 @@ export function loadConfig(): Config {
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
     squadDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
+    botfather: resolveBotfatherConfig(fileConfig?.botfather),
+  };
+}
+
+function resolveBotfatherConfig(file: Partial<BotfatherConfig> | undefined): BotfatherConfig {
+  const envUrl = process.env.SLAW_BOTFATHER_URL?.trim();
+  const disabled = process.env.SLAW_BOTFATHER_DISABLED === "1" || process.env.SLAW_BOTFATHER_DISABLED === "true";
+  // env url overrides file; SLAW_BOTFATHER_DISABLED clears the url (the gate's
+  // enforcement rules decide whether an already-enrolled instance still runs).
+  const url = disabled ? undefined : (envUrl || file?.url);
+  return {
+    url,
+    enforcement: file?.enforcement ?? "enforce",
+    locked: file?.locked ?? false,
+    syncIntervalSec: file?.syncIntervalSec ?? 60,
+    heartbeatIntervalSec: file?.heartbeatIntervalSec ?? 60,
+    reportIssueTitles: file?.reportIssueTitles ?? true,
+    spool: {
+      maxMb: file?.spool?.maxMb ?? 50,
+      maxDays: file?.spool?.maxDays ?? 14,
+    },
   };
 }

@@ -103,6 +103,26 @@ export const telemetryConfigSchema = z.object({
   enabled: z.boolean().default(true),
 }).default({});
 
+// Botfather control-tower reporting (ARCHITECTURE §8). A configured `url`
+// turns the integration on AND engages the startup gate; no `enabled` flag.
+export const botfatherConfigSchema = z
+  .object({
+    url: z.string().url().optional(),
+    enforcement: z.enum(["enforce", "advisory"]).default("enforce"),
+    // true when IT delivers this read-only (MDM); UI greys the fields out
+    locked: z.boolean().default(false),
+    syncIntervalSec: z.number().int().min(15).max(3600).default(60),
+    heartbeatIntervalSec: z.number().int().min(15).max(3600).default(60),
+    reportIssueTitles: z.boolean().default(true),
+    spool: z
+      .object({
+        maxMb: z.number().int().min(1).max(1024).default(50),
+        maxDays: z.number().int().min(1).max(365).default(14),
+      })
+      .default({}),
+  })
+  .default({});
+
 export const slawConfigSchema = z
   .object({
     $meta: configMetaSchema,
@@ -111,6 +131,7 @@ export const slawConfigSchema = z
     logging: loggingConfigSchema,
     server: serverConfigSchema,
     telemetry: telemetryConfigSchema,
+    botfather: botfatherConfigSchema,
     auth: authConfigSchema.default({
       baseUrlMode: "auto",
       disableSignUp: false,
@@ -184,6 +205,7 @@ export const slawConfigSchema = z
   });
 
 export type SlawConfig = z.infer<typeof slawConfigSchema>;
+export type BotfatherConfig = z.infer<typeof botfatherConfigSchema>;
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
 export type DatabaseConfig = z.infer<typeof databaseConfigSchema>;
 export type LoggingConfig = z.infer<typeof loggingConfigSchema>;

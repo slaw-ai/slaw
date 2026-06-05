@@ -90,3 +90,30 @@ export function resolveDefaultBackupDir(input: {
 export function resolveHomeAwarePath(value: string): string {
   return path.resolve(expandHomePrefix(value));
 }
+
+/** Per-machine identity file, shared by all instances on this machine. */
+export function resolveSlawMachineFilePath(homeOverride?: string): string {
+  return path.resolve(resolveSlawHomeDir(homeOverride), "machine.json");
+}
+
+/** Botfather reporter state dir for an instance: spool, credentials. */
+export function resolveBotfatherStateDir(input: {
+  homeDir?: string;
+  instanceId?: string;
+} = {}): string {
+  return path.resolve(resolveSlawInstanceRoot(input), "botfather");
+}
+
+export function resolveBotfatherCredentialsPath(input: {
+  homeDir?: string;
+  instanceId?: string;
+} = {}): string {
+  return path.resolve(resolveBotfatherStateDir(input), "credentials.json");
+}
+
+export function resolveBotfatherSpoolDir(input: {
+  homeDir?: string;
+  instanceId?: string;
+} = {}): string {
+  return path.resolve(resolveBotfatherStateDir(input), "spool");
+}
