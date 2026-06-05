@@ -59,7 +59,7 @@ describe("BreadcrumbContext", () => {
     expect(renderCounts).toHaveLength(2);
   });
 
-  it("builds page titles with the selected company name before Slaw", () => {
+  it("builds page titles with the selected squad name before Slaw", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "Anachronist Wiki")).toBe(
       "Inbox • Anachronist Wiki • Slaw",
     );
@@ -71,7 +71,7 @@ describe("BreadcrumbContext", () => {
     ).toBe("PAP-3515 • Issues • Anachronist Wiki • Slaw");
   });
 
-  it("omits blank company names from page titles", () => {
+  it("omits blank squad names from page titles", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • Slaw");
     expect(buildDocumentTitle([], null)).toBe("Slaw");
   });

@@ -14,7 +14,7 @@ import {
   parseIssueGraphLivenessIncidentKey,
 } from "../services/recovery/index.ts";
 
-const companyId = "company-1";
+const squadId = "squad-1";
 const agentId = "agent-1";
 const managerId = "manager-1";
 const issueId = "issue-1";
@@ -27,7 +27,7 @@ describe("recovery classifier boundary", () => {
       issues: [
         {
           id: issueId,
-          companyId,
+          squadId,
           identifier: "PAP-2073",
           title: "Centralize recovery classifiers",
           status: "blocked",
@@ -39,7 +39,7 @@ describe("recovery classifier boundary", () => {
         },
         {
           id: blockerId,
-          companyId,
+          squadId,
           identifier: "PAP-2074",
           title: "Move recovery side effects",
           status: "todo",
@@ -50,11 +50,11 @@ describe("recovery classifier boundary", () => {
           executionState: null,
         },
       ],
-      relations: [{ companyId, blockerIssueId: blockerId, blockedIssueId: issueId }],
+      relations: [{ squadId, blockerIssueId: blockerId, blockedIssueId: issueId }],
       agents: [
         {
           id: agentId,
-          companyId,
+          squadId,
           name: "Coder",
           role: "engineer",
           status: "idle",
@@ -62,7 +62,7 @@ describe("recovery classifier boundary", () => {
         },
         {
           id: managerId,
-          companyId,
+          squadId,
           name: "CTO",
           role: "cto",
           status: "idle",
@@ -80,7 +80,7 @@ describe("recovery classifier boundary", () => {
       issues: [
         {
           id: issueId,
-          companyId,
+          squadId,
           identifier: "PAP-2945",
           title: "Wait for external review",
           status: "in_review",
@@ -96,7 +96,7 @@ describe("recovery classifier boundary", () => {
       agents: [
         {
           id: agentId,
-          companyId,
+          squadId,
           name: "Coder",
           role: "engineer",
           status: "idle",
@@ -111,7 +111,7 @@ describe("recovery classifier boundary", () => {
   it("does not treat overdue or exhausted monitors as explicit waiting paths", () => {
     const baseIssue = {
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PAP-2945",
       title: "Wait for external review",
       status: "in_review",
@@ -123,7 +123,7 @@ describe("recovery classifier boundary", () => {
     const agents = [
       {
         id: agentId,
-        companyId,
+        squadId,
         name: "Coder",
         role: "engineer",
         status: "idle",
@@ -172,13 +172,13 @@ describe("recovery classifier boundary", () => {
     const input = {
       run: {
         id: runId,
-        companyId,
+        squadId,
         agentId,
         continuationAttempt: 0,
       } as never,
       issue: {
         id: issueId,
-        companyId,
+        squadId,
         identifier: "PAP-2073",
         title: "Centralize recovery classifiers",
         status: "in_progress",
@@ -188,7 +188,7 @@ describe("recovery classifier boundary", () => {
       } as never,
       agent: {
         id: agentId,
-        companyId,
+        squadId,
         status: "idle",
       } as never,
       livenessState: "plan_only" as const,
@@ -212,25 +212,25 @@ describe("recovery classifier boundary", () => {
     expect(RECOVERY_KEY_PREFIXES.issueGraphLivenessLeaf).toBe("harness_liveness_leaf");
 
     const incidentKey = buildIssueGraphLivenessIncidentKey({
-      companyId,
+      squadId,
       issueId,
       state: "blocked_by_unassigned_issue",
       blockerIssueId: blockerId,
     });
     expect(incidentKey).toBe(
-      "harness_liveness:company-1:issue-1:blocked_by_unassigned_issue:blocker-1",
+      "harness_liveness:squad-1:issue-1:blocked_by_unassigned_issue:blocker-1",
     );
     expect(parseIssueGraphLivenessIncidentKey(incidentKey)).toEqual({
-      companyId,
+      squadId,
       issueId,
       state: "blocked_by_unassigned_issue",
       leafIssueId: blockerId,
     });
     expect(buildIssueGraphLivenessLeafKey({
-      companyId,
+      squadId,
       state: "blocked_by_unassigned_issue",
       leafIssueId: blockerId,
-    })).toBe("harness_liveness_leaf:company-1:blocked_by_unassigned_issue:blocker-1");
+    })).toBe("harness_liveness_leaf:squad-1:blocked_by_unassigned_issue:blocker-1");
     expect(buildRunLivenessContinuationIdempotencyKey({
       issueId,
       sourceRunId: runId,

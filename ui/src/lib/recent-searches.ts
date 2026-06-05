@@ -1,18 +1,18 @@
 const STORAGE_PREFIX = "slaw:recent-searches:";
 const MAX_RECENT_SEARCHES = 5;
 
-function storageKey(companyId: string) {
-  return `${STORAGE_PREFIX}${companyId}`;
+function storageKey(squadId: string) {
+  return `${STORAGE_PREFIX}${squadId}`;
 }
 
 function isStorageAvailable() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
-export function loadRecentSearches(companyId: string): string[] {
-  if (!isStorageAvailable() || !companyId) return [];
+export function loadRecentSearches(squadId: string): string[] {
+  if (!isStorageAvailable() || !squadId) return [];
   try {
-    const raw = window.localStorage.getItem(storageKey(companyId));
+    const raw = window.localStorage.getItem(storageKey(squadId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -30,25 +30,25 @@ export function loadRecentSearches(companyId: string): string[] {
   }
 }
 
-export function pushRecentSearch(companyId: string, query: string): string[] {
-  if (!isStorageAvailable() || !companyId) return [];
+export function pushRecentSearch(squadId: string, query: string): string[] {
+  if (!isStorageAvailable() || !squadId) return [];
   const trimmed = query.trim();
-  if (!trimmed) return loadRecentSearches(companyId);
-  const existing = loadRecentSearches(companyId);
+  if (!trimmed) return loadRecentSearches(squadId);
+  const existing = loadRecentSearches(squadId);
   const filtered = existing.filter((entry) => entry.toLowerCase() !== trimmed.toLowerCase());
   const next = [trimmed, ...filtered].slice(0, MAX_RECENT_SEARCHES);
   try {
-    window.localStorage.setItem(storageKey(companyId), JSON.stringify(next));
+    window.localStorage.setItem(storageKey(squadId), JSON.stringify(next));
   } catch {
     // ignore
   }
   return next;
 }
 
-export function clearRecentSearches(companyId: string): void {
-  if (!isStorageAvailable() || !companyId) return;
+export function clearRecentSearches(squadId: string): void {
+  if (!isStorageAvailable() || !squadId) return;
   try {
-    window.localStorage.removeItem(storageKey(companyId));
+    window.localStorage.removeItem(storageKey(squadId));
   } catch {
     // ignore
   }

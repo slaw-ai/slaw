@@ -46,7 +46,7 @@ export function getConfigSchema(): AdapterConfigSchema {
         key: "stateDir",
         label: "State directory",
         type: "text",
-        hint: "Optional ACPX session state directory. Defaults to Slaw-managed company/agent scoped storage.",
+        hint: "Optional ACPX session state directory. Defaults to Slaw-managed squad/agent scoped storage.",
       },
       {
         key: "fastMode",

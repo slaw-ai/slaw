@@ -135,9 +135,9 @@ const SENSITIVE_PATHS = [
   // Advisory 7: Unauthenticated access to authenticated-mode endpoints
   'server/src/routes/authz.ts',
   // Advisory 8: Unauthenticated RCE via import authorization bypass
-  'server/src/routes/companies.ts',
+  'server/src/routes/squads.ts',
   // Advisory 9: Malicious skills able to exfiltrate / destroy user data
-  'server/src/routes/company-skills.ts',
+  'server/src/routes/squad-skills.ts',
   // Advisory 10: Arbitrary file read via agent-controlled instructionsFilePath
   'server/src/services/agent-instructions.ts',
 ];

@@ -31,7 +31,7 @@ describe("claude local skill sync", () => {
   it("defaults to mounting all built-in Slaw skills when no explicit selection exists", async () => {
     const snapshot = await listClaudeSkills({
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "claude_local",
       config: {},
     });
@@ -46,7 +46,7 @@ describe("claude local skill sync", () => {
   it("respects an explicit desired skill list without mutating a persistent home", async () => {
     const snapshot = await syncClaudeSkills({
       agentId: "agent-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "claude_local",
       config: {
         slawSkillSync: {
@@ -63,7 +63,7 @@ describe("claude local skill sync", () => {
   it("normalizes legacy flat Slaw skill refs to canonical keys", async () => {
     const snapshot = await listClaudeSkills({
       agentId: "agent-3",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "claude_local",
       config: {
         slawSkillSync: {
@@ -86,7 +86,7 @@ describe("claude local skill sync", () => {
 
     const snapshot = await listClaudeSkills({
       agentId: "agent-4",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "claude_local",
       config: {
         env: {

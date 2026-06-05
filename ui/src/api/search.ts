@@ -1,23 +1,23 @@
-import type { CompanySearchResponse, CompanySearchScope } from "@slaw/shared";
+import type { SquadSearchResponse, SquadSearchScope } from "@slaw/shared";
 import { api } from "./client";
 
-export interface CompanySearchParams {
+export interface SquadSearchParams {
   q: string;
-  scope?: CompanySearchScope;
+  scope?: SquadSearchScope;
   limit?: number;
   offset?: number;
 }
 
 export const searchApi = {
-  search: (companyId: string, params: CompanySearchParams) => {
+  search: (squadId: string, params: SquadSearchParams) => {
     const search = new URLSearchParams();
     search.set("q", params.q);
     if (params.scope) search.set("scope", params.scope);
     if (params.limit !== undefined) search.set("limit", String(params.limit));
     if (params.offset !== undefined) search.set("offset", String(params.offset));
     const qs = search.toString();
-    return api.get<CompanySearchResponse>(
-      `/companies/${companyId}/search${qs ? `?${qs}` : ""}`,
+    return api.get<SquadSearchResponse>(
+      `/squads/${squadId}/search${qs ? `?${qs}` : ""}`,
     );
   },
 };

@@ -122,7 +122,7 @@ describe("plugin UI slot validators", () => {
     expect(parsed.error.issues[0]?.message).toBe("routeSidebar slots require routePath");
   });
 
-  it("keeps reserved company route protection for route-scoped sidebars", () => {
+  it("keeps reserved squad route protection for route-scoped sidebars", () => {
     const parsed = pluginUiSlotDeclarationSchema.safeParse({
       type: "routeSidebar",
       id: "settings-route-sidebar",
@@ -160,9 +160,9 @@ describe("plugin UI slot validators", () => {
     expect(parsed.entityTypes).toEqual(["execution_workspace"]);
   });
 
-  it("accepts company settings page slots with a non-core settings route", () => {
+  it("accepts squad settings page slots with a non-core settings route", () => {
     const parsed = pluginUiSlotDeclarationSchema.parse({
-      type: "companySettingsPage",
+      type: "squadSettingsPage",
       id: "permissions-settings",
       displayName: "Permissions",
       exportName: "PermissionsSettingsPage",
@@ -172,9 +172,9 @@ describe("plugin UI slot validators", () => {
     expect(parsed.routePath).toBe("permissions");
   });
 
-  it("prevents company settings page slots from shadowing core settings routes", () => {
+  it("prevents squad settings page slots from shadowing core settings routes", () => {
     const parsed = pluginUiSlotDeclarationSchema.safeParse({
-      type: "companySettingsPage",
+      type: "squadSettingsPage",
       id: "access-settings",
       displayName: "Access",
       exportName: "AccessSettingsPage",

@@ -17,7 +17,7 @@ import {
 function createRuntimeService(overrides: Partial<WorkspaceRuntimeService> = {}): WorkspaceRuntimeService {
   return {
     id: overrides.id ?? "service-1",
-    companyId: overrides.companyId ?? "company-1",
+    squadId: overrides.squadId ?? "squad-1",
     projectId: overrides.projectId ?? "project-1",
     projectWorkspaceId: overrides.projectWorkspaceId ?? "workspace-1",
     executionWorkspaceId: overrides.executionWorkspaceId ?? null,

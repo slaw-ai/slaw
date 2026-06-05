@@ -8,14 +8,14 @@ import {
   jsonb,
   index,
 } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { environments } from "./environments.js";
 
 export const agents = pgTable(
   "agents",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     name: text("name").notNull(),
     role: text("role").notNull().default("general"),
     title: text("title"),
@@ -38,8 +38,8 @@ export const agents = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyStatusIdx: index("agents_company_status_idx").on(table.companyId, table.status),
-    companyReportsToIdx: index("agents_company_reports_to_idx").on(table.companyId, table.reportsTo),
-    companyDefaultEnvironmentIdx: index("agents_company_default_environment_idx").on(table.companyId, table.defaultEnvironmentId),
+    squadStatusIdx: index("agents_squad_status_idx").on(table.squadId, table.status),
+    squadReportsToIdx: index("agents_squad_reports_to_idx").on(table.squadId, table.reportsTo),
+    squadDefaultEnvironmentIdx: index("agents_squad_default_environment_idx").on(table.squadId, table.defaultEnvironmentId),
   }),
 );

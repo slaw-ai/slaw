@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
 import { issuesApi } from "../api/issues";
@@ -44,7 +44,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { openNewIssue, openNewAgent } = useDialogActions();
   const { isMobile, setSidebarOpen } = useSidebar();
   const searchQuery = query.trim();
@@ -66,27 +66,27 @@ export function CommandPalette() {
   }, [open]);
 
   const { data: issues = [] } = useQuery({
-    queryKey: queryKeys.issues.list(selectedCompanyId!),
-    queryFn: () => issuesApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && open && searchQuery.length === 0,
+    queryKey: queryKeys.issues.list(selectedSquadId!),
+    queryFn: () => issuesApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && open && searchQuery.length === 0,
   });
 
   const { data: searchedIssues = [] } = useQuery({
-    queryKey: queryKeys.issues.search(selectedCompanyId!, searchQuery, undefined, 10),
-    queryFn: () => issuesApi.list(selectedCompanyId!, { q: searchQuery, limit: 10, includeRoutineExecutions: true }),
-    enabled: !!selectedCompanyId && open && searchQuery.length > 0,
+    queryKey: queryKeys.issues.search(selectedSquadId!, searchQuery, undefined, 10),
+    queryFn: () => issuesApi.list(selectedSquadId!, { q: searchQuery, limit: 10, includeRoutineExecutions: true }),
+    enabled: !!selectedSquadId && open && searchQuery.length > 0,
   });
 
   const { data: agents = [] } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && open,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && open,
   });
 
   const { data: allProjects = [] } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && open,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && open,
   });
   const projects = useMemo(
     () => allProjects.filter((p) => !p.archivedAt),

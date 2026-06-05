@@ -3,7 +3,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const issueId = "11111111-1111-4111-8111-111111111111";
-const companyId = "22222222-2222-4222-8222-222222222222";
+const squadId = "22222222-2222-4222-8222-222222222222";
 
 const mockIssueService = vi.hoisted(() => ({
   getById: vi.fn(),
@@ -39,7 +39,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
   })),
   getExperimental: vi.fn(async () => ({})),
   getGeneral: vi.fn(async () => ({ feedbackDataSharingPreference: "prompt" })),
-  listCompanyIds: vi.fn(async () => [companyId]),
+  listSquadIds: vi.fn(async () => [squadId]),
 }));
 const mockRoutineService = vi.hoisted(() => ({
   syncRunStatusForIssue: vi.fn(async () => undefined),
@@ -51,7 +51,7 @@ const mockIssueThreadInteractionService = vi.hoisted(() => ({
 
 const planDocument = {
   id: "document-1",
-  companyId,
+  squadId,
   issueId,
   key: "plan",
   title: "Plan",
@@ -109,8 +109,8 @@ function registerModuleMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => mockAgentService,
@@ -156,7 +156,7 @@ function createRunContextDb(contextSnapshot: Record<string, unknown>) {
           then: async (resolve: (rows: unknown[]) => unknown) =>
             resolve([{
               id: "run-1",
-              companyId,
+              squadId,
               agentId: "agent-1",
               contextSnapshot,
             }]),
@@ -170,7 +170,7 @@ async function createApp(
   actor: Express.Request["actor"] = {
     type: "board",
     userId: "board-user",
-    companyIds: [companyId],
+    squadIds: [squadId],
     source: "local_implicit",
     isInstanceAdmin: false,
   },
@@ -210,7 +210,7 @@ describe("issue document revision routes", () => {
     vi.clearAllMocks();
     mockIssueService.getById.mockResolvedValue({
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PAP-881",
       title: "Document revisions",
       status: "in_progress",
@@ -222,7 +222,7 @@ describe("issue document revision routes", () => {
     mockDocumentsService.listIssueDocumentRevisions.mockResolvedValue([
       {
         id: "revision-2",
-        companyId,
+        squadId,
         documentId: "document-1",
         issueId,
         key: "plan",
@@ -241,7 +241,7 @@ describe("issue document revision routes", () => {
       restoredFromRevisionNumber: 1,
       document: {
         id: "document-1",
-        companyId,
+        squadId,
         issueId,
         key: "plan",
         title: "Plan v1",
@@ -268,7 +268,7 @@ describe("issue document revision routes", () => {
     });
     mockInstanceSettingsService.getExperimental.mockResolvedValue({});
     mockInstanceSettingsService.getGeneral.mockResolvedValue({ feedbackDataSharingPreference: "prompt" });
-    mockInstanceSettingsService.listCompanyIds.mockResolvedValue([companyId]);
+    mockInstanceSettingsService.listSquadIds.mockResolvedValue([squadId]);
     mockRoutineService.syncRunStatusForIssue.mockResolvedValue(undefined);
     mockLogActivity.mockResolvedValue(undefined);
   });
@@ -341,7 +341,7 @@ describe("issue document revision routes", () => {
   it("blocks cheap status-only recovery runs from restoring issue documents", async () => {
     mockIssueService.getById.mockResolvedValueOnce({
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PAP-881",
       title: "Document revisions",
       status: "todo",
@@ -352,7 +352,7 @@ describe("issue document revision routes", () => {
       {
         type: "agent",
         agentId: "agent-1",
-        companyId,
+        squadId,
         runId: "run-1",
         source: "agent_jwt",
       },

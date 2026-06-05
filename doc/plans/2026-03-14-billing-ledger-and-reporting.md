@@ -9,7 +9,7 @@ That split is fine, but the current reporting code tries to infer billing semant
 - `heartbeat_runs.usage_json` knows some per-run billing metadata
 - `heartbeat_runs.usage_json` does **not** currently carry enough normalized billing dimensions to support honest provider-level reporting
 
-This becomes incorrect as soon as a company uses more than one provider, more than one billing channel, or more than one billing mode.
+This becomes incorrect as soon as a squad uses more than one provider, more than one billing channel, or more than one billing mode.
 
 Examples:
 
@@ -230,7 +230,7 @@ Do not overload `provider` to mean biller.
 
 Add a future `finance_events` table for account-level financial events with fields along these lines:
 
-- `company_id`
+- `squad_id`
 - `occurred_at`
 - `event_kind`
 - `direction`
@@ -252,9 +252,9 @@ Add a future `finance_events` table for account-level financial events with fiel
 
 Add indexes:
 
-- `(company_id, biller, occurred_at)`
-- `(company_id, provider, occurred_at)`
-- `(company_id, heartbeat_run_id)` if distinct-run reporting remains common
+- `(squad_id, biller, occurred_at)`
+- `(squad_id, provider, occurred_at)`
+- `(squad_id, heartbeat_run_id)` if distinct-run reporting remains common
 
 ## Shared Contract Changes
 
@@ -426,7 +426,7 @@ Add or update tests for:
 1. heartbeat-created ledger rows persist `heartbeatRunId`, `biller`, `billingType`, and cached tokens
 2. legacy adapter billing values map correctly
 3. provider reporting uses ledger data only
-4. mixed-provider companies do not cross-attribute subscription usage
+4. mixed-provider squads do not cross-attribute subscription usage
 5. zero-dollar subscription usage still appears in token reporting
 6. quota fetch failures render explicit UI state
 7. manual cost events still validate and write correctly

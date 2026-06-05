@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Agent,
   AdapterEnvironmentTestResult,
-  CompanySecret,
+  SquadSecret,
   EnvBinding,
   Environment,
 } from "@slaw/shared";
@@ -31,7 +31,7 @@ import { FolderOpen, Heart, ChevronDown, X } from "lucide-react";
 import { asBoolean, asFiniteNumber, asObject, cn } from "../lib/utils";
 import { extractModelName, extractProviderId } from "../lib/model-utils";
 import { queryKeys } from "../lib/queryKeys";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import {
   Field,
   ToggleField,
@@ -208,16 +208,16 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const showInlineAdapterTestEnvironmentFeedback = !props.onTestFeedbackChange;
   const showCreateRunPolicySection = props.showCreateRunPolicySection ?? true;
   const hideInstructionsFile = props.hideInstructionsFile ?? false;
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const queryClient = useQueryClient();
 
   // Sync disabled adapter types from server so dropdown filters them out
   const disabledTypes = useDisabledAdaptersSync();
 
   const { data: availableSecrets = [] } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.secrets.list(selectedCompanyId) : ["secrets", "none"],
-    queryFn: () => secretsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryKey: selectedSquadId ? queryKeys.secrets.list(selectedSquadId) : ["secrets", "none"],
+    queryFn: () => secretsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -227,25 +227,25 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const environmentsEnabled = experimentalSettings?.enableEnvironments === true;
 
   const { data: environments = [] } = useQuery<Environment[]>({
-    queryKey: selectedCompanyId ? queryKeys.environments.list(selectedCompanyId) : ["environments", "none"],
-    queryFn: () => environmentsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId) && environmentsEnabled,
+    queryKey: selectedSquadId ? queryKeys.environments.list(selectedSquadId) : ["environments", "none"],
+    queryFn: () => environmentsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId) && environmentsEnabled,
   });
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to create secrets");
-      return secretsApi.create(selectedCompanyId, input);
+      if (!selectedSquadId) throw new Error("Select a squad to create secrets");
+      return secretsApi.create(selectedSquadId, input);
     },
     onSuccess: () => {
-      if (!selectedCompanyId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+      if (!selectedSquadId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedSquadId) });
     },
   });
 
   const uploadMarkdownImage = useMutation({
     mutationFn: async ({ file, namespace }: { file: File; namespace: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to upload images");
-      return assetsApi.uploadImage(selectedCompanyId, file, namespace);
+      if (!selectedSquadId) throw new Error("Select a squad to upload images");
+      return assetsApi.uploadImage(selectedSquadId, file, namespace);
     },
   });
 
@@ -350,18 +350,18 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   );
 
   // Fetch adapter models for the effective adapter type
-  const modelQueryKey = selectedCompanyId
-    ? queryKeys.agents.adapterModels(selectedCompanyId, adapterType, currentDefaultEnvironmentId || null)
+  const modelQueryKey = selectedSquadId
+    ? queryKeys.agents.adapterModels(selectedSquadId, adapterType, currentDefaultEnvironmentId || null)
     : ["agents", "none", "adapter-models", adapterType];
   const {
     data: fetchedModels,
     error: fetchedModelsError,
   } = useQuery({
     queryKey: modelQueryKey,
-    queryFn: () => agentsApi.adapterModels(selectedCompanyId!, adapterType, {
+    queryFn: () => agentsApi.adapterModels(selectedSquadId!, adapterType, {
       environmentId: currentDefaultEnvironmentId || null,
     }),
-    enabled: Boolean(selectedCompanyId),
+    enabled: Boolean(selectedSquadId),
   });
   const [refreshModelsError, setRefreshModelsError] = useState<string | null>(null);
   const [refreshingModels, setRefreshingModels] = useState(false);
@@ -384,24 +384,24 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     data: detectedModelData,
     refetch: refetchDetectedModel,
   } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.agents.detectModel(selectedCompanyId, adapterType)
+    queryKey: selectedSquadId
+      ? queryKeys.agents.detectModel(selectedSquadId, adapterType)
       : ["agents", "none", "detect-model", adapterType],
     queryFn: () => {
-      if (!selectedCompanyId) {
-        throw new Error("Select a company to detect the model");
+      if (!selectedSquadId) {
+        throw new Error("Select a squad to detect the model");
       }
-      return agentsApi.detectModel(selectedCompanyId, adapterType);
+      return agentsApi.detectModel(selectedSquadId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_local"),
+    enabled: Boolean(selectedSquadId && isLocal && adapterType !== "opencode_local"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
 
-  const { data: companyAgents = [] } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.agents.list(selectedCompanyId) : ["agents", "none", "list"],
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: Boolean(!isCreate && selectedCompanyId),
+  const { data: squadAgents = [] } = useQuery({
+    queryKey: selectedSquadId ? queryKeys.agents.list(selectedSquadId) : ["agents", "none", "list"],
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: Boolean(!isCreate && selectedSquadId),
   });
 
   /** Props passed to adapter-specific config field components */
@@ -431,11 +431,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // cheap defaults.
   const supportsModelProfiles = adapterCaps.supportsModelProfiles;
   const { data: adapterCheapProfileDefinitions } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.agents.adapterModelProfiles(selectedCompanyId, adapterType)
+    queryKey: selectedSquadId
+      ? queryKeys.agents.adapterModelProfiles(selectedSquadId, adapterType)
       : ["agents", "none", "adapter-model-profiles", adapterType],
-    queryFn: () => agentsApi.adapterModelProfiles(selectedCompanyId!, adapterType),
-    enabled: Boolean(selectedCompanyId) && supportsModelProfiles,
+    queryFn: () => agentsApi.adapterModelProfiles(selectedSquadId!, adapterType),
+    enabled: Boolean(selectedSquadId) && supportsModelProfiles,
   });
   const adapterCheapDefault = useMemo(() => {
     return (adapterCheapProfileDefinitions ?? []).find((profile) => profile.key === "cheap") ?? null;
@@ -468,16 +468,16 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   const testEnvironment = useMutation({
     mutationFn: async () => {
-      if (!selectedCompanyId) {
-        throw new Error("Select a company to test adapter environment");
+      if (!selectedSquadId) {
+        throw new Error("Select a squad to test adapter environment");
       }
-      return agentsApi.testEnvironment(selectedCompanyId, adapterType, {
+      return agentsApi.testEnvironment(selectedSquadId, adapterType, {
         adapterConfig: buildAdapterConfigForTest(),
         environmentId: currentDefaultEnvironmentId || null,
       });
     },
   });
-  const testEnvironmentDisabled = testEnvironment.isPending || !selectedCompanyId;
+  const testEnvironmentDisabled = testEnvironment.isPending || !selectedSquadId;
   const triggerTestEnvironment = useCallback(() => {
     if (testEnvironmentDisabled) return;
     testEnvironment.mutate();
@@ -528,11 +528,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     : eff("adapterConfig", "model", String(config.model ?? ""));
 
   async function handleRefreshModels() {
-    if (!selectedCompanyId) return;
+    if (!selectedSquadId) return;
     setRefreshingModels(true);
     setRefreshModelsError(null);
     try {
-      const refreshed = await agentsApi.adapterModels(selectedCompanyId, adapterType, { refresh: true });
+      const refreshed = await agentsApi.adapterModels(selectedSquadId, adapterType, { refresh: true });
       queryClient.setQueryData(modelQueryKey, refreshed);
     } catch (error) {
       setRefreshModelsError(error instanceof Error ? error.message : "Failed to refresh adapter models.");
@@ -734,7 +734,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             </Field>
             <Field label="Reports to" hint={help.reportsTo}>
               <ReportsToPicker
-                agents={companyAgents}
+                agents={squadAgents}
                 value={eff("identity", "reportsTo", props.agent.reportsTo ?? null)}
                 onChange={(id) => mark("identity", "reportsTo", id)}
                 excludeAgentIds={[props.agent.id]}
@@ -808,7 +808,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   mark("identity", "defaultEnvironmentId", nextValue || null);
                 }}
               >
-                <option value="">Company default (Local)</option>
+                <option value="">Squad default (Local)</option>
                 {runnableEnvironments.map((environment) => (
                   <option key={environment.id} value={environment.id}>
                     {environment.name} · {environment.driver}

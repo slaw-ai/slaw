@@ -20,7 +20,7 @@ const manifest: SlawPluginManifestV1 = {
   author: "Slaw",
   categories: ["ui", "automation", "workspace", "connector"],
   capabilities: [
-    "companies.read",
+    "squads.read",
     "projects.read",
     "project.workspaces.read",
     "issues.read",
@@ -157,9 +157,9 @@ const manifest: SlawPluginManifestV1 = {
       },
     },
     {
-      name: TOOL_NAMES.companySummary,
-      displayName: "Kitchen Sink Company Summary",
-      description: "Summarizes the current company using the Slaw domain APIs.",
+      name: TOOL_NAMES.squadSummary,
+      displayName: "Kitchen Sink Squad Summary",
+      description: "Summarizes the current squad using the Slaw domain APIs.",
       parametersSchema: {
         type: "object",
         properties: {},
@@ -195,10 +195,10 @@ const manifest: SlawPluginManifestV1 = {
         exportName: EXPORT_NAMES.settingsPage,
       },
       {
-        type: "companySettingsPage",
-        id: SLOT_IDS.companySettingsPage,
+        type: "squadSettingsPage",
+        id: SLOT_IDS.squadSettingsPage,
         displayName: "Kitchen Sink",
-        exportName: EXPORT_NAMES.companySettingsPage,
+        exportName: EXPORT_NAMES.squadSettingsPage,
         routePath: "kitchen-sink",
       },
       {

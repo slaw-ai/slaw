@@ -2,7 +2,7 @@ import type { ApprovalStatus, ApprovalType } from "../constants.js";
 
 export interface Approval {
   id: string;
-  companyId: string;
+  squadId: string;
   type: ApprovalType;
   requestedByAgentId: string | null;
   requestedByUserId: string | null;
@@ -17,7 +17,7 @@ export interface Approval {
 
 export interface ApprovalComment {
   id: string;
-  companyId: string;
+  squadId: string;
   approvalId: string;
   authorAgentId: string | null;
   authorUserId: string | null;

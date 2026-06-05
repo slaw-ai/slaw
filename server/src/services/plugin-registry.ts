@@ -3,7 +3,7 @@ import type { Db } from "@slaw/db";
 import {
   plugins,
   pluginConfig,
-  pluginCompanySettings,
+  pluginSquadSettings,
   pluginEntities,
   pluginJobs,
   pluginJobRuns,
@@ -16,7 +16,7 @@ import type {
   UpdatePluginStatus,
   UpsertPluginConfig,
   PatchPluginConfig,
-  PluginCompanySettings,
+  PluginSquadSettings,
   PluginEntityRecord,
   PluginEntityQuery,
   PluginJobRecord,
@@ -389,62 +389,62 @@ export function pluginRegistryService(db: Db) {
       return rows[0] ?? null;
     },
 
-    // ----- Company settings ----------------------------------------------
+    // ----- Squad settings ----------------------------------------------
 
-    /** Retrieve company-scoped plugin settings. */
-    getCompanySettings: (pluginId: string, companyId: string): Promise<PluginCompanySettings | null> =>
+    /** Retrieve squad-scoped plugin settings. */
+    getSquadSettings: (pluginId: string, squadId: string): Promise<PluginSquadSettings | null> =>
       db
         .select()
-        .from(pluginCompanySettings)
+        .from(pluginSquadSettings)
         .where(and(
-          eq(pluginCompanySettings.pluginId, pluginId),
-          eq(pluginCompanySettings.companyId, companyId),
+          eq(pluginSquadSettings.pluginId, pluginId),
+          eq(pluginSquadSettings.squadId, squadId),
         ))
-        .then((rows) => rows[0] ?? null) as Promise<PluginCompanySettings | null>,
+        .then((rows) => rows[0] ?? null) as Promise<PluginSquadSettings | null>,
 
-    /** Create or replace company-scoped plugin settings. */
-    upsertCompanySettings: async (
+    /** Create or replace squad-scoped plugin settings. */
+    upsertSquadSettings: async (
       pluginId: string,
-      companyId: string,
+      squadId: string,
       input: { enabled?: boolean; settingsJson: Record<string, unknown>; lastError?: string | null },
-    ): Promise<PluginCompanySettings> => {
+    ): Promise<PluginSquadSettings> => {
       const plugin = await getById(pluginId);
       if (!plugin) throw notFound("Plugin not found");
 
       const existing = await db
         .select()
-        .from(pluginCompanySettings)
+        .from(pluginSquadSettings)
         .where(and(
-          eq(pluginCompanySettings.pluginId, pluginId),
-          eq(pluginCompanySettings.companyId, companyId),
+          eq(pluginSquadSettings.pluginId, pluginId),
+          eq(pluginSquadSettings.squadId, squadId),
         ))
         .then((rows) => rows[0] ?? null);
 
       if (existing) {
         return db
-          .update(pluginCompanySettings)
+          .update(pluginSquadSettings)
           .set({
             enabled: input.enabled ?? existing.enabled,
             settingsJson: input.settingsJson,
             lastError: input.lastError ?? null,
             updatedAt: new Date(),
           })
-          .where(eq(pluginCompanySettings.id, existing.id))
+          .where(eq(pluginSquadSettings.id, existing.id))
           .returning()
-          .then((rows) => rows[0]) as Promise<PluginCompanySettings>;
+          .then((rows) => rows[0]) as Promise<PluginSquadSettings>;
       }
 
       return db
-        .insert(pluginCompanySettings)
+        .insert(pluginSquadSettings)
         .values({
           pluginId,
-          companyId,
+          squadId,
           enabled: input.enabled ?? true,
           settingsJson: input.settingsJson,
           lastError: input.lastError ?? null,
         })
         .returning()
-        .then((rows) => rows[0]) as Promise<PluginCompanySettings>;
+        .then((rows) => rows[0]) as Promise<PluginSquadSettings>;
     },
 
     // ----- Entities -------------------------------------------------------

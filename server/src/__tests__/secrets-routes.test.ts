@@ -35,8 +35,8 @@ function createApp(actor: Record<string, unknown> = {
   type: "board",
   userId: "user-1",
   source: "session",
-  companyIds: ["company-1"],
-  memberships: [{ companyId: "company-1", status: "active", membershipRole: "admin" }],
+  squadIds: ["squad-1"],
+  memberships: [{ squadId: "squad-1", status: "active", membershipRole: "admin" }],
 }) {
   const app = express();
   app.use(express.json());
@@ -57,7 +57,7 @@ describe("secret routes", () => {
     mockLogActivity.mockReset();
   });
 
-  it("returns provider health checks for board callers with company access", async () => {
+  it("returns provider health checks for board callers with squad access", async () => {
     mockSecretService.checkProviders.mockResolvedValue([
       {
         provider: "local_encrypted",
@@ -67,7 +67,7 @@ describe("secret routes", () => {
       },
     ]);
 
-    const res = await request(createApp()).get("/api/companies/company-1/secret-providers/health");
+    const res = await request(createApp()).get("/api/squads/squad-1/secret-providers/health");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -83,7 +83,7 @@ describe("secret routes", () => {
   });
 
   it("rejects managed secret creation when externalRef is supplied", async () => {
-    const res = await request(createApp()).post("/api/companies/company-1/secrets").send({
+    const res = await request(createApp()).post("/api/squads/squad-1/secrets").send({
       name: "OpenAI API Key",
       managedMode: "slaw_managed",
       value: "secret-value",
@@ -99,21 +99,21 @@ describe("secret routes", () => {
     const res = await request(createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
-    })).get("/api/companies/company-1/secret-provider-configs");
+      squadId: "squad-1",
+    })).get("/api/squads/squad-1/secret-provider-configs");
 
     expect(res.status).toBe(403);
     expect(mockSecretService.listProviderConfigs).not.toHaveBeenCalled();
   });
 
-  it("rejects provider vault cross-company access before calling the service", async () => {
+  it("rejects provider vault cross-squad access before calling the service", async () => {
     const res = await request(createApp({
       type: "board",
       userId: "user-1",
       source: "session",
-      companyIds: ["company-2"],
-      memberships: [{ companyId: "company-2", status: "active", membershipRole: "admin" }],
-    })).get("/api/companies/company-1/secret-provider-configs");
+      squadIds: ["squad-2"],
+      memberships: [{ squadId: "squad-2", status: "active", membershipRole: "admin" }],
+    })).get("/api/squads/squad-1/secret-provider-configs");
 
     expect(res.status).toBe(403);
     expect(mockSecretService.listProviderConfigs).not.toHaveBeenCalled();
@@ -123,9 +123,9 @@ describe("secret routes", () => {
     const res = await request(createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
     }))
-      .post("/api/companies/company-1/secret-provider-configs/discovery/preview")
+      .post("/api/squads/squad-1/secret-provider-configs/discovery/preview")
       .send({
         provider: "aws_secrets_manager",
         config: { region: "us-east-1" },
@@ -136,7 +136,7 @@ describe("secret routes", () => {
   });
 
   it("rejects sensitive provider vault config fields", async () => {
-    const res = await request(createApp()).post("/api/companies/company-1/secret-provider-configs").send({
+    const res = await request(createApp()).post("/api/squads/squad-1/secret-provider-configs").send({
       provider: "aws_secrets_manager",
       displayName: "AWS prod",
       config: {
@@ -152,7 +152,7 @@ describe("secret routes", () => {
 
   it("rejects sensitive provider vault discovery draft config fields", async () => {
     const res = await request(createApp())
-      .post("/api/companies/company-1/secret-provider-configs/discovery/preview")
+      .post("/api/squads/squad-1/secret-provider-configs/discovery/preview")
       .send({
         provider: "aws_secrets_manager",
         config: {
@@ -186,7 +186,7 @@ describe("secret routes", () => {
           },
           sampleCount: 2,
           samples: [
-            { name: "slaw/prod-use1/company-1/openai", hasKmsKey: false, tagKeys: ["environment"] },
+            { name: "slaw/prod-use1/squad-1/openai", hasKmsKey: false, tagKeys: ["environment"] },
           ],
           signals: {
             namespace: "prod-use1",
@@ -206,7 +206,7 @@ describe("secret routes", () => {
     });
 
     const res = await request(createApp())
-      .post("/api/companies/company-1/secret-provider-configs/discovery/preview")
+      .post("/api/squads/squad-1/secret-provider-configs/discovery/preview")
       .send({
         provider: "aws_secrets_manager",
         config: { region: "us-east-1" },
@@ -215,7 +215,7 @@ describe("secret routes", () => {
       });
 
     expect(res.status).toBe(200);
-    expect(mockSecretService.previewProviderConfigDiscovery).toHaveBeenCalledWith("company-1", {
+    expect(mockSecretService.previewProviderConfigDiscovery).toHaveBeenCalledWith("squad-1", {
       provider: "aws_secrets_manager",
       config: { region: "us-east-1" },
       query: "slaw",
@@ -225,7 +225,7 @@ describe("secret routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       action: "secret_provider_config.discovery_previewed",
       entityType: "secret_provider_config_discovery",
-      entityId: "company-1",
+      entityId: "squad-1",
       details: {
         provider: "aws_secrets_manager",
         candidateCount: 1,
@@ -233,11 +233,11 @@ describe("secret routes", () => {
         warningCount: 0,
       },
     }));
-    expect(JSON.stringify(mockLogActivity.mock.calls)).not.toContain("slaw/prod-use1/company-1/openai");
+    expect(JSON.stringify(mockLogActivity.mock.calls)).not.toContain("slaw/prod-use1/squad-1/openai");
   });
 
   it("rejects ready status for coming-soon provider vaults", async () => {
-    const res = await request(createApp()).post("/api/companies/company-1/secret-provider-configs").send({
+    const res = await request(createApp()).post("/api/squads/squad-1/secret-provider-configs").send({
       provider: "vault",
       displayName: "Vault draft",
       status: "ready",
@@ -252,7 +252,7 @@ describe("secret routes", () => {
   });
 
   it("rejects credential-bearing Vault provider vault addresses before persistence", async () => {
-    const res = await request(createApp()).post("/api/companies/company-1/secret-provider-configs").send({
+    const res = await request(createApp()).post("/api/squads/squad-1/secret-provider-configs").send({
       provider: "vault",
       displayName: "Vault draft",
       config: {
@@ -269,7 +269,7 @@ describe("secret routes", () => {
     "https://vault.example.com?token=hvs.x",
     "https://vault.example.com#token=hvs.x",
   ])("rejects token-bearing Vault provider vault address %s before persistence", async (address) => {
-    const res = await request(createApp()).post("/api/companies/company-1/secret-provider-configs").send({
+    const res = await request(createApp()).post("/api/squads/squad-1/secret-provider-configs").send({
       provider: "vault",
       displayName: "Vault draft",
       config: { address },
@@ -297,7 +297,7 @@ describe("secret routes", () => {
     const createdAt = new Date("2026-05-06T00:00:00.000Z");
     mockSecretService.createProviderConfig.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       provider: "aws_secrets_manager",
       displayName: "AWS prod",
       status: "ready",
@@ -314,7 +314,7 @@ describe("secret routes", () => {
       updatedAt: createdAt,
     });
 
-    const res = await request(createApp()).post("/api/companies/company-1/secret-provider-configs").send({
+    const res = await request(createApp()).post("/api/squads/squad-1/secret-provider-configs").send({
       provider: "aws_secrets_manager",
       displayName: "AWS prod",
       isDefault: true,
@@ -323,7 +323,7 @@ describe("secret routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockSecretService.createProviderConfig).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       {
         provider: "aws_secrets_manager",
         displayName: "AWS prod",
@@ -349,7 +349,7 @@ describe("secret routes", () => {
     const createdAt = new Date("2026-05-06T00:00:00.000Z");
     const providerConfig = {
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       provider: "aws_secrets_manager",
       displayName: "AWS prod",
       status: "ready",
@@ -391,8 +391,8 @@ describe("secret routes", () => {
     const res = await request(createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
-    })).post("/api/companies/company-1/secrets/remote-import/preview").send({
+      squadId: "squad-1",
+    })).post("/api/squads/squad-1/secrets/remote-import/preview").send({
       providerConfigId: "11111111-1111-4111-8111-111111111111",
     });
 
@@ -421,7 +421,7 @@ describe("secret routes", () => {
     });
 
     const res = await request(createApp())
-      .post("/api/companies/company-1/secrets/remote-import/preview")
+      .post("/api/squads/squad-1/secrets/remote-import/preview")
       .send({
         providerConfigId: "11111111-1111-4111-8111-111111111111",
         query: "openai",
@@ -429,7 +429,7 @@ describe("secret routes", () => {
       });
 
     expect(res.status).toBe(200);
-    expect(mockSecretService.previewRemoteImport).toHaveBeenCalledWith("company-1", {
+    expect(mockSecretService.previewRemoteImport).toHaveBeenCalledWith("squad-1", {
       providerConfigId: "11111111-1111-4111-8111-111111111111",
       query: "openai",
       nextToken: undefined,
@@ -458,7 +458,7 @@ describe("secret routes", () => {
     );
 
     const res = await request(createApp())
-      .post("/api/companies/company-1/secrets/remote-import/preview")
+      .post("/api/squads/squad-1/secrets/remote-import/preview")
       .send({
         providerConfigId: "11111111-1111-4111-8111-111111111111",
       });
@@ -494,7 +494,7 @@ describe("secret routes", () => {
     });
 
     const res = await request(createApp())
-      .post("/api/companies/company-1/secrets/remote-import")
+      .post("/api/squads/squad-1/secrets/remote-import")
       .send({
         providerConfigId: "11111111-1111-4111-8111-111111111111",
         secrets: [
@@ -509,7 +509,7 @@ describe("secret routes", () => {
 
     expect(res.status).toBe(200);
     expect(mockSecretService.importRemoteSecrets).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       {
         providerConfigId: "11111111-1111-4111-8111-111111111111",
         secrets: [
@@ -538,7 +538,7 @@ describe("secret routes", () => {
   it("surfaces update-route externalRef retarget rejection without logging raw refs", async () => {
     mockSecretService.getById.mockResolvedValue({
       id: "22222222-2222-4222-8222-222222222222",
-      companyId: "company-1",
+      squadId: "squad-1",
       name: "OpenAI API key",
       key: "openai-api-key",
       provider: "aws_secrets_manager",
@@ -569,7 +569,7 @@ describe("secret routes", () => {
   it("allows DELETE to retry cleanup for already soft-deleted secrets", async () => {
     const secret = {
       id: "33333333-3333-4333-8333-333333333333",
-      companyId: "company-1",
+      squadId: "squad-1",
       name: "OpenAI API Key__deleted__33333333-3333-4333-8333-333333333333",
       key: "openai-api-key__deleted__33333333-3333-4333-8333-333333333333",
       provider: "aws_secrets_manager",
@@ -592,7 +592,7 @@ describe("secret routes", () => {
       expect.anything(),
       expect.objectContaining({
         action: "secret.deleted",
-        companyId: "company-1",
+        squadId: "squad-1",
         entityId: secret.id,
       }),
     );

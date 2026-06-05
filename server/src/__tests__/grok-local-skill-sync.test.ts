@@ -11,7 +11,7 @@ describe("grok local skill sync", () => {
   it("reports Grok skills as ephemeral workspace-mounted state", async () => {
     const snapshot = await listGrokSkills({
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "grok_local",
       config: {
         slawSkillSync: {
@@ -35,7 +35,7 @@ describe("grok local skill sync", () => {
   it("tracks unavailable desired Grok skills as missing without persistent install state", async () => {
     const snapshot = await syncGrokSkills({
       agentId: "agent-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "grok_local",
       config: {
         slawRuntimeSkills: [],

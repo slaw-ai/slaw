@@ -7,7 +7,7 @@
   Aim for 5–8 steps. See CONTRIBUTING.md for full examples.
 -->
 
-> - Slaw orchestrates AI agents for zero-human companies
+> - Slaw orchestrates AI agents for zero-human squads
 > - [Which subsystem or capability is involved]
 > - [What problem or gap exists]
 > - [Why it needs to be addressed]

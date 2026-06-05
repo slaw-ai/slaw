@@ -10,7 +10,7 @@ import { IssueAssignedBacklogNotice } from "./IssueAssignedBacklogNotice";
 
 const baseAgent = {
   id: "agent-1",
-  companyId: "co-1",
+  squadId: "co-1",
   name: "ClaudeCoder",
   role: "engineer",
   status: "active",

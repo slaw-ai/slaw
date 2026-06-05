@@ -17,7 +17,7 @@
  *
  * export function DashboardWidget({ context }: PluginWidgetProps) {
  *   const { data, loading, error } = usePluginData("sync-health", {
- *     companyId: context.companyId,
+ *     squadId: context.squadId,
  *   });
  *   const resync = usePluginAction("resync");
  *
@@ -28,7 +28,7 @@
  *     <div style={{ display: "grid", gap: 8 }}>
  *       <strong>Synced Issues</strong>
  *       <div>{data!.syncedCount}</div>
- *       <button onClick={() => resync({ companyId: context.companyId })}>
+ *       <button onClick={() => resync({ squadId: context.squadId })}>
  *         Resync Now
  *       </button>
  *     </div>
@@ -42,7 +42,7 @@
  *
  * - `usePluginData(key, params)` — fetch data from the worker's `getData` handler
  * - `usePluginAction(key)` — get a callable that invokes the worker's `performAction` handler
- * - `useHostContext()` — read the current active company, project, entity, and user IDs
+ * - `useHostContext()` — read the current active squad, project, entity, and user IDs
  * - `useHostNavigation()` — navigate Slaw-internal links through the host router
  * - `useHostLocation()` — observe the current host pathname/search/hash for URL-driven UI
  * - `usePluginStream(channel)` — subscribe to real-time SSE events from the worker
@@ -146,7 +146,7 @@ export type {
 // Slot component prop interfaces
 export type {
   PluginPageProps,
-  PluginCompanySettingsPageProps,
+  PluginSquadSettingsPageProps,
   PluginWidgetProps,
   PluginDetailTabProps,
   PluginSidebarProps,

@@ -21,7 +21,7 @@ import { SourceResolvedFoldBadge } from "./SourceResolvedFoldBadge";
 
 type IssueRunLedgerProps = {
   issueId: string;
-  companyId: string;
+  squadId: string;
   issueStatus: Issue["status"];
   childIssues: Issue[];
   agentMap: ReadonlyMap<string, Agent>;
@@ -376,16 +376,16 @@ function formatSilenceAge(ms: number | null | undefined) {
 }
 
 function canBoardRecordWatchdogDecision(
-  companyId: string,
+  squadId: string,
   boardAccess: CurrentBoardAccess | undefined,
 ) {
   if (!boardAccess) return false;
   if (boardAccess.source === "local_implicit" || boardAccess.isInstanceAdmin) return true;
 
   const membership = boardAccess.memberships?.find(
-    (item) => item.companyId === companyId && item.status === "active",
+    (item) => item.squadId === squadId && item.status === "active",
   );
-  if (!membership) return boardAccess.companyIds.includes(companyId) && !boardAccess.memberships;
+  if (!membership) return boardAccess.squadIds.includes(squadId) && !boardAccess.memberships;
   return membership.membershipRole !== "viewer" && membership.membershipRole !== null;
 }
 
@@ -400,7 +400,7 @@ function watchdogDecisionErrorMessage(error: unknown) {
 
 export function IssueRunLedger({
   issueId,
-  companyId,
+  squadId,
   issueStatus,
   childIssues,
   agentMap,
@@ -470,7 +470,7 @@ export function IssueRunLedger({
       activityEvents={activityEvents}
       renderActivityEvent={renderActivityEvent}
       pendingWatchdogDecision={watchdogDecision.variables?.decision ?? null}
-      canRecordWatchdogDecisions={canBoardRecordWatchdogDecision(companyId, boardAccess)}
+      canRecordWatchdogDecisions={canBoardRecordWatchdogDecision(squadId, boardAccess)}
       watchdogDecisionError={watchdogDecisionError}
       onWatchdogDecision={(input) => watchdogDecision.mutate(input)}
     />

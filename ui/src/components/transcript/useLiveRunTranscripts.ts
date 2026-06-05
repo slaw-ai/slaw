@@ -23,7 +23,7 @@ export interface RunTranscriptSource {
 
 interface UseLiveRunTranscriptsOptions {
   runs: RunTranscriptSource[];
-  companyId?: string | null;
+  squadId?: string | null;
   maxChunksPerRun?: number;
   logPollIntervalMs?: number;
   logReadLimitBytes?: number;
@@ -89,7 +89,7 @@ function parsePersistedLogContent(
 
 export function useLiveRunTranscripts({
   runs,
-  companyId,
+  squadId,
   maxChunksPerRun = 200,
   logPollIntervalMs = LOG_POLL_INTERVAL_MS,
   logReadLimitBytes = LOG_READ_LIMIT_BYTES,
@@ -267,7 +267,7 @@ export function useLiveRunTranscripts({
 
   useEffect(() => {
     if (!enableRealtimeUpdates) return;
-    if (!companyId || activeRunIds.size === 0) return;
+    if (!squadId || activeRunIds.size === 0) return;
 
     let closed = false;
     let reconnectTimer: number | null = null;
@@ -281,7 +281,7 @@ export function useLiveRunTranscripts({
     const connect = () => {
       if (closed) return;
       const url = buildSameOriginWebSocketUrl(
-        `/api/companies/${encodeURIComponent(companyId)}/events/ws`,
+        `/api/squads/${encodeURIComponent(squadId)}/events/ws`,
       );
       socket = new WebSocket(url);
 
@@ -296,7 +296,7 @@ export function useLiveRunTranscripts({
           return;
         }
 
-        if (event.companyId !== companyId) return;
+        if (event.squadId !== squadId) return;
         const payload = event.payload ?? {};
         const runId = readString(payload["runId"]);
         if (!runId || !activeRunIds.has(runId)) return;
@@ -375,7 +375,7 @@ export function useLiveRunTranscripts({
         }
       }
     };
-  }, [activeRunIds, companyId, enableRealtimeUpdates, runById]);
+  }, [activeRunIds, squadId, enableRealtimeUpdates, runById]);
 
   const transcriptByRun = useMemo(() => {
     const next = new Map<string, TranscriptEntry[]>();

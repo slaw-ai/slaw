@@ -24,7 +24,7 @@ All commands support:
 | `--profile <name>` | Context profile name |
 | `--json` | Output as JSON |
 
-Company-scoped commands also accept `--company-id <id>`.
+Squad-scoped commands also accept `--squad-id <id>`.
 
 For clean local instances, pass `--data-dir` on the command you run:
 
@@ -38,7 +38,7 @@ Store defaults to avoid repeating flags:
 
 ```sh
 # Set defaults
-pnpm slaw context set --api-base http://localhost:3100 --company-id <id>
+pnpm slaw context set --api-base http://localhost:3100 --squad-id <id>
 
 # View current context
 pnpm slaw context show
@@ -60,11 +60,11 @@ export SLAW_API_KEY=...
 Secret operations are available under `slaw secrets`:
 
 ```sh
-pnpm slaw secrets declarations --company-id <company-id> --kind secret
-pnpm slaw secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
-pnpm slaw secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
-pnpm slaw secrets doctor --company-id <company-id>
-pnpm slaw secrets migrate-inline-env --company-id <company-id> --apply
+pnpm slaw secrets declarations --squad-id <squad-id> --kind secret
+pnpm slaw secrets create --squad-id <squad-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+pnpm slaw secrets link --squad-id <squad-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+pnpm slaw secrets doctor --squad-id <squad-id>
+pnpm slaw secrets migrate-inline-env --squad-id <squad-id> --apply
 ```
 
 Context is stored at `~/.slaw/context.json`.

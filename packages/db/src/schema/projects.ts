@@ -1,6 +1,6 @@
 import { pgTable, uuid, text, timestamp, date, index, jsonb } from "drizzle-orm/pg-core";
 import type { AgentEnvConfig } from "@slaw/shared";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { goals } from "./goals.js";
 import { agents } from "./agents.js";
 
@@ -8,7 +8,7 @@ export const projects = pgTable(
   "projects",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     goalId: uuid("goal_id").references(() => goals.id),
     name: text("name").notNull(),
     description: text("description"),
@@ -25,6 +25,6 @@ export const projects = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyIdx: index("projects_company_idx").on(table.companyId),
+    squadIdx: index("projects_squad_idx").on(table.squadId),
   }),
 );

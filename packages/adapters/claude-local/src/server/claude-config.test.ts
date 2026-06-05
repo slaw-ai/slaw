@@ -35,8 +35,8 @@ describe("prepareClaudeConfigSeed", () => {
     const onLog = vi.fn(async () => {});
     const env = createEnv(root, sourceDir);
 
-    const first = await prepareClaudeConfigSeed(env, onLog, "company-1");
-    const second = await prepareClaudeConfigSeed(env, onLog, "company-1");
+    const first = await prepareClaudeConfigSeed(env, onLog, "squad-1");
+    const second = await prepareClaudeConfigSeed(env, onLog, "squad-1");
 
     expect(first).toBe(second);
     await expect(fs.readFile(path.join(first, "settings.json"), "utf8"))
@@ -52,10 +52,10 @@ describe("prepareClaudeConfigSeed", () => {
 
     const onLog = vi.fn(async () => {});
     const env = createEnv(root, sourceDir);
-    const first = await prepareClaudeConfigSeed(env, onLog, "company-1");
+    const first = await prepareClaudeConfigSeed(env, onLog, "squad-1");
 
     await fs.writeFile(path.join(sourceDir, "settings.json"), JSON.stringify({ theme: "dark" }), "utf8");
-    const second = await prepareClaudeConfigSeed(env, onLog, "company-1");
+    const second = await prepareClaudeConfigSeed(env, onLog, "squad-1");
 
     expect(second).not.toBe(first);
     await expect(fs.readFile(path.join(first, "settings.json"), "utf8"))

@@ -11,7 +11,7 @@
   status: active # active | superseded
   superseded_by: null # e.g. entity-002
   related_entities:
-    - companies/acme
+    - squads/acme
     - people/jeff
   last_accessed: "YYYY-MM-DD"
   access_count: 0

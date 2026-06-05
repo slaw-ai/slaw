@@ -108,7 +108,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     const lease = await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       issueId: "issue-1",
       runId: "run-1",
@@ -155,7 +155,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       requestedCwd: "/workspace/slaw",
@@ -181,7 +181,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     const lease = await plugin.definition.onEnvironmentResumeLease?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "pc-env-env-1",
       leaseMetadata: { remoteCwd: "/workspace/slaw" },
@@ -213,7 +213,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "pwd",
@@ -253,7 +253,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentExecute?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "sh",
@@ -306,7 +306,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentExecute?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "echo",
@@ -337,7 +337,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       lease: { providerLeaseId: "pc-run-1-abcd1234", metadata: {} },
       command: "pwd",
@@ -371,7 +371,7 @@ describe("Cloudflare sandbox provider plugin", () => {
 
     await expect(plugin.definition.onEnvironmentRealizeWorkspace?.({
       driverKey: "cloudflare",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       issueId: "issue-1",
       lease: {

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { IssueWorkMode } from "@slaw/shared";
 import { pickTextColorForSolidBg } from "@/lib/color-contrast";
 import { useDialog } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { issuesApi } from "../api/issues";
@@ -13,7 +13,7 @@ import { agentsApi } from "../api/agents";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
 import { assetsApi } from "../api/assets";
-import { buildCompanyUserInlineOptions, buildMarkdownMentionOptions } from "../lib/company-members";
+import { buildSquadUserInlineOptions, buildMarkdownMentionOptions } from "../lib/squad-members";
 import { queryKeys } from "../lib/queryKeys";
 import { orderReusableExecutionWorkspaces } from "../lib/reusable-execution-workspaces";
 import { useProjectOrder } from "../hooks/useProjectOrder";
@@ -403,7 +403,7 @@ function issueExecutionWorkspaceModeForExistingWorkspace(mode: string | null | u
 
 export function NewIssueDialog() {
   const { newIssueOpen, newIssueDefaults, closeNewIssue } = useDialog();
-  const { companies, selectedCompanyId, selectedCompany } = useCompany();
+  const { squads, selectedSquadId, selectedSquad } = useSquad();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [title, setTitle] = useState("");
@@ -431,15 +431,15 @@ export function NewIssueDialog() {
   const [selectedExecutionWorkspaceId, setSelectedExecutionWorkspaceId] = useState("");
   const [workMode, setWorkMode] = useState<IssueWorkMode>("standard");
   const [expanded, setExpanded] = useState(false);
-  const [dialogCompanyId, setDialogCompanyId] = useState<string | null>(null);
+  const [dialogSquadId, setDialogSquadId] = useState<string | null>(null);
   const [stagedFiles, setStagedFiles] = useState<StagedIssueFile[]>([]);
   const [isFileDragOver, setIsFileDragOver] = useState(false);
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const executionWorkspaceDefaultProjectId = useRef<string | null>(null);
   const initializationKeyRef = useRef<string | null>(null);
 
-  const effectiveCompanyId = dialogCompanyId ?? selectedCompanyId;
-  const dialogCompany = companies.find((c) => c.id === effectiveCompanyId) ?? selectedCompany;
+  const effectiveSquadId = dialogSquadId ?? selectedSquadId;
+  const dialogSquad = squads.find((c) => c.id === effectiveSquadId) ?? selectedSquad;
   const isSubIssueMode = Boolean(newIssueDefaults.parentId);
   const parentIssueLabel = newIssueDefaults.parentIdentifier
     ?? (newIssueDefaults.parentId ? newIssueDefaults.parentId.slice(0, 8) : "");
@@ -451,45 +451,45 @@ export function NewIssueDialog() {
   const [priorityOpen, setPriorityOpen] = useState(false);
   const [workModeOpen, setWorkModeOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [companyOpen, setCompanyOpen] = useState(false);
+  const [squadOpen, setSquadOpen] = useState(false);
   const descriptionEditorRef = useRef<MarkdownEditorRef>(null);
   const stageFileInputRef = useRef<HTMLInputElement | null>(null);
   const assigneeSelectorRef = useRef<HTMLButtonElement | null>(null);
   const projectSelectorRef = useRef<HTMLButtonElement | null>(null);
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(effectiveCompanyId!),
-    queryFn: () => agentsApi.list(effectiveCompanyId!),
-    enabled: !!effectiveCompanyId && newIssueOpen,
+    queryKey: queryKeys.agents.list(effectiveSquadId!),
+    queryFn: () => agentsApi.list(effectiveSquadId!),
+    enabled: !!effectiveSquadId && newIssueOpen,
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(effectiveCompanyId!),
-    queryFn: () => projectsApi.list(effectiveCompanyId!),
-    enabled: !!effectiveCompanyId && newIssueOpen,
+    queryKey: queryKeys.projects.list(effectiveSquadId!),
+    queryFn: () => projectsApi.list(effectiveSquadId!),
+    enabled: !!effectiveSquadId && newIssueOpen,
   });
   const { data: reusableExecutionWorkspaces } = useQuery({
-    queryKey: queryKeys.executionWorkspaces.summaryList(effectiveCompanyId!, {
+    queryKey: queryKeys.executionWorkspaces.summaryList(effectiveSquadId!, {
       projectId,
       projectWorkspaceId: projectWorkspaceId || undefined,
       reuseEligible: true,
     }),
     queryFn: () =>
-      executionWorkspacesApi.listSummaries(effectiveCompanyId!, {
+      executionWorkspacesApi.listSummaries(effectiveSquadId!, {
         projectId,
         projectWorkspaceId: projectWorkspaceId || undefined,
         reuseEligible: true,
       }),
-    enabled: Boolean(effectiveCompanyId) && newIssueOpen && Boolean(projectId),
+    enabled: Boolean(effectiveSquadId) && newIssueOpen && Boolean(projectId),
   });
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(effectiveCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(effectiveCompanyId!),
-    enabled: Boolean(effectiveCompanyId) && newIssueOpen,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(effectiveSquadId!),
+    queryFn: () => accessApi.listUserDirectory(effectiveSquadId!),
+    enabled: Boolean(effectiveSquadId) && newIssueOpen,
   });
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -504,7 +504,7 @@ export function NewIssueDialog() {
   );
   const { orderedProjects } = useProjectOrder({
     projects: activeProjects,
-    companyId: effectiveCompanyId,
+    squadId: effectiveSquadId,
     userId: currentUserId,
   });
 
@@ -525,11 +525,11 @@ export function NewIssueDialog() {
   );
 
   const { data: assigneeCheapProfiles } = useQuery({
-    queryKey: effectiveCompanyId && assigneeAdapterType
-      ? queryKeys.agents.adapterModelProfiles(effectiveCompanyId, assigneeAdapterType)
+    queryKey: effectiveSquadId && assigneeAdapterType
+      ? queryKeys.agents.adapterModelProfiles(effectiveSquadId, assigneeAdapterType)
       : ["agents", "none", "adapter-model-profiles", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModelProfiles(effectiveCompanyId!, assigneeAdapterType!),
-    enabled: Boolean(effectiveCompanyId) && newIssueOpen && assigneeSupportsCheapLane,
+    queryFn: () => agentsApi.adapterModelProfiles(effectiveSquadId!, assigneeAdapterType!),
+    enabled: Boolean(effectiveSquadId) && newIssueOpen && assigneeSupportsCheapLane,
   });
   const assigneeCheapProfile = useMemo(
     () => (assigneeCheapProfiles ?? []).find((profile) => profile.key === "cheap") ?? null,
@@ -539,26 +539,26 @@ export function NewIssueDialog() {
     return buildMarkdownMentionOptions({
       agents,
       projects: orderedProjects,
-      members: companyMembers?.users,
+      members: squadMembers?.users,
     });
-  }, [agents, companyMembers?.users, orderedProjects]);
+  }, [agents, squadMembers?.users, orderedProjects]);
 
   const { data: assigneeAdapterModels } = useQuery({
     queryKey:
-      effectiveCompanyId && assigneeAdapterType
-        ? queryKeys.agents.adapterModels(effectiveCompanyId, assigneeAdapterType)
+      effectiveSquadId && assigneeAdapterType
+        ? queryKeys.agents.adapterModels(effectiveSquadId, assigneeAdapterType)
         : ["agents", "none", "adapter-models", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModels(effectiveCompanyId!, assigneeAdapterType!),
-    enabled: Boolean(effectiveCompanyId) && newIssueOpen && supportsAssigneeOverrides,
+    queryFn: () => agentsApi.adapterModels(effectiveSquadId!, assigneeAdapterType!),
+    enabled: Boolean(effectiveSquadId) && newIssueOpen && supportsAssigneeOverrides,
   });
 
   const createIssue = useMutation({
     mutationFn: async ({
-      companyId,
+      squadId,
       stagedFiles: pendingStagedFiles,
       ...data
-    }: { companyId: string; stagedFiles: StagedIssueFile[] } & Record<string, unknown>) => {
-      const issue = await issuesApi.create(companyId, data);
+    }: { squadId: string; stagedFiles: StagedIssueFile[] } & Record<string, unknown>) => {
+      const issue = await issuesApi.create(squadId, data);
       const failures: string[] = [];
 
       for (const stagedFile of pendingStagedFiles) {
@@ -572,24 +572,24 @@ export function NewIssueDialog() {
               baseRevisionId: null,
             });
           } else {
-            await issuesApi.uploadAttachment(companyId, issue.id, stagedFile.file);
+            await issuesApi.uploadAttachment(squadId, issue.id, stagedFile.file);
           }
         } catch {
           failures.push(stagedFile.file.name);
         }
       }
 
-      return { issue, companyId, failures };
+      return { issue, squadId, failures };
     },
-    onSuccess: ({ issue, companyId, failures }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(companyId) });
+    onSuccess: ({ issue, squadId, failures }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(squadId) });
       if (draftTimer.current) clearTimeout(draftTimer.current);
       if (failures.length > 0) {
-        const prefix = (companies.find((company) => company.id === companyId)?.issuePrefix ?? "").trim();
+        const prefix = (squads.find((squad) => squad.id === squadId)?.issuePrefix ?? "").trim();
         const issueRef = issue.identifier ?? issue.id;
         pushToast({
           title: `Created ${issueRef} with upload warnings`,
@@ -608,8 +608,8 @@ export function NewIssueDialog() {
 
   const uploadDescriptionImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!effectiveCompanyId) throw new Error("No company selected");
-      return assetsApi.uploadImage(effectiveCompanyId, file, "issues/drafts");
+      if (!effectiveSquadId) throw new Error("No squad selected");
+      return assetsApi.uploadImage(effectiveSquadId, file, "issues/drafts");
     },
   });
   const uploadDescriptionImageHandler = useCallback(async (file: File) => {
@@ -722,10 +722,10 @@ export function NewIssueDialog() {
       initializationKeyRef.current = null;
       return;
     }
-    const initializationKey = `${selectedCompanyId ?? ""}:${JSON.stringify(newIssueDefaults)}`;
+    const initializationKey = `${selectedSquadId ?? ""}:${JSON.stringify(newIssueDefaults)}`;
     if (initializationKeyRef.current === initializationKey) return;
     initializationKeyRef.current = initializationKey;
-    setDialogCompanyId(selectedCompanyId);
+    setDialogSquadId(selectedSquadId);
     executionWorkspaceDefaultProjectId.current = null;
 
     const draft = loadDraft();
@@ -847,7 +847,7 @@ export function NewIssueDialog() {
         ? defaultProjectId || null
         : null;
     }
-  }, [newIssueOpen, newIssueDefaults, orderedProjects, selectedCompanyId, setIssueText]);
+  }, [newIssueOpen, newIssueDefaults, orderedProjects, selectedSquadId, setIssueText]);
 
   useEffect(() => {
     if (!supportsAssigneeOverrides) {
@@ -906,18 +906,18 @@ export function NewIssueDialog() {
     setSelectedExecutionWorkspaceId("");
     setWorkMode("standard");
     setExpanded(false);
-    setDialogCompanyId(null);
+    setDialogSquadId(null);
     setStagedFiles([]);
     setIsFileDragOver(false);
-    setCompanyOpen(false);
+    setSquadOpen(false);
     executionWorkspaceDefaultProjectId.current = null;
     initializationKeyRef.current = null;
   }
 
-  function handleCompanyChange(companyId: string) {
+  function handleSquadChange(squadId: string) {
     if (isSubIssueMode) return;
-    if (companyId === effectiveCompanyId) return;
-    setDialogCompanyId(companyId);
+    if (squadId === effectiveSquadId) return;
+    setDialogSquadId(squadId);
     setAssigneeValue("");
     setReviewerValue("");
     setApproverValue("");
@@ -943,7 +943,7 @@ export function NewIssueDialog() {
   function handleSubmit() {
     const currentTitle = titleRef.current.trim();
     const currentDescription = descriptionRef.current.trim();
-    if (!effectiveCompanyId || !currentTitle || createIssue.isPending) return;
+    if (!effectiveSquadId || !currentTitle || createIssue.isPending) return;
     const effectiveLane = assigneeSupportsCheapLane
       ? assigneeModelLane
       : assigneeModelLane === "cheap"
@@ -976,7 +976,7 @@ export function NewIssueDialog() {
       approverValues: approverValue ? [approverValue] : [],
     });
     createIssue.mutate({
-      companyId: effectiveCompanyId,
+      squadId: effectiveSquadId,
       stagedFiles,
       title: currentTitle,
       description: currentDescription || undefined,
@@ -1117,7 +1117,7 @@ export function NewIssueDialog() {
   const assigneeOptions = useMemo<InlineEntityOption[]>(
     () => [
       ...currentUserAssigneeOption(currentUserId),
-      ...buildCompanyUserInlineOptions(companyMembers?.users, { excludeUserIds: [currentUserId] }),
+      ...buildSquadUserInlineOptions(squadMembers?.users, { excludeUserIds: [currentUserId] }),
       ...sortAgentsByRecency(
         (agents ?? []).filter((agent) => agent.status !== "terminated"),
         recentAssigneeIds,
@@ -1127,7 +1127,7 @@ export function NewIssueDialog() {
         searchText: `${agent.name} ${agent.role} ${agent.title ?? ""}`,
       })),
     ],
-    [agents, companyMembers?.users, currentUserId, recentAssigneeIds],
+    [agents, squadMembers?.users, currentUserId, recentAssigneeIds],
   );
   const projectOptions = useMemo<InlineEntityOption[]>(
     () =>
@@ -1236,37 +1236,37 @@ export function NewIssueDialog() {
         {/* Header bar */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border shrink-0">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
+            <Popover open={squadOpen} onOpenChange={setSquadOpen}>
               <PopoverTrigger asChild>
                 <button
                   className={cn(
                     "px-1.5 py-0.5 rounded text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity",
-                    !dialogCompany?.brandColor && "bg-muted",
+                    !dialogSquad?.brandColor && "bg-muted",
                   )}
                   disabled={isSubIssueMode}
                   style={
-                    dialogCompany?.brandColor
+                    dialogSquad?.brandColor
                       ? {
-                          backgroundColor: dialogCompany.brandColor,
-                          color: pickTextColorForSolidBg(dialogCompany.brandColor),
+                          backgroundColor: dialogSquad.brandColor,
+                          color: pickTextColorForSolidBg(dialogSquad.brandColor),
                         }
                       : undefined
                   }
                 >
-                  {(dialogCompany?.name ?? "").slice(0, 3).toUpperCase()}
+                  {(dialogSquad?.name ?? "").slice(0, 3).toUpperCase()}
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-1" align="start">
-                {companies.filter((c) => c.status !== "archived").map((c) => (
+                {squads.filter((c) => c.status !== "archived").map((c) => (
                   <button
                     key={c.id}
                     className={cn(
                       "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                      c.id === effectiveCompanyId && "bg-accent",
+                      c.id === effectiveSquadId && "bg-accent",
                     )}
                     onClick={() => {
-                      handleCompanyChange(c.id);
-                      setCompanyOpen(false);
+                      handleSquadChange(c.id);
+                      setSquadOpen(false);
                     }}
                   >
                     <span

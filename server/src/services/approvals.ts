@@ -79,8 +79,8 @@ export function approvalService(db: Db) {
   }
 
   return {
-    list: (companyId: string, status?: string) => {
-      const conditions = [eq(approvals.companyId, companyId)];
+    list: (squadId: string, status?: string) => {
+      const conditions = [eq(approvals.squadId, squadId)];
       if (status) conditions.push(eq(approvals.status, status));
       return db.select().from(approvals).where(and(...conditions));
     },
@@ -92,10 +92,10 @@ export function approvalService(db: Db) {
         .where(eq(approvals.id, id))
         .then((rows) => rows[0] ?? null),
 
-    create: (companyId: string, data: Omit<typeof approvals.$inferInsert, "companyId">) =>
+    create: (squadId: string, data: Omit<typeof approvals.$inferInsert, "squadId">) =>
       db
         .insert(approvals)
-        .values({ ...data, companyId })
+        .values({ ...data, squadId })
         .returning()
         .then((rows) => rows[0]),
 
@@ -116,7 +116,7 @@ export function approvalService(db: Db) {
           await agentsSvc.activatePendingApproval(payloadAgentId);
           hireApprovedAgentId = payloadAgentId;
         } else {
-          const created = await agentsSvc.create(updated.companyId, {
+          const created = await agentsSvc.create(updated.squadId, {
             name: String(payload.name ?? "New Agent"),
             role: String(payload.role ?? "general"),
             title: typeof payload.title === "string" ? payload.title : null,
@@ -145,7 +145,7 @@ export function approvalService(db: Db) {
             typeof payload.budgetMonthlyCents === "number" ? payload.budgetMonthlyCents : 0;
           if (budgetMonthlyCents > 0) {
             await budgets.upsertPolicy(
-              updated.companyId,
+              updated.squadId,
               {
                 scopeType: "agent",
                 scopeId: hireApprovedAgentId,
@@ -156,7 +156,7 @@ export function approvalService(db: Db) {
             );
           }
           void notifyHireApproved(db, {
-            companyId: updated.companyId,
+            squadId: updated.squadId,
             agentId: hireApprovedAgentId,
             source: "approval",
             sourceId: id,
@@ -239,7 +239,7 @@ export function approvalService(db: Db) {
         .where(
           and(
             eq(approvalComments.approvalId, approvalId),
-            eq(approvalComments.companyId, existing.companyId),
+            eq(approvalComments.squadId, existing.squadId),
           ),
         )
         .orderBy(asc(approvalComments.createdAt))
@@ -259,7 +259,7 @@ export function approvalService(db: Db) {
       return db
         .insert(approvalComments)
         .values({
-          companyId: existing.companyId,
+          squadId: existing.squadId,
           approvalId,
           authorAgentId: actor.agentId ?? null,
           authorUserId: actor.userId ?? null,

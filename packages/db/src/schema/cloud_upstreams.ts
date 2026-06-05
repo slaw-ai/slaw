@@ -1,11 +1,11 @@
 import { boolean, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 
 export const cloudUpstreamConnections = pgTable(
   "cloud_upstream_connections",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     remoteUrl: text("remote_url").notNull(),
     sourceInstanceId: text("source_instance_id").notNull(),
     sourceInstanceFingerprint: text("source_instance_fingerprint").notNull(),
@@ -23,7 +23,7 @@ export const cloudUpstreamConnections = pgTable(
     targetStackId: text("target_stack_id").notNull(),
     targetStackSlug: text("target_stack_slug"),
     targetStackDisplayName: text("target_stack_display_name"),
-    targetCompanyId: text("target_company_id").notNull(),
+    targetSquadId: text("target_squad_id").notNull(),
     targetOrigin: text("target_origin").notNull(),
     targetPrimaryHost: text("target_primary_host").notNull(),
     targetProduct: text("target_product").notNull(),
@@ -40,7 +40,7 @@ export const cloudUpstreamConnections = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index("cloud_upstream_connections_company_idx").on(table.companyId),
+    index("cloud_upstream_connections_squad_idx").on(table.squadId),
   ],
 );
 
@@ -49,7 +49,7 @@ export const cloudUpstreamRuns = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     connectionId: uuid("connection_id").notNull().references(() => cloudUpstreamConnections.id, { onDelete: "cascade" }),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     remoteRunId: text("remote_run_id"),
     status: text("status").notNull(),
     activeStep: text("active_step").notNull(),
@@ -69,7 +69,7 @@ export const cloudUpstreamRuns = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
   (table) => [
-    index("cloud_upstream_runs_company_created_idx").on(table.companyId, table.createdAt),
+    index("cloud_upstream_runs_squad_created_idx").on(table.squadId, table.createdAt),
     index("cloud_upstream_runs_connection_idx").on(table.connectionId),
   ],
 );

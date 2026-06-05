@@ -2,7 +2,7 @@ import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import pc from "picocolors";
 import { Command } from "commander";
-import type { Company, FeedbackTrace, FeedbackTraceBundle } from "@slaw/shared";
+import type { Squad, FeedbackTrace, FeedbackTraceBundle } from "@slaw/shared";
 import {
   addCommonClientOptions,
   apiPath,
@@ -54,7 +54,7 @@ interface FeedbackSummary {
 interface FeedbackExportManifest {
   exportedAt: string;
   serverUrl: string;
-  companyId: string;
+  squadId: string;
   summary: FeedbackSummary & {
     uniqueIssues: number;
     issues: string[];
@@ -79,8 +79,8 @@ export function registerFeedbackCommands(program: Command): void {
   addCommonClientOptions(
     feedback
       .command("report")
-      .description("Render a terminal report for company feedback traces")
-      .option("-C, --company-id <id>", "Company ID (overrides context default)")
+      .description("Render a terminal report for squad feedback traces")
+      .option("-C, --squad-id <id>", "Squad ID (overrides context default)")
       .option("--target-type <type>", "Filter by target type")
       .option("--vote <vote>", "Filter by vote value")
       .option("--status <status>", "Filter by trace status")
@@ -93,14 +93,14 @@ export function registerFeedbackCommands(program: Command): void {
       .action(async (opts: FeedbackReportOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          const companyId = await resolveFeedbackCompanyId(ctx, opts.companyId);
-          const traces = await fetchCompanyFeedbackTraces(ctx, companyId, opts);
+          const squadId = await resolveFeedbackSquadId(ctx, opts.squadId);
+          const traces = await fetchSquadFeedbackTraces(ctx, squadId, opts);
           const summary = summarizeFeedbackTraces(traces);
           if (ctx.json) {
             printOutput(
               {
                 apiBase: ctx.api.apiBase,
-                companyId,
+                squadId,
                 summary,
                 traces,
               },
@@ -110,7 +110,7 @@ export function registerFeedbackCommands(program: Command): void {
           }
           console.log(renderFeedbackReport({
             apiBase: ctx.api.apiBase,
-            companyId,
+            squadId,
             traces,
             summary,
             includePayloads: Boolean(opts.payloads),
@@ -119,14 +119,14 @@ export function registerFeedbackCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
     feedback
       .command("export")
       .description("Export feedback votes and raw trace bundles into a folder plus zip archive")
-      .option("-C, --company-id <id>", "Company ID (overrides context default)")
+      .option("-C, --squad-id <id>", "Squad ID (overrides context default)")
       .option("--target-type <type>", "Filter by target type")
       .option("--vote <vote>", "Filter by vote value")
       .option("--status <status>", "Filter by trace status")
@@ -139,12 +139,12 @@ export function registerFeedbackCommands(program: Command): void {
       .action(async (opts: FeedbackExportOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          const companyId = await resolveFeedbackCompanyId(ctx, opts.companyId);
-          const traces = await fetchCompanyFeedbackTraces(ctx, companyId, opts);
+          const squadId = await resolveFeedbackSquadId(ctx, opts.squadId);
+          const traces = await fetchSquadFeedbackTraces(ctx, squadId, opts);
           const outputDir = path.resolve(opts.out?.trim() || defaultFeedbackExportDirName());
           const exported = await writeFeedbackExportBundle({
             apiBase: ctx.api.apiBase,
-            companyId,
+            squadId,
             traces,
             outputDir,
             traceBundleFetcher: (trace) => fetchFeedbackTraceBundle(ctx, trace.id),
@@ -152,7 +152,7 @@ export function registerFeedbackCommands(program: Command): void {
           if (ctx.json) {
             printOutput(
               {
-                companyId,
+                squadId,
                 outputDir: exported.outputDir,
                 zipPath: exported.zipPath,
                 summary: exported.manifest.summary,
@@ -166,7 +166,7 @@ export function registerFeedbackCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -200,20 +200,20 @@ export function registerFeedbackCommands(program: Command): void {
   );
 }
 
-export async function resolveFeedbackCompanyId(
+export async function resolveFeedbackSquadId(
   ctx: ResolvedClientContext,
-  explicitCompanyId?: string,
+  explicitSquadId?: string,
 ): Promise<string> {
-  const direct = explicitCompanyId?.trim() || ctx.companyId?.trim();
+  const direct = explicitSquadId?.trim() || ctx.squadId?.trim();
   if (direct) return direct;
-  const companies = (await ctx.api.get<Company[]>("/api/companies")) ?? [];
-  const companyId = companies[0]?.id?.trim();
-  if (!companyId) {
+  const squads = (await ctx.api.get<Squad[]>("/api/squads")) ?? [];
+  const squadId = squads[0]?.id?.trim();
+  if (!squadId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set SLAW_COMPANY_ID, or configure a CLI context default.",
+      "Squad ID is required. Pass --squad-id, set SLAW_SQUAD_ID, or configure a CLI context default.",
     );
   }
-  return companyId;
+  return squadId;
 }
 
 export function buildFeedbackTraceQuery(opts: FeedbackTraceQueryOptions, includePayload = true): string {
@@ -244,14 +244,14 @@ export function serializeFeedbackTraces(traces: FeedbackTrace[], format: string 
   return traces.map((trace) => JSON.stringify(trace)).join("\n");
 }
 
-export async function fetchCompanyFeedbackTraces(
+export async function fetchSquadFeedbackTraces(
   ctx: ResolvedClientContext,
-  companyId: string,
+  squadId: string,
   opts: FeedbackFilterOptions,
 ): Promise<FeedbackTrace[]> {
   return (
     (await ctx.api.get<FeedbackTrace[]>(
-      `${apiPath`/api/companies/${companyId}/feedback-traces`}${buildFeedbackTraceQuery(opts, true)}`,
+      `${apiPath`/api/squads/${squadId}/feedback-traces`}${buildFeedbackTraceQuery(opts, true)}`,
     )) ?? []
   );
 }
@@ -291,7 +291,7 @@ export function summarizeFeedbackTraces(traces: FeedbackTrace[]): FeedbackSummar
 
 export function renderFeedbackReport(input: {
   apiBase: string;
-  companyId: string;
+  squadId: string;
   traces: FeedbackTrace[];
   summary: FeedbackSummary;
   includePayloads: boolean;
@@ -302,7 +302,7 @@ export function renderFeedbackReport(input: {
   lines.push(pc.dim(new Date().toISOString()));
   lines.push(horizontalRule());
   lines.push(`${pc.dim("Server:")}  ${input.apiBase}`);
-  lines.push(`${pc.dim("Company:")} ${input.companyId}`);
+  lines.push(`${pc.dim("Squad:")} ${input.squadId}`);
   lines.push("");
 
   if (input.traces.length === 0) {
@@ -372,7 +372,7 @@ export function renderFeedbackReport(input: {
 
 export async function writeFeedbackExportBundle(input: {
   apiBase: string;
-  companyId: string;
+  squadId: string;
   traces: FeedbackTrace[];
   outputDir: string;
   traceBundleFetcher?: (trace: FeedbackTrace) => Promise<FeedbackTraceBundle>;
@@ -433,7 +433,7 @@ export async function writeFeedbackExportBundle(input: {
   const manifest: FeedbackExportManifest = {
     exportedAt: new Date().toISOString(),
     serverUrl: input.apiBase,
-    companyId: input.companyId,
+    squadId: input.squadId,
     summary: {
       ...summary,
       uniqueIssues: issueSet.size,
@@ -473,7 +473,7 @@ export function renderFeedbackExportSummary(exported: FeedbackExportResult): str
   lines.push(pc.bold(pc.magenta("Slaw Feedback Export")));
   lines.push(pc.dim(exported.manifest.exportedAt));
   lines.push(horizontalRule());
-  lines.push(`${pc.dim("Company:")} ${exported.manifest.companyId}`);
+  lines.push(`${pc.dim("Squad:")} ${exported.manifest.squadId}`);
   lines.push(`${pc.dim("Output:")}  ${exported.outputDir}`);
   lines.push(`${pc.dim("Archive:")} ${exported.zipPath}`);
   lines.push("");

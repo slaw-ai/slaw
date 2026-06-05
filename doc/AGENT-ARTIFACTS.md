@@ -18,12 +18,12 @@ environment:
 
 - `SLAW_API_URL`
 - `SLAW_API_KEY`
-- `SLAW_COMPANY_ID`
+- `SLAW_SQUAD_ID`
 - `SLAW_TASK_ID`
 - `SLAW_RUN_ID`
 
 It uploads the file to
-`POST /api/companies/{companyId}/issues/{issueId}/attachments` and creates an
+`POST /api/squads/{squadId}/issues/{issueId}/attachments` and creates an
 artifact work product on `POST /api/issues/{issueId}/work-products` by default.
 The command prints issue-safe markdown links for the final task comment.
 
@@ -75,7 +75,7 @@ If the helper is unavailable, use the same API shape:
 
 ```sh
 curl -sS -X POST \
-  "$SLAW_API_URL/api/companies/$SLAW_COMPANY_ID/issues/$SLAW_TASK_ID/attachments" \
+  "$SLAW_API_URL/api/squads/$SLAW_SQUAD_ID/issues/$SLAW_TASK_ID/attachments" \
   -H "Authorization: Bearer $SLAW_API_KEY" \
   -H "X-Slaw-Run-Id: $SLAW_RUN_ID" \
   -F 'file=@"dist/demo.mp4";type=video/mp4'

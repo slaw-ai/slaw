@@ -69,7 +69,7 @@ Slaw plugin design is based on the following assumptions:
 
 1. Slaw is single-tenant and self-hosted.
 2. Plugin installation is global to the instance.
-3. "Companies" remain core Slaw business objects, but they are not plugin trust boundaries.
+3. "Squads" remain core Slaw business objects, but they are not plugin trust boundaries.
 4. Board governance, approval gates, budget hard-stops, and core task invariants remain owned by Slaw core.
 5. Projects already have a real workspace model via `project_workspaces`, and local/runtime plugins should build on that instead of inventing a separate workspace abstraction.
 
@@ -107,7 +107,7 @@ The first plugin system must not:
 
 The single Slaw deployment an operator installs and controls.
 
-### 5.2 Company
+### 5.2 Squad
 
 A first-class Slaw business object inside the instance.
 
@@ -214,14 +214,14 @@ Plugins that need local tooling (file browsing, git, terminals, process tracking
 
 Plugin installation is global and operator-driven.
 
-There is no per-company install table and no per-company enable/disable switch.
+There is no per-squad install table and no per-squad enable/disable switch.
 
 If a plugin needs business-object-specific mappings, those are stored as plugin configuration or plugin state.
 
 Examples:
 
 - one global Linear plugin install
-- mappings from company A to Linear team X and company B to Linear team Y
+- mappings from squad A to Linear team X and squad B to Linear team Y
 - one global git plugin install
 - per-project workspace state stored under `project_workspace`
 
@@ -365,14 +365,14 @@ export interface SlawPluginManifestV1 {
         | "commentAnnotation"
         | "commentContextMenuItem"
         | "settingsPage"
-        | "companySettingsPage";
+        | "squadSettingsPage";
       id: string;
       displayName: string;
       /** Which export name in the UI bundle provides this component */
       exportName: string;
       /** For detailTab: which entity types this tab appears on */
       entityTypes?: Array<"project" | "issue" | "agent" | "goal" | "run">;
-      /** For page and companySettingsPage: single route segment */
+      /** For page and squadSettingsPage: single route segment */
       routePath?: string;
     }>;
   };
@@ -419,7 +419,7 @@ Tool names are automatically namespaced by plugin ID at runtime (e.g. `linear:se
 
 When an agent invokes a plugin tool during a run, the host routes the call to the plugin worker via a `executeTool` RPC method:
 
-- `executeTool(input)` — receives tool name, parsed parameters, and run context (agent ID, run ID, company ID, project ID)
+- `executeTool(input)` — receives tool name, parsed parameters, and run context (agent ID, run ID, squad ID, project ID)
 
 The worker executes the tool logic and returns a typed result. The host enforces capability gates — a plugin must declare `agent.tools.register` to contribute tools, and individual tools may require additional capabilities (e.g. `http.outbound` for tools that call external APIs).
 
@@ -607,7 +607,7 @@ The plugin UI calls the host bridge, which forwards the request to the worker. T
 Input includes:
 
 - data key (plugin-defined, e.g. `"sync-health"`, `"issue-detail"`)
-- context (company id, project id, entity id, etc.)
+- context (squad id, project id, entity id, etc.)
 - optional query parameters
 
 ### 13.9 `performAction`
@@ -629,7 +629,7 @@ The host provides:
 
 - tool name (without plugin namespace prefix)
 - parsed parameters matching the tool's declared schema
-- run context: agent ID, run ID, company ID, project ID
+- run context: agent ID, run ID, squad ID, project ID
 
 The worker executes the tool and returns a typed result (string content, structured data, or error).
 
@@ -676,7 +676,7 @@ Plugins that perform durable work should declare managed Slaw resources rather t
 - `skills` + `ctx.skills.managed.*` for reusable agent capabilities (`skills.managed` required)
 
 The LLM Wiki plugin is the current reference for this pattern: it declares managed
-agents, projects, routines, and skills in manifest, reconciles them per company,
+agents, projects, routines, and skills in manifest, reconciles them per squad,
 and uses managed routines for periodic wiki maintenance and ingest operations.
 Content-oriented plugins should follow the same model instead of running
 unmanaged background loops: make the LLM-facing worker an operator-visible
@@ -693,26 +693,26 @@ Origin rules:
 
 Relation and read helpers:
 
-- `ctx.issues.relations.get(issueId, companyId)`
-- `ctx.issues.relations.setBlockedBy(issueId, blockerIssueIds, companyId)`
-- `ctx.issues.relations.addBlockers(issueId, blockerIssueIds, companyId)`
-- `ctx.issues.relations.removeBlockers(issueId, blockerIssueIds, companyId)`
-- `ctx.issues.getSubtree(issueId, companyId, options)`
-- `ctx.issues.summaries.getOrchestration({ issueId, companyId, includeSubtree, billingCode })`
+- `ctx.issues.relations.get(issueId, squadId)`
+- `ctx.issues.relations.setBlockedBy(issueId, blockerIssueIds, squadId)`
+- `ctx.issues.relations.addBlockers(issueId, blockerIssueIds, squadId)`
+- `ctx.issues.relations.removeBlockers(issueId, blockerIssueIds, squadId)`
+- `ctx.issues.getSubtree(issueId, squadId, options)`
+- `ctx.issues.summaries.getOrchestration({ issueId, squadId, includeSubtree, billingCode })`
 
 Governance helpers:
 
-- `ctx.issues.assertCheckoutOwner({ issueId, companyId, actorAgentId, actorRunId })` lets plugin actions preserve agent-run checkout ownership.
-- `ctx.issues.requestWakeup(issueId, companyId, options)` requests assignment wakeups through host heartbeat semantics, including terminal-status, blocker, assignee, and budget hard-stop checks.
-- `ctx.issues.requestWakeups(issueIds, companyId, options)` applies the same host-owned wakeup semantics to a batch and may use an idempotency key prefix for stable coordinator retries.
+- `ctx.issues.assertCheckoutOwner({ issueId, squadId, actorAgentId, actorRunId })` lets plugin actions preserve agent-run checkout ownership.
+- `ctx.issues.requestWakeup(issueId, squadId, options)` requests assignment wakeups through host heartbeat semantics, including terminal-status, blocker, assignee, and budget hard-stop checks.
+- `ctx.issues.requestWakeups(issueIds, squadId, options)` applies the same host-owned wakeup semantics to a batch and may use an idempotency key prefix for stable coordinator retries.
 
 Plugin-originated issue, relation, document, comment, and wakeup mutations must write activity entries with `actorType: "plugin"` and details fields for `sourcePluginId`, `sourcePluginKey`, `initiatingActorType`, `initiatingActorId`, and `initiatingRunId` when a user or agent run initiated the plugin work.
 
 Scoped API routes:
 
 - `apiRoutes[]` declares `routeKey`, `method`, plugin-local `path`, `auth`,
-  `capability`, optional checkout policy, and company resolution.
-- The host enforces auth, company access, `api.routes.register`, route matching,
+  `capability`, optional checkout policy, and squad resolution.
+- The host enforces auth, squad access, `api.routes.register`, route matching,
   and checkout policy before worker dispatch.
 - The worker implements `onApiRequest(input)` and returns a JSON response shape
   `{ status?, headers?, body? }`.
@@ -769,7 +769,7 @@ export interface PluginContext {
 
 export interface EventFilter {
   projectId?: string;
-  companyId?: string;
+  squadId?: string;
   agentId?: string;
   [key: string]: unknown;
 }
@@ -786,7 +786,7 @@ The host enforces capabilities in the SDK layer and refuses calls outside the gr
 
 ### Data Read
 
-- `companies.read`
+- `squads.read`
 - `projects.read`
 - `project.workspaces.read`
 - `issues.read`
@@ -886,8 +886,8 @@ The host must emit typed domain events that plugins may subscribe to.
 
 Minimum event set:
 
-- `company.created`
-- `company.updated`
+- `squad.created`
+- `squad.updated`
 - `project.created`
 - `project.updated`
 - `project.workspace_created`
@@ -933,10 +933,10 @@ Plugins may provide an optional filter when subscribing to events. The filter is
 Supported filter fields:
 
 - `projectId` — only receive events for a specific project
-- `companyId` — only receive events for a specific company
+- `squadId` — only receive events for a specific squad
 - `agentId` — only receive events for a specific agent
 
-Filters are optional. If omitted, the plugin receives all events of the subscribed type. Filters may be combined (e.g. filter by both company and project).
+Filters are optional. If omitted, the plugin receives all events of the subscribed type. Filters may be combined (e.g. filter by both squad and project).
 
 ### 16.2 Plugin-to-Plugin Events
 
@@ -999,7 +999,7 @@ A plugin's `dist/ui/` directory contains a built React bundle. The host serves t
 1. The host defines **extension slots** — designated mount points in the UI where plugin components can appear (pages, tabs, widgets, sidebar entries, action bars).
 2. The plugin's UI bundle exports named components for each slot it wants to fill.
 3. The host mounts the plugin component into the slot, passing it a **host bridge** object.
-4. The plugin component uses the bridge to fetch data from its own worker (via `getData`), call actions (via `performAction`), read host context (current company, project, entity), and use shared host UI primitives (design tokens, common components).
+4. The plugin component uses the bridge to fetch data from its own worker (via `getData`), call actions (via `performAction`), read host context (current squad, project, entity), and use shared host UI primitives (design tokens, common components).
 
 **Concrete example: a Linear plugin ships a dashboard widget.**
 
@@ -1010,7 +1010,7 @@ The plugin's UI bundle exports:
 import { usePluginData, usePluginAction, MetricCard, StatusBadge } from "@slaw/plugin-sdk/ui";
 
 export function DashboardWidget({ context }: PluginWidgetProps) {
-  const { data, loading } = usePluginData("sync-health", { companyId: context.companyId });
+  const { data, loading } = usePluginData("sync-health", { squadId: context.squadId });
   const resync = usePluginAction("resync");
 
   if (loading) return <Spinner />;
@@ -1021,7 +1021,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
       {data.mappings.map(m => (
         <StatusBadge key={m.id} label={m.label} status={m.status} />
       ))}
-      <button onClick={() => resync({ companyId: context.companyId })}>Resync Now</button>
+      <button onClick={() => resync({ squadId: context.squadId })}>Resync Now</button>
     </div>
   );
 }
@@ -1030,7 +1030,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 **What happens at runtime:**
 
 1. User opens the dashboard. The host sees that the Linear plugin registered a `DashboardWidget` export.
-2. The host mounts the plugin's `DashboardWidget` component into the dashboard widget slot, passing `context` (current company, user, etc.) and the bridge.
+2. The host mounts the plugin's `DashboardWidget` component into the dashboard widget slot, passing `context` (current squad, user, etc.) and the bridge.
 3. `usePluginData("sync-health", ...)` calls through the bridge → host → plugin worker's `getData` RPC → returns JSON → the plugin component renders it however it wants.
 4. When the user clicks "Resync Now", `usePluginAction("resync")` calls through the bridge → host → plugin worker's `performAction` RPC.
 
@@ -1063,8 +1063,8 @@ Slaw-internal pages. It exposes `resolveHref(to)`, `navigate(to,
 options?)`, and `linkProps(to, options?)`. Plugin links should prefer
 `linkProps()` so anchors keep real `href` values for copy-link, modifier-click,
 middle-click, and open-in-new-tab behavior while plain left-clicks route through
-the host SPA router. The host resolves company-scoped paths against the active
-company prefix without double-prefixing already-prefixed paths. Plugin UI should
+the host SPA router. The host resolves squad-scoped paths against the active
+squad prefix without double-prefixing already-prefixed paths. Plugin UI should
 not use raw same-origin `href`s or `window.location.assign()` for internal
 Slaw navigation because those can force a full document reload.
 
@@ -1100,11 +1100,11 @@ In development, the host may support a `devUiUrl` override in plugin config that
 
 These routes are instance-level.
 
-## 19.2 Company-Context Routes
+## 19.2 Squad-Context Routes
 
-- `/:companyPrefix/plugins/:pluginId`
+- `/:squadPrefix/plugins/:pluginId`
 
-These routes exist because the board UI is organized around companies even though plugin installation is global.
+These routes exist because the board UI is organized around squads even though plugin installation is global.
 
 ## 19.3 Detail Tabs
 
@@ -1118,7 +1118,7 @@ Plugins may add tabs to:
 
 Recommended route pattern:
 
-- `/:companyPrefix/<entity>/:id?tab=<plugin-tab-id>`
+- `/:squadPrefix/<entity>/:id?tab=<plugin-tab-id>`
 
 ## 19.4 Dashboard Widgets
 
@@ -1129,7 +1129,7 @@ Plugins may add cards or sections to the dashboard.
 Plugins may add sidebar links to:
 
 - global plugin settings
-- company-context plugin pages
+- squad-context plugin pages
 
 ## 19.6 Shared Components In `@slaw/plugin-sdk/ui`
 
@@ -1209,7 +1209,7 @@ For plugins that need richer settings UX beyond what JSON Schema can express, th
 
 Both approaches coexist: a plugin can use the auto-generated form for simple config and add a custom settings page slot for advanced configuration or operational dashboards.
 
-For plugins that need a company-scoped settings surface, declare a `companySettingsPage` slot with a `routePath`. The host renders a sidebar item under Company Settings and mounts the component at `/:companyPrefix/company/settings/:routePath`. The page receives `companyId` and `companyPrefix` in its host context. Core settings routes such as `access`, `invites`, `environments`, and `secrets` are reserved and cannot be shadowed by plugin declarations.
+For plugins that need a squad-scoped settings surface, declare a `squadSettingsPage` slot with a `routePath`. The host renders a sidebar item under Squad Settings and mounts the component at `/:squadPrefix/squad/settings/:routePath`. The page receives `squadId` and `squadPrefix` in its host context. Core settings routes such as `access`, `invites`, `environments`, and `secrets` are reserved and cannot be shadowed by plugin declarations.
 
 ## 20. Local Tooling
 
@@ -1272,7 +1272,7 @@ Indexes:
 
 - `id` uuid pk
 - `plugin_id` uuid fk `plugins.id` not null
-- `scope_kind` enum: `instance | company | project | project_workspace | agent | issue | goal | run`
+- `scope_kind` enum: `instance | squad | project | project_workspace | agent | issue | goal | run`
 - `scope_id` uuid/text null
 - `namespace` text not null
 - `state_key` text not null
@@ -1452,21 +1452,21 @@ Route:
 
 - `/settings/plugins/:pluginId`
 
-## 24.3 Company-Context Plugin Page
+## 24.3 Squad-Context Plugin Page
 
-Each plugin may expose a company-context main page:
+Each plugin may expose a squad-context main page:
 
-- `/:companyPrefix/plugins/:pluginId`
+- `/:squadPrefix/plugins/:pluginId`
 
 This page is where board users do most day-to-day work.
 
-## 24.4 Company Settings Plugin Page
+## 24.4 Squad Settings Plugin Page
 
-Each ready plugin may expose a company settings page:
+Each ready plugin may expose a squad settings page:
 
-- `/:companyPrefix/company/settings/:routePath`
+- `/:squadPrefix/squad/settings/:routePath`
 
-The host adds a matching Company Settings sidebar item using the slot `displayName`. Plugin settings route segments are single-segment slugs and must not collide with core company settings pages.
+The host adds a matching Squad Settings sidebar item using the slot `displayName`. Plugin settings route segments are single-segment slugs and must not collide with core squad settings pages.
 
 ## 25. Uninstall And Data Lifecycle
 
@@ -1634,7 +1634,7 @@ const state = await harness.state.get({ pluginId: manifest.id, scopeKind: "issue
 expect(state).toBeDefined();
 
 // Simulate a UI data request
-const data = await harness.getData("sync-health", { companyId: "comp-1" });
+const data = await harness.getData("sync-health", { squadId: "comp-1" });
 expect(data.syncedCount).toBeGreaterThan(0);
 ```
 

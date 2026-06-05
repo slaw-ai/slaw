@@ -45,9 +45,9 @@ export function isIdempotentFinishSuccessfulRunHandoffWakeStatus(status: string)
 type HeartbeatRunRow = typeof heartbeatRuns.$inferSelect;
 type IssueRow = Pick<
   typeof issues.$inferSelect,
-  "id" | "companyId" | "identifier" | "title" | "status" | "assigneeAgentId" | "assigneeUserId" | "executionState"
+  "id" | "squadId" | "identifier" | "title" | "status" | "assigneeAgentId" | "assigneeUserId" | "executionState"
 >;
-type AgentRow = Pick<typeof agents.$inferSelect, "id" | "companyId" | "status">;
+type AgentRow = Pick<typeof agents.$inferSelect, "id" | "squadId" | "status">;
 type NoticeIssue = Pick<typeof issues.$inferSelect, "id" | "identifier" | "title" | "status">;
 type NoticeRun = Pick<typeof heartbeatRuns.$inferSelect, "id" | "status">;
 type NoticeAgent = Pick<typeof agents.$inferSelect, "id" | "name">;
@@ -254,7 +254,7 @@ export function buildFinishSuccessfulRunHandoffIdempotencyKey(input: {
 export async function findExistingFinishSuccessfulRunHandoffWake(
   db: Db,
   input: {
-    companyId: string;
+    squadId: string;
     idempotencyKey: string;
   },
 ) {
@@ -263,7 +263,7 @@ export async function findExistingFinishSuccessfulRunHandoffWake(
     .from(agentWakeupRequests)
     .where(
       and(
-        eq(agentWakeupRequests.companyId, input.companyId),
+        eq(agentWakeupRequests.squadId, input.squadId),
         eq(agentWakeupRequests.idempotencyKey, input.idempotencyKey),
         inArray(agentWakeupRequests.status, IDEMPOTENT_HANDOFF_WAKE_STATUSES),
       ),
@@ -355,8 +355,8 @@ export function decideSuccessfulRunHandoff(input: {
   }
   if (!issue) return { kind: "skip", reason: "issue not found" };
   if (!agent) return { kind: "skip", reason: "agent not found" };
-  if (issue.companyId !== run.companyId || agent.companyId !== run.companyId) {
-    return { kind: "skip", reason: "company scope mismatch" };
+  if (issue.squadId !== run.squadId || agent.squadId !== run.squadId) {
+    return { kind: "skip", reason: "squad scope mismatch" };
   }
   if (issue.assigneeAgentId !== run.agentId) {
     return { kind: "skip", reason: "issue is no longer assigned to the source run agent" };

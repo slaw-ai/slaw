@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate, useNavigationType, useParams } from "@/lib/router";
 import { Sidebar } from "./Sidebar";
 import { InstanceSidebar } from "./InstanceSidebar";
-import { CompanySettingsSidebar } from "./CompanySettingsSidebar";
-import { CompanySettingsNav } from "./access/CompanySettingsNav";
+import { SquadSettingsSidebar } from "./SquadSettingsSidebar";
+import { SquadSettingsNav } from "./access/SquadSettingsNav";
 import { BreadcrumbBar } from "./BreadcrumbBar";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CommandPalette } from "./CommandPalette";
@@ -23,13 +23,13 @@ import { SidebarAccountMenu } from "./SidebarAccountMenu";
 import { useDialogActions } from "../context/DialogContext";
 import { GeneralSettingsProvider } from "../context/GeneralSettingsContext";
 import { usePanel } from "../context/PanelContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import { useCompanyPageMemory } from "../hooks/useCompanyPageMemory";
+import { useSquadPageMemory } from "../hooks/useSquadPageMemory";
 import { healthApi } from "../api/health";
 import { instanceSettingsApi } from "../api/instanceSettings";
-import { shouldSyncCompanySelectionFromRoute } from "../lib/company-selection";
+import { shouldSyncSquadSelectionFromRoute } from "../lib/squad-selection";
 import {
   DEFAULT_INSTANCE_SETTINGS_PATH,
   normalizeRememberedInstanceSettingsPath,
@@ -46,11 +46,11 @@ import { PluginSlotMount, resolveRouteSidebarSlot, usePluginSlots } from "../plu
 
 const INSTANCE_SETTINGS_MEMORY_KEY = "slaw.lastInstanceSettingsPath";
 
-function getCompanyRouteSegment(pathname: string, companyPrefix: string | undefined): string | null {
-  if (!companyPrefix) return null;
+function getSquadRouteSegment(pathname: string, squadPrefix: string | undefined): string | null {
+  if (!squadPrefix) return null;
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length < 2) return null;
-  if (segments[0]?.toUpperCase() !== companyPrefix.toUpperCase()) return null;
+  if (segments[0]?.toUpperCase() !== squadPrefix.toUpperCase()) return null;
   return segments[1]?.toLowerCase() ?? null;
 }
 
@@ -68,22 +68,22 @@ export function Layout() {
   const { openNewIssue, openOnboarding } = useDialogActions();
   const { togglePanelVisible } = usePanel();
   const {
-    companies,
-    loading: companiesLoading,
-    selectedCompany,
-    selectedCompanyId,
+    squads,
+    loading: squadsLoading,
+    selectedSquad,
+    selectedSquadId,
     selectionSource,
-    setSelectedCompanyId,
-  } = useCompany();
+    setSelectedSquadId,
+  } = useSquad();
   const {
-    companyPrefix,
+    squadPrefix,
     pluginRoutePath: matchedPluginRoutePath,
-  } = useParams<{ companyPrefix: string; pluginRoutePath?: string }>();
+  } = useParams<{ squadPrefix: string; pluginRoutePath?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const navigationType = useNavigationType();
   const isInstanceSettingsRoute = location.pathname.startsWith("/instance/");
-  const isCompanySettingsRoute = location.pathname.includes("/company/settings");
+  const isSquadSettingsRoute = location.pathname.includes("/squad/settings");
   const onboardingTriggered = useRef(false);
   const lastMainScrollTop = useRef(0);
   const previousPathname = useRef<string | null>(null);
@@ -91,23 +91,23 @@ export function Layout() {
   const [mobileNavVisible, setMobileNavVisible] = useState(true);
   const [instanceSettingsTarget, setInstanceSettingsTarget] = useState<string>(() => readRememberedInstanceSettingsPath());
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const matchedCompany = useMemo(() => {
-    if (!companyPrefix) return null;
-    const requestedPrefix = companyPrefix.toUpperCase();
-    return companies.find((company) => company.issuePrefix.toUpperCase() === requestedPrefix) ?? null;
-  }, [companies, companyPrefix]);
-  const hasUnknownCompanyPrefix =
-    Boolean(companyPrefix) && !companiesLoading && companies.length > 0 && !matchedCompany;
+  const matchedSquad = useMemo(() => {
+    if (!squadPrefix) return null;
+    const requestedPrefix = squadPrefix.toUpperCase();
+    return squads.find((squad) => squad.issuePrefix.toUpperCase() === requestedPrefix) ?? null;
+  }, [squads, squadPrefix]);
+  const hasUnknownSquadPrefix =
+    Boolean(squadPrefix) && !squadsLoading && squads.length > 0 && !matchedSquad;
   const pluginRoutePath = useMemo(
-    () => matchedPluginRoutePath?.toLowerCase() ?? getCompanyRouteSegment(location.pathname, companyPrefix),
-    [companyPrefix, location.pathname, matchedPluginRoutePath],
+    () => matchedPluginRoutePath?.toLowerCase() ?? getSquadRouteSegment(location.pathname, squadPrefix),
+    [squadPrefix, location.pathname, matchedPluginRoutePath],
   );
-  const routeSidebarCompanyId = matchedCompany?.id ?? null;
-  const routeSidebarCompanyPrefix = matchedCompany?.issuePrefix ?? null;
+  const routeSidebarSquadId = matchedSquad?.id ?? null;
+  const routeSidebarSquadPrefix = matchedSquad?.issuePrefix ?? null;
   const { slots: routeSidebarSlots } = usePluginSlots({
     slotTypes: ["page", "routeSidebar"],
-    companyId: routeSidebarCompanyId,
-    enabled: Boolean(routeSidebarCompanyId && pluginRoutePath),
+    squadId: routeSidebarSquadId,
+    enabled: Boolean(routeSidebarSquadId && pluginRoutePath),
   });
   const routeSidebarSlot = useMemo(
     () => resolveRouteSidebarSlot(routeSidebarSlots, pluginRoutePath),
@@ -115,12 +115,12 @@ export function Layout() {
   );
   const sidebarContext = useMemo(
     () => ({
-      companyId: routeSidebarCompanyId,
-      companyPrefix: routeSidebarCompanyPrefix,
+      squadId: routeSidebarSquadId,
+      squadPrefix: routeSidebarSquadPrefix,
     }),
-    [routeSidebarCompanyId, routeSidebarCompanyPrefix],
+    [routeSidebarSquadId, routeSidebarSquadPrefix],
   );
-  const companySidebar = routeSidebarSlot ? (
+  const squadSidebar = routeSidebarSlot ? (
     <PluginSlotMount
       slot={routeSidebarSlot}
       context={sidebarContext}
@@ -146,53 +146,53 @@ export function Layout() {
   }).data?.keyboardShortcuts === true;
 
   useEffect(() => {
-    if (companiesLoading || onboardingTriggered.current) return;
+    if (squadsLoading || onboardingTriggered.current) return;
     if (health?.deploymentMode === "authenticated") return;
-    if (companies.length === 0) {
+    if (squads.length === 0) {
       onboardingTriggered.current = true;
       openOnboarding();
     }
-  }, [companies, companiesLoading, openOnboarding, health?.deploymentMode]);
+  }, [squads, squadsLoading, openOnboarding, health?.deploymentMode]);
 
   useEffect(() => {
-    if (!companyPrefix || companiesLoading || companies.length === 0) return;
+    if (!squadPrefix || squadsLoading || squads.length === 0) return;
 
-    if (!matchedCompany) {
-      const fallback = (selectedCompanyId ? companies.find((company) => company.id === selectedCompanyId) : null)
-        ?? companies[0]
+    if (!matchedSquad) {
+      const fallback = (selectedSquadId ? squads.find((squad) => squad.id === selectedSquadId) : null)
+        ?? squads[0]
         ?? null;
-      if (fallback && selectedCompanyId !== fallback.id) {
-        setSelectedCompanyId(fallback.id, { source: "route_sync" });
+      if (fallback && selectedSquadId !== fallback.id) {
+        setSelectedSquadId(fallback.id, { source: "route_sync" });
       }
       return;
     }
 
-    if (companyPrefix !== matchedCompany.issuePrefix) {
+    if (squadPrefix !== matchedSquad.issuePrefix) {
       const suffix = location.pathname.replace(/^\/[^/]+/, "");
-      navigate(`/${matchedCompany.issuePrefix}${suffix}${location.search}`, { replace: true });
+      navigate(`/${matchedSquad.issuePrefix}${suffix}${location.search}`, { replace: true });
       return;
     }
 
     if (
-      shouldSyncCompanySelectionFromRoute({
+      shouldSyncSquadSelectionFromRoute({
         selectionSource,
-        selectedCompanyId,
-        routeCompanyId: matchedCompany.id,
+        selectedSquadId,
+        routeSquadId: matchedSquad.id,
       })
     ) {
-      setSelectedCompanyId(matchedCompany.id, { source: "route_sync" });
+      setSelectedSquadId(matchedSquad.id, { source: "route_sync" });
     }
   }, [
-    companyPrefix,
-    companies,
-    companiesLoading,
-    matchedCompany,
+    squadPrefix,
+    squads,
+    squadsLoading,
+    matchedSquad,
     location.pathname,
     location.search,
     navigate,
     selectionSource,
-    selectedCompanyId,
-    setSelectedCompanyId,
+    selectedSquadId,
+    setSelectedSquadId,
   ]);
 
   const togglePanel = togglePanelVisible;
@@ -205,7 +205,7 @@ export function Layout() {
     }));
   }, []);
 
-  useCompanyPageMemory();
+  useSquadPageMemory();
 
   useKeyboardShortcuts({
     enabled: keyboardShortcutsEnabled,
@@ -385,10 +385,10 @@ export function Layout() {
               <div className="w-60 shrink-0 overflow-hidden">
                 {isInstanceSettingsRoute ? (
                   <InstanceSidebar />
-                ) : isCompanySettingsRoute ? (
-                  <CompanySettingsSidebar />
+                ) : isSquadSettingsRoute ? (
+                  <SquadSettingsSidebar />
                 ) : (
-                  companySidebar
+                  squadSidebar
                 )}
               </div>
             </div>
@@ -404,10 +404,10 @@ export function Layout() {
               <ResizableSidebarPane open={sidebarOpen} resizable className="h-full shrink-0">
                 {isInstanceSettingsRoute ? (
                   <InstanceSidebar />
-                ) : isCompanySettingsRoute ? (
-                  <CompanySettingsSidebar />
+                ) : isSquadSettingsRoute ? (
+                  <SquadSettingsSidebar />
                 ) : (
-                  companySidebar
+                  squadSidebar
                 )}
               </ResizableSidebarPane>
             </div>
@@ -427,9 +427,9 @@ export function Layout() {
           >
             <StandaloneBrowserControls mobile={isMobile} />
             <BreadcrumbBar />
-            {isMobile && isCompanySettingsRoute ? (
+            {isMobile && isSquadSettingsRoute ? (
               <div className="border-b border-border px-4 pb-3">
-                <CompanySettingsNav />
+                <SquadSettingsNav />
               </div>
             ) : null}
           </div>
@@ -443,10 +443,10 @@ export function Layout() {
                 isMobile ? "overflow-visible pb-[calc(5rem+env(safe-area-inset-bottom))]" : "overflow-auto",
               )}
             >
-              {hasUnknownCompanyPrefix ? (
+              {hasUnknownSquadPrefix ? (
                 <NotFoundPage
-                  scope="invalid_company_prefix"
-                  requestedPrefix={companyPrefix ?? selectedCompany?.issuePrefix}
+                  scope="invalid_squad_prefix"
+                  requestedPrefix={squadPrefix ?? selectedSquad?.issuePrefix}
                 />
               ) : (
                 <Outlet />

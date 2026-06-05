@@ -22,10 +22,10 @@
  *       // ... sync implementation
  *     });
  *
- *     ctx.data.register("sync-health", async ({ companyId }) => {
+ *     ctx.data.register("sync-health", async ({ squadId }) => {
  *       const state = await ctx.state.get({
- *         scopeKind: "company",
- *         scopeId: String(companyId),
+ *         scopeKind: "squad",
+ *         scopeId: String(squadId),
  *         stateKey: "last-sync-at",
  *       });
  *       return { lastSync: state };
@@ -208,7 +208,7 @@ export type {
   PluginProjectsClient,
   PluginExecutionWorkspacesClient,
   PluginSkillsClient,
-  PluginCompaniesClient,
+  PluginSquadsClient,
   PluginIssuesClient,
   PluginIssueMutationActor,
   PluginIssueRelationsClient,
@@ -266,7 +266,7 @@ export type {
   PluginEntityQuery,
   PluginWorkspace,
   PluginExecutionWorkspaceMetadata,
-  Company,
+  Squad,
   Project,
   Issue,
   IssueComment,
@@ -277,7 +277,7 @@ export type {
   PrincipalPermissionGrant,
   PrincipalType,
   PluginDatabaseClient,
-  HumanCompanyMembershipRole,
+  HumanSquadMembershipRole,
   MembershipStatus,
 } from "./types.js";
 
@@ -299,7 +299,7 @@ export type {
   PluginManagedSkillDeclaration,
   PluginManagedSkillFileDeclaration,
   PluginManagedSkillResolution,
-  CompanySkill,
+  SquadSkill,
   PluginManagedResourceKind,
   PluginManagedResourceRef,
   PluginUiSlotDeclaration,
@@ -309,10 +309,10 @@ export type {
   PluginLauncherDeclaration,
   PluginMinimumHostVersion,
   PluginDatabaseDeclaration,
-  PluginApiRouteCompanyResolution,
+  PluginApiRouteSquadResolution,
   PluginApiRouteDeclaration,
   PluginLocalFolderDeclaration,
-  PluginCompanySettings,
+  PluginSquadSettings,
   PluginRecord,
   PluginDatabaseNamespaceRecord,
   PluginMigrationRecord,
@@ -378,7 +378,7 @@ export {
   PLUGIN_CAPABILITIES,
   PLUGIN_UI_SLOT_TYPES,
   PLUGIN_UI_SLOT_ENTITY_TYPES,
-  PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS,
+  PLUGIN_RESERVED_SQUAD_SETTINGS_ROUTE_SEGMENTS,
   PLUGIN_STATE_SCOPE_KINDS,
   PLUGIN_JOB_STATUSES,
   PLUGIN_JOB_RUN_STATUSES,
@@ -387,8 +387,8 @@ export {
   PLUGIN_EVENT_TYPES,
   PLUGIN_BRIDGE_ERROR_CODES,
   PERMISSION_KEYS,
-  HUMAN_COMPANY_MEMBERSHIP_ROLES,
-  HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS,
+  HUMAN_SQUAD_MEMBERSHIP_ROLES,
+  HUMAN_SQUAD_MEMBERSHIP_ROLE_LABELS,
   MEMBERSHIP_STATUSES,
   PRINCIPAL_TYPES,
 } from "@slaw/shared";

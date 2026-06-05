@@ -4,7 +4,7 @@
 
 Define a Slaw memory service and surface API that can sit above multiple memory backends, while preserving Slaw's control-plane requirements:
 
-- company scoping
+- squad scoping
 - auditability
 - provenance back to Slaw work objects
 - budget and cost visibility
@@ -19,28 +19,28 @@ This plan is based on the external landscape summarized in `doc/memory-landscape
 
 ## Recommendation In One Sentence
 
-Slaw should add a company-scoped memory control plane with company default plus agent override resolution, shared hook delivery, and full operation attribution, while leaving extraction and storage semantics to built-ins and plugins.
+Slaw should add a squad-scoped memory control plane with squad default plus agent override resolution, shared hook delivery, and full operation attribution, while leaving extraction and storage semantics to built-ins and plugins.
 
 ## Product Decisions
 
-### 1. Memory resolution is company default plus agent override
+### 1. Memory resolution is squad default plus agent override
 
-Every memory binding belongs to exactly one company.
+Every memory binding belongs to exactly one squad.
 
 Resolution order in V1:
 
-- company default binding
+- squad default binding
 - optional per-agent override
 
 There is no per-project override in V1.
 
 Project context can still appear in scope and provenance so providers can use it for retrieval and partitioning, but projects do not participate in binding selection.
 
-No cross-company memory sharing in the initial design.
+No cross-squad memory sharing in the initial design.
 
 ### 2. Providers are selected by stable binding key
 
-Each configured memory provider gets a stable key inside a company, for example:
+Each configured memory provider gets a stable key inside a squad, for example:
 
 - `default`
 - `mem0-prod`
@@ -63,7 +63,7 @@ Slaw core should own:
 
 - binding resolution
 - who is allowed to call a memory operation
-- which company, agent, issue, project, run, and subject scope is active
+- which squad, agent, issue, project, run, and subject scope is active
 - what source object the operation belongs to
 - how usage and costs are attributed
 - how operators inspect what happened
@@ -110,7 +110,7 @@ Examples:
 
 ### Memory binding
 
-A company-scoped configuration record that points to a provider and carries provider-specific config.
+A squad-scoped configuration record that points to a provider and carries provider-specific config.
 
 This is the object selected by key.
 
@@ -120,7 +120,7 @@ A mapping from a Slaw target to a binding.
 
 V1 targets:
 
-- `company`
+- `squad`
 - `agent`
 
 ### Memory scope
@@ -129,7 +129,7 @@ The normalized Slaw scope passed into a provider request.
 
 At minimum:
 
-- `companyId`
+- `squadId`
 - optional `agentId`
 - optional `projectId`
 - optional `issueId`
@@ -185,7 +185,7 @@ export interface MemoryAdapterCapabilities {
 }
 
 export interface MemoryScope {
-  companyId: string;
+  squadId: string;
   agentId?: string;
   projectId?: string;
   issueId?: string;
@@ -204,7 +204,7 @@ export interface MemorySourceRef {
     | "activity"
     | "manual_note"
     | "external_document";
-  companyId: string;
+  squadId: string;
   issueId?: string;
   commentId?: string;
   documentKey?: string;
@@ -441,7 +441,7 @@ Operators should be able to see:
 
 Slaw should continue to center:
 
-- `companyId`
+- `squadId`
 - `agentId`
 - `projectId`
 - `issueId`
@@ -457,7 +457,7 @@ Slaw should not mirror the full provider memory corpus into Postgres unless the 
 Slaw core should persist:
 
 - memory bindings
-- company default and agent override resolution targets
+- squad default and agent override resolution targets
 - provider keys and capability metadata
 - normalized memory operation logs
 - source references back to issue comments, documents, runs, and activity
@@ -522,7 +522,7 @@ These should be tool-driven or UI-driven first:
 
 - broad web crawling
 - silent import of arbitrary repo files
-- cross-company memory sharing
+- cross-squad memory sharing
 - automatic destructive deletion
 - provider migration between bindings
 
@@ -543,7 +543,7 @@ Slaw needs a first-class UI for memory, otherwise providers become black boxes.
 
 The initial browse surface should support:
 
-- active binding by company and agent
+- active binding by squad and agent
 - recent memory operations
 - recent write and capture sources
 - record list and record detail with source backlinks
@@ -583,7 +583,7 @@ The recommendation is:
 - if a memory operation runs inside a normal Slaw agent heartbeat and the model usage is already counted on that run, do not create a duplicate `cost_event`
 - instead, store the memory operation with `attributionMode = "included_in_run"` and link it to the related `heartbeatRunId`
 - if a memory provider makes a direct metered model call outside the agent run accounting path, the provider must report usage and Slaw should create a `cost_event`
-- that direct `cost_event` should still link back to the memory operation, agent, company, and issue or run context when possible
+- that direct `cost_event` should still link back to the memory operation, agent, squad, and issue or run context when possible
 
 ### 3. `finance_events` should carry flat subscription or invoice-style costs
 
@@ -614,18 +614,18 @@ This is important because a memory system that "works" but silently burns budget
 At the control-plane level, the likely new core tables are:
 
 - `memory_bindings`
-  - company-scoped key
+  - squad-scoped key
   - provider id or plugin id
   - config blob
   - enabled status
 
 - `memory_binding_targets`
-  - target type (`company`, `agent`)
+  - target type (`squad`, `agent`)
   - target id
   - binding id
 
 - `memory_operations`
-  - company id
+  - squad id
   - binding id
   - operation type (`capture`, `record_upsert`, `query`, `list`, `get`, `forget`, `correct`)
   - scope fields
@@ -636,7 +636,7 @@ At the control-plane level, the likely new core tables are:
   - success or error
 
 - `memory_extraction_jobs`
-  - company id
+  - squad id
   - binding id
   - operation id
   - provider job id
@@ -666,7 +666,7 @@ The design should still treat that built-in as just another provider behind the 
 ### Phase 1: Control-plane contract
 
 - add memory binding models and API types
-- add company default plus agent override resolution
+- add squad default plus agent override resolution
 - add plugin capability and registration surface for memory providers
 
 ### Phase 2: Hook delivery and operation audit
@@ -682,7 +682,7 @@ The design should still treat that built-in as just another provider behind the 
 
 ### Phase 4: UI inspection
 
-- add company and agent memory settings
+- add squad and agent memory settings
 - add a memory operation explorer
 - add record list and detail surfaces
 - add source backlinks to issues and runs

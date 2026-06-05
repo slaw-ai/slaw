@@ -30,12 +30,12 @@ import { LiveRunWidget } from "../components/LiveRunWidget";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
 import { accessApi } from "../api/access";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { buildRoutineTriggerPatch } from "../lib/routine-trigger-patch";
-import { buildMarkdownMentionOptions } from "../lib/company-members";
+import { buildMarkdownMentionOptions } from "../lib/squad-members";
 import { timeAgo } from "../lib/timeAgo";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { EmptyState } from "../components/EmptyState";
@@ -285,7 +285,7 @@ function TriggerEditor({
 
 export function RoutineDetail() {
   const { routineId } = useParams<{ routineId: string }>();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -357,41 +357,41 @@ export function RoutineDetail() {
   );
   const { data: activity } = useQuery({
     queryKey: [
-      ...queryKeys.routines.activity(selectedCompanyId!, routineId!),
+      ...queryKeys.routines.activity(selectedSquadId!, routineId!),
       relatedActivityIds.triggerIds.join(","),
       relatedActivityIds.runIds.join(","),
     ],
-    queryFn: () => routinesApi.activity(selectedCompanyId!, routineId!, relatedActivityIds),
-    enabled: !!selectedCompanyId && !!routineId && !!routine,
+    queryFn: () => routinesApi.activity(selectedSquadId!, routineId!, relatedActivityIds),
+    enabled: !!selectedSquadId && !!routineId && !!routine,
   });
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: availableSecrets = [] } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.secrets.list(selectedCompanyId) : ["secrets", "none"],
-    queryFn: () => secretsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryKey: selectedSquadId ? queryKeys.secrets.list(selectedSquadId) : ["secrets", "none"],
+    queryFn: () => secretsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to create secrets");
-      return secretsApi.create(selectedCompanyId, input);
+      if (!selectedSquadId) throw new Error("Select a squad to create secrets");
+      return secretsApi.create(selectedSquadId, input);
     },
     onSuccess: () => {
-      if (!selectedCompanyId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+      if (!selectedSquadId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedSquadId) });
     },
   });
 
@@ -504,8 +504,8 @@ export function RoutineDetail() {
       setSaveConflict(false);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedSquadId!, routineId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.revisions(routineId!) }),
       ]);
     },
@@ -548,8 +548,8 @@ export function RoutineDetail() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.runs(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedSquadId!, routineId!) }),
       ]);
     },
     onError: (error) => {
@@ -571,7 +571,7 @@ export function RoutineDetail() {
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
       ]);
     },
     onError: (error) => {
@@ -619,8 +619,8 @@ export function RoutineDetail() {
       }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedSquadId!, routineId!) }),
       ]);
     },
     onError: (error) => {
@@ -642,8 +642,8 @@ export function RoutineDetail() {
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedSquadId!, routineId!) }),
       ]);
     },
     onError: (error) => {
@@ -664,8 +664,8 @@ export function RoutineDetail() {
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedSquadId!, routineId!) }),
       ]);
     },
     onError: (error) => {
@@ -689,7 +689,7 @@ export function RoutineDetail() {
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedCompanyId!, routineId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.activity(selectedSquadId!, routineId!) }),
       ]);
     },
     onError: (error) => {
@@ -736,14 +736,14 @@ export function RoutineDetail() {
     return buildMarkdownMentionOptions({
       agents,
       projects,
-      members: companyMembers?.users,
+      members: squadMembers?.users,
     });
-  }, [agents, companyMembers?.users, projects]);
+  }, [agents, squadMembers?.users, projects]);
   const currentAssignee = editDraft.assigneeAgentId ? agentById.get(editDraft.assigneeAgentId) ?? null : null;
   const currentProject = editDraft.projectId ? projectById.get(editDraft.projectId) ?? null : null;
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message="Select a company to view routines." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={Repeat} message="Select a squad to view routines." />;
   }
 
   if (isLoading) {
@@ -1205,7 +1205,7 @@ export function RoutineDetail() {
 
         <TabsContent value="runs" className="space-y-4">
           {hasLiveRun && activeIssueId && routine && (
-            <LiveRunWidget issueId={activeIssueId} companyId={routine.companyId} />
+            <LiveRunWidget issueId={activeIssueId} squadId={routine.squadId} />
           )}
           {(routineRuns ?? []).length === 0 ? (
             <p className="text-xs text-muted-foreground">No runs yet.</p>
@@ -1343,7 +1343,7 @@ export function RoutineDetail() {
       <RoutineRunVariablesDialog
         open={runVariablesOpen}
         onOpenChange={setRunVariablesOpen}
-        companyId={routine.companyId}
+        squadId={routine.squadId}
         routineName={routine.title}
         agents={agents ?? []}
         projects={projects ?? []}

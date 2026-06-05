@@ -71,7 +71,7 @@ A signed-in user visits this URL to claim board ownership. This:
 
 - Promotes the current user to instance admin
 - Demotes the auto-created local board admin
-- Ensures active company membership for the claiming user
+- Ensures active squad membership for the claiming user
 
 ## Changing Modes
 

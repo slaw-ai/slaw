@@ -290,7 +290,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const lease = await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       requestedCwd: "/workspace/custom",
@@ -332,7 +332,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -361,7 +361,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -389,7 +389,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -408,7 +408,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const acquirePromise = plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -443,7 +443,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await expect(plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -474,7 +474,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await expect(plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -494,7 +494,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const acquirePromise = plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -528,7 +528,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const lease = await plugin.definition.onEnvironmentResumeLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "missing-vm",
       config: {
@@ -552,7 +552,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -598,7 +598,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -634,7 +634,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentProbe?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -668,7 +668,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentProbe?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -700,7 +700,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentProbe?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -720,7 +720,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentReleaseLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "vm-1",
       config: {
@@ -738,7 +738,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentDestroyLease?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "vm-2",
       config: {
@@ -755,7 +755,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentRealizeWorkspace?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -793,7 +793,7 @@ describe("exe.dev sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentRealizeWorkspace?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",
@@ -817,7 +817,7 @@ describe("exe.dev sandbox provider plugin", () => {
   it("skips ensureRemoteWorkspace and returns the resolved cwd when no VM metadata is available", async () => {
     const result = await plugin.definition.onEnvironmentRealizeWorkspace?.({
       driverKey: "exe-dev",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         apiKey: "api-key",

@@ -31,10 +31,10 @@ The durable object in Slaw is the issue, not a chat thread.
 Session continuity is already task-shaped.
 
 - `heartbeat.ts` derives `taskKey` from `taskKey`, then `taskId`, then `issueId`.
-- `agent_task_sessions` stores session state per company + agent + adapter + task key.
+- `agent_task_sessions` stores session state per squad + agent + adapter + task key.
 - Adapters that support `sessionKeyStrategy=issue|fixed|run` map cleanly onto this, and `issue` already matches the Slaw mental model well.
 
-That means "chat with the CEO about this issue" naturally maps to one durable session per issue today without inventing a second session system.
+That means "chat with the Squad Lead about this issue" naturally maps to one durable session per issue today without inventing a second session system.
 
 ### Billing behavior
 
@@ -144,13 +144,13 @@ This keeps Slaw honest about what it is:
 - the control plane stays issue-centric
 - chat is a better way to interact with issue work, not a new collaboration product
 
-### Onboarding and CEO conversations
+### Onboarding and Squad Lead conversations
 
-For onboarding, weekly reviews, and "chat with the CEO", use a conversation issue rather than a global chat tab.
+For onboarding, weekly reviews, and "chat with the Squad Lead", use a conversation issue rather than a global chat tab.
 
 Suggested shape:
 
-- create a board-initiated issue assigned to the CEO
+- create a board-initiated issue assigned to the Squad Lead
 - mark it as conversation-flavored in UI treatment
 - optionally hide it from normal issue boards by default later
 - keep all cost/run/session linkage on that issue
@@ -158,9 +158,9 @@ Suggested shape:
 This solves several concerns at once:
 
 - no separate API key or direct provider wiring is needed
-- the same CEO adapter is used
+- the same Squad Lead adapter is used
 - old conversations are recovered through normal issue history
-- the CEO can still create or update real child issues from the conversation
+- the Squad Lead can still create or update real child issues from the conversation
 
 ## Session Model
 
@@ -173,7 +173,7 @@ That already matches current behavior:
 - adapter task sessions persist against `taskKey`
 - `taskKey` already falls back to `issueId`
 
-This means "resume the CEO conversation later" works by reopening the same issue and waking the same agent on the same issue.
+This means "resume the Squad Lead conversation later" works by reopening the same issue and waking the same agent on the same issue.
 
 ### What not to add yet
 
@@ -241,8 +241,8 @@ Do not launch this as "chat with every agent."
 
 Start narrower:
 
-- onboarding chat with CEO
-- workflow/review chat with CEO
+- onboarding chat with Squad Lead
+- workflow/review chat with Squad Lead
 - maybe selected exec roles later
 
 Reasons:
@@ -265,10 +265,10 @@ If direct chat with other agents becomes useful later, the same issue-backed pat
 
 This is the highest-leverage step because it tests whether the UX is actually useful before product model expansion.
 
-### Phase 2: Conversation-flavored issues for CEO chat
+### Phase 2: Conversation-flavored issues for Squad Lead chat
 
 - add a lightweight conversation classification
-- support creation of CEO conversation issues from onboarding and workflow entry points
+- support creation of Squad Lead conversation issues from onboarding and workflow entry points
 - optionally hide these from normal backlog/board views by default
 
 The smallest implementation could be a label or issue metadata flag. If it becomes important enough, then promote it to a first-class issue subtype later.

@@ -53,10 +53,10 @@ vi.mock("@/lib/router", () => ({
   useLocation: () => ({ pathname: "/PAP/projects/bravo/issues", search: "", hash: "", state: null }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", issuePrefix: "PAP" },
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
+    selectedSquad: { id: "squad-1", issuePrefix: "PAP" },
   }),
 }));
 
@@ -134,7 +134,7 @@ async function act(callback: () => void | Promise<void>) {
 function makeProject(overrides: Partial<Project>): Project {
   return {
     id: "project-a",
-    companyId: "company-1",
+    squadId: "squad-1",
     urlKey: "alpha",
     goalId: null,
     goalIds: [],
@@ -280,7 +280,7 @@ describe("SidebarProjects", () => {
       updatedAt: null,
     };
     mockResourceMembershipsApi.listMine.mockImplementation(() => Promise.resolve(memberships));
-    mockResourceMembershipsApi.updateProject.mockImplementation((_companyId, projectId, data) => {
+    mockResourceMembershipsApi.updateProject.mockImplementation((_squadId, projectId, data) => {
       memberships = {
         ...memberships,
         projectMemberships: {
@@ -375,13 +375,13 @@ describe("SidebarProjects", () => {
     expect(browseLink?.getAttribute("href")).toBe("/projects");
   });
 
-  it("sorts alphabetically and persists the selected mode per company and user", async () => {
+  it("sorts alphabetically and persists the selected mode per squad and user", async () => {
     await renderSidebarProjects();
     await openProjectsMenu(container);
     await chooseSortMode("Alphabetical");
 
     expect(projectLinkLabels(container)).toEqual(["Alpha", "Bravo", "Charlie"]);
-    expect(localStorage.getItem("slaw.projectSortMode:company-1:user-1")).toBe("alphabetical");
+    expect(localStorage.getItem("slaw.projectSortMode:squad-1:user-1")).toBe("alphabetical");
   });
 
   it("sorts recent projects by updated time descending", async () => {
@@ -427,7 +427,7 @@ describe("SidebarProjects", () => {
     await flushReact();
 
     expect(mockResourceMembershipsApi.updateProject).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "project-a",
       { state: "left" },
     );

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { registerSkillsCommands } from "../commands/client/skills.js";
-import { resolveCompanySkillReference } from "../commands/client/skills.js";
+import { resolveSquadSkillReference } from "../commands/client/skills.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -30,7 +30,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 function skill(overrides: Record<string, unknown> = {}) {
   return {
     id: "11111111-1111-1111-1111-111111111111",
-    companyId: "company-1",
+    squadId: "squad-1",
     key: "slaw/review-prs",
     slug: "review-prs",
     name: "Review PRs",
@@ -81,7 +81,7 @@ function catalogSkill(overrides: Record<string, unknown> = {}) {
 function agent(overrides: Record<string, unknown> = {}) {
   return {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Coder",
     role: "engineer",
     status: "active",
@@ -105,9 +105,9 @@ describe("skills CLI helpers", () => {
       skill({ id: "skill-b", key: "slaw/b", slug: "beta-skill", name: "Beta" }),
     ];
 
-    expect(resolveCompanySkillReference(rows, "skill-a").key).toBe("slaw/a");
-    expect(resolveCompanySkillReference(rows, "slaw/b").id).toBe("skill-b");
-    expect(resolveCompanySkillReference(rows, "Beta Skill").id).toBe("skill-b");
+    expect(resolveSquadSkillReference(rows, "skill-a").key).toBe("slaw/a");
+    expect(resolveSquadSkillReference(rows, "slaw/b").id).toBe("skill-b");
+    expect(resolveSquadSkillReference(rows, "Beta Skill").id).toBe("skill-b");
   });
 
   it("rejects ambiguous slug refs", () => {
@@ -116,7 +116,7 @@ describe("skills CLI helpers", () => {
       skill({ id: "skill-b", key: "slaw/b", slug: "same", name: "B" }),
     ];
 
-    expect(() => resolveCompanySkillReference(rows, "same")).toThrow(/Ambiguous skill slug/);
+    expect(() => resolveSquadSkillReference(rows, "same")).toThrow(/Ambiguous skill slug/);
   });
 });
 
@@ -129,7 +129,7 @@ describe("skills CLI commands", () => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env.SLAW_API_URL;
     delete process.env.SLAW_API_KEY;
-    delete process.env.SLAW_COMPANY_ID;
+    delete process.env.SLAW_SQUAD_ID;
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -146,15 +146,15 @@ describe("skills CLI commands", () => {
     vi.restoreAllMocks();
   });
 
-  it("lists company skills as JSON through the shared client context", async () => {
+  it("lists squad skills as JSON through the shared client context", async () => {
     const rows = [skill()];
     fetchMock.mockResolvedValueOnce(jsonResponse(rows));
 
     await runCommand([
       "skills",
       "list",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -163,7 +163,7 @@ describe("skills CLI commands", () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://slaw.test/api/companies/company-1/skills",
+      "http://slaw.test/api/squads/squad-1/skills",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({ authorization: "Bearer token" }),
@@ -181,8 +181,8 @@ describe("skills CLI commands", () => {
       "skills",
       "show",
       "Review PRs",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -192,7 +192,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://slaw.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111",
+      "http://slaw.test/api/squads/squad-1/skills/11111111-1111-1111-1111-111111111111",
       expect.objectContaining({ method: "GET" }),
     );
   });
@@ -214,8 +214,8 @@ describe("skills CLI commands", () => {
       "skills",
       "file",
       "review-prs",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -300,7 +300,7 @@ describe("skills CLI commands", () => {
     expect(JSON.parse(String(logSpy.mock.calls[0]?.[0]))).toEqual(detail);
   });
 
-  it("installs catalog skills into the company library without agent sync", async () => {
+  it("installs catalog skills into the squad library without agent sync", async () => {
     const result = {
       action: "created",
       skill: skill({
@@ -320,8 +320,8 @@ describe("skills CLI commands", () => {
       "--as",
       "pr-flow",
       "--force",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -330,7 +330,7 @@ describe("skills CLI commands", () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://slaw.test/api/companies/company-1/skills/install-catalog",
+      "http://slaw.test/api/squads/squad-1/skills/install-catalog",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({
@@ -353,8 +353,8 @@ describe("skills CLI commands", () => {
       "update",
       "review-prs",
       "--force",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -364,7 +364,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://slaw.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/install-update",
+      "http://slaw.test/api/squads/squad-1/skills/11111111-1111-1111-1111-111111111111/install-update",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ force: true }),
@@ -396,8 +396,8 @@ describe("skills CLI commands", () => {
       "skills",
       "audit",
       "review-prs",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -407,7 +407,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://slaw.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/audit",
+      "http://slaw.test/api/squads/squad-1/skills/11111111-1111-1111-1111-111111111111/audit",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({}),
@@ -427,8 +427,8 @@ describe("skills CLI commands", () => {
       "review-prs",
       "--yes",
       "--force",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -438,7 +438,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://slaw.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/reset",
+      "http://slaw.test/api/squads/squad-1/skills/11111111-1111-1111-1111-111111111111/reset",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ force: true }),
@@ -446,7 +446,7 @@ describe("skills CLI commands", () => {
     );
   });
 
-  it("syncs desired company skill refs to an agent and returns the runtime snapshot", async () => {
+  it("syncs desired squad skill refs to an agent and returns the runtime snapshot", async () => {
     const snapshot = {
       adapterType: "codex_local",
       supported: true,
@@ -460,7 +460,7 @@ describe("skills CLI commands", () => {
           managed: true,
           required: false,
           state: "installed",
-          origin: "company_managed",
+          origin: "squad_managed",
           detail: null,
         },
       ],
@@ -479,8 +479,8 @@ describe("skills CLI commands", () => {
       "review-prs",
       "--skill",
       "slaw/qa",
-      "--company-id",
-      "company-1",
+      "--squad-id",
+      "squad-1",
       "--api-base",
       "http://slaw.test",
       "--api-key",
@@ -490,7 +490,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      "http://slaw.test/api/agents/coder?companyId=company-1",
+      "http://slaw.test/api/agents/coder?squadId=squad-1",
       expect.objectContaining({ method: "GET" }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(

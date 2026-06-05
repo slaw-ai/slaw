@@ -8,8 +8,8 @@ import {
 } from "../src/host-client-factory.js";
 import { PLUGIN_RPC_ERROR_CODES } from "../src/protocol.js";
 
-describe("createHostClientHandlers invocation company scope", () => {
-  it("rejects company-scoped host calls outside the current invocation company", async () => {
+describe("createHostClientHandlers invocation squad scope", () => {
+  it("rejects squad-scoped host calls outside the current invocation squad", async () => {
     const projectsList = vi.fn(async () => []);
     const services = {
       projects: {
@@ -25,14 +25,14 @@ describe("createHostClientHandlers invocation company scope", () => {
 
     await expect(
       handlers["projects.list"](
-        { companyId: "company-b" },
-        { invocationScope: { companyId: "company-a" } },
+        { squadId: "squad-b" },
+        { invocationScope: { squadId: "squad-a" } },
       ),
     ).rejects.toBeInstanceOf(InvocationScopeDeniedError);
     await expect(
       handlers["projects.list"](
-        { companyId: "company-b" },
-        { invocationScope: { companyId: "company-a" } },
+        { squadId: "squad-b" },
+        { invocationScope: { squadId: "squad-a" } },
       ),
     ).rejects.toMatchObject({
       code: PLUGIN_RPC_ERROR_CODES.INVOCATION_SCOPE_DENIED,
@@ -40,31 +40,31 @@ describe("createHostClientHandlers invocation company scope", () => {
     expect(projectsList).not.toHaveBeenCalled();
   });
 
-  it("filters companies.list to the current invocation company", async () => {
+  it("filters squads.list to the current invocation squad", async () => {
     const services = {
-      companies: {
+      squads: {
         list: vi.fn(async () => [
-          { id: "company-a", name: "Company A" },
-          { id: "company-b", name: "Company B" },
+          { id: "squad-a", name: "Squad A" },
+          { id: "squad-b", name: "Squad B" },
         ]),
       },
     } as unknown as HostServices;
 
     const handlers = createHostClientHandlers({
       pluginId: "slaw.test",
-      capabilities: ["companies.read"],
+      capabilities: ["squads.read"],
       services,
     });
 
     await expect(
-      handlers["companies.list"](
+      handlers["squads.list"](
         {},
-        { invocationScope: { companyId: "company-a" } },
+        { invocationScope: { squadId: "squad-a" } },
       ),
-    ).resolves.toEqual([{ id: "company-a", name: "Company A" }]);
+    ).resolves.toEqual([{ id: "squad-a", name: "Squad A" }]);
   });
 
-  it("rejects company-scope store access for a different company", async () => {
+  it("rejects squad-scope store access for a different squad", async () => {
     const stateGet = vi.fn(async () => null);
     const services = {
       state: {
@@ -80,8 +80,8 @@ describe("createHostClientHandlers invocation company scope", () => {
 
     await expect(
       handlers["state.get"](
-        { scopeKind: "company", scopeId: "company-b", stateKey: "settings" },
-        { invocationScope: { companyId: "company-a" } },
+        { scopeKind: "squad", scopeId: "squad-b", stateKey: "settings" },
+        { invocationScope: { squadId: "squad-a" } },
       ),
     ).rejects.toBeInstanceOf(InvocationScopeDeniedError);
     expect(stateGet).not.toHaveBeenCalled();
@@ -91,31 +91,31 @@ describe("createHostClientHandlers invocation company scope", () => {
     [
       "access.members.list",
       "access.members.read",
-      { companyId: "company-a" },
+      { squadId: "squad-a" },
       (services: HostServices) => vi.mocked(services.access.listMembers),
     ],
     [
       "access.members.update",
       "access.members.write",
-      { companyId: "company-a", memberId: "member-a", patch: { status: "active" } },
+      { squadId: "squad-a", memberId: "member-a", patch: { status: "active" } },
       (services: HostServices) => vi.mocked(services.access.updateMember),
     ],
     [
       "authorization.grants.set",
       "authorization.grants.write",
-      { companyId: "company-a", principalType: "agent", principalId: "agent-a", grants: [] },
+      { squadId: "squad-a", principalType: "agent", principalId: "agent-a", grants: [] },
       (services: HostServices) => vi.mocked(services.authorization.setGrants),
     ],
     [
       "authorization.policies.update",
       "authorization.policies.write",
-      { companyId: "company-a", resourceType: "agent", resourceId: "agent-a", policy: null },
+      { squadId: "squad-a", resourceType: "agent", resourceId: "agent-a", policy: null },
       (services: HostServices) => vi.mocked(services.authorization.updatePolicy),
     ],
     [
       "authorization.audit.search",
       "authorization.audit.read",
-      { companyId: "company-a" },
+      { squadId: "squad-a" },
       (services: HostServices) => vi.mocked(services.authorization.searchAudit),
     ],
   ] as const)(
@@ -151,7 +151,7 @@ describe("createHostClientHandlers invocation company scope", () => {
     },
   );
 
-  it("checks invocation company scope before exposing authorization data", async () => {
+  it("checks invocation squad scope before exposing authorization data", async () => {
     const searchAudit = vi.fn(async () => []);
     const services = {
       authorization: {
@@ -166,8 +166,8 @@ describe("createHostClientHandlers invocation company scope", () => {
 
     await expect(
       handlers["authorization.audit.search"](
-        { companyId: "company-b" },
-        { invocationScope: { companyId: "company-a" } },
+        { squadId: "squad-b" },
+        { invocationScope: { squadId: "squad-a" } },
       ),
     ).rejects.toBeInstanceOf(InvocationScopeDeniedError);
     expect(searchAudit).not.toHaveBeenCalled();

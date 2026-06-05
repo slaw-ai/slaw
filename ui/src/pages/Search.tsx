@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon, AlertTriangle, FileQuestion, Plus, X } from "lucide-react";
 import {
-  COMPANY_SEARCH_DEFAULT_LIMIT,
-  COMPANY_SEARCH_SCOPES,
-  type CompanySearchResponse,
-  type CompanySearchResult,
-  type CompanySearchScope,
+  SQUAD_SEARCH_DEFAULT_LIMIT,
+  SQUAD_SEARCH_SCOPES,
+  type SquadSearchResponse,
+  type SquadSearchResult,
+  type SquadSearchScope,
 } from "@slaw/shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate, useSearchParams } from "@/lib/router";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useDialogActions } from "../context/DialogContext";
 import { searchApi } from "../api/search";
@@ -30,7 +30,7 @@ import type { Agent } from "@slaw/shared";
 const SEARCH_DEBOUNCE_MS = 250;
 const IDENTIFIER_PATTERN = /^[A-Z]+-\d+$/;
 
-const SCOPE_LABELS: Record<CompanySearchScope, string> = {
+const SCOPE_LABELS: Record<SquadSearchScope, string> = {
   all: "All",
   issues: "Issues",
   comments: "Comments",
@@ -51,7 +51,7 @@ const SUBGROUP_LABELS: Record<SubGroupKey, string> = {
   projects: "Projects",
 };
 
-function classifyResult(result: CompanySearchResult): SubGroupKey {
+function classifyResult(result: SquadSearchResult): SubGroupKey {
   if (result.type === "agent") return "agents";
   if (result.type === "project") return "projects";
   const matched = new Set(result.matchedFields);
@@ -61,8 +61,8 @@ function classifyResult(result: CompanySearchResult): SubGroupKey {
   return "issues";
 }
 
-function buildSubgroups(results: CompanySearchResult[]): Array<{ key: SubGroupKey; results: CompanySearchResult[] }> {
-  const buckets = new Map<SubGroupKey, CompanySearchResult[]>();
+function buildSubgroups(results: SquadSearchResult[]): Array<{ key: SubGroupKey; results: SquadSearchResult[] }> {
+  const buckets = new Map<SubGroupKey, SquadSearchResult[]>();
   for (const result of results) {
     const key = classifyResult(result);
     const list = buckets.get(key) ?? [];
@@ -75,16 +75,16 @@ function buildSubgroups(results: CompanySearchResult[]): Array<{ key: SubGroupKe
   }));
 }
 
-function isCompanySearchScope(value: string | null): value is CompanySearchScope {
-  return Boolean(value) && (COMPANY_SEARCH_SCOPES as readonly string[]).includes(value as string);
+function isSquadSearchScope(value: string | null): value is SquadSearchScope {
+  return Boolean(value) && (SQUAD_SEARCH_SCOPES as readonly string[]).includes(value as string);
 }
 
-function describeScope(scope: CompanySearchScope) {
+function describeScope(scope: SquadSearchScope) {
   if (scope === "all") return "All scopes";
   return SCOPE_LABELS[scope];
 }
 
-export function buildSearchUrl(href: string, query: string, scope: CompanySearchScope): string {
+export function buildSearchUrl(href: string, query: string, scope: SquadSearchScope): string {
   const url = new URL(href);
   if (query.length === 0) {
     url.searchParams.delete("q");
@@ -109,7 +109,7 @@ function shapeError(error: unknown): { message: string; status?: number } {
 }
 
 export function Search() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
   const navigate = useNavigate();
@@ -117,11 +117,11 @@ export function Search() {
 
   const urlQuery = searchParams.get("q") ?? "";
   const urlScopeRaw = searchParams.get("scope");
-  const urlScope: CompanySearchScope = isCompanySearchScope(urlScopeRaw) ? urlScopeRaw : "all";
+  const urlScope: SquadSearchScope = isSquadSearchScope(urlScopeRaw) ? urlScopeRaw : "all";
 
   const [draftQuery, setDraftQuery] = useState(urlQuery);
   const [committedQuery, setCommittedQuery] = useState(urlQuery);
-  const [scope, setScope] = useState<CompanySearchScope>(urlScope);
+  const [scope, setScope] = useState<SquadSearchScope>(urlScope);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lastUrlSyncRef = useRef<string>("");
   const lastIdentifierRedirectRef = useRef<string>("");
@@ -132,9 +132,9 @@ export function Search() {
   }, [setBreadcrumbs]);
 
   useEffect(() => {
-    if (!selectedCompanyId) return;
-    setRecentSearches(loadRecentSearches(selectedCompanyId));
-  }, [selectedCompanyId]);
+    if (!selectedSquadId) return;
+    setRecentSearches(loadRecentSearches(selectedSquadId));
+  }, [selectedSquadId]);
 
   // Pull URL changes back into local state (e.g. browser back/forward).
   useEffect(() => {
@@ -164,7 +164,7 @@ export function Search() {
 
   const handleScopeChange = useCallback(
     (next: string) => {
-      if (!isCompanySearchScope(next) || next === scope) return;
+      if (!isSquadSearchScope(next) || next === scope) return;
       setScope(next);
       if (typeof window !== "undefined") {
         const url = buildSearchUrl(window.location.href, committedQuery, next);
@@ -175,30 +175,30 @@ export function Search() {
   );
 
   const trimmedQuery = committedQuery.trim();
-  const queryEnabled = !!selectedCompanyId && trimmedQuery.length > 0;
+  const queryEnabled = !!selectedSquadId && trimmedQuery.length > 0;
 
-  const { data, isFetching, error, refetch } = useQuery<CompanySearchResponse>({
-    queryKey: queryKeys.companySearch.search(
-      selectedCompanyId ?? "__no-company__",
+  const { data, isFetching, error, refetch } = useQuery<SquadSearchResponse>({
+    queryKey: queryKeys.squadSearch.search(
+      selectedSquadId ?? "__no-squad__",
       trimmedQuery,
       scope,
-      COMPANY_SEARCH_DEFAULT_LIMIT,
+      SQUAD_SEARCH_DEFAULT_LIMIT,
       0,
     ),
     queryFn: () =>
-      searchApi.search(selectedCompanyId!, {
+      searchApi.search(selectedSquadId!, {
         q: trimmedQuery,
         scope,
-        limit: COMPANY_SEARCH_DEFAULT_LIMIT,
+        limit: SQUAD_SEARCH_DEFAULT_LIMIT,
       }),
     enabled: queryEnabled,
     placeholderData: (previousData) => previousData,
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const agentsById = useMemo<ReadonlyMap<string, Pick<Agent, "id" | "name">>>(() => {
@@ -209,11 +209,11 @@ export function Search() {
 
   // Persist recent searches once we have a successful response with a non-empty query.
   useEffect(() => {
-    if (!selectedCompanyId) return;
+    if (!selectedSquadId) return;
     if (!data || !trimmedQuery) return;
-    const next = pushRecentSearch(selectedCompanyId, trimmedQuery);
+    const next = pushRecentSearch(selectedSquadId, trimmedQuery);
     setRecentSearches(next);
-  }, [data, trimmedQuery, selectedCompanyId]);
+  }, [data, trimmedQuery, selectedSquadId]);
 
   // Identifier shortcut: when q matches PAP-123 and the API returns an exact identifier match, redirect to it.
   useEffect(() => {
@@ -274,7 +274,7 @@ export function Search() {
       );
     }
     const issuesTotal = counts.issue ?? 0;
-    return COMPANY_SEARCH_SCOPES.map((value) => {
+    return SQUAD_SEARCH_SCOPES.map((value) => {
       let count: number | null = null;
       if (value === "all") count = (counts.issue ?? 0) + (counts.agent ?? 0) + (counts.project ?? 0);
       else if (value === "issues") count = issuesTotal;
@@ -284,7 +284,7 @@ export function Search() {
         value,
         label: (
           <span className="flex items-center">
-            {SCOPE_LABELS[value as CompanySearchScope]}
+            {SCOPE_LABELS[value as SquadSearchScope]}
             {count !== null ? pill(count) : null}
           </span>
         ),
@@ -370,7 +370,7 @@ export function Search() {
           <PageTabBar items={tabItems} value={scope} onValueChange={handleScopeChange} align="start" />
         </div>
 
-        {COMPANY_SEARCH_SCOPES.map((scopeValue) => (
+        {SQUAD_SEARCH_SCOPES.map((scopeValue) => (
           <TabsContent
             key={scopeValue}
             value={scopeValue}
@@ -413,14 +413,14 @@ interface SearchTabContentProps {
   apiError: { message: string; status?: number } | null;
   isEmpty: boolean;
   trimmedQuery: string;
-  scope: CompanySearchScope;
+  scope: SquadSearchScope;
   showAllScope: () => void;
   navigateIssuesFallback: () => void;
   openNewIssue: () => void;
   refetch: () => void;
   recentSearches: string[];
   onRecentClick: (query: string) => void;
-  subgroups: Array<{ key: SubGroupKey; results: CompanySearchResult[] }>;
+  subgroups: Array<{ key: SubGroupKey; results: SquadSearchResult[] }>;
   totalResults: number;
   isFetching: boolean;
   agentsById: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
@@ -450,7 +450,7 @@ function SearchTabContent({
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
         <div>
-          <h2 className="text-lg font-semibold">Type to search company memory.</h2>
+          <h2 className="text-lg font-semibold">Type to search squad memory.</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Issues, comments, plan documents, agents, projects — same surface, ranked by relevance.
           </p>

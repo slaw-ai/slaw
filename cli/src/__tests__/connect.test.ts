@@ -20,7 +20,7 @@ vi.mock("../client/board-auth.js", () => ({
   loginBoardCli: vi.fn(),
 }));
 
-const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
+const SQUAD_ID = "22222222-2222-4222-8222-222222222222";
 const AGENT_ID = "33333333-3333-4333-8333-333333333333";
 const API_BASE = "http://127.0.0.1:3197";
 
@@ -74,12 +74,12 @@ describe("connect command", () => {
   it("drives the interactive board profile flow through prompts and context writes", async () => {
     const contextPath = createTempContextPath();
     vi.mocked(prompts.text).mockResolvedValue(API_BASE);
-    vi.mocked(prompts.select).mockResolvedValue(COMPANY_ID);
+    vi.mocked(prompts.select).mockResolvedValue(SQUAD_ID);
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(String(input));
       if (url.pathname === "/api/health") return jsonResponse({ status: "ok" });
-      if (url.pathname === "/api/companies") {
-        return jsonResponse([{ id: COMPANY_ID, name: "Connect Co" }]);
+      if (url.pathname === "/api/squads") {
+        return jsonResponse([{ id: SQUAD_ID, name: "Connect Co" }]);
       }
       if (url.pathname === "/api/board-api-keys" && init?.method === "POST") {
         return jsonResponse({
@@ -116,7 +116,7 @@ describe("connect command", () => {
     }));
     expect(fetchMock.mock.calls.map((call) => [call[1]?.method ?? "GET", new URL(String(call[0])).pathname])).toEqual([
       ["GET", "/api/health"],
-      ["GET", "/api/companies"],
+      ["GET", "/api/squads"],
       ["POST", "/api/board-api-keys"],
     ]);
     expect(readContext(contextPath)).toMatchObject({
@@ -124,7 +124,7 @@ describe("connect command", () => {
       profiles: {
         "cli-board": {
           apiBase: API_BASE,
-          companyId: COMPANY_ID,
+          squadId: SQUAD_ID,
           persona: "board",
           tokenId: "board-key-1",
           tokenName: "connect-board-token",
@@ -140,10 +140,10 @@ describe("connect command", () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(String(input));
       if (url.pathname === "/api/health") return jsonResponse({ status: "ok" });
-      if (url.pathname === "/api/companies") {
-        return jsonResponse([{ id: COMPANY_ID, name: "Connect Co" }]);
+      if (url.pathname === "/api/squads") {
+        return jsonResponse([{ id: SQUAD_ID, name: "Connect Co" }]);
       }
-      if (url.pathname === `/api/companies/${COMPANY_ID}/agents`) {
+      if (url.pathname === `/api/squads/${SQUAD_ID}/agents`) {
         return jsonResponse([{ id: AGENT_ID, name: "Connect Agent", role: "Operator" }]);
       }
       if (url.pathname === `/api/agents/${AGENT_ID}/keys` && init?.method === "POST") {
@@ -175,8 +175,8 @@ describe("connect command", () => {
 
     expect(fetchMock.mock.calls.map((call) => [call[1]?.method ?? "GET", new URL(String(call[0])).pathname])).toEqual([
       ["GET", "/api/health"],
-      ["GET", "/api/companies"],
-      ["GET", `/api/companies/${COMPANY_ID}/agents`],
+      ["GET", "/api/squads"],
+      ["GET", `/api/squads/${SQUAD_ID}/agents`],
       ["POST", `/api/agents/${AGENT_ID}/keys`],
     ]);
     expect(readContext(contextPath)).toMatchObject({
@@ -184,7 +184,7 @@ describe("connect command", () => {
       profiles: {
         "cli-agent": {
           apiBase: API_BASE,
-          companyId: COMPANY_ID,
+          squadId: SQUAD_ID,
           persona: "agent",
           agentId: AGENT_ID,
           agentName: "Connect Agent",

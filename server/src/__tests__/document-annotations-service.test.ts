@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
-  companies,
+  squads,
   createDb,
   documentAnnotationAnchorSnapshots,
   documentAnnotationComments,
@@ -59,7 +59,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
     await db.delete(issueDocuments);
     await db.delete(documents);
     await db.delete(issues);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -67,19 +67,19 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
   });
 
   async function createIssueWithDocument() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const issueId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PAP-9442",
       title: "Annotation race",
       description: "Validate annotation revision guards",
@@ -95,11 +95,11 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       body: "Alpha selected text omega",
     });
 
-    return { companyId, issueId, document: created.document };
+    return { squadId, issueId, document: created.document };
   }
 
   it("fails closed when a concurrent document update wins before annotation thread creation commits", async () => {
-    const { companyId, issueId, document } = await createIssueWithDocument();
+    const { squadId, issueId, document } = await createIssueWithDocument();
     const concurrentUpdateCanCommit = deferred<void>();
     const concurrentUpdateHasWritten = deferred<void>();
 
@@ -108,7 +108,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       const [revision] = await tx
         .insert(documentRevisions)
         .values({
-          companyId,
+          squadId,
           documentId: document.id,
           revisionNumber: document.latestRevisionNumber + 1,
           title: "Plan",

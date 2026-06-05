@@ -2,38 +2,38 @@ import { useEffect, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, KeyRound } from "lucide-react";
-import type { CompanySecret, EnvBinding } from "@slaw/shared";
+import type { SquadSecret, EnvBinding } from "@slaw/shared";
 import { Secrets } from "@/pages/Secrets";
 import { SecretBindingPicker, type SecretBindingValue } from "@/components/SecretBindingPicker";
 import { EnvVarEditor } from "@/components/EnvVarEditor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookCompanies, storybookSecrets } from "../fixtures/slawData";
+import { storybookSquads, storybookSecrets } from "../fixtures/slawData";
 
-const COMPANY_ID = "company-storybook";
+const SQUAD_ID = "squad-storybook";
 
-// Seed localStorage before CompanyContext mounts so its `useState` initializer reads the right id.
+// Seed localStorage before SquadContext mounts so its `useState` initializer reads the right id.
 if (typeof window !== "undefined") {
-  window.localStorage.setItem("slaw.selectedCompanyId", COMPANY_ID);
+  window.localStorage.setItem("slaw.selectedSquadId", SQUAD_ID);
 }
 
 function StorybookSecretsFixtures({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   // Seed query caches synchronously so children hydrate from cache on first render.
-  queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), storybookSecrets);
+  queryClient.setQueryData(queryKeys.secrets.list(SQUAD_ID), storybookSecrets);
 
-  const { selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const { selectedSquadId, setSelectedSquadId } = useSquad();
   useEffect(() => {
-    if (selectedCompanyId !== COMPANY_ID) {
-      setSelectedCompanyId(COMPANY_ID);
+    if (selectedSquadId !== SQUAD_ID) {
+      setSelectedSquadId(SQUAD_ID);
     }
-  }, [selectedCompanyId, setSelectedCompanyId]);
+  }, [selectedSquadId, setSelectedSquadId]);
 
-  // Block render until the company id is the storybook fixture so the BindingPicker's
+  // Block render until the squad id is the storybook fixture so the BindingPicker's
   // useQuery never sees the production-like null state.
-  if (selectedCompanyId !== COMPANY_ID) {
+  if (selectedSquadId !== SQUAD_ID) {
     return null;
   }
 
@@ -141,7 +141,7 @@ export const EnvEditorWithSecrets: Story = {
           <CardContent>
             <EnvVarEditor
               value={env}
-              secrets={storybookSecrets as CompanySecret[]}
+              secrets={storybookSecrets as SquadSecret[]}
               onCreateSecret={async (name, value) => ({
                 ...storybookSecrets[0]!,
                 id: `secret-${Math.random().toString(36).slice(2, 8)}`,
@@ -206,8 +206,8 @@ export const RunFailureCopy: Story = {
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>
                   Re-enable the secret on{" "}
-                  <a className="text-primary underline" href="/PAP/company/settings/secrets">
-                    Company settings &gt; Secrets
+                  <a className="text-primary underline" href="/PAP/squad/settings/secrets">
+                    Squad settings &gt; Secrets
                   </a>
                 </li>
                 <li>Or, rotate to a new value and pin v3 explicitly for this agent.</li>

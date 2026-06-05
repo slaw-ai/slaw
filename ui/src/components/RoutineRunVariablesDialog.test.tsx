@@ -59,7 +59,7 @@ vi.mock("./IssueWorkspaceCard", async () => {
 function createProject(): Project {
   return {
     id: "project-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     urlKey: "workspace-project",
     goalId: null,
     goalIds: [],
@@ -100,7 +100,7 @@ function createProject(): Project {
 function createAgent(): Agent {
   return {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Routine Agent",
     role: "engineer",
     title: null,
@@ -127,7 +127,7 @@ function createAgent(): Agent {
 function createExecutionWorkspace(): ExecutionWorkspace {
   return {
     id: "workspace-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: "project-workspace-1",
     sourceIssueId: null,
@@ -198,7 +198,7 @@ describe("RoutineRunVariablesDialog", () => {
           <RoutineRunVariablesDialog
             open
             onOpenChange={() => {}}
-            companyId="company-1"
+            squadId="squad-1"
             projects={[createProject()]}
             agents={[createAgent()]}
             defaultProjectId="project-1"
@@ -240,7 +240,7 @@ describe("RoutineRunVariablesDialog", () => {
           <RoutineRunVariablesDialog
             open
             onOpenChange={() => {}}
-            companyId="company-1"
+            squadId="squad-1"
             projects={[createProject()]}
             agents={[createAgent()]}
             defaultProjectId="project-1"
@@ -315,7 +315,7 @@ describe("RoutineRunVariablesDialog", () => {
           <RoutineRunVariablesDialog
             open
             onOpenChange={() => {}}
-            companyId="company-1"
+            squadId="squad-1"
             projects={[createProject()]}
             agents={[createAgent()]}
             defaultProjectId="project-1"
@@ -399,7 +399,7 @@ describe("RoutineRunVariablesDialog", () => {
           <RoutineRunVariablesDialog
             open
             onOpenChange={() => {}}
-            companyId="company-1"
+            squadId="squad-1"
             projects={[createProject()]}
             agents={[createAgent()]}
             defaultProjectId="project-1"

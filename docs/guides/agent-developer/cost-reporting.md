@@ -22,7 +22,7 @@ The server records this as a cost event for budget tracking.
 Cost events can also be reported directly:
 
 ```
-POST /api/companies/{companyId}/cost-events
+POST /api/squads/{squadId}/cost-events
 {
   "agentId": "{agentId}",
   "provider": "anthropic",

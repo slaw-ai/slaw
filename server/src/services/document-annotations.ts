@@ -31,7 +31,7 @@ type ActorInput = {
 
 type IssueDocumentRow = {
   issueId: string;
-  companyId: string;
+  squadId: string;
   documentId: string;
   documentKey: string;
   latestBody: string;
@@ -41,7 +41,7 @@ type IssueDocumentRow = {
 
 const threadSelect = {
   id: documentAnnotationThreads.id,
-  companyId: documentAnnotationThreads.companyId,
+  squadId: documentAnnotationThreads.squadId,
   issueId: documentAnnotationThreads.issueId,
   documentId: documentAnnotationThreads.documentId,
   documentKey: documentAnnotationThreads.documentKey,
@@ -71,7 +71,7 @@ const threadSelect = {
 
 const commentSelect = {
   id: documentAnnotationComments.id,
-  companyId: documentAnnotationComments.companyId,
+  squadId: documentAnnotationComments.squadId,
   threadId: documentAnnotationComments.threadId,
   issueId: documentAnnotationComments.issueId,
   documentId: documentAnnotationComments.documentId,
@@ -101,7 +101,7 @@ export function documentAnnotationService(db: Db) {
     return dbOrTx
       .select({
         issueId: issueDocuments.issueId,
-        companyId: documents.companyId,
+        squadId: documents.squadId,
         documentId: documents.id,
         documentKey: issueDocuments.key,
         latestBody: documents.latestBody,
@@ -220,7 +220,7 @@ export function documentAnnotationService(db: Db) {
       const [thread] = await tx
         .insert(documentAnnotationThreads)
         .values({
-          companyId: doc.companyId,
+          squadId: doc.squadId,
           issueId,
           documentId: doc.documentId,
           documentKey: doc.documentKey,
@@ -249,7 +249,7 @@ export function documentAnnotationService(db: Db) {
       const [comment] = await tx
         .insert(documentAnnotationComments)
         .values({
-          companyId: doc.companyId,
+          squadId: doc.squadId,
           threadId: thread.id,
           issueId,
           documentId: doc.documentId,
@@ -279,7 +279,7 @@ export function documentAnnotationService(db: Db) {
       const [comment] = await tx
         .insert(documentAnnotationComments)
         .values({
-          companyId: thread.companyId,
+          squadId: thread.squadId,
           threadId: thread.id,
           issueId: thread.issueId,
           documentId: thread.documentId,
@@ -387,7 +387,7 @@ export function documentAnnotationService(db: Db) {
         const [snapshot] = await tx
           .insert(documentAnnotationAnchorSnapshots)
           .values({
-            companyId: thread.companyId,
+            squadId: thread.squadId,
             threadId: thread.id,
             documentId: thread.documentId,
             fromRevisionId: thread.currentRevisionId,

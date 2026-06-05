@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "तुमची पहिली कंपनी तयार करा",
       "description": "कंपनी तयार करून सुरुवात करा.",
-      "newCompany": "नवीन कंपनी"
+      "newSquad": "नवीन कंपनी"
     }
   }
 }

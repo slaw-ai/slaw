@@ -69,7 +69,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
       });
 
     const result = await resolveExecutionRunAdapterConfig({
-      companyId: "company-1",
+      squadId: "squad-1",
       executionRunConfig: { env: { SHARED_KEY: "agent" } },
       projectEnv: { SHARED_KEY: "project" },
       routineEnv: { SHARED_KEY: "routine" },
@@ -105,7 +105,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
   });
 
   it("drops Slaw runtime-owned env before resolving agent, project, and routine overlays", async () => {
-    const resolveAdapterConfigForRuntime = vi.fn(async (_companyId, config: Record<string, unknown>) => ({
+    const resolveAdapterConfigForRuntime = vi.fn(async (_squadId, config: Record<string, unknown>) => ({
       config: {
         ...config,
         env: { ...(config.env as Record<string, unknown>) },
@@ -113,7 +113,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
       secretKeys: new Set<string>(),
       manifest: [],
     }));
-    const resolveEnvBindings = vi.fn(async (_companyId, env: Record<string, unknown>) => ({
+    const resolveEnvBindings = vi.fn(async (_squadId, env: Record<string, unknown>) => ({
       env: Object.fromEntries(
         Object.entries(env).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
       ),
@@ -122,7 +122,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
     }));
 
     const result = await resolveExecutionRunAdapterConfig({
-      companyId: "company-1",
+      squadId: "squad-1",
       agentId: "agent-1",
       executionRunConfig: {
         env: {
@@ -133,7 +133,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
       },
       projectEnv: {
         SLAW_API_KEY: "project-api-key",
-        SLAW_COMPANY_ID: "spoofed-company",
+        SLAW_SQUAD_ID: "spoofed-squad",
         PROJECT_ONLY: "project-only",
       },
       routineEnv: {
@@ -176,7 +176,7 @@ describe("resolveExecutionRunAdapterConfig", () => {
     const resolveEnvBindings = vi.fn();
 
     const result = await resolveExecutionRunAdapterConfig({
-      companyId: "company-1",
+      squadId: "squad-1",
       executionRunConfig: { env: { AGENT_ONLY: "agent-only" } },
       projectEnv: null,
       secretsSvc: {
@@ -216,9 +216,9 @@ describe("applyRunScopedMentionedSkillKeys", () => {
     };
 
     const updatedConfig = applyRunScopedMentionedSkillKeys(originalConfig, [
-      "company/company-1/release-changelog",
+      "squad/squad-1/release-changelog",
       "slaw/slaw/slaw",
-      "company/company-1/release-changelog",
+      "squad/squad-1/release-changelog",
     ]);
 
     expect(updatedConfig).toEqual({
@@ -226,7 +226,7 @@ describe("applyRunScopedMentionedSkillKeys", () => {
       slawSkillSync: {
         desiredSkills: [
           "slaw/slaw/slaw",
-          "company/company-1/release-changelog",
+          "squad/squad-1/release-changelog",
         ],
       },
     });

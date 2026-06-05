@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "issue_thread_interactions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"issue_id" uuid NOT NULL,
 	"kind" text NOT NULL,
 	"status" text DEFAULT 'pending' NOT NULL,
@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS "issue_thread_interactions" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'issue_thread_interactions_company_id_companies_id_fk') THEN
-  ALTER TABLE "issue_thread_interactions" ADD CONSTRAINT "issue_thread_interactions_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'issue_thread_interactions_squad_id_squads_id_fk') THEN
+  ALTER TABLE "issue_thread_interactions" ADD CONSTRAINT "issue_thread_interactions_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE no action ON UPDATE no action;
  END IF;
 END $$;
 --> statement-breakpoint
@@ -58,8 +58,8 @@ END $$;
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "issue_thread_interactions_issue_idx" ON "issue_thread_interactions" USING btree ("issue_id");
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "issue_thread_interactions_company_issue_created_at_idx" ON "issue_thread_interactions" USING btree ("company_id","issue_id","created_at");
+CREATE INDEX IF NOT EXISTS "issue_thread_interactions_squad_issue_created_at_idx" ON "issue_thread_interactions" USING btree ("squad_id","issue_id","created_at");
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "issue_thread_interactions_company_issue_status_idx" ON "issue_thread_interactions" USING btree ("company_id","issue_id","status");
+CREATE INDEX IF NOT EXISTS "issue_thread_interactions_squad_issue_status_idx" ON "issue_thread_interactions" USING btree ("squad_id","issue_id","status");
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "issue_thread_interactions_source_comment_idx" ON "issue_thread_interactions" USING btree ("source_comment_id");

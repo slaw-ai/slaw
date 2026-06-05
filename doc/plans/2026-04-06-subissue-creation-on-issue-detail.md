@@ -28,7 +28,7 @@ This is a UI-first change. The backend already supports child issue creation wit
 
 ### 2.1 Existing child issue display
 
-`ui/src/pages/IssueDetail.tsx` already derives `childIssues` by filtering the company issue list on `parentId === issue.id`.
+`ui/src/pages/IssueDetail.tsx` already derives `childIssues` by filtering the squad issue list on `parentId === issue.id`.
 
 Current limitation:
 
@@ -135,12 +135,12 @@ No new data-fetch path is needed.
 
 The existing create success handler in `NewIssueDialog` already invalidates:
 
-- `queryKeys.issues.list(companyId)`
+- `queryKeys.issues.list(squadId)`
 - issue-related list badges
 
-That should be enough for the parent `IssueDetail` view to recompute `childIssues` after creation because it derives children from the company issue list query.
+That should be enough for the parent `IssueDetail` view to recompute `childIssues` after creation because it derives children from the squad issue list query.
 
-If the detail page ever moves away from the full company issue list, this should be revisited, but it does not require additional work for the current architecture.
+If the detail page ever moves away from the full squad issue list, this should be revisited, but it does not require additional work for the current architecture.
 
 ## 4. Implementation Order
 

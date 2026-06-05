@@ -111,7 +111,7 @@ describe("adapter session codecs", () => {
 
   it("preserves acpx session params required for compatibility checks", () => {
     const parsed = acpxSessionCodec.deserialize({
-      sessionKey: "slaw:company:agent:task:fingerprint",
+      sessionKey: "slaw:squad:agent:task:fingerprint",
       runtimeSessionName: "runtime-session-1",
       acpxRecordId: "record-1",
       acpSessionId: "acp-session-1",
@@ -131,7 +131,7 @@ describe("adapter session codecs", () => {
     });
 
     expect(parsed).toMatchObject({
-      sessionKey: "slaw:company:agent:task:fingerprint",
+      sessionKey: "slaw:squad:agent:task:fingerprint",
       runtimeSessionName: "runtime-session-1",
       acpxRecordId: "record-1",
       acpSessionId: "acp-session-1",

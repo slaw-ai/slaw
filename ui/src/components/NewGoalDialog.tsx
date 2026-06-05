@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GOAL_STATUSES, GOAL_LEVELS } from "@slaw/shared";
 import { useDialog } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { goalsApi } from "../api/goals";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
@@ -27,7 +27,7 @@ import { MarkdownEditor, type MarkdownEditorRef } from "./MarkdownEditor";
 import { StatusBadge } from "./StatusBadge";
 
 const levelLabels: Record<string, string> = {
-  company: "Company",
+  squad: "Squad",
   team: "Team",
   agent: "Agent",
   task: "Task",
@@ -35,7 +35,7 @@ const levelLabels: Record<string, string> = {
 
 export function NewGoalDialog() {
   const { newGoalOpen, newGoalDefaults, closeNewGoal } = useDialog();
-  const { selectedCompanyId, selectedCompany } = useCompany();
+  const { selectedSquadId, selectedSquad } = useSquad();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -53,16 +53,16 @@ export function NewGoalDialog() {
   const appliedParentId = parentId || newGoalDefaults.parentId || "";
 
   const { data: goals } = useQuery({
-    queryKey: queryKeys.goals.list(selectedCompanyId!),
-    queryFn: () => goalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && newGoalOpen,
+    queryKey: queryKeys.goals.list(selectedSquadId!),
+    queryFn: () => goalsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && newGoalOpen,
   });
 
   const createGoal = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      goalsApi.create(selectedCompanyId!, data),
+      goalsApi.create(selectedSquadId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.goals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.list(selectedSquadId!) });
       reset();
       closeNewGoal();
     },
@@ -70,8 +70,8 @@ export function NewGoalDialog() {
 
   const uploadDescriptionImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!selectedCompanyId) throw new Error("No company selected");
-      return assetsApi.uploadImage(selectedCompanyId, file, "goals/drafts");
+      if (!selectedSquadId) throw new Error("No squad selected");
+      return assetsApi.uploadImage(selectedSquadId, file, "goals/drafts");
     },
   });
 
@@ -85,7 +85,7 @@ export function NewGoalDialog() {
   }
 
   function handleSubmit() {
-    if (!selectedCompanyId || !title.trim()) return;
+    if (!selectedSquadId || !title.trim()) return;
     createGoal.mutate({
       title: title.trim(),
       description: description.trim() || undefined,
@@ -122,9 +122,9 @@ export function NewGoalDialog() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {selectedCompany && (
+            {selectedSquad && (
               <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium">
-                {selectedCompany.name.slice(0, 3).toUpperCase()}
+                {selectedSquad.name.slice(0, 3).toUpperCase()}
               </span>
             )}
             <span className="text-muted-foreground/60">&rsaquo;</span>

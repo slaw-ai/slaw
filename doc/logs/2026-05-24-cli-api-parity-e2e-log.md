@@ -23,8 +23,8 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ## Current IDs
 
-- Company ID: `12e9db4b-f66c-459b-959e-d645002240fb`
-- Imported Company ID: `0bdc6f69-733d-4b1c-b5c6-2246f9582598` (deleted from DB)
+- Squad ID: `12e9db4b-f66c-459b-959e-d645002240fb`
+- Imported Squad ID: `0bdc6f69-733d-4b1c-b5c6-2246f9582598` (deleted from DB)
 - Agent ID: `1dd601a1-031a-4225-b005-419427fd059f`
 - Goal ID: `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`
 - Project ID: `d32032ce-d95e-4c4e-a942-dd98498025fb`
@@ -75,40 +75,40 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 - Purpose: Confirm the CLI and API target the disposable instance.
 - Prerequisites/IDs used: isolated env; server session from previous step.
 - Expected result: Config/context/auth paths are scratch paths; context path is scratch; health succeeds on `127.0.0.1:3197`; DB directory is under scratch home.
-- Actual result: Config path, context path, storage path, secrets key path, and DB directory all resolve under `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity`; health returned `status: ok`, version `0.3.1`, `deploymentMode: local_trusted`, `companyDeletionEnabled: true`.
+- Actual result: Config path, context path, storage path, secrets key path, and DB directory all resolve under `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity`; health returned `status: ok`, version `0.3.1`, `deploymentMode: local_trusted`, `squadDeletionEnabled: true`.
 - Status: PASS.
 - Output summary: `slaw env` redacted here because it prints the generated `SLAW_AGENT_JWT_SECRET`. Context existed at the scratch path with an empty `default` profile.
 - Follow-up: Set API context and begin CLI parity checks.
 
 ### 2026-05-24T11:08:20+02:00 - Basic context/auth/connectivity
 
-- Command: `pnpm slaw context set --api-base http://127.0.0.1:3197 --use --json`; `pnpm slaw whoami --json`; `pnpm slaw company list --json`; `pnpm slaw access whoami --json`
-- Purpose: Exercise context setup/show, auth/access identity, and initial company listing.
-- Prerequisites/IDs used: isolated env; no company ID yet.
-- Expected result: Context stores non-default API base; `whoami` reports the implicit local board; company list is empty; documented `access whoami` either works or reveals current command drift.
-- Actual result: `context set --api-base` wrote `apiBase: http://127.0.0.1:3197`; `whoami` returned `local-board` with `isInstanceAdmin: true`; company list returned `[]`; `access whoami` failed with `unknown command 'access'`.
+- Command: `pnpm slaw context set --api-base http://127.0.0.1:3197 --use --json`; `pnpm slaw whoami --json`; `pnpm slaw squad list --json`; `pnpm slaw access whoami --json`
+- Purpose: Exercise context setup/show, auth/access identity, and initial squad listing.
+- Prerequisites/IDs used: isolated env; no squad ID yet.
+- Expected result: Context stores non-default API base; `whoami` reports the implicit local board; squad list is empty; documented `access whoami` either works or reveals current command drift.
+- Actual result: `context set --api-base` wrote `apiBase: http://127.0.0.1:3197`; `whoami` returned `local-board` with `isInstanceAdmin: true`; squad list returned `[]`; `access whoami` failed with `unknown command 'access'`.
 - Status: PASS with docs/runbook mismatch.
 - Output summary: Current CLI exposes `whoami` as a top-level command. The runbook/docs command `access whoami` is stale for this checkout.
 - Follow-up: Use top-level `whoami` for access checks and record the mismatch below.
 
-### 2026-05-24T11:09:14+02:00 - Company create/get/update/context
+### 2026-05-24T11:09:14+02:00 - Squad create/get/update/context
 
-- Command: `pnpm slaw company create --payload-json '{"name":"CLI API Parity Test","description":"Disposable company for CLI API parity testing","goal":"Exercise the CLI API surface end to end"}' --json`; `pnpm slaw context set --company-id 12e9db4b-f66c-459b-959e-d645002240fb --use --json`; `pnpm slaw company get 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw company update 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"description":"Updated by CLI API parity test","budgetMonthlyCents":12345}' --json`
-- Purpose: Exercise company creation, retrieval, update, and default company context.
+- Command: `pnpm slaw squad create --payload-json '{"name":"CLI API Parity Test","description":"Disposable squad for CLI API parity testing","goal":"Exercise the CLI API surface end to end"}' --json`; `pnpm slaw context set --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --use --json`; `pnpm slaw squad get 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw squad update 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"description":"Updated by CLI API parity test","budgetMonthlyCents":12345}' --json`
+- Purpose: Exercise squad creation, retrieval, update, and default squad context.
 - Prerequisites/IDs used: board identity; API base context.
-- Expected result: Company is created, can be fetched, update persists, and context keeps both `apiBase` and `companyId`.
-- Actual result: Company create/get/update succeeded. Created company `12e9db4b-f66c-459b-959e-d645002240fb`. Update changed description and `budgetMonthlyCents` to `12345`. `context set --company-id` unexpectedly removed the previously stored `apiBase`.
+- Expected result: Squad is created, can be fetched, update persists, and context keeps both `apiBase` and `squadId`.
+- Actual result: Squad create/get/update succeeded. Created squad `12e9db4b-f66c-459b-959e-d645002240fb`. Update changed description and `budgetMonthlyCents` to `12345`. `context set --squad-id` unexpectedly removed the previously stored `apiBase`.
 - Status: PASS with fixed bug.
-- Output summary: Company issue prefix is `CLI`; status is `active`.
+- Output summary: Squad issue prefix is `CLI`; status is `active`.
 - Follow-up: Fix the context profile merge bug before continuing so later commands cannot fall back to `localhost:3100`.
 
 ### 2026-05-24T11:11:00+02:00 - Fix and verify context profile merge
 
-- Command: edited `cli/src/commands/client/context.ts`, `cli/src/client/context.ts`, and `cli/src/__tests__/context.test.ts`; `pnpm exec vitest run cli/src/__tests__/context.test.ts`; `pnpm --dir cli typecheck`; `pnpm slaw context set --api-base http://127.0.0.1:3197 --company-id 12e9db4b-f66c-459b-959e-d645002240fb --use --json`; `pnpm slaw context show --json`
+- Command: edited `cli/src/commands/client/context.ts`, `cli/src/client/context.ts`, and `cli/src/__tests__/context.test.ts`; `pnpm exec vitest run cli/src/__tests__/context.test.ts`; `pnpm --dir cli typecheck`; `pnpm slaw context set --api-base http://127.0.0.1:3197 --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --use --json`; `pnpm slaw context show --json`
 - Purpose: Preserve existing context profile fields when setting a subset of fields.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`.
-- Expected result: Undefined patch fields do not erase existing profile values; context keeps both `apiBase` and `companyId`.
-- Actual result: Targeted Vitest context test passed; CLI typecheck passed; scratch context now contains both `apiBase: http://127.0.0.1:3197` and `companyId: 12e9db4b-f66c-459b-959e-d645002240fb`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`.
+- Expected result: Undefined patch fields do not erase existing profile values; context keeps both `apiBase` and `squadId`.
+- Actual result: Targeted Vitest context test passed; CLI typecheck passed; scratch context now contains both `apiBase: http://127.0.0.1:3197` and `squadId: 12e9db4b-f66c-459b-959e-d645002240fb`.
 - Status: PASS.
 - Output summary: Added regression coverage for undefined context patch fields.
 - Follow-up: Continue parity testing.
@@ -116,8 +116,8 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 ### 2026-05-24T11:14:05+02:00 - Core domain CRUD and issue comments
 
 - Command: `dashboard get`; `goal list/create/get/update`; `project list/create/get/update`; `agent list/create/get/update/configuration`; `issue list/create/get/update/comment/comments/comment:get/checkout`; `activity list`
-- Purpose: Exercise core company-scoped CLI/API parity with JSON outputs and captured IDs.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; context profile with scratch `apiBase`; process adapter agent payload.
+- Purpose: Exercise core squad-scoped CLI/API parity with JSON outputs and captured IDs.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; context profile with scratch `apiBase`; process adapter agent payload.
 - Expected result: Goal, agent, project, and issue CRUD succeeds; comments can be created and read; checkout succeeds for a todo issue.
 - Actual result: Goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`, agent `1dd601a1-031a-4225-b005-419427fd059f`, project `d32032ce-d95e-4c4e-a942-dd98498025fb`, issue `f0250734-95f1-4c28-9e10-f1954649fffb`, and comment `231fd48a-9ed2-4e72-a3dc-3b762842f57d` were created/updated/read successfully. Explicit checkout of the first issue failed with 409 because assigning it at creation triggered automatic local process runs and checkout first.
 - Status: PASS with expected concurrency conflict.
@@ -128,7 +128,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: `issue create --status todo` without assignee; `issue checkout 1f7540d3-a3d3-48d2-b6c5-00d72c064e8f --agent-id 1dd601a1-031a-4225-b005-419427fd059f --expected-statuses todo --json`; `issue release 1f7540d3-a3d3-48d2-b6c5-00d72c064e8f --json`
 - Purpose: Exercise atomic checkout and release semantics without automatic assignment races.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`.
 - Expected result: Checkout moves issue to `in_progress` and assigns the agent; release moves issue to `todo` and clears assignee.
 - Actual result: Checkout returned `status: in_progress` with the expected agent ID; release returned `status: todo` with `assigneeAgentId: null`.
 - Status: PASS.
@@ -137,33 +137,33 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T11:16:43+02:00 - Board and agent token lifecycle
 
-- Command: `token board create --company-id ... --name cli-parity-board --never-expires --json`; `token board list --json`; `whoami --api-key <board-token> --json`; `token agent create --company-id ... --agent ... --name cli-parity-agent --json`; `token agent list --company-id ... --agent ... --json`; `context set --profile cli-agent --persona agent ... --api-key-env-var-name SLAW_API_KEY --json`; `agent me --profile cli-agent --json`; `agent inbox --profile cli-agent --json`; `issue list --profile cli-agent --company-id ... --json`; `company list --profile cli-agent --json`; `token agent revoke ...`; `token board revoke ...`
-- Purpose: Exercise board token creation/use/list/revoke; agent token creation/list/use/revoke; verify agent tokens cannot use board-only company list.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
-- Expected result: Board token works for `whoami`; agent token works for agent persona commands and company-scoped issue list; board-only command fails with clear 403; both tokens are revoked.
-- Actual result: Board token `45d843a2-9334-4dda-b53a-cd6f7e62149a` was listed and `whoami` reported `source: board_key`. Agent token `d464c3fe-c760-4c1c-b6cd-f8f0cd6c1797` was listed; `agent me`, `agent inbox`, and issue list succeeded; `company list` failed with `API error 403: Board access required`; both tokens were revoked and later list output showed `revokedAt`.
+- Command: `token board create --squad-id ... --name cli-parity-board --never-expires --json`; `token board list --json`; `whoami --api-key <board-token> --json`; `token agent create --squad-id ... --agent ... --name cli-parity-agent --json`; `token agent list --squad-id ... --agent ... --json`; `context set --profile cli-agent --persona agent ... --api-key-env-var-name SLAW_API_KEY --json`; `agent me --profile cli-agent --json`; `agent inbox --profile cli-agent --json`; `issue list --profile cli-agent --squad-id ... --json`; `squad list --profile cli-agent --json`; `token agent revoke ...`; `token board revoke ...`
+- Purpose: Exercise board token creation/use/list/revoke; agent token creation/list/use/revoke; verify agent tokens cannot use board-only squad list.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
+- Expected result: Board token works for `whoami`; agent token works for agent persona commands and squad-scoped issue list; board-only command fails with clear 403; both tokens are revoked.
+- Actual result: Board token `45d843a2-9334-4dda-b53a-cd6f7e62149a` was listed and `whoami` reported `source: board_key`. Agent token `d464c3fe-c760-4c1c-b6cd-f8f0cd6c1797` was listed; `agent me`, `agent inbox`, and issue list succeeded; `squad list` failed with `API error 403: Board access required`; both tokens were revoked and later list output showed `revokedAt`.
 - Status: PASS.
 - Output summary: Plaintext token values were captured only in shell variables and were not written to repo files or this log.
 - Follow-up: Exercise prompt/wake/run and safe ancillary surfaces.
 
 ### 2026-05-24T11:18:06+02:00 - Prompt, wake, runs, and ancillary safe surfaces
 
-- Command: `board prompt --company-id ... --agent ... --title "CLI parity prompt issue" --no-wake ... --json`; `agent wake ... --reason "cli parity wake smoke" --payload '{"source":"cli-api-parity"}' --json`; `run list/get/events/log`; `dashboard get`; `activity list`; `cost summary`; `cost by-agent`; `finance summary`; `budget overview`; `secrets list/doctor/provider-configs`; `routine list`; `adapter list`; `plugin list`; `org get`; `agent-config list`
+- Command: `board prompt --squad-id ... --agent ... --title "CLI parity prompt issue" --no-wake ... --json`; `agent wake ... --reason "cli parity wake smoke" --payload '{"source":"cli-api-parity"}' --json`; `run list/get/events/log`; `dashboard get`; `activity list`; `cost summary`; `cost by-agent`; `finance summary`; `budget overview`; `secrets list/doctor/provider-configs`; `routine list`; `adapter list`; `plugin list`; `org get`; `agent-config list`
 - Purpose: Exercise prompt handoff, wake/run inspection, and safe read-only activity/dashboard/cost/secrets/plugin/routine surfaces.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
 - Expected result: Prompt creates an issue without waking; wake creates/returns a run; run inspection endpoints work; safe list/read commands return JSON.
 - Actual result: Prompt created issue `38b89e46-a775-43bc-a39a-c44ccd1f7f30`; wake/run ID `7b18a3ca-9875-4bfc-b910-db31deb2c0fa`; run list returned 10 recent runs; activity returned 50 rows; secrets and routines were empty; adapter list returned 13 adapters; plugin list succeeded.
 - Status: PASS.
 - Output summary: One transient UI/API background request for a just-created run log returned 404 and then succeeded on retry; direct CLI `run log` for the selected run succeeded.
 - Follow-up: Exercise import/export and destructive operations in scratch data.
 
-### 2026-05-24T11:19:35+02:00 - Company export/import/delete and object deletes
+### 2026-05-24T11:19:35+02:00 - Squad export/import/delete and object deletes
 
-- Command: `company export 12e9db4b-f66c-459b-959e-d645002240fb --out tmp/cli-api-parity/exports/company-package --include company,agents,projects,issues,skills --json`; `company import <export-dir> --target new --new-company-name "Imported Company" --yes --json`; `company get <imported-id> --json`; `company delete <imported-id> --yes --confirm <imported-id> --json`; disposable `goal create/delete`, `project create/delete`, and `issue create/delete`; final list checks.
+- Command: `squad export 12e9db4b-f66c-459b-959e-d645002240fb --out tmp/cli-api-parity/exports/squad-package --include squad,agents,projects,issues,skills --json`; `squad import <export-dir> --target new --new-squad-name "Imported Squad" --yes --json`; `squad get <imported-id> --json`; `squad delete <imported-id> --yes --confirm <imported-id> --json`; disposable `goal create/delete`, `project create/delete`, and `issue create/delete`; final list checks.
 - Purpose: Exercise portability and destructive operations only in the isolated instance.
-- Prerequisites/IDs used: original company `12e9db4b-f66c-459b-959e-d645002240fb`.
-- Expected result: Export writes a package under scratch; import creates a new company; company delete removes the imported company; object delete commands remove disposable records.
-- Actual result: Export wrote `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/exports/company-package`; import created company `0bdc6f69-733d-4b1c-b5c6-2246f9582598` named `Imported Company`; company delete returned `ok: true`; final list checks confirmed the imported company and disposable goal/project/issue were absent.
+- Prerequisites/IDs used: original squad `12e9db4b-f66c-459b-959e-d645002240fb`.
+- Expected result: Export writes a package under scratch; import creates a new squad; squad delete removes the imported squad; object delete commands remove disposable records.
+- Actual result: Export wrote `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/exports/squad-package`; import created squad `0bdc6f69-733d-4b1c-b5c6-2246f9582598` named `Imported Squad`; squad delete returned `ok: true`; final list checks confirmed the imported squad and disposable goal/project/issue were absent.
 - Status: PASS.
 - Output summary: Goal/project/issue delete commands return the deleted object rather than `{ ok: true }`, so success was verified by final absence from list commands.
 - Follow-up: Run final lifecycle and verification checks.
@@ -205,7 +205,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: `approval create/list/get/comment/request-revision/resubmit/approve/reject`; `issue approvals/approval:link/approval:unlink`; `issue read/unread/archive/unarchive`; `issue child:create/get`; `issue document:put/get/lock/unlock/revisions/restore`; `issue work-product:create/list/update/delete`
 - Purpose: Exercise approval lifecycle and issue subresource CLI/API parity with JSON outputs.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; issue `f0250734-95f1-4c28-9e10-f1954649fffb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; issue `f0250734-95f1-4c28-9e10-f1954649fffb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`.
 - Expected result: Approval lifecycle commands mutate and read approvals; issue markers, child creation, documents, and work products succeed.
 - Actual result: Approval lifecycle succeeded. Created/approved approval `c7f19d1c-fcb3-4e4d-87a7-e8a248a9eb09`; created/rejected approval `bbcfb3ae-38f1-43b0-8f9f-0661e291f29c`; linked and unlinked issue approvals successfully. Issue read/unread/archive/unarchive succeeded. Child issue `6e78d443-c9f4-46ba-9137-f1fa2b7a75c5` was created and fetched. Document create/get/lock/unlock/update/revisions/restore succeeded after supplying `--base-revision-id`; work product create/list/update/delete succeeded.
 - Status: PASS with docs/operator learning.
@@ -249,7 +249,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: `issue tree-hold:get/release`; `issue attachment:upload/list/download/delete`; `issue label:create/list/delete`; `issue feedback:vote/votes/list/export`; `token agent create/revoke`
 - Purpose: Resume the subresource pass after fixing the tree hold script shape and route hardening.
-- Prerequisites/IDs used: issue `f0250734-95f1-4c28-9e10-f1954649fffb`; tree hold `8f07dd71-092f-4746-9b6d-27bbb086b305`; company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
+- Prerequisites/IDs used: issue `f0250734-95f1-4c28-9e10-f1954649fffb`; tree hold `8f07dd71-092f-4746-9b6d-27bbb086b305`; squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
 - Expected result: Active hold is released; attachment upload/download round trip matches bytes; label lifecycle succeeds; feedback vote succeeds against a valid target.
 - Actual result: Tree hold get/release succeeded. Attachment upload/list/download/delete succeeded and `cmp` verified downloaded bytes. Label create/list/delete succeeded. Feedback vote against board-authored comment failed with `API error 422: Feedback voting is only available on agent-authored issue comments`. A retry that created an isolated temporary agent token `a67f4f69-7250-43d6-9988-96e7692da605` still failed because `issue comment --api-key <agent-token>` did not produce an agent-authored feedback target. The temporary token was revoked immediately after the failure.
 - Status: PARTIAL.
@@ -271,7 +271,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: `token agent create`; `issue comment --api-key <agent-token>`; `issue feedback:vote`; `issue feedback:votes`; `issue feedback:list`; `issue feedback:export`; `token agent revoke`; `issue recovery-actions`; `issue recovery:resolve`
 - Purpose: Complete feedback voting/export and recovery resolution after the earlier invalid target and output-shape mistakes.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; issue `f0250734-95f1-4c28-9e10-f1954649fffb`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; issue `f0250734-95f1-4c28-9e10-f1954649fffb`.
 - Expected result: Feedback vote is saved against an agent-authored target; feedback list/export work; temporary token is revoked; active recovery action resolves.
 - Actual result: Correctly reading `token agent create` output from `.key.token` produced agent-authored comment `d4e2adbe-d94c-4d87-8205-828f3ddfa033`; feedback vote `24843ebd-456d-4534-89ec-bdbc0bb02170` was saved; feedback list/export completed. Temporary token `40e683ec-758f-4964-bdef-544bee16ee5a` was revoked. Recovery action `1151475f-c97f-456b-9c6a-8e0f936abe05` resolved after using `--source-issue-status todo`; the issue moved to `todo`.
 - Status: PASS with command output-shape learning and help mismatch.
@@ -293,7 +293,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: disposable `agent create/list/get/update/delete`; `agent permissions:update`; `agent configuration`; `agent config-revisions`; `agent config-revision:get`; `agent runtime-state`; `agent runtime-state:reset-session`; `agent task-sessions`; `agent skills`; `agent skills:sync`; `agent instructions-path:update`; `agent instructions-bundle`; `agent instructions-bundle:update`; `agent instructions-file:get/put/delete`; `agent local-cli --no-install-skills`; `agent approve/pause/resume/heartbeat:invoke/terminate`; `token agent revoke`
 - Purpose: Exercise advanced agent lifecycle, runtime, instructions, skills, and local CLI token flows on a disposable agent.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; temp agent `f9dfad96-6045-4b97-a548-bdc95fb22ec4`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; temp agent `f9dfad96-6045-4b97-a548-bdc95fb22ec4`.
 - Expected result: Commands succeed without mutating the main parity worker; any token created by `local-cli` is revoked; temp agent is deleted.
 - Actual result: Advanced agent commands passed after adapting `instructions-path:update` for process adapter constraints. `agent local-cli --no-install-skills` created key `a9bf0b28-8217-4c60-829c-cb1962203a21`, which was revoked. `agent heartbeat:invoke` passed. Temp agent `f9dfad96-6045-4b97-a548-bdc95fb22ec4` was terminated and deleted. A final key list for the main agent showed no unrevoked keys.
 - Status: PASS with command UX mismatch.
@@ -302,24 +302,24 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T11:57:20+02:00 - Cost, finance, and budget command pass
 
-- Command: `cost event:create`; `cost summary`; `cost by-agent`; `cost by-agent-model`; `cost by-provider`; `cost by-biller`; `cost by-project`; `cost window-spend`; `cost quota-windows`; `cost issue`; `finance event:create`; `finance events`; `finance summary`; `finance by-biller`; `finance by-kind`; `budget overview`; `budget policy:upsert`; `budget company:update`; `budget agent:update`
+- Command: `cost event:create`; `cost summary`; `cost by-agent`; `cost by-agent-model`; `cost by-provider`; `cost by-biller`; `cost by-project`; `cost window-spend`; `cost quota-windows`; `cost issue`; `finance event:create`; `finance events`; `finance summary`; `finance by-biller`; `finance by-kind`; `budget overview`; `budget policy:upsert`; `budget squad:update`; `budget agent:update`
 - Purpose: Exercise cost/finance event creation, rollups, issue cost lookup, and budget policy/update flows.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; issue `f0250734-95f1-4c28-9e10-f1954649fffb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; issue `f0250734-95f1-4c28-9e10-f1954649fffb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; goal `5b2a9135-1044-48d6-a17d-6b91dd9fdc74`.
 - Expected result: Cost and finance events are recorded; all rollup commands return JSON; budget updates work and are restored.
-- Actual result: Cost event `63d757ae-a7f4-40e1-8ee8-e7d3174be1a4` and finance event `bd38c196-7598-4591-8750-f992d4d9babf` were created. All listed cost/finance read commands succeeded. Budget policy upsert succeeded. Company budget was changed to `23456` then restored to `12345`; agent budget was changed to `4321` then restored to `0`.
+- Actual result: Cost event `63d757ae-a7f4-40e1-8ee8-e7d3174be1a4` and finance event `bd38c196-7598-4591-8750-f992d4d9babf` were created. All listed cost/finance read commands succeeded. Budget policy upsert succeeded. Squad budget was changed to `23456` then restored to `12345`; agent budget was changed to `4321` then restored to `0`.
 - Status: PASS.
 - Output summary: `budget incident:resolve` was not run because no budget incident was created by this safe smoke path.
 - Follow-up: Continue access/profile/invite/admin/instance/sidebar/inbox/auth domains.
 
 ### 2026-05-24T12:02:45+02:00 - Access, profile, invite, admin, instance, sidebar, inbox, and auth challenge pass
 
-- Command: `whoami`; `auth whoami`; `profile session/get/update/company-user`; `invite create/list/show/onboarding/onboarding:text/skills:index/skill/logo/revoke`; `join list/reject`; `member list/user-directory/update/permissions/role-and-grants/archive`; `admin user list/company-access/company-access:update`; `instance scheduler-heartbeats/settings:general/settings:general:update/settings:experimental/settings:experimental:update/database-backup`; `sidebar preferences/preferences:update/project-preferences/project-preferences:update/badges`; `inbox dismissals/dismiss`; `auth challenge create/get/cancel/approve`; `auth logout`
+- Command: `whoami`; `auth whoami`; `profile session/get/update/squad-user`; `invite create/list/show/onboarding/onboarding:text/skills:index/skill/logo/revoke`; `join list/reject`; `member list/user-directory/update/permissions/role-and-grants/archive`; `admin user list/squad-access/squad-access:update`; `instance scheduler-heartbeats/settings:general/settings:general:update/settings:experimental/settings:experimental:update/database-backup`; `sidebar preferences/preferences:update/project-preferences/project-preferences:update/badges`; `inbox dismissals/dismiss`; `auth challenge create/get/cancel/approve`; `auth logout`
 - Purpose: Exercise board access, current profile, disposable invite, member/admin, instance settings, sidebar, inbox, and auth challenge surfaces.
-- Prerequisites/IDs used: company `12e9db4b-f66c-459b-959e-d645002240fb`; member `373f91e2-a433-46ee-8362-e61ab5e06593`; user `local-board`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; approval `c7f19d1c-fcb3-4e4d-87a7-e8a248a9eb09`.
-- Expected result: Read commands return JSON; no-op updates preserve scratch user/company access; disposable invites/challenges are revoked/cancelled/approved; unsafe self-removal is rejected.
-- Actual result: Identity/profile/session commands passed. Profile update preserved name `Board`. Disposable invite `b3317c94-4e46-4ceb-9a5f-6df179c4f77e` was created, inspected through show/onboarding/onboarding text/skills index/skill, then revoked. `invite logo` was treated as optional because the company has no logo. Join list passed; two disposable pending join requests were rejected during cleanup. Member list/user-directory/update/permissions/role-and-grants passed; self archive returned expected `403: You cannot remove yourself`. Admin user list/company-access/company-access:update passed with the same company ID. Instance settings read/no-op update and database backup passed. Sidebar preferences/project preferences/badges and inbox dismissal passed. Auth challenge cancel `a52af778-39c1-41a4-8f87-46fd7b100d16` and approve `70b51e40-e6d4-4e01-ae5d-16734897375e` passed. `auth logout` completed safely against the isolated auth store.
+- Prerequisites/IDs used: squad `12e9db4b-f66c-459b-959e-d645002240fb`; member `373f91e2-a433-46ee-8362-e61ab5e06593`; user `local-board`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; approval `c7f19d1c-fcb3-4e4d-87a7-e8a248a9eb09`.
+- Expected result: Read commands return JSON; no-op updates preserve scratch user/squad access; disposable invites/challenges are revoked/cancelled/approved; unsafe self-removal is rejected.
+- Actual result: Identity/profile/session commands passed. Profile update preserved name `Board`. Disposable invite `b3317c94-4e46-4ceb-9a5f-6df179c4f77e` was created, inspected through show/onboarding/onboarding text/skills index/skill, then revoked. `invite logo` was treated as optional because the squad has no logo. Join list passed; two disposable pending join requests were rejected during cleanup. Member list/user-directory/update/permissions/role-and-grants passed; self archive returned expected `403: You cannot remove yourself`. Admin user list/squad-access/squad-access:update passed with the same squad ID. Instance settings read/no-op update and database backup passed. Sidebar preferences/project preferences/badges and inbox dismissal passed. Auth challenge cancel `a52af778-39c1-41a4-8f87-46fd7b100d16` and approve `70b51e40-e6d4-4e01-ae5d-16734897375e` passed. `auth logout` completed safely against the isolated auth store.
 - Status: PASS with expected negative path and mismatches.
-- Output summary: `invite test-resolution` failed because the CLI does not provide the API-required `url` query. `join approve` on a disposable agent join request failed with `409: Join request cannot be approved because this company has no active CEO`; the request was rejected afterward.
+- Output summary: `invite test-resolution` failed because the CLI does not provide the API-required `url` query. `join approve` on a disposable agent join request failed with `409: Join request cannot be approved because this squad has no active Squad Lead`; the request was rejected afterward.
 - Follow-up: Continue public catalog/LLM docs, adapter/environment/workspace/asset/skill/plugin/setup command domains.
 
 ### 2026-05-24T12:04:55+02:00 - Public catalog and LLM docs command check
@@ -335,20 +335,20 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T12:10:10+02:00 - Adapter, environment, project workspace, plugin coverage
 
-- Command: `curl -sf http://127.0.0.1:3197/api/health`; `pnpm slaw health --json`; `pnpm slaw adapter list/get/config-schema/ui-parser/models/model-profiles/detect-model/test-environment ... --json`; `pnpm slaw environment list/capabilities/probe-config/create ... --json`; `pnpm slaw project-workspace create/list/update/delete ... --json`; `pnpm slaw workspace list --company-id ... --json`; `pnpm slaw plugin list/examples/ui-contributions/tools/init ... --json`
+- Command: `curl -sf http://127.0.0.1:3197/api/health`; `pnpm slaw health --json`; `pnpm slaw adapter list/get/config-schema/ui-parser/models/model-profiles/detect-model/test-environment ... --json`; `pnpm slaw environment list/capabilities/probe-config/create ... --json`; `pnpm slaw project-workspace create/list/update/delete ... --json`; `pnpm slaw workspace list --squad-id ... --json`; `pnpm slaw plugin list/examples/ui-contributions/tools/init ... --json`
 - Purpose: Cover remaining adapter, environment/workspace, and plugin command families with safe disposable state.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; isolated API `http://127.0.0.1:3197`.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; isolated API `http://127.0.0.1:3197`.
 - Expected result: API health passes; registered CLI commands map to supported routes; disposable project workspace can be created, updated, and deleted; plugin read-only routes and scaffold init work.
-- Actual result: API health passed. `slaw health` is not registered. Adapter list/get/model commands passed for `process`; `process` config schema and UI parser returned expected unsupported 404s. `adapter test-environment process` returned a structured failure because no process command was supplied. Environment list/capabilities/probe-config passed, but creating a second local environment returned a 500 due to the unique `environments_company_driver_idx` constraint. Project workspace create/list passed; the first update/delete attempt failed because my shell ID extraction broke, then the workspace was recovered from `project-workspace list` and deleted successfully with `project-workspace delete d32032ce-d95e-4c4e-a942-dd98498025fb e271b6bc-368e-4a89-9824-d9e2b2bedb66 --json`. Workspace list passed. Plugin list/examples/ui-contributions/tools passed; `plugin init` scaffolded a disposable plugin under `tmp/cli-api-parity/artifacts/cli-parity-plugin`.
+- Actual result: API health passed. `slaw health` is not registered. Adapter list/get/model commands passed for `process`; `process` config schema and UI parser returned expected unsupported 404s. `adapter test-environment process` returned a structured failure because no process command was supplied. Environment list/capabilities/probe-config passed, but creating a second local environment returned a 500 due to the unique `environments_squad_driver_idx` constraint. Project workspace create/list passed; the first update/delete attempt failed because my shell ID extraction broke, then the workspace was recovered from `project-workspace list` and deleted successfully with `project-workspace delete d32032ce-d95e-4c4e-a942-dd98498025fb e271b6bc-368e-4a89-9824-d9e2b2bedb66 --json`. Workspace list passed. Plugin list/examples/ui-contributions/tools passed; `plugin init` scaffolded a disposable plugin under `tmp/cli-api-parity/artifacts/cli-parity-plugin`.
 - Status: MIXED.
 - Output summary: New mismatches/bugs recorded as `MISMATCH-008` and `BUG-004`. No external plugin install was attempted; no built-in adapter delete/reinstall was attempted.
 - Follow-up: Fix the duplicate local environment 500 and restart the isolated server before rerunning the failing CLI command against live code.
 
-### 2026-05-24T12:12:50+02:00 - Asset and company skill coverage
+### 2026-05-24T12:12:50+02:00 - Asset and squad skill coverage
 
-- Command: `pnpm slaw asset image:upload --company-id <company-id> --file doc/assets/avatars/zinc.png --namespace cli-parity --alt ... --title ... --json`; `pnpm slaw asset content <asset-id> --out tmp/cli-api-parity/artifacts/asset-download.png --json`; `pnpm slaw asset logo:upload --company-id <company-id> --file ui/public/favicon-32x32.png --json`; `pnpm slaw skill list/create/get/file/file:update/update-status/install-update/delete/scan-projects ... --json`
-- Purpose: Cover asset upload/download/logo and company skill CRUD/file commands with disposable resources.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; image asset `829fbd86-cd5c-4aaa-ad17-276faac7888b`; logo asset `1b3e7979-1359-4361-b3f5-c8a845e11659`; temporary skill `126ad416-864b-4136-8f48-f5adcf324f20`.
+- Command: `pnpm slaw asset image:upload --squad-id <squad-id> --file doc/assets/avatars/zinc.png --namespace cli-parity --alt ... --title ... --json`; `pnpm slaw asset content <asset-id> --out tmp/cli-api-parity/artifacts/asset-download.png --json`; `pnpm slaw asset logo:upload --squad-id <squad-id> --file ui/public/favicon-32x32.png --json`; `pnpm slaw skill list/create/get/file/file:update/update-status/install-update/delete/scan-projects ... --json`
+- Purpose: Cover asset upload/download/logo and squad skill CRUD/file commands with disposable resources.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; image asset `829fbd86-cd5c-4aaa-ad17-276faac7888b`; logo asset `1b3e7979-1359-4361-b3f5-c8a845e11659`; temporary skill `126ad416-864b-4136-8f48-f5adcf324f20`.
 - Expected result: Image upload returns an asset ID; content download writes bytes; logo upload succeeds; local skill create/get/file/update/delete works; update check reports unsupported for local skills.
 - Actual result: Image upload returned `assetId` and content download wrote `27949` bytes. Logo upload returned `assetId`. Skill list/create/get/file/file:update/update-status/delete/scan-projects passed. `skill install-update` returned `422: Only GitHub-managed skills support update checks`, matching the preceding `update-status supported: false` result.
 - Status: PASS with expected negative check.
@@ -368,11 +368,11 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T12:16:05+02:00 - Rerun duplicate local environment create on restarted server
 
-- Command: `env -u DATABASE_URL -u DATABASE_MIGRATION_URL ... pnpm slaw environment create --company-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"name":"CLI parity local env","description":"Disposable CLI parity environment","driver":"local","config":{"cwd":"/Users/aronprins/Documents/Slaw/slaw"}}' --json`
+- Command: `env -u DATABASE_URL -u DATABASE_MIGRATION_URL ... pnpm slaw environment create --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"name":"CLI parity local env","description":"Disposable CLI parity environment","driver":"local","config":{"cwd":"/Users/aronprins/Documents/Slaw/slaw"}}' --json`
 - Purpose: Verify `BUG-004` against the restarted isolated source-tree server.
-- Prerequisites/IDs used: Same scratch env; server restarted with `pnpm slaw onboard --yes --run --bind loopback`; company `12e9db4b-f66c-459b-959e-d645002240fb`.
+- Prerequisites/IDs used: Same scratch env; server restarted with `pnpm slaw onboard --yes --run --bind loopback`; squad `12e9db4b-f66c-459b-959e-d645002240fb`.
 - Expected result: Controlled conflict instead of internal server error.
-- Actual result: CLI returned `API error 409: A local environment already exists for this company.`
+- Actual result: CLI returned `API error 409: A local environment already exists for this squad.`
 - Status: PASS.
 - Output summary: Confirms the live CLI/API path now exercises the fixed route behavior.
 - Follow-up: Continue remaining parity/fix pass.
@@ -381,7 +381,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: `pnpm slaw environment create/get/leases/probe/update/delete ... --json`; `pnpm slaw plugin install/list/inspect/health/config/jobs/local-folders/ui-contributions/disable/enable/uninstall ... --json`; `pnpm slaw secrets list/create/link/declarations/migrate-inline-env ... --json`
 - Purpose: Add positive non-local environment coverage, plugin lifecycle coverage, and deeper secrets coverage.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; bundled plugin path `/Users/aronprins/Documents/Slaw/slaw/packages/plugins/plugin-workspace-diff`; temporary SSH environment `cc5ae311-13f5-42b8-8044-11065b4e1af0`; temporary plugin install `e8421ed5-c103-4950-afb7-1463a0fbb9c5`; temporary secret `20c74546-7bec-4766-80cd-0b6c57545f7d`.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; bundled plugin path `/Users/aronprins/Documents/Slaw/slaw/packages/plugins/plugin-workspace-diff`; temporary SSH environment `cc5ae311-13f5-42b8-8044-11065b4e1af0`; temporary plugin install `e8421ed5-c103-4950-afb7-1463a0fbb9c5`; temporary secret `20c74546-7bec-4766-80cd-0b6c57545f7d`.
 - Expected result: SSH environment can be created, read, updated, and deleted; SSH probe can fail gracefully when local SSH is unavailable; bundled plugin can install and uninstall in the isolated instance; managed secret can be created and inspected through supported CLI flows.
 - Actual result: SSH environment create/get/leases/update/delete passed; probe returned structured `ok: false` with connection refused, as expected on this host. Plugin install/list/inspect/health/config/jobs/local-folders/ui-contributions/disable/enable/uninstall passed; final plugin list returned `[]`. Secret create/list/declarations/migrate-inline-env dry-run passed. `secrets link --provider local_encrypted --external-ref ...` returned `400: local_encrypted does not support external reference secrets`, which is expected provider behavior. The batch exposed missing CLI wrappers for secret update/rotate/usage/access-events/delete.
 - Status: MIXED.
@@ -401,13 +401,13 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T12:20:20+02:00 - Live-verify new secret lifecycle commands
 
-- Command: `pnpm slaw secrets update 20c74546-7bec-4766-80cd-0b6c57545f7d --payload-json ... --json`; `pnpm slaw secrets rotate 20c74546-7bec-4766-80cd-0b6c57545f7d --value ... --json`; `pnpm slaw secrets usage 20c74546-7bec-4766-80cd-0b6c57545f7d --json`; `pnpm slaw secrets access-events 20c74546-7bec-4766-80cd-0b6c57545f7d --json`; `pnpm slaw secrets delete 20c74546-7bec-4766-80cd-0b6c57545f7d --yes --confirm 20c74546-7bec-4766-80cd-0b6c57545f7d --json`; `pnpm slaw secrets list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --json`
+- Command: `pnpm slaw secrets update 20c74546-7bec-4766-80cd-0b6c57545f7d --payload-json ... --json`; `pnpm slaw secrets rotate 20c74546-7bec-4766-80cd-0b6c57545f7d --value ... --json`; `pnpm slaw secrets usage 20c74546-7bec-4766-80cd-0b6c57545f7d --json`; `pnpm slaw secrets access-events 20c74546-7bec-4766-80cd-0b6c57545f7d --json`; `pnpm slaw secrets delete 20c74546-7bec-4766-80cd-0b6c57545f7d --yes --confirm 20c74546-7bec-4766-80cd-0b6c57545f7d --json`; `pnpm slaw secrets list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --json`
 - Purpose: Verify fixed commands against the live disposable instance and clean up the temporary managed secret.
 - Prerequisites/IDs used: Temporary secret `20c74546-7bec-4766-80cd-0b6c57545f7d`.
 - Expected result: Update/rotate/usage/access-events/delete all succeed; final list is empty.
 - Actual result: All new commands passed. Usage returned no bindings, access-events returned `[]`, delete returned `{ "ok": true }`, and final list returned `[]`.
 - Status: PASS.
-- Output summary: No test secrets remain in the company after this verification.
+- Output summary: No test secrets remain in the squad after this verification.
 - Follow-up: Commit the CLI fix and updated log.
 
 ### 2026-05-24T12:22:36+02:00 - Fix access, health, invite, join, and issue UX mismatches
@@ -423,9 +423,9 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T12:23:25+02:00 - Live-verify access/health/invite/join fixes
 
-- Command: `pnpm slaw health --json`; `pnpm slaw access whoami --json`; `pnpm slaw join list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --status pending --request-type agent --json`; `pnpm slaw invite create --company-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{}' --json`; `pnpm slaw invite test-resolution <token> --url https://example.com/invite/<token> --json`; `pnpm slaw invite revoke <invite-id> --json`; `pnpm slaw issue recovery:resolve --help`; `pnpm slaw issue interaction:cancel --help`
+- Command: `pnpm slaw health --json`; `pnpm slaw access whoami --json`; `pnpm slaw join list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --status pending --request-type agent --json`; `pnpm slaw invite create --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{}' --json`; `pnpm slaw invite test-resolution <token> --url https://example.com/invite/<token> --json`; `pnpm slaw invite revoke <invite-id> --json`; `pnpm slaw issue recovery:resolve --help`; `pnpm slaw issue interaction:cancel --help`
 - Purpose: Verify fixed commands on the disposable instance and confirm help text updates.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; disposable invite `57d7fb29-e29e-4327-9d11-7be325831da6` revoked after test. A first test-resolution attempt against `http://127.0.0.1:3197/...` intentionally hit the server's private-address guard and was replaced with a public HTTPS URL.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; disposable invite `57d7fb29-e29e-4327-9d11-7be325831da6` revoked after test. A first test-resolution attempt against `http://127.0.0.1:3197/...` intentionally hit the server's private-address guard and was replaced with a public HTTPS URL.
 - Expected result: Health and alias commands pass; pending alias is accepted; invite test-resolution sends the URL query and returns route data; help text mentions the narrower constraints.
 - Actual result: `health`, `access whoami`, and `join list --status pending` passed. Public invite resolution returned `status: reachable`, method `HEAD`, HTTP `404` from `example.com`, proving the command now supplies the URL. Invite was revoked. Help output includes `todo, done, or in_review for restored outcomes; blocked is only valid for blocked outcomes` and `Cancel an ask_user_questions issue thread interaction`.
 - Status: PASS.
@@ -456,7 +456,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T12:32:12+02:00 - Final cleanup and isolation verification
 
-- Command: environment echo; `pnpm slaw health --json`; `pnpm slaw token board list --json`; `pnpm slaw token board revoke <redacted-board-token-id> --json`; `pnpm slaw token agent list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; `pnpm slaw plugin list --json`; `pnpm slaw secrets list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw environment list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw project-workspace list d32032ce-d95e-4c4e-a942-dd98498025fb --json`; `pnpm slaw openapi --json`
+- Command: environment echo; `pnpm slaw health --json`; `pnpm slaw token board list --json`; `pnpm slaw token board revoke <redacted-board-token-id> --json`; `pnpm slaw token agent list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; `pnpm slaw plugin list --json`; `pnpm slaw secrets list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw environment list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw project-workspace list d32032ce-d95e-4c4e-a942-dd98498025fb --json`; `pnpm slaw openapi --json`
 - Purpose: Confirm the disposable instance remains isolated, clean up leftover tokens, and record final known gap.
 - Prerequisites/IDs used: Isolated env from the Isolation Contract; board token `<redacted-board-token-id>`; main agent `1dd601a1-031a-4225-b005-419427fd059f`.
 - Expected result: All env vars point under `tmp/cli-api-parity`; database env vars remain unset; health passes; no active disposable tokens, plugins, secrets, project workspaces, or non-default environments remain; OpenAPI still fails as the documented unresolved gap.
@@ -467,42 +467,42 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T12:45:40+02:00 - Root setup and local maintenance command coverage
 
-- Command: `pnpm slaw doctor --config <scratch-config>`; `pnpm slaw doctor --config <scratch-config> --repair --yes`; `pnpm slaw env --config <scratch-config>`; `pnpm slaw db:backup --config <scratch-config> --dir tmp/cli-api-parity/artifacts/root-setup/backups --retention-days 1 --filename-prefix cli-parity --json`; `pnpm slaw allowed-hostname cli-parity.test --config <scratch-config>`; `pnpm slaw auth bootstrap-ceo --config <scratch-config> --force --base-url http://127.0.0.1:3197`; `pnpm slaw auth whoami --json`; `pnpm slaw routines disable-all --config <scratch-config> --company-id 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw env-lab doctor --instance cli-api-parity --json`; `pnpm slaw env-lab status --instance cli-api-parity --json`
+- Command: `pnpm slaw doctor --config <scratch-config>`; `pnpm slaw doctor --config <scratch-config> --repair --yes`; `pnpm slaw env --config <scratch-config>`; `pnpm slaw db:backup --config <scratch-config> --dir tmp/cli-api-parity/artifacts/root-setup/backups --retention-days 1 --filename-prefix cli-parity --json`; `pnpm slaw allowed-hostname cli-parity.test --config <scratch-config>`; `pnpm slaw auth bootstrap-squad-lead --config <scratch-config> --force --base-url http://127.0.0.1:3197`; `pnpm slaw auth whoami --json`; `pnpm slaw routines disable-all --config <scratch-config> --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --json`; `pnpm slaw env-lab doctor --instance cli-api-parity --json`; `pnpm slaw env-lab status --instance cli-api-parity --json`
 - Purpose: Cover root/setup commands and local maintenance utilities against the disposable instance without touching real home state.
-- Prerequisites/IDs used: Scratch config `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/home/instances/cli-api-parity/config.json`; company `12e9db4b-f66c-459b-959e-d645002240fb`.
-- Expected result: Doctor and env introspection use scratch config; DB backup writes under scratch artifacts; allowed-hostname mutates only scratch config; bootstrap CEO is a no-op in `local_trusted`; routines disable-all is harmless with no routines; env-lab reports host capability/status without starting services.
-- Actual result: All commands passed. `doctor` and `doctor --repair --yes` completed. `env` printed scratch deployment variables; the generated agent JWT secret is not copied here. `db:backup` created a one-off backup under `tmp/cli-api-parity/artifacts/root-setup/backups`. `allowed-hostname` added `cli-parity.test` to the scratch config and noted a restart is required for it to take effect. `auth bootstrap-ceo` correctly reported that bootstrap CEO invites are only required in authenticated mode. `auth whoami` returned the local implicit board identity. `routines disable-all` reported zero routines. `env-lab doctor` reported SSH env-lab is disabled on macOS unless explicitly opted in, and `env-lab status` reported no running fixture.
+- Prerequisites/IDs used: Scratch config `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/home/instances/cli-api-parity/config.json`; squad `12e9db4b-f66c-459b-959e-d645002240fb`.
+- Expected result: Doctor and env introspection use scratch config; DB backup writes under scratch artifacts; allowed-hostname mutates only scratch config; bootstrap Squad Lead is a no-op in `local_trusted`; routines disable-all is harmless with no routines; env-lab reports host capability/status without starting services.
+- Actual result: All commands passed. `doctor` and `doctor --repair --yes` completed. `env` printed scratch deployment variables; the generated agent JWT secret is not copied here. `db:backup` created a one-off backup under `tmp/cli-api-parity/artifacts/root-setup/backups`. `allowed-hostname` added `cli-parity.test` to the scratch config and noted a restart is required for it to take effect. `auth bootstrap-squad-lead` correctly reported that bootstrap Squad Lead invites are only required in authenticated mode. `auth whoami` returned the local implicit board identity. `routines disable-all` reported zero routines. `env-lab doctor` reported SSH env-lab is disabled on macOS unless explicitly opted in, and `env-lab status` reported no running fixture.
 - Status: PASS.
 - Output summary: This batch covered root setup/maintenance command surfaces that were previously only indirectly covered. Some artifact output files under `tmp/cli-api-parity/artifacts/root-setup` contain command output from the disposable instance.
 - Follow-up: Continue remaining untested command families, especially cloud/worktree surfaces and any server-backed command gaps discovered by targeted help/source review.
 
 ### 2026-05-24T12:47:54+02:00 - Worktree and cloud command gated coverage
 
-- Command: `SLAW_WORKTREES_DIR=tmp/cli-api-parity/worktrees-home pnpm slaw worktree:list --json`; `pnpm slaw worktree env --config <scratch-config> --json`; `pnpm slaw worktree:merge-history --from current --to current --company CLI --dry`; `pnpm slaw cloud push --company 12e9db4b-f66c-459b-959e-d645002240fb --dry-run --json`
+- Command: `SLAW_WORKTREES_DIR=tmp/cli-api-parity/worktrees-home pnpm slaw worktree:list --json`; `pnpm slaw worktree env --config <scratch-config> --json`; `pnpm slaw worktree:merge-history --from current --to current --squad CLI --dry`; `pnpm slaw cloud push --squad 12e9db4b-f66c-459b-959e-d645002240fb --dry-run --json`
 - Purpose: Start worktree/cloud parity coverage with read-only or dry-run commands before attempting any lifecycle command that creates branches, worktrees, or external cloud connections.
-- Prerequisites/IDs used: Scratch config `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/home/instances/cli-api-parity/config.json`; scratch worktree root `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/worktrees-home`; company `12e9db4b-f66c-459b-959e-d645002240fb`.
+- Prerequisites/IDs used: Scratch config `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/home/instances/cli-api-parity/config.json`; scratch worktree root `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/worktrees-home`; squad `12e9db4b-f66c-459b-959e-d645002240fb`.
 - Expected result: Worktree list and env introspection should use scratch config/environment; merge-history should reject identical source/target configs without mutating state; cloud push should fail safely if cloud sync is not enabled/configured.
-- Actual result: `worktree:list` passed and showed the current repo branch `improvement/cli-api-parity` with no Slaw worktree config. `worktree env --config <scratch-config> --json` passed and printed the scratch `SLAW_CONFIG` plus generated env values; the generated JWT secret is intentionally not copied into this log. `worktree:merge-history --from current --to current --company CLI --dry` failed as expected with `Source and target Slaw configs are the same. Choose different --from/--to worktrees.` `cloud push --dry-run` failed as expected with `Cloud sync is disabled. Enable the cloud sync experimental setting before running slaw cloud push.`
+- Actual result: `worktree:list` passed and showed the current repo branch `improvement/cli-api-parity` with no Slaw worktree config. `worktree env --config <scratch-config> --json` passed and printed the scratch `SLAW_CONFIG` plus generated env values; the generated JWT secret is intentionally not copied into this log. `worktree:merge-history --from current --to current --squad CLI --dry` failed as expected with `Source and target Slaw configs are the same. Choose different --from/--to worktrees.` `cloud push --dry-run` failed as expected with `Cloud sync is disabled. Enable the cloud sync experimental setting before running slaw cloud push.`
 - Status: PASS for safe/gated coverage.
 - Output summary: Worktree read-only/dry-run paths behaved safely. Cloud push was not attempted against a real upstream and remained blocked by scratch instance settings.
 - Follow-up: Continue with a scratch-only worktree lifecycle test. Cloud requires an experimental setting plus a configured upstream; keep it gated unless a disposable fake upstream can be wired without touching the real install.
 
 ### 2026-05-24T12:55:45+02:00 - Scratch worktree lifecycle and fix verification
 
-- Command: `HOME=tmp/cli-api-parity/shell-home SLAW_WORKTREES_DIR=tmp/cli-api-parity/worktree-instances pnpm slaw worktree:make cli-parity-wt --home <scratch-worktree-home> --from-config <scratch-config> --server-port 3198 --db-port 54331 --seed-mode minimal`; `pkill` only for the runaway scratch install attempt; edited `cli/src/commands/worktree.ts` and `cli/src/__tests__/worktree.test.ts`; `pnpm exec vitest run cli/src/__tests__/worktree.test.ts`; `pnpm --dir cli typecheck`; `slaw worktree:cleanup cli-parity-wt --home <scratch-worktree-home> --force`; reran `slaw worktree:make ...`; `slaw worktree:list --json`; `slaw worktree env --config <scratch-worktree-config> --json`; `slaw worktree:merge-history --from slaw-cli-parity-wt --to current --company CLI --dry`
+- Command: `HOME=tmp/cli-api-parity/shell-home SLAW_WORKTREES_DIR=tmp/cli-api-parity/worktree-instances pnpm slaw worktree:make cli-parity-wt --home <scratch-worktree-home> --from-config <scratch-config> --server-port 3198 --db-port 54331 --seed-mode minimal`; `pkill` only for the runaway scratch install attempt; edited `cli/src/commands/worktree.ts` and `cli/src/__tests__/worktree.test.ts`; `pnpm exec vitest run cli/src/__tests__/worktree.test.ts`; `pnpm --dir cli typecheck`; `slaw worktree:cleanup cli-parity-wt --home <scratch-worktree-home> --force`; reran `slaw worktree:make ...`; `slaw worktree:list --json`; `slaw worktree env --config <scratch-worktree-config> --json`; `slaw worktree:merge-history --from slaw-cli-parity-wt --to current --squad CLI --dry`
 - Purpose: Exercise scratch-only worktree creation, initialization, dependency install, minimal DB seed, list/env introspection, dry-run merge history, and cleanup behavior without touching the real home or default instance.
 - Prerequisites/IDs used: Scratch `HOME` `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/shell-home`; scratch worktree instance home `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/worktree-instances`; source config `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/home/instances/cli-api-parity/config.json`; worktree branch/path `slaw-cli-parity-wt`.
 - Expected result: `worktree:make` creates `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/shell-home/slaw-cli-parity-wt`, installs dependencies once, writes repo-local `.slaw/config.json` and `.slaw/.env`, seeds a minimal isolated DB on ports `3198`/`54331`, and leaves normal `worktree:list`, `worktree env`, and `worktree:merge-history --dry` usable.
-- Actual result: The first live attempt exposed BUG-007: dependency installation recursively invoked the user pnpm shim when `HOME` was overridden. After the fix, focused worktree tests and CLI typecheck passed. `worktree:cleanup --force` removed the partial scratch branch/worktree. The rerun completed successfully: dependencies installed, minimal DB seed succeeded, repo config/env were written under the scratch worktree, instance data was written under scratch worktree home, `worktree:list` showed the new worktree with `hasSlawConfig: true`, `worktree env --json` printed the scratch worktree env, and `worktree:merge-history --dry` previewed zero inserts with existing company history already present. The generated worktree JWT secret is intentionally not copied here.
+- Actual result: The first live attempt exposed BUG-007: dependency installation recursively invoked the user pnpm shim when `HOME` was overridden. After the fix, focused worktree tests and CLI typecheck passed. `worktree:cleanup --force` removed the partial scratch branch/worktree. The rerun completed successfully: dependencies installed, minimal DB seed succeeded, repo config/env were written under the scratch worktree, instance data was written under scratch worktree home, `worktree:list` showed the new worktree with `hasSlawConfig: true`, `worktree env --json` printed the scratch worktree env, and `worktree:merge-history --dry` previewed zero inserts with existing squad history already present. The generated worktree JWT secret is intentionally not copied here.
 - Status: PASS after BUG-007 fix.
 - Output summary: One disposable worktree remains for manual continuation at `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/shell-home/slaw-cli-parity-wt`; its isolated config is `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/shell-home/slaw-cli-parity-wt/.slaw/config.json`.
 - Follow-up: Commit BUG-007 fix, then continue remaining non-worktree command families. Cloud still requires a configured upstream or fake upstream harness for deeper coverage.
 
 ### 2026-05-24T13:06:21+02:00 - Agent prompt, heartbeat, feedback, board claim, and configure coverage
 
-- Command: `token agent create --company-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --name cli-agent-prompt-smoke --json`; `agent-prompt 1dd601a1-031a-4225-b005-419427fd059f <agent-token> "CLI parity agent-prompt smoke without wake" --title "CLI parity agent-prompt smoke" --no-wake --json`; `token agent revoke <key-id> --company-id ... --agent ... --json`; `heartbeat run --agent-id 1dd601a1-031a-4225-b005-419427fd059f --source on_demand --trigger manual --timeout-ms 5000 --json`; `feedback report/export/trace/bundle`; `company feedback:list`; `board-claim show invalid-claim-token --json`; `board-claim claim invalid-claim-token --payload-json '{}' --json`; `configure --config <scratch-config> --section invalid-section`
-- Purpose: Cover remaining safe operator/helper command surfaces that were not part of the earlier company/issue/agent/core batches.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; feedback trace `6193ff3a-55d3-4c01-bfbf-78e82ed55793`; temporary agent token stored only under scratch artifacts and revoked after use.
+- Command: `token agent create --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --name cli-agent-prompt-smoke --json`; `agent-prompt 1dd601a1-031a-4225-b005-419427fd059f <agent-token> "CLI parity agent-prompt smoke without wake" --title "CLI parity agent-prompt smoke" --no-wake --json`; `token agent revoke <key-id> --squad-id ... --agent ... --json`; `heartbeat run --agent-id 1dd601a1-031a-4225-b005-419427fd059f --source on_demand --trigger manual --timeout-ms 5000 --json`; `feedback report/export/trace/bundle`; `squad feedback:list`; `board-claim show invalid-claim-token --json`; `board-claim claim invalid-claim-token --payload-json '{}' --json`; `configure --config <scratch-config> --section invalid-section`
+- Purpose: Cover remaining safe operator/helper command surfaces that were not part of the earlier squad/issue/agent/core batches.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; feedback trace `6193ff3a-55d3-4c01-bfbf-78e82ed55793`; temporary agent token stored only under scratch artifacts and revoked after use.
 - Expected result: `agent-prompt` creates or updates work through an agent token and no-wake path; heartbeat run returns a bounded on-demand invocation result; feedback report/export/trace/bundle can read the existing feedback trace; invalid board claim calls fail with controlled user-facing errors; invalid configure section should fail non-zero.
 - Actual result: First `agent-prompt` attempts failed with `401` because the test script passed the wrong token field (`.key` object / empty shell variable) instead of `.key.token`. Retrying with `.key.token` passed and the token was revoked. `heartbeat run` completed within the timeout. Feedback report/export and trace/bundle passed using the existing trace. `board-claim show` returned expected `404: Board claim challenge not found`; `board-claim claim` returned expected `400: Claim code is required`. `configure --section invalid-section` initially printed an error but exited `0`, exposing BUG-008; after the fix, it exits `1`.
 - Status: PASS after BUG-008 fix; board-claim paths covered only with invalid/gated tokens because no active board claim challenge exists in `local_trusted`.
@@ -511,10 +511,10 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T13:11:19+02:00 - Cloud fake-upstream and remaining run/connect coverage
 
-- Command: disposable Node fake upstream on `http://127.0.0.1:3199`; `instance settings:experimental:update --payload-json '{"enableCloudSync":true}' --json`; `cloud connect http://127.0.0.1:3199 --no-browser --json`; `cloud push --company 12e9db4b-f66c-459b-959e-d645002240fb --remote-url http://127.0.0.1:3199 --dry-run --json`; `run live --company-id ... --limit 5 --min-count 1 --json`; `run issues 9c686a91-c88a-47aa-9326-a889c4281d2b --json`; `run workspace-operations 9c686a91-c88a-47aa-9326-a889c4281d2b --json`; `run workspace-log 00000000-0000-4000-8000-000000000000 --json`; `run cancel 9c686a91-c88a-47aa-9326-a889c4281d2b --json`; `run watchdog-decision 9c686a91-c88a-47aa-9326-a889c4281d2b --decision continue --reason "CLI parity watchdog decision smoke" --json`; `connect --persona board --api-base http://127.0.0.1:3197 --profile cli-connect-smoke --context <scratch-context> --json`
+- Command: disposable Node fake upstream on `http://127.0.0.1:3199`; `instance settings:experimental:update --payload-json '{"enableCloudSync":true}' --json`; `cloud connect http://127.0.0.1:3199 --no-browser --json`; `cloud push --squad 12e9db4b-f66c-459b-959e-d645002240fb --remote-url http://127.0.0.1:3199 --dry-run --json`; `run live --squad-id ... --limit 5 --min-count 1 --json`; `run issues 9c686a91-c88a-47aa-9326-a889c4281d2b --json`; `run workspace-operations 9c686a91-c88a-47aa-9326-a889c4281d2b --json`; `run workspace-log 00000000-0000-4000-8000-000000000000 --json`; `run cancel 9c686a91-c88a-47aa-9326-a889c4281d2b --json`; `run watchdog-decision 9c686a91-c88a-47aa-9326-a889c4281d2b --decision continue --reason "CLI parity watchdog decision smoke" --json`; `connect --persona board --api-base http://127.0.0.1:3197 --profile cli-connect-smoke --context <scratch-context> --json`
 - Purpose: Exercise cloud connect/push without a real external Slaw Cloud stack, finish run subcommands that were not covered by earlier run list/get/events/log checks, and verify `connect` behavior in the non-interactive test runner.
-- Prerequisites/IDs used: Fake cloud server on loopback port `3199`; company `12e9db4b-f66c-459b-959e-d645002240fb`; heartbeat run `9c686a91-c88a-47aa-9326-a889c4281d2b` created by `heartbeat run`; scratch context and config paths.
-- Expected result: Cloud sync can be enabled only in the scratch instance; `cloud connect` stores a fake upstream connection under scratch `SLAW_HOME`; `cloud push --dry-run` exports local company data and posts a preview bundle to the fake upstream; run read/control commands return structured results or controlled 404 for a nonexistent workspace operation; `connect` refuses non-interactive execution with guidance.
+- Prerequisites/IDs used: Fake cloud server on loopback port `3199`; squad `12e9db4b-f66c-459b-959e-d645002240fb`; heartbeat run `9c686a91-c88a-47aa-9326-a889c4281d2b` created by `heartbeat run`; scratch context and config paths.
+- Expected result: Cloud sync can be enabled only in the scratch instance; `cloud connect` stores a fake upstream connection under scratch `SLAW_HOME`; `cloud push --dry-run` exports local squad data and posts a preview bundle to the fake upstream; run read/control commands return structured results or controlled 404 for a nonexistent workspace operation; `connect` refuses non-interactive execution with guidance.
 - Actual result: Experimental `enableCloudSync` was enabled in the scratch instance. `cloud connect --no-browser` completed against the fake upstream and stored a fake connection. `cloud push --dry-run` returned a fake preview response with summary `{create:0, update:0, adopt:0, skip:1, conflict:0, staleMapping:0}`. `run live`, `run issues`, and `run workspace-operations` passed; workspace operations returned an empty list. `run workspace-log` on a sentinel ID returned expected `404: Workspace operation not found`. `run cancel` on the already completed run returned the run unchanged with status `succeeded`. `run watchdog-decision` created a watchdog decision record. `connect` returned expected non-interactive error: use `--api-base/--api-key` or context/token commands for scripts.
 - Status: PASS for fake-cloud dry-run and remaining safe run/connect coverage.
 - Output summary: Fake cloud artifacts are under `tmp/cli-api-parity/artifacts/cloud-*`. The fake cloud token is synthetic and stored only in scratch Slaw home. `connect` remains intentionally interactive; scriptable equivalent coverage is via `context set`, token commands, `whoami`, and agent/board prompt flows already tested.
@@ -522,9 +522,9 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T13:15:09+02:00 - Routine lifecycle coverage
 
-- Command: `routine create --company-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"title":"CLI parity routine smoke",...}' --json`; `routine list`; `routine get 8254ead3-7edd-43fc-97ca-cb3f477cefc9`; `routine update`; `routine revisions`; `routine runs`; `routine trigger:create <routine-id>` for API and webhook triggers; `routine trigger:update <api-trigger-id>`; `routine trigger:rotate-secret <api-trigger-id>`; `routine trigger:rotate-secret <webhook-trigger-id>`; `routine trigger:fire <webhook-public-id>`; `routine run <routine-id>` without and then with `assigneeAgentId`; `routine trigger:delete` for both triggers; final `routine update <routine-id> --payload-json '{"status":"archived"}'`
+- Command: `routine create --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"title":"CLI parity routine smoke",...}' --json`; `routine list`; `routine get 8254ead3-7edd-43fc-97ca-cb3f477cefc9`; `routine update`; `routine revisions`; `routine runs`; `routine trigger:create <routine-id>` for API and webhook triggers; `routine trigger:update <api-trigger-id>`; `routine trigger:rotate-secret <api-trigger-id>`; `routine trigger:rotate-secret <webhook-trigger-id>`; `routine trigger:fire <webhook-public-id>`; `routine run <routine-id>` without and then with `assigneeAgentId`; `routine trigger:delete` for both triggers; final `routine update <routine-id> --payload-json '{"status":"archived"}'`
 - Purpose: Exercise routine CRUD, revision/runs inspection, manual run, trigger create/update/delete, trigger secret rotation, public trigger fire validation, and cleanup by archiving the disposable routine.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; routine `8254ead3-7edd-43fc-97ca-cb3f477cefc9`.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; routine `8254ead3-7edd-43fc-97ca-cb3f477cefc9`.
 - Expected result: Routine can be created, listed, read, updated, inspected, manually run when an assignee is supplied, and archived. API trigger secret rotation should fail because only webhook triggers have secrets. Disabled webhook fire should fail cleanly. Trigger delete should remove disposable triggers.
 - Actual result: Routine create/list/get/update/revisions/runs passed. API trigger create/update/delete passed. `trigger:rotate-secret` on the API trigger returned expected `422: Only webhook triggers can rotate secrets`; webhook trigger create and rotate passed. `trigger:fire` on the disabled webhook returned expected `409: Routine trigger is not active`. `routine run` without assignee returned expected `422: Default agent required`; rerun with `assigneeAgentId` passed and produced one routine run. Both triggers were deleted and the routine was archived.
 - Status: PASS with expected validation failures.
@@ -533,9 +533,9 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T13:19:42+02:00 - Final token-list fix verification
 
-- Command: `token agent list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; edited `cli/src/commands/client/token.ts` and `cli/src/__tests__/token.test.ts`; `pnpm exec vitest run cli/src/__tests__/token.test.ts`; `pnpm --dir cli typecheck`; reran the same live `token agent list` command.
+- Command: `token agent list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; edited `cli/src/commands/client/token.ts` and `cli/src/__tests__/token.test.ts`; `pnpm exec vitest run cli/src/__tests__/token.test.ts`; `pnpm --dir cli typecheck`; reran the same live `token agent list` command.
 - Purpose: Verify agent token list accepts the documented `--agent <agent-id>` shape during final cleanup.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`.
 - Expected result: Agent token list resolves an agent ID directly and returns the key list.
 - Actual result: Initial final cleanup attempt returned `404: Agent not found` for the agent ID, while `agent list` showed the agent exists and using `--agent "Parity Worker"` worked. After BUG-009 fix, the same ID-based command passed and showed no active unrevoked agent keys.
 - Status: PASS after BUG-009 fix.
@@ -544,9 +544,9 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T13:20:43+02:00 - Final status sweep
 
-- Command: `health --json`; `token board list --json`; `token agent list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; `routine list --company-id ... --json`; `plugin list --json`; `openapi --json`; `git status --short --branch`; `lsof -nP -iTCP:3197 -sTCP:LISTEN`; `lsof -nP -iTCP:3199 -sTCP:LISTEN`
+- Command: `health --json`; `token board list --json`; `token agent list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; `routine list --squad-id ... --json`; `plugin list --json`; `openapi --json`; `git status --short --branch`; `lsof -nP -iTCP:3197 -sTCP:LISTEN`; `lsof -nP -iTCP:3199 -sTCP:LISTEN`
 - Purpose: Confirm the disposable instance is still healthy, no temporary token/plugin/routine resources remain active, the fake cloud server is stopped, and git state is clean after all fixes.
-- Prerequisites/IDs used: Same scratch env and company/agent IDs.
+- Prerequisites/IDs used: Same scratch env and squad/agent IDs.
 - Expected result: Slaw remains running on `127.0.0.1:3197`; fake cloud port `3199` is stopped; no active board or agent tokens from the test remain; plugin list is empty; disposable routine is archived; `openapi` remains the one documented unresolved API route gap.
 - Actual result: Health returned `status: ok`; process `11566` is listening on `127.0.0.1:3197`; no process is listening on `3199`; final board token list has 2 revoked keys and no active keys; final agent token list has 4 revoked keys and no active keys; plugin list is empty; routine list contains the archived disposable routine and no active routines; `openapi --json` still returns `404: API route not found`; git status was clean before this final log update.
 - Status: PASS with known unresolved OpenAPI gap.
@@ -558,7 +558,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 - Command: Generated `server/src/routes/openapi.ts` from the route inventory in `doc/plans/2026-05-23-cli-api-parity-openapi-reference.ts`; mounted `openApiRoutes()` under `/api`; added `server/src/__tests__/openapi-routes.test.ts`; ran `pnpm exec vitest run server/src/__tests__/openapi-routes.test.ts`; `pnpm --dir server typecheck`; restarted the isolated runbook server with the scratch environment; `curl -fsS http://127.0.0.1:3197/api/openapi.json | jq '{openapi, pathCount:(.paths|keys|length)}'`; `pnpm --silent slaw openapi --json > tmp/cli-api-parity/artifacts/openapi-live-after-fix.json`.
 - Purpose: Close the remaining documented `openapi` CLI/API parity gap without introducing a new generator dependency during the live parity run.
 - Prerequisites/IDs used: Same scratch env, API URL `http://127.0.0.1:3197`, and local source-tree install.
-- Expected result: `/api/openapi.json` and `slaw openapi --json` return a valid OpenAPI 3.0 document with the reference route inventory, including representative CLI/API parity paths such as `/api/companies/{companyId}/agents` and `/api/agents/{id}/keys`.
+- Expected result: `/api/openapi.json` and `slaw openapi --json` return a valid OpenAPI 3.0 document with the reference route inventory, including representative CLI/API parity paths such as `/api/squads/{squadId}/agents` and `/api/agents/{id}/keys`.
 - Actual result: Focused test and `server` typecheck passed. After restart, direct curl returned `{"openapi":"3.0.0","pathCount":247}`. The CLI command returned `openapi: "3.0.0"`, title `Slaw API`, `247` paths, `/api/openapi.json` summary `Get the generated OpenAPI document`, and `/api/agents/{id}/keys` POST summary `Create an agent API key`.
 - Status: PASS after MISMATCH-007 OpenAPI fix.
 - Output summary: Live OpenAPI artifact is `tmp/cli-api-parity/artifacts/openapi-live-after-fix.json`. The route exposes operation inventory, tags, summaries, and standard responses from the parity reference; it intentionally does not yet include full request/response schemas.
@@ -575,22 +575,22 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 - Output summary: This is a help-only CLI change; no scratch instance resources were created.
 - Follow-up: Commit the help fix, then continue residual command coverage.
 
-### 2026-05-24T13:33:50+02:00 - Residual company and skill command coverage
+### 2026-05-24T13:33:50+02:00 - Residual squad and skill command coverage
 
-- Command: `company stats`; disposable `company create`; `company branding:update`; `company archive`; `company delete`; `company export:preview`; `company export:api`; `company import:preview`; `company import:apply`; cleanup `company delete`; `skill import`; cleanup `skill delete`.
-- Purpose: Cover company subcommands and `skill import` not explicitly exercised in earlier batches.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; disposable archive company `342c1b91-0f48-4a63-a9c5-fc7ffc758483`; raw-import company `dab6758c-dd30-4066-87f0-4df76bd21ea5`; imported skill `be9538e4-9827-426f-b82a-4228c5d3f851`.
-- Expected result: Company stats read succeeds; disposable company can be branded, archived, and deleted; raw API portability commands work with API-shaped payloads; skill import from a local repo skill path succeeds and the imported skill can be deleted.
-- Actual result: Company stats passed. Disposable company branding/archive/delete passed. First raw export attempt using CLI wrapper-style `{"include":["company"]}` returned expected API validation `include` object error, so the test was adapted to raw API shape `{"include":{"company":true}}`; export preview and export API then passed. Full exported package import via a shell variable was abandoned because markdown code fences in the large JSON payload caused shell transport issues; a minimal inline company package was used instead, and raw import preview/apply/delete passed. `skill import` imported one local skill and cleanup delete passed.
+- Command: `squad stats`; disposable `squad create`; `squad branding:update`; `squad archive`; `squad delete`; `squad export:preview`; `squad export:api`; `squad import:preview`; `squad import:apply`; cleanup `squad delete`; `skill import`; cleanup `skill delete`.
+- Purpose: Cover squad subcommands and `skill import` not explicitly exercised in earlier batches.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; disposable archive squad `342c1b91-0f48-4a63-a9c5-fc7ffc758483`; raw-import squad `dab6758c-dd30-4066-87f0-4df76bd21ea5`; imported skill `be9538e4-9827-426f-b82a-4228c5d3f851`.
+- Expected result: Squad stats read succeeds; disposable squad can be branded, archived, and deleted; raw API portability commands work with API-shaped payloads; skill import from a local repo skill path succeeds and the imported skill can be deleted.
+- Actual result: Squad stats passed. Disposable squad branding/archive/delete passed. First raw export attempt using CLI wrapper-style `{"include":["squad"]}` returned expected API validation `include` object error, so the test was adapted to raw API shape `{"include":{"squad":true}}`; export preview and export API then passed. Full exported package import via a shell variable was abandoned because markdown code fences in the large JSON payload caused shell transport issues; a minimal inline squad package was used instead, and raw import preview/apply/delete passed. `skill import` imported one local skill and cleanup delete passed.
 - Status: PASS after adapting raw API payload shape.
-- Output summary: Artifacts are under `tmp/cli-api-parity/artifacts/residual-company-skill`. No disposable company or imported skill from this batch remains active.
+- Output summary: Artifacts are under `tmp/cli-api-parity/artifacts/residual-squad-skill`. No disposable squad or imported skill from this batch remains active.
 - Follow-up: Continue advanced plugin surface coverage.
 
 ### 2026-05-24T13:37:45+02:00 - Advanced plugin command coverage and tool-dispatch failure
 
 - Command: Installed bundled kitchen-sink plugin; `plugin list/inspect/health/logs/config/jobs/job:runs/job:trigger/webhook/dashboard/bridge:data/data/action/local-folders/upgrade/disable/enable/uninstall`; initial `plugin config:test/config:set/bridge:action/tool:execute/local-folder:*` attempts; corrected `config:test`, `config:set`, and `bridge:action`; final uninstall.
 - Purpose: Exercise plugin command surfaces that require a plugin declaring jobs, webhooks, tools, bridge handlers, and UI contributions.
-- Prerequisites/IDs used: Bundled plugin path `packages/plugins/examples/plugin-kitchen-sink-example`; company `12e9db4b-f66c-459b-959e-d645002240fb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; run `9c686a91-c88a-47aa-9326-a889c4281d2b`.
+- Prerequisites/IDs used: Bundled plugin path `packages/plugins/examples/plugin-kitchen-sink-example`; squad `12e9db4b-f66c-459b-959e-d645002240fb`; project `d32032ce-d95e-4c4e-a942-dd98498025fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; run `9c686a91-c88a-47aa-9326-a889c4281d2b`.
 - Expected result: Plugin installs, exposes its manifest surfaces, handles job/webhook/bridge/data/action calls, rejects unsupported stream/local-folder calls cleanly, and uninstalls. Tool execution should work for the listed kitchen-sink echo tool.
 - Actual result: Install/list/inspect/health/logs/config/jobs/job:runs/job:trigger/webhook/dashboard/bridge:data/data/action/upgrade/disable/enable/uninstall passed. Config commands initially failed until payloads were corrected to `{"configJson":{...}}`; bridge action initially failed until payload used `key` instead of `action`. `bridge:stream` returned expected `Plugin stream bridge is not enabled`. Local-folder calls returned expected validation because the kitchen-sink manifest declares no local folders. `plugin tools` listed `slaw-kitchen-sink-example:echo`, but `plugin tool:execute` returned `502: worker for plugin "slaw-kitchen-sink-example" is not running` even though bridge calls to the same plugin worker succeeded.
 - Status: PASS for safe plugin surfaces; FAIL for `plugin tool:execute`, recorded as BUG-010.
@@ -612,7 +612,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: Final inventory found active managed secret `156c6074-37b7-4f8e-8619-a62027c2147e`; inspected routine trigger secret handling; edited `server/src/services/routines.ts` and `server/src/__tests__/routines-service.test.ts`; ran `pnpm exec vitest run server/src/__tests__/routines-service.test.ts`; `pnpm --dir server typecheck`; restarted isolated server; deleted the older leaked disposable secret; created temporary routine `60ac06c9-f8c4-4cb1-b9fd-ae52163eb3e6`; created webhook trigger `02838bc3-5b48-4f1e-aad0-ca63a48b926b`; deleted the trigger; verified secret `140c2608-0d8e-4f1e-aad0-ca63a48b926b` was absent from `secrets list`; archived the temporary routine.
 - Purpose: Fix and verify cleanup for routine webhook trigger generated secrets.
-- Prerequisites/IDs used: Company `12e9db4b-f66c-459b-959e-d645002240fb`; scratch server restarted with the patched code.
+- Prerequisites/IDs used: Squad `12e9db4b-f66c-459b-959e-d645002240fb`; scratch server restarted with the patched code.
 - Expected result: Deleting a webhook routine trigger removes the generated slaw-managed secret and binding. No active secrets remain from parity cleanup.
 - Actual result: Focused routine service test and server typecheck passed. Live trigger delete removed the generated secret; final `secrets list` returned `0` rows. The older leaked disposable secret was deleted through the CLI.
 - Status: PASS after BUG-011 fix.
@@ -621,9 +621,9 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 ### 2026-05-24T13:48:40+02:00 - Final clean inventory sweep
 
-- Command: `health --json`; `openapi --json`; `token board list --json`; `token agent list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; `plugin list --json`; `routine list --company-id ... --json`; `secrets list --company-id ... --json`; `environment list --company-id ... --json`; `project-workspace list d32032ce-d95e-4c4e-a942-dd98498025fb --json`; `git status --short --branch`; `lsof -nP -iTCP:3197 -sTCP:LISTEN`; `lsof -nP -iTCP:3199 -sTCP:LISTEN`; environment echo for required isolation variables and unset database variables.
+- Command: `health --json`; `openapi --json`; `token board list --json`; `token agent list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`; `plugin list --json`; `routine list --squad-id ... --json`; `secrets list --squad-id ... --json`; `environment list --squad-id ... --json`; `project-workspace list d32032ce-d95e-4c4e-a942-dd98498025fb --json`; `git status --short --branch`; `lsof -nP -iTCP:3197 -sTCP:LISTEN`; `lsof -nP -iTCP:3199 -sTCP:LISTEN`; environment echo for required isolation variables and unset database variables.
 - Purpose: Confirm the disposable instance is healthy, isolated, cleaned up, and ready for manual continuation.
-- Prerequisites/IDs used: Same scratch env and company/agent IDs.
+- Prerequisites/IDs used: Same scratch env and squad/agent IDs.
 - Expected result: Health and OpenAPI pass; all required env vars point under `tmp/cli-api-parity`; `DATABASE_URL` and `DATABASE_MIGRATION_URL` are unset; no active board/agent tokens, plugins, secrets, non-default environments, project workspaces, or active routines remain; only the scratch server listens on `127.0.0.1:3197`; fake cloud port `3199` is stopped; git is clean before this final log update.
 - Actual result: Summary was `{health:"ok", openapi:"3.0.0", pathCount:247, activeBoardTokens:0, activeAgentTokens:0, plugins:0, routines:2, activeRoutines:0, secrets:0, environments:1, projectWorkspaces:0}`. `SLAW_HOME`, `SLAW_CONFIG`, `SLAW_CONTEXT`, `SLAW_AUTH_STORE`, `CODEX_HOME`, and `CLAUDE_HOME` all point under the scratch path. `DATABASE_URL` and `DATABASE_MIGRATION_URL` were `UNSET`. `node` PID `70429` is listening on `127.0.0.1:3197`; no process is listening on `3199`; git status was clean before this log update.
 - Status: PASS.
@@ -634,7 +634,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
 
 - Command: Recorded the final assistant handoff summary in this living log after the clean inventory sweep.
 - Purpose: Preserve the exact user-facing closeout in the reproducible CLI/API parity audit trail.
-- Prerequisites/IDs used: Scratch server on `http://127.0.0.1:3197`; company `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; final clean sweep artifacts under `tmp/cli-api-parity/artifacts/final-clean-sweep`.
+- Prerequisites/IDs used: Scratch server on `http://127.0.0.1:3197`; squad `12e9db4b-f66c-459b-959e-d645002240fb`; agent `1dd601a1-031a-4225-b005-419427fd059f`; final clean sweep artifacts under `tmp/cli-api-parity/artifacts/final-clean-sweep`.
 - Expected result: The log includes the final paths, command coverage, bug/fix summary, cleanup state, verification commands, and manual continuation instructions that were reported to the user.
 - Actual result: Final handoff stated that the full isolated CLI/API parity pass completed and was committed, the scratch Slaw server was still running on `http://127.0.0.1:3197`, and goal usage was 2,625,855 tokens over about 2h 23m.
 - Status: PASS.
@@ -664,7 +664,7 @@ Full Slaw CLI/API parity smoke pass against a disposable local source-tree insta
   - Embedded DB: `/Users/aronprins/Documents/Slaw/slaw/tmp/cli-api-parity/home/instances/cli-api-parity/db`, active on pg port `54330`
   - API URL: `http://127.0.0.1:3197`
   - Log: `doc/bugs/2026-05-24-cli-api-parity-e2e-log.md`
-- Commands covered: health; context; auth/access/profile/session/invite/join/member/admin/sidebar/inbox; company CRUD/export/import/raw portability/stats/branding/archive; goals; projects; agents; tokens; issues and subresources; approvals; feedback; dashboard/activity/cost/finance/budget; secrets lifecycle; adapters; environments; workspaces/project-workspaces; assets; skills/import; routines/triggers; prompt/wake/run/heartbeat; cloud fake upstream; worktree helpers; setup/doctor/env/db backup/env-lab; OpenAPI; advanced plugin lifecycle/tool/job/webhook/bridge/config surfaces.
+- Commands covered: health; context; auth/access/profile/session/invite/join/member/admin/sidebar/inbox; squad CRUD/export/import/raw portability/stats/branding/archive; goals; projects; agents; tokens; issues and subresources; approvals; feedback; dashboard/activity/cost/finance/budget; secrets lifecycle; adapters; environments; workspaces/project-workspaces; assets; skills/import; routines/triggers; prompt/wake/run/heartbeat; cloud fake upstream; worktree helpers; setup/doctor/env/db backup/env-lab; OpenAPI; advanced plugin lifecycle/tool/job/webhook/bridge/config surfaces.
 - Latest continuation commits:
   - `01579595` Log final CLI parity sweep
   - `ce16de70` Clean up routine webhook secrets
@@ -720,7 +720,7 @@ pnpm slaw health --json
 - Purpose: Resolve the final OpenAPI caveat by serving a proper generated OpenAPI document with shared Zod request schemas, auth/security metadata, and response status fixups.
 - Prerequisites/IDs used: Isolated scratch server restarted on `127.0.0.1:3197`; `DATABASE_URL` and `DATABASE_MIGRATION_URL` unset; `SLAW_HOME`, `SLAW_CONFIG`, `SLAW_CONTEXT`, `SLAW_AUTH_STORE`, `CODEX_HOME`, and `CLAUDE_HOME` all under `tmp/cli-api-parity`.
 - Expected result: `/api/openapi.json` and `slaw openapi --json` return OpenAPI 3.0 with schema-backed request bodies, security schemes, public-operation security overrides, and create-operation `201` responses.
-- Actual result: Focused OpenAPI test passed and asserts `BoardSessionAuth`, `BoardApiKeyAuth`, `AgentBearerAuth`, public `/api/health` security `[]`, `POST /api/companies` request body schema, `POST /api/companies` `201` response, and `POST /api/agents/{id}/keys` request body schema. Server typecheck passed. Live CLI returned `{openapi:"3.0.0", pathCount:259, security:["BoardSessionAuth","BoardApiKeyAuth","AgentBearerAuth"], companyCreateRequest:{type:"string",minLength:1}, companyCreateStatus:["201","400","401","403"], agentKeyRequest:{type:"string",minLength:1,default:"default"}}`.
+- Actual result: Focused OpenAPI test passed and asserts `BoardSessionAuth`, `BoardApiKeyAuth`, `AgentBearerAuth`, public `/api/health` security `[]`, `POST /api/squads` request body schema, `POST /api/squads` `201` response, and `POST /api/agents/{id}/keys` request body schema. Server typecheck passed. Live CLI returned `{openapi:"3.0.0", pathCount:259, security:["BoardSessionAuth","BoardApiKeyAuth","AgentBearerAuth"], squadCreateRequest:{type:"string",minLength:1}, squadCreateStatus:["201","400","401","403"], agentKeyRequest:{type:"string",minLength:1,default:"default"}}`.
 - Status: PASS after OpenAPI caveat fix.
 - Output summary: Live schema-backed OpenAPI artifact is `tmp/cli-api-parity/artifacts/caveat-followup/openapi-live-schema-backed.json`.
 - Follow-up: Commit the OpenAPI fix, then continue positive board-claim and interactive connect follow-up testing.
@@ -729,9 +729,9 @@ pnpm slaw health --json
 
 - Command: Added `server/src/__tests__/board-claim.test.ts`; ran `pnpm exec vitest run server/src/__tests__/board-claim.test.ts`; ran `pnpm --dir server typecheck`.
 - Purpose: Resolve the board-claim caveat with positive coverage for the authenticated-mode claim path without mutating the long-running `local_trusted` scratch instance.
-- Prerequisites/IDs used: Fresh embedded-postgres test database; seeded one company, a real auth user, and `local-board` as the only `instance_admin`; initialized board-claim challenge with `deploymentMode: "authenticated"`.
-- Expected result: A claim warning URL is generated; `inspectBoardClaimChallenge(token, code)` returns `available`; claiming as the signed-in user returns `claimed`; `local-board` loses instance admin; the signed-in user gains instance admin and active owner membership for the existing company; subsequent inspect returns `claimed`.
-- Actual result: Initial test attempt exposed cleanup ordering only because the claim path creates `principal_permission_grants`; cleanup was fixed to delete grants before companies. The rerun passed. Server typecheck passed.
+- Prerequisites/IDs used: Fresh embedded-postgres test database; seeded one squad, a real auth user, and `local-board` as the only `instance_admin`; initialized board-claim challenge with `deploymentMode: "authenticated"`.
+- Expected result: A claim warning URL is generated; `inspectBoardClaimChallenge(token, code)` returns `available`; claiming as the signed-in user returns `claimed`; `local-board` loses instance admin; the signed-in user gains instance admin and active owner membership for the existing squad; subsequent inspect returns `claimed`.
+- Actual result: Initial test attempt exposed cleanup ordering only because the claim path creates `principal_permission_grants`; cleanup was fixed to delete grants before squads. The rerun passed. Server typecheck passed.
 - Status: PASS.
 - Output summary: Positive board-claim behavior is now covered by a focused authenticated-mode regression test. The live scratch instance remains `local_trusted`, which is correct for the main parity harness.
 - Follow-up: Commit the board-claim positive coverage, then evaluate whether interactive `connect` can be PTY-tested or should remain classified as lower-risk because its side effects were exercised through scriptable paths.
@@ -740,8 +740,8 @@ pnpm slaw health --json
 
 - Command: Added `cli/src/__tests__/connect.test.ts`; ran `pnpm exec vitest run cli/src/__tests__/connect.test.ts`; ran `pnpm --dir cli typecheck`.
 - Purpose: Resolve the interactive `connect` caveat by exercising the actual TTY-gated command path with mocked prompts and mocked board-login approval, without opening a real browser or touching real auth state.
-- Prerequisites/IDs used: Temp context files under the OS temp directory; mocked `process.stdin.isTTY` and `process.stdout.isTTY` to true; mocked `loginBoardCli` to return a board credential; mocked API responses for health, company list, board API key create, agent list, and agent API key create.
-- Expected result: Board persona flow verifies health, completes board auth, lists companies, creates a board token, writes the selected board profile to context, and emits JSON output. Agent persona flow verifies health, completes board auth, lists companies and agents, creates an agent token, writes the selected agent profile to context, and emits JSON output.
+- Prerequisites/IDs used: Temp context files under the OS temp directory; mocked `process.stdin.isTTY` and `process.stdout.isTTY` to true; mocked `loginBoardCli` to return a board credential; mocked API responses for health, squad list, board API key create, agent list, and agent API key create.
+- Expected result: Board persona flow verifies health, completes board auth, lists squads, creates a board token, writes the selected board profile to context, and emits JSON output. Agent persona flow verifies health, completes board auth, lists squads and agents, creates an agent token, writes the selected agent profile to context, and emits JSON output.
 - Actual result: Both prompt-driven `connect` tests passed. CLI typecheck passed. The test intentionally does not launch a browser; browser approval itself is already covered by CLI auth challenge route tests and mocked here as the boundary before profile selection/token creation.
 - Status: PASS.
 - Output summary: Interactive `connect` no longer has an untested command-flow caveat. Remaining real-browser/device approval behavior is covered by lower-level CLI auth challenge route tests and scriptable auth commands, not by manually approving in this terminal.
@@ -753,7 +753,7 @@ pnpm slaw health --json
 - Purpose: Confirm the three caveats are no longer unresolved after the follow-up fixes and coverage.
 - Prerequisites/IDs used: Isolated scratch server restarted from local source on `127.0.0.1:3197`; PID `84908`; same `tmp/cli-api-parity` home/config/context/auth paths.
 - Expected result: Scratch server is healthy; OpenAPI is schema-backed; git has no code changes before this final log entry; the only remaining difference is this log update.
-- Actual result: Health returned `status:"ok"`, version `0.3.1`, deployment mode `local_trusted`, exposure `private`, auth ready, bootstrap ready. OpenAPI returned `{openapi:"3.0.0", pathCount:259, security:["BoardSessionAuth","BoardApiKeyAuth","AgentBearerAuth"], companyCreateStatus:["201","400","401","403"]}`. `node` PID `84908` is listening on `127.0.0.1:3197`. Git status was clean before this final log update.
+- Actual result: Health returned `status:"ok"`, version `0.3.1`, deployment mode `local_trusted`, exposure `private`, auth ready, bootstrap ready. OpenAPI returned `{openapi:"3.0.0", pathCount:259, security:["BoardSessionAuth","BoardApiKeyAuth","AgentBearerAuth"], squadCreateStatus:["201","400","401","403"]}`. `node` PID `84908` is listening on `127.0.0.1:3197`. Git status was clean before this final log update.
 - Status: PASS.
 - Output summary: OpenAPI caveat fixed in commit `1ab85cb5`; positive board-claim caveat covered in commit `678fd3a8`; interactive connect caveat covered in commit `40480f38`.
 - Follow-up: Commit this final log-only status entry.
@@ -786,20 +786,20 @@ pnpm slaw health --json
 
 - Status: Fixed and live-verified.
 - Severity: Medium resource lifecycle leak.
-- Reproduction command: `routine trigger:create <routine-id> --payload-json '{"kind":"webhook","signingMode":"bearer"}' --json`; `routine trigger:delete <trigger-id> --json`; `secrets list --company-id <company-id> --json`.
+- Reproduction command: `routine trigger:create <routine-id> --payload-json '{"kind":"webhook","signingMode":"bearer"}' --json`; `routine trigger:delete <trigger-id> --json`; `secrets list --squad-id <squad-id> --json`.
 - Expected result: The webhook trigger's generated slaw-managed secret and binding are removed when the trigger is deleted.
 - Actual result: The trigger was deleted, but the generated secret stayed active with `referenceCount: 1` and description `Webhook auth for routine ...`.
 - Suspected cause: `deleteTrigger()` deleted only the `routine_triggers` row and appended a revision; it did not remove `existing.secretId`.
 - Files changed: `server/src/services/routines.ts`, `server/src/__tests__/routines-service.test.ts`, `doc/bugs/2026-05-24-cli-api-parity-e2e-log.md`.
-- Fix summary: After successful trigger deletion, call `secretsSvc.remove(existing.secretId)` for webhook triggers with managed secrets. Added assertions that deleting a webhook trigger removes both `company_secrets` and `company_secret_bindings` rows.
-- Verification command: `pnpm exec vitest run server/src/__tests__/routines-service.test.ts`; `pnpm --dir server typecheck`; live isolated webhook trigger create/delete; live `secrets list --company-id <company-id> --json`.
+- Fix summary: After successful trigger deletion, call `secretsSvc.remove(existing.secretId)` for webhook triggers with managed secrets. Added assertions that deleting a webhook trigger removes both `squad_secrets` and `squad_secret_bindings` rows.
+- Verification command: `pnpm exec vitest run server/src/__tests__/routines-service.test.ts`; `pnpm --dir server typecheck`; live isolated webhook trigger create/delete; live `secrets list --squad-id <squad-id> --json`.
 - Remaining risk: Low. If secret removal failed after trigger deletion, the trigger would already be gone; current provider-backed removal path was verified for the local encrypted provider.
 
 ### BUG-010 - Plugin tools were listed but could not execute against a running plugin worker
 
 - Status: Fixed and live-verified.
 - Severity: Medium plugin CLI/API parity bug.
-- Reproduction command: Install `packages/plugins/examples/plugin-kitchen-sink-example`, then run `pnpm slaw plugin tool:execute --payload-json '{"tool":"slaw-kitchen-sink-example:echo","parameters":{"message":"CLI parity tool"},"runContext":{"companyId":"<company-id>","projectId":"<project-id>","agentId":"<agent-id>","runId":"<run-id>"}}' --json`.
+- Reproduction command: Install `packages/plugins/examples/plugin-kitchen-sink-example`, then run `pnpm slaw plugin tool:execute --payload-json '{"tool":"slaw-kitchen-sink-example:echo","parameters":{"message":"CLI parity tool"},"runContext":{"squadId":"<squad-id>","projectId":"<project-id>","agentId":"<agent-id>","runId":"<run-id>"}}' --json`.
 - Expected result: The listed tool dispatches to the running kitchen-sink worker and returns a `ToolResult`.
 - Actual result: `plugin tools` listed `slaw-kitchen-sink-example:echo`, and bridge data/action calls to the same plugin worker succeeded, but `tool:execute` returned `502: Cannot execute tool ... worker for plugin "slaw-kitchen-sink-example" is not running`.
 - Suspected cause: `plugin-loader` registered tools with only the plugin key, so `RegisteredTool.pluginDbId` defaulted to the plugin key. `plugin-worker-manager` tracks running workers by database plugin UUID, so the dispatcher looked up the wrong worker ID.
@@ -812,14 +812,14 @@ pnpm slaw health --json
 
 - Status: Fixed and live-verified.
 - Severity: Low CLI argument parity bug.
-- Reproduction command: `pnpm slaw token agent list --company-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`.
+- Reproduction command: `pnpm slaw token agent list --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --agent 1dd601a1-031a-4225-b005-419427fd059f --json`.
 - Expected result: `--agent` accepts the documented agent ID, shortname, or unambiguous name.
 - Actual result: The command returned `404: Agent not found` for the ID form; the name form worked.
-- Suspected cause: The token command always called the reference lookup route `/api/agents/:ref?companyId=...`; the server route did not resolve the UUID ref in that lookup mode.
+- Suspected cause: The token command always called the reference lookup route `/api/agents/:ref?squadId=...`; the server route did not resolve the UUID ref in that lookup mode.
 - Files changed: `cli/src/commands/client/token.ts`, `cli/src/__tests__/token.test.ts`, `doc/bugs/2026-05-24-cli-api-parity-e2e-log.md`.
-- Fix summary: Detect UUID-form agent refs in the CLI, fetch `/api/agents/:id` directly, and verify the returned agent belongs to the requested company before listing/creating/revoking keys.
-- Verification command: `pnpm exec vitest run cli/src/__tests__/token.test.ts`; `pnpm --dir cli typecheck`; live isolated `token agent list --company-id <company-id> --agent <agent-id> --json`.
-- Remaining risk: Low; non-ID references continue to use the existing company-scoped lookup path.
+- Fix summary: Detect UUID-form agent refs in the CLI, fetch `/api/agents/:id` directly, and verify the returned agent belongs to the requested squad before listing/creating/revoking keys.
+- Verification command: `pnpm exec vitest run cli/src/__tests__/token.test.ts`; `pnpm --dir cli typecheck`; live isolated `token agent list --squad-id <squad-id> --agent <agent-id> --json`.
+- Remaining risk: Low; non-ID references continue to use the existing squad-scoped lookup path.
 
 ### BUG-007 - `worktree:make` can recurse through pnpm shim when `HOME` is isolated
 
@@ -831,7 +831,7 @@ pnpm slaw health --json
 - Suspected cause: The CLI did not reuse the pnpm executable that launched the current Slaw command, so dependency installation was subject to PATH/shim behavior under an overridden `HOME`.
 - Files changed: `cli/src/commands/worktree.ts`, `cli/src/__tests__/worktree.test.ts`, `doc/bugs/2026-05-24-cli-api-parity-e2e-log.md`.
 - Fix summary: Added `resolvePnpmInstallInvocation()` and changed worktree dependency installation to reuse `npm_execpath` when the CLI was launched through pnpm, falling back to bare `pnpm` only when no pnpm launcher is available.
-- Verification command: `pnpm exec vitest run cli/src/__tests__/worktree.test.ts`; `pnpm --dir cli typecheck`; live isolated `worktree:cleanup --force` for the partial worktree; live isolated `worktree:make ... --seed-mode minimal`; `worktree:list --json`; `worktree env --config <scratch-worktree-config> --json`; `worktree:merge-history --from slaw-cli-parity-wt --to current --company CLI --dry`.
+- Verification command: `pnpm exec vitest run cli/src/__tests__/worktree.test.ts`; `pnpm --dir cli typecheck`; live isolated `worktree:cleanup --force` for the partial worktree; live isolated `worktree:make ... --seed-mode minimal`; `worktree:list --json`; `worktree env --config <scratch-worktree-config> --json`; `worktree:merge-history --from slaw-cli-parity-wt --to current --squad CLI --dry`.
 - Remaining risk: Low. If Slaw is launched outside pnpm, dependency installation still falls back to PATH lookup as before.
 
 ### BUG-008 - `configure --section <invalid>` printed an error but exited 0
@@ -851,9 +851,9 @@ pnpm slaw health --json
 
 - Status: Fixed.
 - Severity: High for isolated CLI testing; a non-default `apiBase` can be silently removed and later commands may fall back to `http://localhost:3100` if `SLAW_API_URL` is absent.
-- Reproduction command: `pnpm slaw context set --api-base http://127.0.0.1:3197 --use --json`; then `pnpm slaw context set --company-id <company-id> --use --json`; then `pnpm slaw context show --json`.
-- Expected result: Profile preserves existing `apiBase` while adding `companyId`.
-- Actual result: Profile only contained `companyId`; `apiBase` was removed.
+- Reproduction command: `pnpm slaw context set --api-base http://127.0.0.1:3197 --use --json`; then `pnpm slaw context set --squad-id <squad-id> --use --json`; then `pnpm slaw context show --json`.
+- Expected result: Profile preserves existing `apiBase` while adding `squadId`.
+- Actual result: Profile only contained `squadId`; `apiBase` was removed.
 - Suspected cause: `context set` passed an object containing keys with `undefined` values into `upsertProfile`, and the merge spread those undefined values over existing properties.
 - Files changed: `cli/src/commands/client/context.ts`; `cli/src/client/context.ts`; `cli/src/__tests__/context.test.ts`.
 - Fix summary: Build context command patches from provided fields only, and make `upsertProfile` ignore undefined values while still allowing empty strings to delete fields.
@@ -955,13 +955,13 @@ pnpm slaw health --json
 
 - Status: Fixed and live-verified.
 - Severity: Low command UX drift.
-- Reproduction command: `pnpm slaw join list --company-id <company-id> --status pending --request-type agent --json`.
+- Reproduction command: `pnpm slaw join list --squad-id <squad-id> --status pending --request-type agent --json`.
 - Expected result: Help or docs clarify valid join statuses, or common alias `pending` is accepted.
 - Actual result: API validation rejects `pending`; valid values include `pending_approval`, `approved`, and `rejected`.
 - Suspected cause: CLI exposes a free-form status string with no enum guidance.
 - Files changed: `cli/src/commands/client/access.ts`, `cli/src/__tests__/access-parity.test.ts`, `doc/bugs/2026-05-24-cli-api-parity-e2e-log.md`.
 - Fix summary: `join list --status pending` now normalizes to `pending_approval`; help lists canonical statuses.
-- Verification command: `pnpm exec vitest run cli/src/__tests__/access-parity.test.ts`; `pnpm --dir cli typecheck`; `pnpm slaw join list --company-id <company-id> --status pending --request-type agent --json`.
+- Verification command: `pnpm exec vitest run cli/src/__tests__/access-parity.test.ts`; `pnpm --dir cli typecheck`; `pnpm slaw join list --squad-id <squad-id> --status pending --request-type agent --json`.
 - Remaining risk: Low.
 
 ### MISMATCH-007 - Public docs/catalog CLI routes missing or inconsistent
@@ -1007,12 +1007,12 @@ pnpm slaw health --json
 
 - Status: Fixed and live-verified.
 - Severity: Medium API error handling bug.
-- Reproduction command: `pnpm slaw environment create --company-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"name":"CLI parity local env","description":"Disposable CLI parity environment","driver":"local","config":{"cwd":"/Users/aronprins/Documents/Slaw/slaw"}}' --json`.
-- Expected result: Controlled `409` or other user-facing validation error because a default local environment already exists for the company.
-- Actual result: API returned `500: Internal server error`; server log showed duplicate key violation for `environments_company_driver_idx`.
-- Suspected cause: The route attempted the insert without checking the partial unique constraint on `(company_id, driver)` for `driver = 'local'`.
+- Reproduction command: `pnpm slaw environment create --squad-id 12e9db4b-f66c-459b-959e-d645002240fb --payload-json '{"name":"CLI parity local env","description":"Disposable CLI parity environment","driver":"local","config":{"cwd":"/Users/aronprins/Documents/Slaw/slaw"}}' --json`.
+- Expected result: Controlled `409` or other user-facing validation error because a default local environment already exists for the squad.
+- Actual result: API returned `500: Internal server error`; server log showed duplicate key violation for `environments_squad_driver_idx`.
+- Suspected cause: The route attempted the insert without checking the partial unique constraint on `(squad_id, driver)` for `driver = 'local'`.
 - Files changed: `server/src/routes/environments.ts`, `server/src/__tests__/environment-routes.test.ts`, `doc/bugs/2026-05-24-cli-api-parity-e2e-log.md`.
-- Fix summary: Added a route-level pre-insert check that throws `409` when a local environment already exists for the company; added regression coverage.
+- Fix summary: Added a route-level pre-insert check that throws `409` when a local environment already exists for the squad; added regression coverage.
 - Verification command: `pnpm exec vitest run server/src/__tests__/environment-routes.test.ts`; `pnpm --dir server typecheck`; restarted isolated server and reran the reproduction command, which now returns `409`.
 - Remaining risk: Low; create flow for non-local environment drivers still needs separate positive coverage.
 

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { approvalsApi } from "../api/approvals";
 import { agentsApi } from "../api/agents";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
@@ -16,7 +16,7 @@ import { PageSkeleton } from "../components/PageSkeleton";
 type StatusFilter = "pending" | "all";
 
 export function Approvals() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -30,22 +30,22 @@ export function Approvals() {
   }, [setBreadcrumbs]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.approvals.list(selectedCompanyId!),
-    queryFn: () => approvalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.approvals.list(selectedSquadId!),
+    queryFn: () => approvalsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => approvalsApi.approve(id),
     onSuccess: (_approval, id) => {
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedSquadId!) });
       navigate(`/approvals/${id}?resolved=approved`);
     },
     onError: (err) => {
@@ -57,7 +57,7 @@ export function Approvals() {
     mutationFn: (id: string) => approvalsApi.reject(id),
     onSuccess: () => {
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedSquadId!) });
     },
     onError: (err) => {
       setActionError(err instanceof Error ? err.message : "Failed to reject");
@@ -74,8 +74,8 @@ export function Approvals() {
     (a) => a.status === "pending" || a.status === "revision_requested",
   ).length;
 
-  if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select a company first.</p>;
+  if (!selectedSquadId) {
+    return <p className="text-sm text-muted-foreground">Select a squad first.</p>;
   }
 
   if (isLoading) {

@@ -59,8 +59,8 @@ function createDbStub() {
   const updateMock = vi.fn();
   const invite = {
     id: "invite-1",
-    companyId: "company-1",
-    inviteType: "company_join",
+    squadId: "squad-1",
+    inviteType: "squad_join",
     allowedJoinTypes: "human",
     tokenHash: "hash",
     defaultsPayload: { humanRole: "viewer" },
@@ -110,10 +110,10 @@ function createApp(db: Record<string, unknown>) {
     type: "board",
     source: "session",
     userId: "user-1",
-    companyIds: ["company-1"],
+    squadIds: ["squad-1"],
     memberships: [
       {
-        companyId: "company-1",
+        squadId: "squad-1",
         membershipRole: "owner",
         status: "active",
       },
@@ -146,8 +146,8 @@ function createDirectHumanInviteDbStub() {
   const updateValues: unknown[] = [];
   const invite = {
     id: "invite-1",
-    companyId: "company-1",
-    inviteType: "company_join",
+    squadId: "squad-1",
+    inviteType: "squad_join",
     allowedJoinTypes: "human",
     tokenHash: "hash",
     defaultsPayload: { human: { role: "owner" } },
@@ -161,7 +161,7 @@ function createDirectHumanInviteDbStub() {
   const createdJoinRequest = {
     id: "join-1",
     inviteId: "invite-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     requestType: "human",
     status: "pending_approval",
     requestIp: "::ffff:127.0.0.1",
@@ -223,8 +223,8 @@ function createAcceptedHumanInviteReplayDbStub() {
   const updateValues: unknown[] = [];
   const invite = {
     id: "invite-1",
-    companyId: "company-1",
-    inviteType: "company_join",
+    squadId: "squad-1",
+    inviteType: "squad_join",
     allowedJoinTypes: "human",
     tokenHash: "hash",
     defaultsPayload: { human: { role: "operator" } },
@@ -238,7 +238,7 @@ function createAcceptedHumanInviteReplayDbStub() {
   const pendingJoinRequest = {
     id: "join-1",
     inviteId: "invite-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     requestType: "human",
     status: "pending_approval",
     requestIp: "::ffff:127.0.0.1",
@@ -302,7 +302,7 @@ describe("POST /invites/:token/accept", () => {
     vi.clearAllMocks();
   });
 
-  it("does not consume a human invite when the signed-in user is already a company member", async () => {
+  it("does not consume a human invite when the signed-in user is already a squad member", async () => {
     const { db, updateMock } = createDbStub();
     const app = createApp(db);
 
@@ -311,17 +311,17 @@ describe("POST /invites/:token/accept", () => {
       .send({ requestType: "human" });
 
     expect(res.status).toBe(409);
-    expect(res.body.error).toBe("You already belong to this company");
+    expect(res.body.error).toBe("You already belong to this squad");
     expect(updateMock).not.toHaveBeenCalled();
   });
 
-  it("grants company access immediately for a human invite", async () => {
+  it("grants squad access immediately for a human invite", async () => {
     const { db, insertedValues, updateValues } = createDirectHumanInviteDbStub();
     const app = createAppWithActor(db, {
       type: "board",
       source: "session",
       userId: "invitee-user",
-      companyIds: [],
+      squadIds: [],
       memberships: [],
     });
 
@@ -334,7 +334,7 @@ describe("POST /invites/:token/accept", () => {
     expect(insertedValues).toEqual([
       expect.objectContaining({
         inviteId: "invite-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         requestType: "human",
         status: "pending_approval",
         requestingUserId: "invitee-user",
@@ -354,14 +354,14 @@ describe("POST /invites/:token/accept", () => {
       ]),
     );
     expect(accessServiceMock.ensureMembership).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "user",
       "invitee-user",
       "owner",
       "active",
     );
     expect(accessServiceMock.setPrincipalGrants).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "user",
       "invitee-user",
       expect.arrayContaining([
@@ -380,13 +380,13 @@ describe("POST /invites/:token/accept", () => {
     );
   });
 
-  it("replays a consumed human invite for the same user and repairs company access", async () => {
+  it("replays a consumed human invite for the same user and repairs squad access", async () => {
     const { db, updateValues } = createAcceptedHumanInviteReplayDbStub();
     const app = createAppWithActor(db, {
       type: "board",
       source: "session",
       userId: "invitee-user",
-      companyIds: [],
+      squadIds: [],
       memberships: [],
     });
 
@@ -413,7 +413,7 @@ describe("POST /invites/:token/accept", () => {
       expect.arrayContaining([expect.objectContaining({ acceptedAt: expect.any(Date) })]),
     );
     expect(accessServiceMock.ensureMembership).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "user",
       "invitee-user",
       "operator",

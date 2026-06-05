@@ -181,7 +181,7 @@ export interface RoutineRunDialogSubmitData {
 export function RoutineRunVariablesDialog({
   open,
   onOpenChange,
-  companyId,
+  squadId,
   routineName,
   projects,
   agents,
@@ -194,7 +194,7 @@ export function RoutineRunVariablesDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string | null | undefined;
+  squadId: string | null | undefined;
   routineName?: string | null;
   projects: Project[];
   agents: Agent[];
@@ -289,7 +289,7 @@ export function RoutineRunVariablesDialog({
   );
 
   const workspaceIssue = useMemo(() => ({
-    companyId: companyId ?? null,
+    squadId: squadId ?? null,
     projectId: selectedProject?.id ?? null,
     projectWorkspaceId: workspaceConfig.projectWorkspaceId,
     executionWorkspaceId: workspaceConfig.executionWorkspaceId,
@@ -300,7 +300,7 @@ export function RoutineRunVariablesDialog({
         ? defaultExecutionWorkspace
         : null,
   }), [
-    companyId,
+    squadId,
     defaultExecutionWorkspace,
     selectedProject?.id,
     workspaceConfig.executionWorkspaceId,
@@ -507,7 +507,7 @@ export function RoutineRunVariablesDialog({
             </div>
           ))}
 
-          {workspaceSelectionEnabled && selectedProject && companyId ? (
+          {workspaceSelectionEnabled && selectedProject && squadId ? (
             <IssueWorkspaceCard
               key={`${open ? "open" : "closed"}:${selectedProject.id}`}
               issue={workspaceIssue}

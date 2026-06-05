@@ -1,6 +1,6 @@
 import { PERMISSION_KEYS } from "@slaw/shared";
-import type { HumanCompanyMembershipRole } from "@slaw/shared";
-import { grantsForHumanRole } from "./company-member-roles.js";
+import type { HumanSquadMembershipRole } from "@slaw/shared";
+import { grantsForHumanRole } from "./squad-member-roles.js";
 
 export function grantsFromDefaults(
   defaultsPayload: Record<string, unknown> | null | undefined,
@@ -58,7 +58,7 @@ export function agentJoinGrantsFromDefaults(
 
 export function humanJoinGrantsFromDefaults(
   defaultsPayload: Record<string, unknown> | null | undefined,
-  membershipRole: HumanCompanyMembershipRole
+  membershipRole: HumanSquadMembershipRole
 ): Array<{
   permissionKey: (typeof PERMISSION_KEYS)[number];
   scope: Record<string, unknown> | null;

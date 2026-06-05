@@ -74,8 +74,8 @@ function registerServiceMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => ({
@@ -89,7 +89,7 @@ function registerServiceMocks() {
       saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
     }),
     goalService: () => ({
-      getDefaultCompanyGoal: vi.fn(async () => null),
+      getDefaultSquadGoal: vi.fn(async () => null),
       getById: vi.fn(async () => null),
     }),
     heartbeatService: () => mockHeartbeatService,
@@ -101,7 +101,7 @@ function registerServiceMocks() {
           feedbackDataSharingPreference: "prompt",
         },
       })),
-      listCompanyIds: vi.fn(async () => ["company-1"]),
+      listSquadIds: vi.fn(async () => ["squad-1"]),
     }),
     issueApprovalService: () => ({}),
     issueReferenceService: () => ({
@@ -147,7 +147,7 @@ async function createApp() {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -161,7 +161,7 @@ async function createApp() {
 function makeIssue() {
   return {
     id: issueId,
-    companyId: "company-1",
+    squadId: "squad-1",
     status: "todo",
     priority: "medium",
     assigneeAgentId: agentId,

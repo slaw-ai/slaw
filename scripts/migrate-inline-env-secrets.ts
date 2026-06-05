@@ -60,7 +60,7 @@ async function main() {
 
       const name = secretName(agent.id, key);
       if (apply) {
-        const existing = await secrets.getByName(agent.companyId, name);
+        const existing = await secrets.getByName(agent.squadId, name);
         if (existing) {
           await secrets.rotate(
             existing.id,
@@ -71,7 +71,7 @@ async function main() {
           nextEnv[key] = { type: "secret_ref", secretId: existing.id, version: "latest" };
         } else {
           const created = await secrets.create(
-            agent.companyId,
+            agent.squadId,
             {
               name,
               provider: "local_encrypted",

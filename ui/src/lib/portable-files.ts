@@ -1,4 +1,4 @@
-import type { CompanyPortabilityFileEntry } from "@slaw/shared";
+import type { SquadPortabilityFileEntry } from "@slaw/shared";
 
 const contentTypeByExtension: Record<string, string> = {
   ".gif": "image/gif",
@@ -9,13 +9,13 @@ const contentTypeByExtension: Record<string, string> = {
   ".webp": "image/webp",
 };
 
-export function getPortableFileText(entry: CompanyPortabilityFileEntry | null | undefined) {
+export function getPortableFileText(entry: SquadPortabilityFileEntry | null | undefined) {
   return typeof entry === "string" ? entry : null;
 }
 
 export function getPortableFileContentType(
   filePath: string,
-  entry: CompanyPortabilityFileEntry | null | undefined,
+  entry: SquadPortabilityFileEntry | null | undefined,
 ) {
   if (entry && typeof entry === "object" && entry.contentType) return entry.contentType;
   const extensionIndex = filePath.toLowerCase().lastIndexOf(".");
@@ -25,7 +25,7 @@ export function getPortableFileContentType(
 
 export function getPortableFileDataUrl(
   filePath: string,
-  entry: CompanyPortabilityFileEntry | null | undefined,
+  entry: SquadPortabilityFileEntry | null | undefined,
 ) {
   if (!entry || typeof entry === "string") return null;
   const contentType = getPortableFileContentType(filePath, entry) ?? "application/octet-stream";
@@ -34,7 +34,7 @@ export function getPortableFileDataUrl(
 
 export function isPortableImageFile(
   filePath: string,
-  entry: CompanyPortabilityFileEntry | null | undefined,
+  entry: SquadPortabilityFileEntry | null | undefined,
 ) {
   const contentType = getPortableFileContentType(filePath, entry);
   return typeof contentType === "string" && contentType.startsWith("image/");

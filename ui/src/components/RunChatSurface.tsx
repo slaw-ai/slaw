@@ -18,14 +18,14 @@ interface RunChatSurfaceProps {
   run: LiveRunForIssue;
   transcript: TranscriptEntry[];
   hasOutput: boolean;
-  companyId?: string | null;
+  squadId?: string | null;
 }
 
 export const RunChatSurface = memo(function RunChatSurface({
   run,
   transcript,
   hasOutput,
-  companyId,
+  squadId,
 }: RunChatSurfaceProps) {
   const active = isRunActive(run);
   const liveRuns = useMemo(() => (active ? [run] : EMPTY_LIVE_RUNS), [active, run]);
@@ -55,7 +55,7 @@ export const RunChatSurface = memo(function RunChatSurface({
       linkedRuns={linkedRuns}
       timelineEvents={EMPTY_TIMELINE_EVENTS}
       liveRuns={liveRuns}
-      companyId={companyId}
+      squadId={squadId}
       onAdd={handleEmbeddedAdd}
       showComposer={false}
       showJumpToLatest={false}

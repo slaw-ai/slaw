@@ -1,7 +1,7 @@
 import type { IssueCommentAuthorType } from "@slaw/shared";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { documentAnnotationThreads } from "./document_annotation_threads.js";
 import { documents } from "./documents.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";
@@ -11,7 +11,7 @@ export const documentAnnotationComments = pgTable(
   "document_annotation_comments",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     threadId: uuid("thread_id").notNull().references(() => documentAnnotationThreads.id, { onDelete: "cascade" }),
     issueId: uuid("issue_id").notNull().references(() => issues.id, { onDelete: "cascade" }),
     documentId: uuid("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
@@ -24,18 +24,18 @@ export const documentAnnotationComments = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyThreadCreatedAtIdx: index("document_annotation_comments_company_thread_created_at_idx").on(
-      table.companyId,
+    squadThreadCreatedAtIdx: index("document_annotation_comments_squad_thread_created_at_idx").on(
+      table.squadId,
       table.threadId,
       table.createdAt,
     ),
-    companyIssueCreatedAtIdx: index("document_annotation_comments_company_issue_created_at_idx").on(
-      table.companyId,
+    squadIssueCreatedAtIdx: index("document_annotation_comments_squad_issue_created_at_idx").on(
+      table.squadId,
       table.issueId,
       table.createdAt,
     ),
-    companyDocumentCreatedAtIdx: index("document_annotation_comments_company_document_created_at_idx").on(
-      table.companyId,
+    squadDocumentCreatedAtIdx: index("document_annotation_comments_squad_document_created_at_idx").on(
+      table.squadId,
       table.documentId,
       table.createdAt,
     ),

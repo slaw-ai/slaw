@@ -5,7 +5,7 @@ import { buildRoutineTriggerPatch } from "./routine-trigger-patch";
 function makeScheduleTrigger(overrides: Partial<RoutineTrigger> = {}): RoutineTrigger {
   return {
     id: "trigger-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     routineId: "routine-1",
     kind: "schedule",
     label: "Daily",

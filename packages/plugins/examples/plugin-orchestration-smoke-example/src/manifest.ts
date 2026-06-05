@@ -43,7 +43,7 @@ const manifest: SlawPluginManifestV1 = {
       auth: "board-or-agent",
       capability: "api.routes.register",
       checkoutPolicy: "required-for-agent-in-progress",
-      companyResolution: { from: "issue", param: "issueId" }
+      squadResolution: { from: "issue", param: "issueId" }
     },
     {
       routeKey: "summary",
@@ -51,7 +51,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/issues/:issueId/smoke",
       auth: "board-or-agent",
       capability: "api.routes.register",
-      companyResolution: { from: "issue", param: "issueId" }
+      squadResolution: { from: "issue", param: "issueId" }
     }
   ],
   ui: {

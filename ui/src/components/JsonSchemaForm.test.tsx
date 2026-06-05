@@ -8,7 +8,7 @@ import { JsonSchemaForm, getDefaultValues } from "./JsonSchemaForm";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-// SecretBindingPicker pulls in CompanyContext + react-query. Stub it so we can
+// SecretBindingPicker pulls in SquadContext + react-query. Stub it so we can
 // exercise SecretField in isolation. The stub renders a select with the same
 // onChange contract as the real picker.
 vi.mock("./SecretBindingPicker", () => ({

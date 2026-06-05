@@ -46,7 +46,7 @@ export function diffResponse(overrides: Partial<WorkspaceDiffResponse> = {}): Wo
   const deletions = files.reduce((sum, file) => sum + file.deletions, 0);
   return {
     workspaceId: "11111111-1111-4111-8111-111111111111",
-    companyId: "22222222-2222-4222-8222-222222222222",
+    squadId: "22222222-2222-4222-8222-222222222222",
     view: "working-tree",
     baseRef: null,
     defaultBaseRef: null,

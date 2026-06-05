@@ -65,7 +65,7 @@ function createRun(overrides: Partial<RunForIssue> = {}): RunForIssue {
 function createActivity(overrides: Partial<ActivityEvent> = {}): ActivityEvent {
   return {
     id: "activity-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     actorType: "system",
     actorId: "system",
     action: "issue.updated",
@@ -82,7 +82,7 @@ function createActivity(overrides: Partial<ActivityEvent> = {}): ActivityEvent {
 function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,

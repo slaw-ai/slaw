@@ -18,9 +18,9 @@ import { logger } from "../middleware/logger.js";
 type BoardActor = {
   type: "board" | "agent" | "none";
   userId?: string;
-  companyIds?: string[];
+  squadIds?: string[];
   memberships?: Array<{
-    companyId: string;
+    squadId: string;
     membershipRole?: string | null;
     status?: string;
   }>;
@@ -36,7 +36,7 @@ type PolicyDecision = {
 
 export type ResourceMembershipPolicyHook = (input: {
   actor: BoardActor;
-  companyId: string;
+  squadId: string;
   userId: string;
   resourceType: ResourceMembershipResourceType;
   resourceId: string;
@@ -69,7 +69,7 @@ function latestDate(...dates: Array<Date | null | undefined>): Date | null {
   return latest;
 }
 
-function assertBoardSelfMembershipAccess(actor: BoardActor, companyId: string, userId: string) {
+function assertBoardSelfMembershipAccess(actor: BoardActor, squadId: string, userId: string) {
   if (actor.type !== "board" || !actor.userId) {
     throw forbidden("Board user access required");
   }
@@ -79,9 +79,9 @@ function assertBoardSelfMembershipAccess(actor: BoardActor, companyId: string, u
   if (actor.source === "local_implicit" || actor.isInstanceAdmin) {
     return;
   }
-  const membership = actor.memberships?.find((item) => item.companyId === companyId);
+  const membership = actor.memberships?.find((item) => item.squadId === squadId);
   if (!membership || membership.status !== "active") {
-    throw forbidden("User does not have active company access");
+    throw forbidden("User does not have active squad access");
   }
 }
 
@@ -99,7 +99,7 @@ async function evaluatePolicy(
     };
   } catch (err) {
     logger.warn(
-      { err, companyId: input.companyId, resourceType: input.resourceType, resourceId: input.resourceId },
+      { err, squadId: input.squadId, resourceType: input.resourceType, resourceId: input.resourceId },
       "resource membership policy hook failed closed",
     );
     return { allowed: false, reason: "policy_hook_failed", source: "policy_hook" };
@@ -111,18 +111,18 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
 
   async function assertMutationAllowed(input: {
     actor: BoardActor;
-    companyId: string;
+    squadId: string;
     userId: string;
     resourceType: ResourceMembershipResourceType;
     resourceId: string;
     state: ResourceMembershipState;
   }): Promise<PolicyDecision> {
-    assertBoardSelfMembershipAccess(input.actor, input.companyId, input.userId);
+    assertBoardSelfMembershipAccess(input.actor, input.squadId, input.userId);
     const decision = await evaluatePolicy(policyHook, input);
     if (!decision.allowed) {
       logger.warn(
         {
-          companyId: input.companyId,
+          squadId: input.squadId,
           userId: input.userId,
           resourceType: input.resourceType,
           resourceId: input.resourceId,
@@ -137,8 +137,8 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
   }
 
   return {
-    async listForUser(companyId: string, userId: string, actor: BoardActor): Promise<ResourceMemberships> {
-      assertBoardSelfMembershipAccess(actor, companyId, userId);
+    async listForUser(squadId: string, userId: string, actor: BoardActor): Promise<ResourceMemberships> {
+      assertBoardSelfMembershipAccess(actor, squadId, userId);
       const [projectRows, agentRows] = await Promise.all([
         db
           .select({
@@ -148,7 +148,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
           })
           .from(projectMemberships)
           .where(and(
-            eq(projectMemberships.companyId, companyId),
+            eq(projectMemberships.squadId, squadId),
             eq(projectMemberships.userId, userId),
           )),
         db
@@ -159,7 +159,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
           })
           .from(agentMemberships)
           .where(and(
-            eq(agentMemberships.companyId, companyId),
+            eq(agentMemberships.squadId, squadId),
             eq(agentMemberships.userId, userId),
           )),
       ]);
@@ -174,7 +174,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
     },
 
     async updateProject(input: {
-      companyId: string;
+      squadId: string;
       userId: string;
       projectId: string;
       state: ResourceMembershipState;
@@ -183,13 +183,13 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
       const project = await db.query.projects.findFirst({
         where: and(
           eq(projects.id, input.projectId),
-          eq(projects.companyId, input.companyId),
+          eq(projects.squadId, input.squadId),
         ),
       });
       if (!project) throw notFound("Project not found");
       const decision = await assertMutationAllowed({
         actor: input.actor,
-        companyId: input.companyId,
+        squadId: input.squadId,
         userId: input.userId,
         resourceType: "project",
         resourceId: input.projectId,
@@ -198,7 +198,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
 
       const existing = await db.query.projectMemberships.findFirst({
         where: and(
-          eq(projectMemberships.companyId, input.companyId),
+          eq(projectMemberships.squadId, input.squadId),
           eq(projectMemberships.userId, input.userId),
           eq(projectMemberships.projectId, input.projectId),
         ),
@@ -219,14 +219,14 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
       const [row] = await db
         .insert(projectMemberships)
         .values({
-          companyId: input.companyId,
+          squadId: input.squadId,
           projectId: input.projectId,
           userId: input.userId,
           state: input.state,
           updatedAt: now,
         })
         .onConflictDoUpdate({
-          target: [projectMemberships.companyId, projectMemberships.userId, projectMemberships.projectId],
+          target: [projectMemberships.squadId, projectMemberships.userId, projectMemberships.projectId],
           set: {
             state: input.state,
             updatedAt: now,
@@ -245,7 +245,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
     },
 
     async updateAgent(input: {
-      companyId: string;
+      squadId: string;
       userId: string;
       agentId: string;
       state: ResourceMembershipState;
@@ -254,13 +254,13 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
       const agent = await db.query.agents.findFirst({
         where: and(
           eq(agents.id, input.agentId),
-          eq(agents.companyId, input.companyId),
+          eq(agents.squadId, input.squadId),
         ),
       });
       if (!agent) throw notFound("Agent not found");
       const decision = await assertMutationAllowed({
         actor: input.actor,
-        companyId: input.companyId,
+        squadId: input.squadId,
         userId: input.userId,
         resourceType: "agent",
         resourceId: input.agentId,
@@ -269,7 +269,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
 
       const existing = await db.query.agentMemberships.findFirst({
         where: and(
-          eq(agentMemberships.companyId, input.companyId),
+          eq(agentMemberships.squadId, input.squadId),
           eq(agentMemberships.userId, input.userId),
           eq(agentMemberships.agentId, input.agentId),
         ),
@@ -290,14 +290,14 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
       const [row] = await db
         .insert(agentMemberships)
         .values({
-          companyId: input.companyId,
+          squadId: input.squadId,
           agentId: input.agentId,
           userId: input.userId,
           state: input.state,
           updatedAt: now,
         })
         .onConflictDoUpdate({
-          target: [agentMemberships.companyId, agentMemberships.userId, agentMemberships.agentId],
+          target: [agentMemberships.squadId, agentMemberships.userId, agentMemberships.agentId],
           set: {
             state: input.state,
             updatedAt: now,

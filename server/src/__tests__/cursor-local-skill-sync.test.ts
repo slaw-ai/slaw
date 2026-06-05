@@ -33,7 +33,7 @@ describe("cursor local skill sync", () => {
 
     const ctx = {
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "cursor",
       config: {
         env: {
@@ -56,7 +56,7 @@ describe("cursor local skill sync", () => {
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "slaw"))).isSymbolicLink()).toBe(true);
   });
 
-  it("recognizes company-library runtime skills supplied outside the bundled Slaw directory", async () => {
+  it("recognizes squad-library runtime skills supplied outside the bundled Slaw directory", async () => {
     const home = await makeTempDir("slaw-cursor-runtime-skills-home-");
     const runtimeSkills = await makeTempDir("slaw-cursor-runtime-skills-src-");
     cleanupDirs.add(home);
@@ -67,7 +67,7 @@ describe("cursor local skill sync", () => {
 
     const ctx = {
       agentId: "agent-3",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "cursor",
       config: {
         env: {
@@ -110,7 +110,7 @@ describe("cursor local skill sync", () => {
 
     const configuredCtx = {
       agentId: "agent-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "cursor",
       config: {
         env: {

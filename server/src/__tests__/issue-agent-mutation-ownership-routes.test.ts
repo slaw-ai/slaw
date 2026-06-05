@@ -4,7 +4,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const issueId = "11111111-1111-4111-8111-111111111111";
-const companyId = "22222222-2222-4222-8222-222222222222";
+const squadId = "22222222-2222-4222-8222-222222222222";
 const ownerAgentId = "33333333-3333-4333-8333-333333333333";
 const peerAgentId = "44444444-4444-4444-8444-444444444444";
 const ownerRunId = "55555555-5555-4555-8555-555555555555";
@@ -40,7 +40,7 @@ const mockAgentService = vi.hoisted(() => ({
   resolveByReference: vi.fn(),
 }));
 
-const mockCompanyService = vi.hoisted(() => ({
+const mockSquadService = vi.hoisted(() => ({
   getById: vi.fn(),
 }));
 
@@ -116,7 +116,7 @@ function registerRouteMocks() {
   vi.doMock("../services/index.js", () => ({
     accessService: () => mockAccessService,
     agentService: () => mockAgentService,
-    companyService: () => mockCompanyService,
+    squadService: () => mockSquadService,
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => mockDocumentService,
     executionWorkspaceService: () => ({}),
@@ -134,7 +134,7 @@ function registerRouteMocks() {
           feedbackDataSharingPreference: "prompt",
         },
       })),
-      listCompanyIds: vi.fn(async () => [companyId]),
+      listSquadIds: vi.fn(async () => [squadId]),
     }),
     issueApprovalService: () => ({}),
     issueRecoveryActionService: () => mockIssueRecoveryActionService,
@@ -165,7 +165,7 @@ function registerRouteMocks() {
 function makeIssue(overrides: Record<string, unknown> = {}) {
   return {
     id: issueId,
-    companyId,
+    squadId,
     status: "in_progress",
     priority: "high",
     projectId: null,
@@ -186,7 +186,7 @@ function makeIssue(overrides: Record<string, unknown> = {}) {
 function makeAgent(id: string, overrides: Record<string, unknown> = {}) {
   return {
     id,
-    companyId,
+    squadId,
     role: "engineer",
     reportsTo: null,
     permissions: { canCreateAgents: false },
@@ -203,7 +203,7 @@ function createRunContextDb(contextSnapshot: Record<string, unknown> = {}) {
           then: async (resolve: (rows: unknown[]) => unknown) =>
             resolve([{
               id: ownerRunId,
-              companyId,
+              squadId,
               agentId: ownerAgentId,
               contextSnapshot,
             }]),
@@ -233,7 +233,7 @@ function peerActor(overrides: Record<string, unknown> = {}) {
   return {
     type: "agent",
     agentId: peerAgentId,
-    companyId,
+    squadId,
     source: "agent_key",
     runId: "66666666-6666-4666-8666-666666666666",
     ...overrides,
@@ -244,7 +244,7 @@ function ownerActor() {
   return {
     type: "agent",
     agentId: ownerAgentId,
-    companyId,
+    squadId,
     source: "agent_key",
     runId: ownerRunId,
   };
@@ -254,7 +254,7 @@ function boardActor() {
   return {
     type: "board",
     userId: "board-user",
-    companyIds: [companyId],
+    squadIds: [squadId],
     source: "local_implicit",
     isInstanceAdmin: false,
   };
@@ -289,7 +289,7 @@ describe("agent issue mutation checkout ownership", () => {
     mockAgentService.getById.mockReset();
     mockAgentService.list.mockReset();
     mockAgentService.resolveByReference.mockReset();
-    mockCompanyService.getById.mockReset();
+    mockSquadService.getById.mockReset();
     mockIssueService.addComment.mockReset();
     mockIssueService.assertCheckoutOwner.mockReset();
     mockIssueService.create.mockReset();
@@ -306,7 +306,7 @@ describe("agent issue mutation checkout ownership", () => {
     mockIssueRecoveryActionService.resolveActiveForIssue.mockReset();
     mockIssueRecoveryActionService.resolveActiveForIssue.mockResolvedValue({
       id: recoveryActionId,
-      companyId,
+      squadId,
       sourceIssueId: issueId,
       recoveryIssueId: null,
       kind: "issue_graph_liveness",
@@ -367,18 +367,18 @@ describe("agent issue mutation checkout ownership", () => {
       makeAgent(peerAgentId),
     ]);
     mockAgentService.resolveByReference.mockResolvedValue({ ambiguous: false, agent: null });
-    mockCompanyService.getById.mockResolvedValue({ id: companyId, issuePrefix: "PAP" });
+    mockSquadService.getById.mockResolvedValue({ id: squadId, issuePrefix: "PAP" });
     mockIssueService.getById.mockResolvedValue(makeIssue());
     mockIssueService.getByIdentifier.mockResolvedValue(null);
     mockIssueService.assertCheckoutOwner.mockResolvedValue({ adoptedFromRunId: null });
-    mockIssueService.create.mockImplementation(async (_companyId: string, input: Record<string, unknown>) => ({
+    mockIssueService.create.mockImplementation(async (_squadId: string, input: Record<string, unknown>) => ({
       ...makeIssue({
         id: "88888888-8888-4888-8888-888888888888",
         status: "todo",
         assigneeAgentId: null,
       }),
       ...input,
-      companyId,
+      squadId,
     }));
     mockIssueService.createChild.mockImplementation(async (_parentId: string, input: Record<string, unknown>) => ({
       issue: {
@@ -389,7 +389,7 @@ describe("agent issue mutation checkout ownership", () => {
           assigneeAgentId: null,
         }),
         ...input,
-        companyId,
+        squadId,
       },
       parentBlockerAdded: false,
     }));
@@ -404,7 +404,7 @@ describe("agent issue mutation checkout ownership", () => {
     mockIssueService.addComment.mockResolvedValue({
       id: "77777777-7777-4777-8777-777777777777",
       issueId,
-      companyId,
+      squadId,
       body: "comment",
     });
     mockIssueService.listAttachments.mockResolvedValue([]);
@@ -412,7 +412,7 @@ describe("agent issue mutation checkout ownership", () => {
     mockIssueService.getAttachmentById.mockResolvedValue({
       id: "attachment-1",
       issueId,
-      companyId,
+      squadId,
       objectKey: "issues/attachment-1/report.txt",
       contentType: "text/plain",
       byteSize: 6,
@@ -421,7 +421,7 @@ describe("agent issue mutation checkout ownership", () => {
     mockIssueService.removeAttachment.mockResolvedValue({
       id: "attachment-1",
       issueId,
-      companyId,
+      squadId,
       objectKey: "issues/attachment-1/report.txt",
     });
     mockDocumentService.upsertIssueDocument.mockResolvedValue({
@@ -437,7 +437,7 @@ describe("agent issue mutation checkout ownership", () => {
     mockWorkProductService.createForIssue.mockResolvedValue({
       id: "product-2",
       issueId,
-      companyId,
+      squadId,
       type: "artifact",
       provider: "test",
       title: "Artifact",
@@ -445,20 +445,20 @@ describe("agent issue mutation checkout ownership", () => {
     mockWorkProductService.getById.mockResolvedValue({
       id: "product-1",
       issueId,
-      companyId,
+      squadId,
       type: "artifact",
     });
     mockWorkProductService.update.mockResolvedValue({
       id: "product-1",
       issueId,
-      companyId,
+      squadId,
       type: "artifact",
       title: "Updated",
     });
     mockWorkProductService.remove.mockResolvedValue({
       id: "product-1",
       issueId,
-      companyId,
+      squadId,
       type: "artifact",
     });
     mockStorageService.putFile.mockResolvedValue({
@@ -490,7 +490,7 @@ describe("agent issue mutation checkout ownership", () => {
       "attachment upload",
       (app: express.Express) =>
         request(app)
-          .post(`/api/companies/${companyId}/issues/${issueId}/attachments`)
+          .post(`/api/squads/${squadId}/issues/${issueId}/attachments`)
           .attach("file", Buffer.from("report"), { filename: "report.txt", contentType: "text/plain" }),
     ],
     ["attachment delete", (app: express.Express) => request(app).delete("/api/attachments/attachment-1")],
@@ -546,7 +546,7 @@ describe("agent issue mutation checkout ownership", () => {
       "attachment upload",
       (app: express.Express) =>
         request(app)
-          .post(`/api/companies/${companyId}/issues/${issueId}/attachments`)
+          .post(`/api/squads/${squadId}/issues/${issueId}/attachments`)
           .attach("file", Buffer.from("report"), { filename: "report.txt", contentType: "text/plain" }),
     ],
     ["attachment delete", (app: express.Express) => request(app).delete("/api/attachments/attachment-1")],
@@ -579,7 +579,7 @@ describe("agent issue mutation checkout ownership", () => {
     [
       "issue create",
       (app: express.Express) =>
-        request(app).post(`/api/companies/${companyId}/issues`).send({
+        request(app).post(`/api/squads/${squadId}/issues`).send({
           title: "Downstream source work",
           assigneeAdapterOverrides: { modelProfile: "cheap" },
         }),
@@ -722,7 +722,7 @@ describe("agent issue mutation checkout ownership", () => {
     expect(mockIssueService.addComment).not.toHaveBeenCalled();
   });
 
-  it("allows same-company agent mutations on unassigned in-progress issues", async () => {
+  it("allows same-squad agent mutations on unassigned in-progress issues", async () => {
     mockIssueService.getById.mockResolvedValue(makeIssue({ assigneeAgentId: null }));
     mockIssueService.update.mockImplementation(async (_id: string, patch: Record<string, unknown>) => ({
       ...makeIssue({ assigneeAgentId: null }),
@@ -864,7 +864,7 @@ describe("agent issue mutation checkout ownership", () => {
       action: "tasks:assign",
       resource: expect.objectContaining({
         type: "issue",
-        companyId,
+        squadId,
         issueId,
         assigneeAgentId: peerAgentId,
       }),

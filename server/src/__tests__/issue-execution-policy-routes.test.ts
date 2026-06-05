@@ -41,8 +41,8 @@ const mockIssueApprovalService = vi.hoisted(() => ({
 
 function registerModuleMocks() {
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => ({
@@ -68,7 +68,7 @@ function registerModuleMocks() {
           feedbackDataSharingPreference: "prompt",
         },
       })),
-      listCompanyIds: vi.fn(async () => ["company-1"]),
+      listSquadIds: vi.fn(async () => ["squad-1"]),
     }),
     issueApprovalService: () => mockIssueApprovalService,
     issueReferenceService: () => ({
@@ -103,14 +103,14 @@ type TestActor =
   | {
       type: "board";
       userId: string;
-      companyIds: string[];
+      squadIds: string[];
       source: "local_implicit";
       isInstanceAdmin: boolean;
     }
   | {
       type: "agent";
       agentId: string;
-      companyId: string;
+      squadId: string;
       runId: string | null;
     };
 
@@ -125,7 +125,7 @@ async function createApp(actor?: TestActor) {
     (req as any).actor = actor ?? {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -155,7 +155,7 @@ describe("issue execution policy routes", () => {
     mockIssueService.createChild.mockResolvedValue({
       issue: {
         id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-        companyId: "company-1",
+        squadId: "squad-1",
         identifier: "PAP-1002",
         title: "Child issue",
       },
@@ -179,7 +179,7 @@ describe("issue execution policy routes", () => {
   it("rejects an agent-authored in_review transition without a review path", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -194,7 +194,7 @@ describe("issue execution policy routes", () => {
     const res = await request(await createApp({
       type: "agent",
       agentId: "33333333-3333-4333-8333-333333333333",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: "run-1",
     }))
       .patch("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
@@ -213,7 +213,7 @@ describe("issue execution policy routes", () => {
   it("allows an agent-authored in_review transition with a pending confirmation interaction", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -236,7 +236,7 @@ describe("issue execution policy routes", () => {
     const res = await request(await createApp({
       type: "agent",
       agentId: "33333333-3333-4333-8333-333333333333",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: "run-1",
     }))
       .patch("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
@@ -252,7 +252,7 @@ describe("issue execution policy routes", () => {
   it("allows an agent-authored in_review transition with a typed execution participant", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -281,7 +281,7 @@ describe("issue execution policy routes", () => {
     const res = await request(await createApp({
       type: "agent",
       agentId: "33333333-3333-4333-8333-333333333333",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: "run-1",
     }))
       .patch("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
@@ -306,7 +306,7 @@ describe("issue execution policy routes", () => {
   it("allows an agent-authored in_review transition with a scheduled monitor", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -331,7 +331,7 @@ describe("issue execution policy routes", () => {
     const res = await request(await createApp({
       type: "agent",
       agentId: "33333333-3333-4333-8333-333333333333",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: "run-1",
     }))
       .patch("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
@@ -359,7 +359,7 @@ describe("issue execution policy routes", () => {
   it("allows board-authored in_review repair updates without a review path", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -397,7 +397,7 @@ describe("issue execution policy routes", () => {
     })!;
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "in_review",
       assigneeAgentId: null,
       assigneeUserId: "local-board",
@@ -438,7 +438,7 @@ describe("issue execution policy routes", () => {
   it("triggers a scheduled monitor immediately from the dedicated route", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "in_progress",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -475,7 +475,7 @@ describe("issue execution policy routes", () => {
   it("lets a board user create a child issue with a scheduled monitor", async () => {
     mockIssueService.getById.mockResolvedValue({
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "in_progress",
       assigneeAgentId: "11111111-1111-4111-8111-111111111111",
       assigneeUserId: null,
@@ -520,7 +520,7 @@ describe("issue execution policy routes", () => {
     mockAccessService.hasPermission.mockResolvedValue(true);
     mockIssueService.getById.mockResolvedValue({
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "in_progress",
       assigneeAgentId: "11111111-1111-4111-8111-111111111111",
       assigneeUserId: null,
@@ -534,7 +534,7 @@ describe("issue execution policy routes", () => {
     const res = await request(await createApp({
       type: "agent",
       agentId: "22222222-2222-4222-8222-222222222222",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: "run-1",
     }))
       .post("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/children")
@@ -559,7 +559,7 @@ describe("issue execution policy routes", () => {
     mockAccessService.hasPermission.mockResolvedValue(true);
     mockIssueService.getById.mockResolvedValue({
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "in_progress",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
@@ -573,7 +573,7 @@ describe("issue execution policy routes", () => {
     const res = await request(await createApp({
       type: "agent",
       agentId: "33333333-3333-4333-8333-333333333333",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: "run-1",
     }))
       .post("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/children")

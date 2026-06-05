@@ -112,7 +112,7 @@ If the bundle has no durable signal — no decisions, no risk, no completed work
 
 Before closing the operation issue:
 
-- [ ] The project page reads as wiki content, not as a Slaw status report. A reader new to the company should understand what the project is.
+- [ ] The project page reads as wiki content, not as a Slaw status report. A reader new to the squad should understand what the project is.
 - [ ] `wiki/projects/<slug>/standup.md` exists for the represented project and reads as an executive current-state update, not a raw issue dump.
 - [ ] Decisions section names decisions, not issues — every decision has a one-paragraph rationale and a citation.
 - [ ] The page contains exactly one `current_as_of` (in frontmatter), zero `## [YYYY-MM-DD]` headings (those go to the log).

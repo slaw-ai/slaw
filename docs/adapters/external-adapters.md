@@ -168,7 +168,7 @@ export async function execute(
     ? renderTemplate(String(config.promptTemplate), {
         agentId: agent.id,
         agentName: agent.name,
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         runId: ctx.runId,
         taskId: context.taskId ?? "",
         taskTitle: context.taskTitle ?? "",

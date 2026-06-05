@@ -227,7 +227,7 @@ describe("IssueBlockedNotice", () => {
             assigneeUserId: null,
             activeRecoveryAction: {
               id: "rec-1",
-              companyId: "co-1",
+              squadId: "co-1",
               sourceIssueId: "blocker-1",
               recoveryIssueId: null,
               kind: "missing_disposition",

@@ -19,12 +19,12 @@ These are aggregated per agent per month (UTC calendar month).
 
 ## Setting Budgets
 
-### Company Budget
+### Squad Budget
 
-Set an overall monthly budget for the company:
+Set an overall monthly budget for the squad:
 
 ```
-PATCH /api/companies/{companyId}
+PATCH /api/squads/{squadId}
 { "budgetMonthlyCents": 100000 }
 ```
 
@@ -52,14 +52,14 @@ An auto-paused agent can be resumed by increasing its budget or waiting for the 
 
 ### Dashboard
 
-The dashboard shows current month spend vs budget for the company and each agent.
+The dashboard shows current month spend vs budget for the squad and each agent.
 
 ### Cost Breakdown API
 
 ```
-GET /api/companies/{companyId}/costs/summary     # Company total
-GET /api/companies/{companyId}/costs/by-agent     # Per-agent breakdown
-GET /api/companies/{companyId}/costs/by-project   # Per-project breakdown
+GET /api/squads/{squadId}/costs/summary     # Squad total
+GET /api/squads/{squadId}/costs/by-agent     # Per-agent breakdown
+GET /api/squads/{squadId}/costs/by-project   # Per-project breakdown
 ```
 
 ## Best Practices
@@ -67,4 +67,4 @@ GET /api/companies/{companyId}/costs/by-project   # Per-project breakdown
 - Set conservative budgets initially and increase as you see results
 - Monitor the dashboard regularly for unexpected cost spikes
 - Use per-agent budgets to limit exposure from any single agent
-- Critical agents (CEO, CTO) may need higher budgets than ICs
+- Critical agents (Squad Lead, CTO) may need higher budgets than ICs

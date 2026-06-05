@@ -23,7 +23,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
     identifier: "PAP-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,
@@ -103,7 +103,7 @@ describe("IssueLinkQuicklook", () => {
             <IssueLinkQuicklook
               issuePathId="PAP-1"
               issuePrefetch={issue}
-              to="/companies/company-1/issues/PAP-1"
+              to="/squads/squad-1/issues/PAP-1"
             >
               PAP-1
             </IssueLinkQuicklook>

@@ -3,7 +3,7 @@ import { formatCents } from "../lib/utils";
 
 export const typeLabel: Record<string, string> = {
   hire_agent: "Hire Agent",
-  approve_ceo_strategy: "CEO Strategy",
+  approve_squad_lead_strategy: "Squad Lead Strategy",
   budget_override_required: "Budget Override",
   request_board_approval: "Board Approval",
 };
@@ -38,7 +38,7 @@ export function approvalLabel(type: string, payload?: Record<string, unknown> | 
 
 export const typeIcon: Record<string, typeof UserPlus> = {
   hire_agent: UserPlus,
-  approve_ceo_strategy: Lightbulb,
+  approve_squad_lead_strategy: Lightbulb,
   budget_override_required: ShieldAlert,
   request_board_approval: ShieldCheck,
 };

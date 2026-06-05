@@ -15,12 +15,12 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
 }));
 
 const mockNavigate = vi.hoisted(() => vi.fn());
-const mockSetSelectedCompanyId = vi.hoisted(() => vi.fn());
+const mockSetSelectedSquadId = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
-const mockCompanyState = vi.hoisted(() => ({
-  companies: [{ id: "company-1", issuePrefix: "PAP", name: "Slaw" }],
-  selectedCompany: { id: "company-1", issuePrefix: "PAP", name: "Slaw" },
-  selectedCompanyId: "company-1",
+const mockSquadState = vi.hoisted(() => ({
+  squads: [{ id: "squad-1", issuePrefix: "PAP", name: "Slaw" }],
+  selectedSquad: { id: "squad-1", issuePrefix: "PAP", name: "Slaw" },
+  selectedSquadId: "squad-1",
 }));
 const mockPluginSlots = vi.hoisted(() => ({
   slots: [] as Array<Record<string, unknown>>,
@@ -41,22 +41,22 @@ vi.mock("@/lib/router", () => ({
   useParams: () => {
     const [firstSegment, secondSegment] = currentPathname.split("/").filter(Boolean);
     return {
-      companyPrefix: firstSegment === "instance" ? undefined : firstSegment ?? "PAP",
+      squadPrefix: firstSegment === "instance" ? undefined : firstSegment ?? "PAP",
       pluginRoutePath: firstSegment === "instance" ? undefined : secondSegment,
     };
   },
 }));
 
 vi.mock("./Sidebar", () => ({
-  Sidebar: () => <div>Main company nav</div>,
+  Sidebar: () => <div>Main squad nav</div>,
 }));
 
 vi.mock("./InstanceSidebar", () => ({
   InstanceSidebar: () => <div>Instance sidebar</div>,
 }));
 
-vi.mock("./CompanySettingsSidebar", () => ({
-  CompanySettingsSidebar: () => <div>Company settings sidebar</div>,
+vi.mock("./SquadSettingsSidebar", () => ({
+  SquadSettingsSidebar: () => <div>Squad settings sidebar</div>,
 }));
 
 vi.mock("./BreadcrumbBar", () => ({
@@ -155,14 +155,14 @@ vi.mock("../context/PanelContext", () => ({
   }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    companies: mockCompanyState.companies,
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    squads: mockSquadState.squads,
     loading: false,
-    selectedCompany: mockCompanyState.selectedCompany,
-    selectedCompanyId: mockCompanyState.selectedCompanyId,
+    selectedSquad: mockSquadState.selectedSquad,
+    selectedSquadId: mockSquadState.selectedSquadId,
     selectionSource: "manual",
-    setSelectedCompanyId: mockSetSelectedCompanyId,
+    setSelectedSquadId: mockSetSelectedSquadId,
   }),
 }));
 
@@ -179,8 +179,8 @@ vi.mock("../hooks/useKeyboardShortcuts", () => ({
   useKeyboardShortcuts: () => undefined,
 }));
 
-vi.mock("../hooks/useCompanyPageMemory", () => ({
-  useCompanyPageMemory: () => undefined,
+vi.mock("../hooks/useSquadPageMemory", () => ({
+  useSquadPageMemory: () => undefined,
 }));
 
 vi.mock("../api/health", () => ({
@@ -191,8 +191,8 @@ vi.mock("../api/instanceSettings", () => ({
   instanceSettingsApi: mockInstanceSettingsApi,
 }));
 
-vi.mock("../lib/company-selection", () => ({
-  shouldSyncCompanySelectionFromRoute: () => false,
+vi.mock("../lib/squad-selection", () => ({
+  shouldSyncSquadSelectionFromRoute: () => false,
 }));
 
 vi.mock("../lib/instance-settings", () => ({
@@ -230,9 +230,9 @@ describe("Layout", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     currentPathname = "/PAP/dashboard";
-    mockCompanyState.companies = [{ id: "company-1", issuePrefix: "PAP", name: "Slaw" }];
-    mockCompanyState.selectedCompany = { id: "company-1", issuePrefix: "PAP", name: "Slaw" };
-    mockCompanyState.selectedCompanyId = "company-1";
+    mockSquadState.squads = [{ id: "squad-1", issuePrefix: "PAP", name: "Slaw" }];
+    mockSquadState.selectedSquad = { id: "squad-1", issuePrefix: "PAP", name: "Slaw" };
+    mockSquadState.selectedSquadId = "squad-1";
     mockHealthApi.get.mockResolvedValue({
       status: "ok",
       deploymentMode: "authenticated",
@@ -273,7 +273,7 @@ describe("Layout", () => {
     expect(mockHealthApi.get).toHaveBeenCalled();
     expect(container.textContent).toContain("Breadcrumbs");
     expect(container.textContent).toContain("Outlet content");
-    expect(container.textContent).not.toContain("Company rail");
+    expect(container.textContent).not.toContain("Squad rail");
     expect(container.textContent).not.toContain("Authenticated private");
     expect(container.textContent).not.toContain(
       "Sign-in is required and this instance is intended for private-network access.",
@@ -284,15 +284,15 @@ describe("Layout", () => {
     });
   });
 
-  it("renders the company settings sidebar on company settings routes", async () => {
-    currentPathname = "/PAP/company/settings/access";
+  it("renders the squad settings sidebar on squad settings routes", async () => {
+    currentPathname = "/PAP/squad/settings/access";
     mockPluginSlots.slots = [
       {
         type: "page",
-        id: "company-page",
-        displayName: "Company Page",
-        exportName: "CompanyPage",
-        routePath: "company",
+        id: "squad-page",
+        displayName: "Squad Page",
+        exportName: "SquadPage",
+        routePath: "squad",
         pluginId: "plugin-1",
         pluginKey: "fake-plugin",
         pluginDisplayName: "Fake Plugin",
@@ -300,10 +300,10 @@ describe("Layout", () => {
       },
       {
         type: "routeSidebar",
-        id: "company-sidebar",
-        displayName: "Company Route Sidebar",
-        exportName: "CompanySidebar",
-        routePath: "company",
+        id: "squad-sidebar",
+        displayName: "Squad Route Sidebar",
+        exportName: "SquadSidebar",
+        routePath: "squad",
         pluginId: "plugin-1",
         pluginKey: "fake-plugin",
         pluginDisplayName: "Fake Plugin",
@@ -325,10 +325,10 @@ describe("Layout", () => {
     await flushReact();
     await flushReact();
 
-    expect(container.textContent).toContain("Company settings sidebar");
-    expect(container.textContent).not.toContain("Company rail");
+    expect(container.textContent).toContain("Squad settings sidebar");
+    expect(container.textContent).not.toContain("Squad rail");
     expect(container.textContent).not.toContain("Instance sidebar");
-    expect(container.textContent).not.toContain("Main company nav");
+    expect(container.textContent).not.toContain("Main squad nav");
     expect(container.textContent).not.toContain("Plugin route sidebar");
 
     await act(async () => {
@@ -336,8 +336,8 @@ describe("Layout", () => {
     });
   });
 
-  it("renders a mobile company settings selector on company settings routes", async () => {
-    currentPathname = "/PAP/company/settings/secrets";
+  it("renders a mobile squad settings selector on squad settings routes", async () => {
+    currentPathname = "/PAP/squad/settings/secrets";
     mockSidebarState.isMobile = true;
     mockSidebarState.sidebarOpen = false;
     const root = createRoot(container);
@@ -388,9 +388,9 @@ describe("Layout", () => {
     await flushReact();
 
     expect(container.textContent).toContain("Instance sidebar");
-    expect(container.textContent).not.toContain("Company rail");
-    expect(container.textContent).not.toContain("Company settings sidebar");
-    expect(container.textContent).not.toContain("Main company nav");
+    expect(container.textContent).not.toContain("Squad rail");
+    expect(container.textContent).not.toContain("Squad settings sidebar");
+    expect(container.textContent).not.toContain("Main squad nav");
     expect(container.textContent).not.toContain("Plugin route sidebar");
 
     await act(async () => {
@@ -441,8 +441,8 @@ describe("Layout", () => {
 
     expect(container.textContent).toContain("Plugin route sidebar: Wiki Sidebar");
     expect(container.querySelector("[data-plugin-slot-class='h-full w-full']")).not.toBeNull();
-    expect(container.textContent).not.toContain("Main company nav");
-    expect(container.textContent).not.toContain("Company settings sidebar");
+    expect(container.textContent).not.toContain("Main squad nav");
+    expect(container.textContent).not.toContain("Squad settings sidebar");
     expect(container.textContent).not.toContain("Instance sidebar");
 
     await act(async () => {
@@ -493,26 +493,26 @@ describe("Layout", () => {
 
     expect(mockUsePluginSlots).toHaveBeenCalledWith(
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         enabled: true,
       }),
     );
     expect(container.textContent).toContain("Plugin route sidebar: Wiki Sidebar");
-    expect(container.textContent).not.toContain("Main company nav");
+    expect(container.textContent).not.toContain("Main squad nav");
 
     await act(async () => {
       root.unmount();
     });
   });
 
-  it("uses the route company context for plugin route sidebars on the first render", async () => {
+  it("uses the route squad context for plugin route sidebars on the first render", async () => {
     currentPathname = "/ALT/wiki";
-    mockCompanyState.companies = [
-      { id: "company-1", issuePrefix: "PAP", name: "Slaw" },
-      { id: "company-2", issuePrefix: "ALT", name: "Alternate" },
+    mockSquadState.squads = [
+      { id: "squad-1", issuePrefix: "PAP", name: "Slaw" },
+      { id: "squad-2", issuePrefix: "ALT", name: "Alternate" },
     ];
-    mockCompanyState.selectedCompany = { id: "company-1", issuePrefix: "PAP", name: "Slaw" };
-    mockCompanyState.selectedCompanyId = "company-1";
+    mockSquadState.selectedSquad = { id: "squad-1", issuePrefix: "PAP", name: "Slaw" };
+    mockSquadState.selectedSquadId = "squad-1";
     mockPluginSlots.slots = [
       {
         type: "page",
@@ -554,17 +554,17 @@ describe("Layout", () => {
 
     expect(mockUsePluginSlots).toHaveBeenCalledWith(
       expect.objectContaining({
-        companyId: "company-2",
+        squadId: "squad-2",
         enabled: true,
       }),
     );
     expect(mockPluginSlotContexts).toContainEqual({
-      companyId: "company-2",
-      companyPrefix: "ALT",
+      squadId: "squad-2",
+      squadPrefix: "ALT",
     });
     expect(mockPluginSlotContexts).not.toContainEqual({
-      companyId: "company-1",
-      companyPrefix: "PAP",
+      squadId: "squad-1",
+      squadPrefix: "PAP",
     });
 
     await act(async () => {
@@ -572,7 +572,7 @@ describe("Layout", () => {
     });
   });
 
-  it("keeps the normal company sidebar when a plugin page route is ambiguous", async () => {
+  it("keeps the normal squad sidebar when a plugin page route is ambiguous", async () => {
     currentPathname = "/PAP/wiki";
     mockPluginSlots.slots = [
       {
@@ -624,7 +624,7 @@ describe("Layout", () => {
     await flushReact();
     await flushReact();
 
-    expect(container.textContent).toContain("Main company nav");
+    expect(container.textContent).toContain("Main squad nav");
     expect(container.textContent).not.toContain("Plugin route sidebar");
 
     await act(async () => {

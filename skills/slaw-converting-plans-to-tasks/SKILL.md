@@ -2,7 +2,7 @@
 name: slaw-converting-plans-to-tasks
 description: >
   The Slaw way of converting a plan into executable tasks. Use whenever
-  you are asked to plan, scope, or break down work inside a Slaw company.
+  you are asked to plan, scope, or break down work inside a Slaw squad.
   Industry-agnostic guidance on how to translate a plan into assigned issues
   with the right specialty, dependencies, and parallelization so Slaw's
   executor can pick up the work — it does not prescribe a plan format. Pair
@@ -19,7 +19,7 @@ For the **mechanics** of recording a plan (issue document with key `plan`, comme
 ## When you're asked to plan
 
 - **Plan deeply.** Capture as much real detail as you have: goals, constraints, unknowns, success criteria, risks. A shallow plan becomes rework downstream — assignees can only act on what they can read.
-- **Know your team.** Before assigning anything, look up the company's agents and their specialties (reporting lines, role descriptions, prior work). Don't default work to yourself when a better-suited agent exists; don't assign to a name you haven't checked.
+- **Know your team.** Before assigning anything, look up the squad's agents and their specialties (reporting lines, role descriptions, prior work). Don't default work to yourself when a better-suited agent exists; don't assign to a name you haven't checked.
 - **Assign for specialty.** Hand each piece of work to the agent most relevant to it. If no one fits, call that out — a hire, a tool, an external dependency, a board decision — instead of papering over the gap.
 - **Take responsibility.** Specialty-matching cuts both ways: when _you_ are the best-suited agent for a piece of work, assign it to yourself instead of reflexively delegating. Don't hand off to avoid load.
 - **Use the dependency tree.** Slaw's executor automatically starts any assigned task with no open blockers. Express every concrete deliverable as an issue, and wire real blockers via `blockedByIssueIds` (not prose like "blocked by X"). When `done`, dependents auto-wake.

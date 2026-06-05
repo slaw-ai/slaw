@@ -33,7 +33,7 @@ export type IssueWorkProductReviewState =
 
 export interface IssueWorkProduct {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   issueId: string;
   executionWorkspaceId: string | null;

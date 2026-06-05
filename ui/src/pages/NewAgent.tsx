@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "@/lib/router";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { agentsApi } from "../api/agents";
-import { companySkillsApi } from "../api/companySkills";
+import { squadSkillsApi } from "../api/squadSkills";
 import { queryKeys } from "../lib/queryKeys";
 import { AGENT_ROLES, type AdapterEnvironmentTestResult } from "@slaw/shared";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ function createValuesForAdapterType(
 }
 
 export function NewAgent() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -82,19 +82,19 @@ export function NewAgent() {
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
-  const { data: companySkills } = useQuery({
-    queryKey: queryKeys.companySkills.list(selectedCompanyId ?? ""),
-    queryFn: () => companySkillsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+  const { data: squadSkills } = useQuery({
+    queryKey: queryKeys.squadSkills.list(selectedSquadId ?? ""),
+    queryFn: () => squadSkillsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
 
   const isFirstAgent = !agents || agents.length === 0;
-  const effectiveRole = isFirstAgent ? "ceo" : role;
+  const effectiveRole = isFirstAgent ? "squad_lead" : role;
 
   useEffect(() => {
     setBreadcrumbs([
@@ -105,8 +105,8 @@ export function NewAgent() {
 
   useEffect(() => {
     if (isFirstAgent) {
-      if (!name) setName("CEO");
-      if (!title) setTitle("CEO");
+      if (!name) setName("Squad Lead");
+      if (!title) setTitle("Squad Lead");
     }
   }, [isFirstAgent]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -122,10 +122,10 @@ export function NewAgent() {
 
   const createAgent = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      agentsApi.hire(selectedCompanyId!, data),
+      agentsApi.hire(selectedSquadId!, data),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedSquadId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedSquadId!) });
       navigate(agentUrl(result.agent));
     },
     onError: (error) => {
@@ -139,7 +139,7 @@ export function NewAgent() {
   }
 
   function handleSubmit() {
-    if (!selectedCompanyId || !name.trim()) return;
+    if (!selectedSquadId || !name.trim()) return;
     setFormError(null);
     if (configValues.adapterType === "opencode_local") {
       if (!isValidOpenCodeModelId(configValues.model)) {
@@ -160,7 +160,7 @@ export function NewAgent() {
     );
   }
 
-  const availableSkills = (companySkills ?? []).filter((skill) => !skill.key.startsWith("slaw/slaw/"));
+  const availableSkills = (squadSkills ?? []).filter((skill) => !skill.key.startsWith("slaw/slaw/"));
 
   function toggleSkill(key: string, checked: boolean) {
     setSelectedSkillKeys((prev) => {
@@ -269,14 +269,14 @@ export function NewAgent() {
         <div className="border-t border-border px-4 py-4">
           <div className="space-y-3">
             <div>
-              <h2 className="text-sm font-medium">Company skills</h2>
+              <h2 className="text-sm font-medium">Squad skills</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Optional skills from the company library. Built-in Slaw runtime skills are added automatically.
+                Optional skills from the squad library. Built-in Slaw runtime skills are added automatically.
               </p>
             </div>
             {availableSkills.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No optional company skills installed yet.
+                No optional squad skills installed yet.
               </p>
             ) : (
               <div className="space-y-3">
@@ -307,7 +307,7 @@ export function NewAgent() {
         {/* Footer */}
         <div className="border-t border-border px-4 py-3">
           {isFirstAgent && (
-            <p className="text-xs text-muted-foreground mb-2">This will be the CEO</p>
+            <p className="text-xs text-muted-foreground mb-2">This will be the Squad Lead</p>
           )}
           {formError && (
             <p className="text-xs text-destructive mb-2">{formError}</p>

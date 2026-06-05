@@ -81,7 +81,7 @@ function createEnvironment() {
   const now = new Date("2026-04-16T05:00:00.000Z");
   return {
     id: "env-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Local",
     description: "Current development machine",
     driver: "local",
@@ -205,7 +205,7 @@ describe("environment routes", () => {
     mockListReadyPluginEnvironmentDrivers.mockResolvedValue([]);
   });
 
-  it("lists company-scoped environments", async () => {
+  it("lists squad-scoped environments", async () => {
     mockEnvironmentService.list.mockResolvedValue([createEnvironment()]);
     const app = createApp({
       type: "board",
@@ -213,24 +213,24 @@ describe("environment routes", () => {
       source: "local_implicit",
     });
 
-    const res = await request(app).get("/api/companies/company-1/environments?driver=local");
+    const res = await request(app).get("/api/squads/squad-1/environments?driver=local");
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
-    expect(mockEnvironmentService.list).toHaveBeenCalledWith("company-1", {
+    expect(mockEnvironmentService.list).toHaveBeenCalledWith("squad-1", {
       status: undefined,
       driver: "local",
     });
   });
 
-  it("returns provider capabilities for the company", async () => {
+  it("returns provider capabilities for the squad", async () => {
     const app = createApp({
       type: "board",
       userId: "user-1",
       source: "local_implicit",
     });
 
-    const res = await request(app).get("/api/companies/company-1/environments/capabilities");
+    const res = await request(app).get("/api/squads/squad-1/environments/capabilities");
 
     expect(res.status).toBe(200);
     expect(res.body.drivers.ssh).toBe("supported");
@@ -261,7 +261,7 @@ describe("environment routes", () => {
       source: "local_implicit",
     });
 
-    const res = await request(app).get("/api/companies/company-1/environments/capabilities");
+    const res = await request(app).get("/api/squads/squad-1/environments/capabilities");
 
     expect(res.status).toBe(200);
     expect(res.body.sandboxProviders["secure-plugin"]).toMatchObject({
@@ -288,7 +288,7 @@ describe("environment routes", () => {
     mockEnvironmentService.list.mockResolvedValue([createEnvironment()]);
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "engineer",
       permissions: { canCreateAgents: false },
     });
@@ -296,12 +296,12 @@ describe("environment routes", () => {
     const app = createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
 
-    const res = await request(app).get("/api/companies/company-1/environments");
+    const res = await request(app).get("/api/squads/squad-1/environments");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -319,7 +319,7 @@ describe("environment routes", () => {
     mockEnvironmentService.getById.mockResolvedValue(createEnvironment());
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "cto",
       permissions: { canCreateAgents: true },
     });
@@ -327,7 +327,7 @@ describe("environment routes", () => {
     const app = createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
@@ -344,7 +344,7 @@ describe("environment routes", () => {
     mockEnvironmentService.getById.mockResolvedValue(createEnvironment());
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "engineer",
       permissions: { canCreateAgents: false },
     });
@@ -352,7 +352,7 @@ describe("environment routes", () => {
     const app = createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
@@ -375,7 +375,7 @@ describe("environment routes", () => {
     const environment = createEnvironment();
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "cto",
       permissions: { canCreateAgents: true },
     });
@@ -384,13 +384,13 @@ describe("environment routes", () => {
     const app = createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Local",
         driver: "local",
@@ -399,7 +399,7 @@ describe("environment routes", () => {
       });
 
     expect(res.status).toBe(201);
-    expect(mockEnvironmentService.create).toHaveBeenCalledWith("company-1", {
+    expect(mockEnvironmentService.create).toHaveBeenCalledWith("squad-1", {
       name: "Local",
       driver: "local",
       description: "Current development machine",
@@ -409,7 +409,7 @@ describe("environment routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         actorType: "agent",
         actorId: "agent-1",
         agentId: "agent-1",
@@ -430,7 +430,7 @@ describe("environment routes", () => {
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Another Local",
         driver: "local",
@@ -438,7 +438,7 @@ describe("environment routes", () => {
       });
 
     expect(res.status).toBe(409);
-    expect(res.body.error).toBe("A local environment already exists for this company.");
+    expect(res.body.error).toBe("A local environment already exists for this squad.");
     expect(mockEnvironmentService.create).not.toHaveBeenCalled();
   });
 
@@ -450,12 +450,12 @@ describe("environment routes", () => {
       type: "board",
       userId: "user-1",
       source: "session",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       isInstanceAdmin: false,
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Local",
         driver: "local",
@@ -464,7 +464,7 @@ describe("environment routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockAccessService.canUser).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "user-1",
       "environments:manage",
     );
@@ -476,12 +476,12 @@ describe("environment routes", () => {
       type: "board",
       userId: "user-1",
       source: "session",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       isInstanceAdmin: false,
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Local",
         driver: "local",
@@ -497,7 +497,7 @@ describe("environment routes", () => {
     const environment = createEnvironment();
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "engineer",
       permissions: { canCreateAgents: false },
     });
@@ -506,13 +506,13 @@ describe("environment routes", () => {
     const app = createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Local",
         driver: "local",
@@ -521,7 +521,7 @@ describe("environment routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockAccessService.hasPermission).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "agent",
       "agent-1",
       "environments:manage",
@@ -536,7 +536,7 @@ describe("environment routes", () => {
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "SSH Fixture",
         driver: "ssh",
@@ -581,7 +581,7 @@ describe("environment routes", () => {
     }, { pluginWorkerManager });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "SSH Fixture",
         driver: "ssh",
@@ -594,7 +594,7 @@ describe("environment routes", () => {
       });
 
     expect(res.status).toBe(201);
-    expect(mockEnvironmentService.create).toHaveBeenCalledWith("company-1", expect.objectContaining({
+    expect(mockEnvironmentService.create).toHaveBeenCalledWith("squad-1", expect.objectContaining({
       config: expect.objectContaining({
         privateKey: null,
         privateKeySecretRef: {
@@ -606,7 +606,7 @@ describe("environment routes", () => {
     }));
     expect(JSON.stringify(mockEnvironmentService.create.mock.calls[0][1])).not.toContain("super-secret-key");
     expect(mockSecretService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         provider: "local_encrypted",
         value: "super-secret-key",
@@ -645,7 +645,7 @@ describe("environment routes", () => {
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "SSH Fixture",
         driver: "ssh",
@@ -659,7 +659,7 @@ describe("environment routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockSecretService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         provider: "aws_secrets_manager",
         value: "super-secret-key",
@@ -676,7 +676,7 @@ describe("environment routes", () => {
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Fake Sandbox",
         driver: "sandbox",
@@ -713,7 +713,7 @@ describe("environment routes", () => {
     }, { pluginWorkerManager });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Fake plugin Sandbox",
         driver: "sandbox",
@@ -736,7 +736,7 @@ describe("environment routes", () => {
         reuseLease: true,
       },
     });
-    expect(mockEnvironmentService.create).toHaveBeenCalledWith("company-1", {
+    expect(mockEnvironmentService.create).toHaveBeenCalledWith("squad-1", {
       name: "Fake plugin Sandbox",
       driver: "sandbox",
       status: "active",
@@ -797,7 +797,7 @@ describe("environment routes", () => {
     }, { pluginWorkerManager });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Secure Sandbox",
         driver: "sandbox",
@@ -822,7 +822,7 @@ describe("environment routes", () => {
         reuseLease: true,
       },
     });
-    expect(mockEnvironmentService.create).toHaveBeenCalledWith("company-1", {
+    expect(mockEnvironmentService.create).toHaveBeenCalledWith("squad-1", {
       name: "Secure Sandbox",
       driver: "sandbox",
       status: "active",
@@ -836,7 +836,7 @@ describe("environment routes", () => {
     });
     expect(JSON.stringify(mockEnvironmentService.create.mock.calls[0][1])).not.toContain("test-provider-key");
     expect(mockSecretService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         provider: "local_encrypted",
         value: "test-provider-key",
@@ -893,7 +893,7 @@ describe("environment routes", () => {
     }, { pluginWorkerManager });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Secure Sandbox",
         driver: "sandbox",
@@ -908,7 +908,7 @@ describe("environment routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockSecretService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         provider: "aws_secrets_manager",
         value: "test-provider-key",
@@ -941,7 +941,7 @@ describe("environment routes", () => {
     }, { pluginWorkerManager });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Plugin Sandbox",
         driver: "plugin",
@@ -966,7 +966,7 @@ describe("environment routes", () => {
         },
       },
     });
-    expect(mockEnvironmentService.create).toHaveBeenCalledWith("company-1", expect.objectContaining({
+    expect(mockEnvironmentService.create).toHaveBeenCalledWith("squad-1", expect.objectContaining({
       config: environment.config,
     }));
   });
@@ -974,7 +974,7 @@ describe("environment routes", () => {
   it("rejects unprivileged agent mutations for shared environments", async () => {
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "engineer",
       permissions: { canCreateAgents: false },
     });
@@ -982,13 +982,13 @@ describe("environment routes", () => {
     const app = createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments")
+      .post("/api/squads/squad-1/environments")
       .send({
         name: "Sandbox host",
         driver: "local",
@@ -999,13 +999,13 @@ describe("environment routes", () => {
     expect(mockEnvironmentService.create).not.toHaveBeenCalled();
   });
 
-  it("lists leases for an environment after company access is confirmed", async () => {
+  it("lists leases for an environment after squad access is confirmed", async () => {
     const environment = createEnvironment();
     mockEnvironmentService.getById.mockResolvedValue(environment);
     mockEnvironmentService.listLeases.mockResolvedValue([
       {
         id: "lease-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         environmentId: environment.id,
         executionWorkspaceId: "workspace-1",
         issueId: null,
@@ -1035,10 +1035,10 @@ describe("environment routes", () => {
     });
   });
 
-  it("returns a single lease after company access is confirmed", async () => {
+  it("returns a single lease after squad access is confirmed", async () => {
     mockEnvironmentService.getLeaseById.mockResolvedValue({
       id: "lease-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       executionWorkspaceId: "workspace-1",
       issueId: null,
@@ -1070,20 +1070,20 @@ describe("environment routes", () => {
     expect(mockEnvironmentService.getLeaseById).toHaveBeenCalledWith("lease-1");
   });
 
-  it("rejects cross-company agent access", async () => {
+  it("rejects cross-squad agent access", async () => {
     mockEnvironmentService.list.mockResolvedValue([]);
     const app = createApp({
       type: "agent",
       agentId: "agent-2",
-      companyId: "company-2",
+      squadId: "squad-2",
       source: "agent_key",
       runId: "run-2",
     });
 
-    const res = await request(app).get("/api/companies/company-1/environments");
+    const res = await request(app).get("/api/squads/squad-1/environments");
 
     expect(res.status).toBe(403);
-    expect(res.body.error).toContain("another company");
+    expect(res.body.error).toContain("another squad");
     expect(mockEnvironmentService.list).not.toHaveBeenCalled();
   });
 
@@ -1276,7 +1276,7 @@ describe("environment routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         action: "environment.probed",
         entityType: "environment",
         entityId: environment.id,
@@ -1330,7 +1330,7 @@ describe("environment routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         action: "environment.probed",
         entityType: "environment",
         entityId: environment.id,
@@ -1358,7 +1358,7 @@ describe("environment routes", () => {
     }, { pluginWorkerManager });
 
     const res = await request(app)
-      .post("/api/companies/company-1/environments/probe-config")
+      .post("/api/squads/squad-1/environments/probe-config")
       .send({
         name: "Draft Fake plugin",
         driver: "sandbox",

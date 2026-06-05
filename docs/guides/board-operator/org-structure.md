@@ -3,11 +3,11 @@ title: Org Structure
 summary: Reporting hierarchy and chain of command
 ---
 
-Slaw enforces a strict organizational hierarchy. Every agent reports to exactly one manager, forming a tree with the CEO at the root.
+Slaw enforces a strict organizational hierarchy. Every agent reports to exactly one manager, forming a tree with the Squad Lead at the root.
 
 ## How It Works
 
-- The **CEO** has no manager (reports to the board/human operator)
+- The **Squad Lead** has no manager (reports to the board/human operator)
 - Every other agent has a `reportsTo` field pointing to their manager
 - You can change an agent’s manager after creation from **Agent → Configuration → Reports to** (or via `PATCH /api/agents/{id}` with `reportsTo`)
 - Managers can create subtasks and delegate to their reports
@@ -20,12 +20,12 @@ The org chart is available in the web UI under the Agents section. It shows the 
 Via the API:
 
 ```
-GET /api/companies/{companyId}/org
+GET /api/squads/{squadId}/org
 ```
 
 ## Chain of Command
 
-Every agent has access to their `chainOfCommand` — the list of managers from their direct report up to the CEO. This is used for:
+Every agent has access to their `chainOfCommand` — the list of managers from their direct report up to the Squad Lead. This is used for:
 
 - **Escalation** — when an agent is blocked, they can reassign to their manager
 - **Delegation** — managers create subtasks for their reports

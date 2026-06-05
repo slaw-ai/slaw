@@ -27,7 +27,7 @@ import { documentAnnotationsApi } from "@/api/document-annotations";
 import { MarkdownBody } from "./MarkdownBody";
 import type { PendingAnchor } from "./DocumentAnnotationLayer";
 import type { Agent } from "@slaw/shared";
-import type { CompanyUserProfile } from "@/lib/company-members";
+import type { SquadUserProfile } from "@/lib/squad-members";
 
 type AnnotationFilter = "open" | "resolved" | "stale" | "orphan";
 
@@ -65,7 +65,7 @@ export interface AnnotationPanelProps {
   /** Resolve `<authorAgentId>` to a display name. */
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
   /** Resolve `<authorUserId>` to a display name. */
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
 }
 
 export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
@@ -366,7 +366,7 @@ function ThreadCard(props: {
   pendingReply: boolean;
   pendingStatus: boolean;
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
 }) {
   const { thread } = props;
   const statusVariant: { variant: "default" | "outline" | "secondary"; label: string } =
@@ -507,7 +507,7 @@ function CommentRow({
   comment: DocumentAnnotationComment;
   focused: boolean;
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
 }) {
   const author = resolveAuthor(comment, { agentMap, userProfileMap });
   return (
@@ -537,7 +537,7 @@ function resolveAuthor(
   comment: DocumentAnnotationComment,
   maps: {
     agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
-    userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
+    userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
   },
 ): { name: string; role: "board" | "agent" } {
   if (comment.authorAgentId) {

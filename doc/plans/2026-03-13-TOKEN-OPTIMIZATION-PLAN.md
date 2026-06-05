@@ -133,7 +133,7 @@ Current repo skill sizes:
 - `skills/slaw-create-agent/SKILL.md`: 4,718 bytes
 - `skills/para-memory-files/SKILL.md`: 3,978 bytes
 
-That is nearly 58 KB of skill markdown before any company-specific instructions.
+That is nearly 58 KB of skill markdown before any squad-specific instructions.
 
 Not all of that is necessarily loaded into model context every run, but it increases startup surface area and should be treated as a token budget concern.
 

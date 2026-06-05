@@ -499,7 +499,7 @@ Tasks:
 
 - accept and validate project execution workspace policy
 - return it from project API payloads
-- enforce company scoping as usual
+- enforce squad scoping as usual
 
 ### 5. Issue service create/update path
 

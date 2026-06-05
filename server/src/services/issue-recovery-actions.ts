@@ -17,7 +17,7 @@ type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
 
 export type UpsertIssueRecoveryActionInput = {
-  companyId: string;
+  squadId: string;
   sourceIssueId: string;
   recoveryIssueId?: string | null;
   kind: IssueRecoveryActionKind;
@@ -38,7 +38,7 @@ export type UpsertIssueRecoveryActionInput = {
 };
 
 export type ResolveIssueRecoveryActionInput = {
-  companyId: string;
+  squadId: string;
   sourceIssueId: string;
   actionId?: string | null;
   status: Extract<IssueRecoveryActionStatus, "resolved" | "cancelled">;
@@ -49,7 +49,7 @@ export type ResolveIssueRecoveryActionInput = {
 function toReadModel(row: IssueRecoveryActionRow): IssueRecoveryAction {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     sourceIssueId: row.sourceIssueId,
     recoveryIssueId: row.recoveryIssueId,
     kind: row.kind as IssueRecoveryAction["kind"],
@@ -100,7 +100,7 @@ export function issueRecoveryActionService(db: Db) {
     input: UpsertIssueRecoveryActionInput,
     task: () => Promise<T>,
   ): Promise<T> {
-    const key = `${input.companyId}:${input.sourceIssueId}`;
+    const key = `${input.squadId}:${input.sourceIssueId}`;
     const previous = upsertQueues.get(key) ?? Promise.resolve();
     let release: () => void = () => {};
     const current = new Promise<void>((resolve) => {
@@ -120,13 +120,13 @@ export function issueRecoveryActionService(db: Db) {
     }
   }
 
-  async function getActiveForIssue(companyId: string, sourceIssueId: string): Promise<IssueRecoveryAction | null> {
+  async function getActiveForIssue(squadId: string, sourceIssueId: string): Promise<IssueRecoveryAction | null> {
     const row = await db
       .select()
       .from(issueRecoveryActions)
       .where(
         and(
-          eq(issueRecoveryActions.companyId, companyId),
+          eq(issueRecoveryActions.squadId, squadId),
           eq(issueRecoveryActions.sourceIssueId, sourceIssueId),
           inArray(issueRecoveryActions.status, [...ACTIVE_RECOVERY_ACTION_STATUSES]),
         ),
@@ -137,14 +137,14 @@ export function issueRecoveryActionService(db: Db) {
     return row ? toReadModel(row) : null;
   }
 
-  async function listActiveForIssues(companyId: string, sourceIssueIds: string[]) {
+  async function listActiveForIssues(squadId: string, sourceIssueIds: string[]) {
     if (sourceIssueIds.length === 0) return new Map<string, IssueRecoveryAction>();
     const rows = await db
       .select()
       .from(issueRecoveryActions)
       .where(
         and(
-          eq(issueRecoveryActions.companyId, companyId),
+          eq(issueRecoveryActions.squadId, squadId),
           inArray(issueRecoveryActions.sourceIssueId, [...new Set(sourceIssueIds)]),
           inArray(issueRecoveryActions.status, [...ACTIVE_RECOVERY_ACTION_STATUSES]),
         ),
@@ -175,7 +175,7 @@ export function issueRecoveryActionService(db: Db) {
     input: UpsertIssueRecoveryActionInput,
     retryCount = 0,
   ): Promise<IssueRecoveryAction> {
-    const existing = await getActiveForIssue(input.companyId, input.sourceIssueId);
+    const existing = await getActiveForIssue(input.squadId, input.sourceIssueId);
     const now = new Date();
     const ownerType = input.ownerType ?? (input.ownerAgentId ? "agent" : "board");
     if (existing) {
@@ -222,7 +222,7 @@ export function issueRecoveryActionService(db: Db) {
       const [created] = await db
         .insert(issueRecoveryActions)
         .values({
-          companyId: input.companyId,
+          squadId: input.squadId,
           sourceIssueId: input.sourceIssueId,
           recoveryIssueId: input.recoveryIssueId ?? null,
           kind: input.kind,
@@ -263,7 +263,7 @@ export function issueRecoveryActionService(db: Db) {
   ): Promise<IssueRecoveryAction | null> {
     const now = new Date();
     const predicates = [
-      eq(issueRecoveryActions.companyId, input.companyId),
+      eq(issueRecoveryActions.squadId, input.squadId),
       eq(issueRecoveryActions.sourceIssueId, input.sourceIssueId),
       inArray(issueRecoveryActions.status, [...ACTIVE_RECOVERY_ACTION_STATUSES]),
     ];

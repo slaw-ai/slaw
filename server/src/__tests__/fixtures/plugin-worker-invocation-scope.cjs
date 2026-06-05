@@ -11,13 +11,13 @@ function sendNestedHostRequest(originalRequest, invocationId) {
   const nestedId = `nested-${nextRequestId++}`;
   const params = originalRequest.params?.params ?? {};
   const mode = params.mode;
-  const requestedCompanyId = params.requestedCompanyId;
+  const requestedSquadId = params.requestedSquadId;
   const nestedRequest = {
     jsonrpc: "2.0",
     id: nestedId,
-    method: "companies.get",
+    method: "squads.get",
     params: {
-      companyId: requestedCompanyId,
+      squadId: requestedSquadId,
     },
   };
 

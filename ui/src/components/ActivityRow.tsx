@@ -6,7 +6,7 @@ import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
 import { formatActivityVerb } from "../lib/activity-format";
 import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@slaw/shared";
-import type { CompanyUserProfile } from "../lib/company-members";
+import type { SquadUserProfile } from "../lib/squad-members";
 
 function entityLink(entityType: string, entityId: string, name?: string | null): string | null {
   switch (entityType) {
@@ -22,7 +22,7 @@ function entityLink(entityType: string, entityId: string, name?: string | null):
 interface ActivityRowProps {
   event: ActivityEvent;
   agentMap: Map<string, Agent>;
-  userProfileMap?: Map<string, CompanyUserProfile>;
+  userProfileMap?: Map<string, SquadUserProfile>;
   entityNameMap: Map<string, string>;
   entityTitleMap?: Map<string, string>;
   className?: string;

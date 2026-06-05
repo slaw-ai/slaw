@@ -29,7 +29,7 @@ type BundleMode = "managed" | "external";
 
 type AgentLike = {
   id: string;
-  companyId: string;
+  squadId: string;
   name: string;
   adapterConfig: unknown;
 };
@@ -52,7 +52,7 @@ type AgentInstructionsFileDetail = AgentInstructionsFileSummary & {
 
 type AgentInstructionsBundle = {
   agentId: string;
-  companyId: string;
+  squadId: string;
   mode: BundleMode | null;
   rootPath: string | null;
   managedRootPath: string;
@@ -133,8 +133,8 @@ function resolvePathWithinRoot(rootPath: string, relativePath: string): string {
 function resolveManagedInstructionsRoot(agent: AgentLike): string {
   return path.resolve(
     resolveSlawInstanceRoot(),
-    "companies",
-    agent.companyId,
+    "squads",
+    agent.squadId,
     "agents",
     agent.id,
     "instructions",
@@ -347,7 +347,7 @@ function toBundle(agent: AgentLike, state: BundleState, files: AgentInstructions
   nextFiles.sort((left, right) => left.path.localeCompare(right.path));
   return {
     agentId: agent.id,
-    companyId: agent.companyId,
+    squadId: agent.squadId,
     mode: state.mode,
     rootPath: state.rootPath,
     managedRootPath: resolveManagedInstructionsRoot(agent),

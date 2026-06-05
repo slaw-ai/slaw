@@ -30,30 +30,30 @@ pnpm slaw issue checkout <issue-id> --agent-id <agent-id>
 pnpm slaw issue release <issue-id>
 ```
 
-## Company Commands
+## Squad Commands
 
 ```sh
-pnpm slaw company list
-pnpm slaw company get <company-id>
+pnpm slaw squad list
+pnpm slaw squad get <squad-id>
 
 # Export to portable folder package (writes manifest + markdown files)
-pnpm slaw company export <company-id> --out ./exports/acme --include company,agents
+pnpm slaw squad export <squad-id> --out ./exports/acme --include squad,agents
 
 # Preview import (no writes)
-pnpm slaw company import \
+pnpm slaw squad import \
   <owner>/<repo>/<path> \
   --target existing \
-  --company-id <company-id> \
+  --squad-id <squad-id> \
   --ref main \
   --collision rename \
   --dry-run
 
 # Apply import
-pnpm slaw company import \
+pnpm slaw squad import \
   ./exports/acme \
   --target new \
-  --new-company-name "Acme Imported" \
-  --include company,agents
+  --new-squad-name "Acme Imported" \
+  --include squad,agents
 ```
 
 ## Agent Commands
@@ -66,24 +66,24 @@ pnpm slaw agent get <agent-id>
 ## Skills Commands
 
 ```sh
-# Browse app-shipped catalog skills without changing company state
+# Browse app-shipped catalog skills without changing squad state
 pnpm slaw skills browse [--kind bundled|optional] [--category software-development] [--query github]
 pnpm slaw skills search "pull request" [--json]
 
 # Inspect catalog metadata and file inventory before install
 pnpm slaw skills inspect github-pr-workflow
 
-# Install a catalog skill into the company skill library
+# Install a catalog skill into the squad skill library
 # This does not attach the skill to any agent.
-pnpm slaw skills install github-pr-workflow --company-id <company-id>
-pnpm slaw skills install github-pr-workflow --as pr-flow --force --company-id <company-id>
+pnpm slaw skills install github-pr-workflow --squad-id <squad-id>
+pnpm slaw skills install github-pr-workflow --as pr-flow --force --squad-id <squad-id>
 
 # External sources still use import instead of catalog install
-pnpm slaw skills import ./skills/my-skill --company-id <company-id>
-pnpm slaw skills import owner/repo/path/to/skill --company-id <company-id>
+pnpm slaw skills import ./skills/my-skill --squad-id <squad-id>
+pnpm slaw skills import owner/repo/path/to/skill --squad-id <squad-id>
 
-# Attach desired company skills to an agent after install/import
-pnpm slaw skills agent sync <agent-id> --skill github-pr-workflow --company-id <company-id>
+# Attach desired squad skills to an agent after install/import
+pnpm slaw skills agent sync <agent-id> --skill github-pr-workflow --squad-id <squad-id>
 ```
 
 ## Approval Commands

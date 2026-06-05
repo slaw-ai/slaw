@@ -85,7 +85,7 @@ export async function promptSecrets(current?: SecretsConfig): Promise<SecretsCon
   if (provider !== "local_encrypted") {
     p.note(
       provider === "aws_secrets_manager"
-        ? "AWS credentials must come from the Slaw server runtime (IAM role/workload identity, AWS_PROFILE/SSO/shared credentials, or short-lived shell env), not from Slaw company secrets."
+        ? "AWS credentials must come from the Slaw server runtime (IAM role/workload identity, AWS_PROFILE/SSO/shared credentials, or short-lived shell env), not from Slaw squad secrets."
         : `${provider} is not fully wired in this build yet. Keep local_encrypted unless you are actively implementing that adapter.`,
       "Heads up",
     );

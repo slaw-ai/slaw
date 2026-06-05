@@ -104,7 +104,7 @@ describe("MarkdownBody", () => {
       </QueryClientProvider>,
     );
 
-    expect(html).toContain('href="/company/settings/access"');
+    expect(html).toContain('href="/squad/settings/access"');
     expect(html).toContain('data-mention-kind="user"');
     expect(html).toContain('href="/agents/agent-123"');
     expect(html).toContain('data-mention-kind="agent"');
@@ -389,9 +389,9 @@ describe("MarkdownBody", () => {
   });
 
   it("does not set target on relative internal links", () => {
-    const html = renderMarkdown("[settings](/company/settings)");
+    const html = renderMarkdown("[settings](/squad/settings)");
 
-    expect(html).toContain('href="/company/settings"');
+    expect(html).toContain('href="/squad/settings"');
     expect(html).not.toContain('target="_blank"');
     expect(html).toContain('rel="noreferrer"');
   });
@@ -433,7 +433,7 @@ describe("MarkdownBody", () => {
   });
 
   it("does not render the new-tab icon on internal links", () => {
-    const html = renderMarkdown("[settings](/company/settings)");
+    const html = renderMarkdown("[settings](/squad/settings)");
 
     expect(html).not.toContain("lucide-external-link");
   });

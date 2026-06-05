@@ -87,7 +87,7 @@ describe("useLiveRunTranscripts", () => {
   it("waits for a connecting socket to open before closing it during cleanup", async () => {
     function Harness() {
       useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [{ id: "run-1", status: "running", adapterType: "codex_local" }],
       });
       return null;
@@ -125,7 +125,7 @@ describe("useLiveRunTranscripts", () => {
 
     function Harness() {
       const { hasOutputForRun } = useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [{ id: "run-1", status: "succeeded", adapterType: "codex_local", hasStoredOutput: true }],
       });
       latestHasOutput = hasOutputForRun("run-1");
@@ -162,7 +162,7 @@ describe("useLiveRunTranscripts", () => {
 
     function Harness() {
       const { isInitialHydrating } = useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [{ id: "run-1", status: "succeeded", adapterType: "codex_local" }],
       });
       latestIsInitialHydrating = isInitialHydrating;
@@ -199,7 +199,7 @@ describe("useLiveRunTranscripts", () => {
 
     function Harness() {
       useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [{ id: "run-404", status: "failed", adapterType: "codex_local" }],
       });
       return null;
@@ -232,7 +232,7 @@ describe("useLiveRunTranscripts", () => {
   it("can hydrate active runs without opening the live event socket", async () => {
     function Harness() {
       useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [{ id: "run-1", status: "running", adapterType: "codex_local" }],
         enableRealtimeUpdates: false,
         logReadLimitBytes: 64_000,
@@ -261,7 +261,7 @@ describe("useLiveRunTranscripts", () => {
   it("starts persisted-log hydration from the newest bytes when the visible window is truncated", async () => {
     function Harness() {
       useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [{ id: "run-1", status: "running", adapterType: "codex_local", lastOutputBytes: 100_000 }],
         enableRealtimeUpdates: false,
         logReadLimitBytes: 64_000,
@@ -289,7 +289,7 @@ describe("useLiveRunTranscripts", () => {
   it("rebuilds only the transcript for the run that receives live output", async () => {
     function Harness() {
       useLiveRunTranscripts({
-        companyId: "company-1",
+        squadId: "squad-1",
         runs: [
           { id: "run-1", status: "running", adapterType: "codex_local" },
           { id: "run-2", status: "running", adapterType: "codex_local" },
@@ -316,7 +316,7 @@ describe("useLiveRunTranscripts", () => {
       FakeWebSocket.instances[0]!.onmessage?.(
         new MessageEvent("message", {
           data: JSON.stringify({
-            companyId: "company-1",
+            squadId: "squad-1",
             type: "heartbeat.run.log",
             createdAt: "2026-04-20T00:00:00.000Z",
             payload: {

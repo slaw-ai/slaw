@@ -6,8 +6,8 @@ const mockRegistry = vi.hoisted(() => ({
   getById: vi.fn(),
   getByKey: vi.fn(),
   upsertConfig: vi.fn(),
-  getCompanySettings: vi.fn(),
-  upsertCompanySettings: vi.fn(),
+  getSquadSettings: vi.fn(),
+  upsertSquadSettings: vi.fn(),
 }));
 
 const mockLifecycle = vi.hoisted(() => ({
@@ -96,8 +96,8 @@ function createSelectQueueDb(rows: Array<Array<Record<string, unknown>>>) {
   };
 }
 
-const companyA = "22222222-2222-4222-8222-222222222222";
-const companyB = "33333333-3333-4333-8333-333333333333";
+const squadA = "22222222-2222-4222-8222-222222222222";
+const squadB = "33333333-3333-4333-8333-333333333333";
 const agentA = "44444444-4444-4444-8444-444444444444";
 const runA = "55555555-5555-4555-8555-555555555555";
 const projectA = "66666666-6666-4666-8666-666666666666";
@@ -109,7 +109,7 @@ function boardActor(overrides: Record<string, unknown> = {}) {
     userId: "user-1",
     source: "session",
     isInstanceAdmin: false,
-    companyIds: [companyA],
+    squadIds: [squadA],
     ...overrides,
   };
 }
@@ -118,7 +118,7 @@ function agentActor(overrides: Record<string, unknown> = {}) {
   return {
     type: "agent",
     agentId: agentA,
-    companyId: companyA,
+    squadId: squadA,
     runId: runA,
     source: "agent_jwt",
     ...overrides,
@@ -166,7 +166,7 @@ describe.sequential("plugin install and upgrade authz", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app)
@@ -206,7 +206,7 @@ describe.sequential("plugin install and upgrade authz", () => {
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: true,
-        companyIds: [],
+        squadIds: [],
       },
       { installPlugin: vi.fn().mockResolvedValue(discovered) },
     );
@@ -230,7 +230,7 @@ describe.sequential("plugin install and upgrade authz", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app)
@@ -253,7 +253,7 @@ describe.sequential("plugin install and upgrade authz", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const req = method === "delete" ? request(app).delete(path) : request(app).post(path).send(body);
@@ -288,7 +288,7 @@ describe.sequential("plugin install and upgrade authz", () => {
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
-      companyIds: [companyA],
+      squadIds: [squadA],
     });
 
     const inspectRes = await request(app).get(`/api/plugins/${pluginKey}`);
@@ -315,7 +315,7 @@ describe.sequential("plugin install and upgrade authz", () => {
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
-      companyIds: [companyA],
+      squadIds: [squadA],
     });
 
     const res = await request(app)
@@ -348,7 +348,7 @@ describe.sequential("plugin install and upgrade authz", () => {
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
-      companyIds: [],
+      squadIds: [],
     });
 
     const res = await request(app)
@@ -365,7 +365,7 @@ describe.sequential("scoped plugin API routes", () => {
     vi.clearAllMocks();
   });
 
-  it("dispatches manifest-declared scoped routes after company access checks", async () => {
+  it("dispatches manifest-declared scoped routes after squad access checks", async () => {
     const pluginId = "11111111-1111-4111-8111-111111111111";
     const workerManager = {
       call: vi.fn().mockResolvedValue({
@@ -389,7 +389,7 @@ describe.sequential("scoped plugin API routes", () => {
             path: "/smoke",
             auth: "board-or-agent",
             capability: "api.routes.register",
-            companyResolution: { from: "query", key: "companyId" },
+            squadResolution: { from: "query", key: "squadId" },
           },
         ],
       },
@@ -401,7 +401,7 @@ describe.sequential("scoped plugin API routes", () => {
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: false,
-        companyIds: ["company-1"],
+        squadIds: ["squad-1"],
       },
       {},
       { bridgeDeps: { workerManager } },
@@ -409,7 +409,7 @@ describe.sequential("scoped plugin API routes", () => {
 
     const res = await request(app)
       .get("/api/plugins/slaw.example/api/smoke")
-      .query({ companyId: "company-1" });
+      .query({ squadId: "squad-1" });
 
     expect(res.status).toBe(202);
     expect(res.body).toEqual({ ok: true });
@@ -419,8 +419,8 @@ describe.sequential("scoped plugin API routes", () => {
       expect.objectContaining({
         routeKey: "smoke",
         method: "GET",
-        companyId: "company-1",
-        query: { companyId: "company-1" },
+        squadId: "squad-1",
+        query: { squadId: "squad-1" },
       }),
     );
   }, 20_000);
@@ -429,7 +429,7 @@ describe.sequential("scoped plugin API routes", () => {
 describe.sequential("plugin local folder routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRegistry.getCompanySettings.mockResolvedValue(null);
+    mockRegistry.getSquadSettings.mockResolvedValue(null);
   });
 
   function readyLocalFolderPlugin() {
@@ -459,12 +459,12 @@ describe.sequential("plugin local folder routes", () => {
     const { app } = await createApp(boardActor());
 
     const res = await request(app)
-      .post(`/api/plugins/${pluginId}/companies/${companyA}/local-folders/ssh/validate`)
+      .post(`/api/plugins/${pluginId}/squads/${squadA}/local-folders/ssh/validate`)
       .send({ path: "/tmp" });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toContain("Local folder key is not declared");
-    expect(mockRegistry.upsertCompanySettings).not.toHaveBeenCalled();
+    expect(mockRegistry.upsertSquadSettings).not.toHaveBeenCalled();
   });
 
   it("rejects saving undeclared local folder keys", async () => {
@@ -472,12 +472,12 @@ describe.sequential("plugin local folder routes", () => {
     const { app } = await createApp(boardActor());
 
     const res = await request(app)
-      .put(`/api/plugins/${pluginId}/companies/${companyA}/local-folders/ssh`)
+      .put(`/api/plugins/${pluginId}/squads/${squadA}/local-folders/ssh`)
       .send({ path: "/tmp" });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toContain("Local folder key is not declared");
-    expect(mockRegistry.upsertCompanySettings).not.toHaveBeenCalled();
+    expect(mockRegistry.upsertSquadSettings).not.toHaveBeenCalled();
   });
 });
 
@@ -486,7 +486,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     vi.clearAllMocks();
   });
 
-  it("rejects tool execution when the board user cannot access runContext.companyId", async () => {
+  it("rejects tool execution when the board user cannot access runContext.squadId", async () => {
     const executeTool = vi.fn();
     const getTool = vi.fn();
     const { app } = await createApp(boardActor(), {}, {
@@ -507,7 +507,7 @@ describe.sequential("plugin tool and bridge authz", () => {
         runContext: {
           agentId: agentA,
           runId: runA,
-          companyId: companyB,
+          squadId: squadB,
           projectId: projectA,
         },
       });
@@ -517,34 +517,34 @@ describe.sequential("plugin tool and bridge authz", () => {
     expect(executeTool).not.toHaveBeenCalled();
   });
 
-  it("rejects tool execution when any runContext reference is outside the company scope", async () => {
+  it("rejects tool execution when any runContext reference is outside the squad scope", async () => {
     const cases: Array<[string, Array<Array<Record<string, unknown>>>]> = [
       [
         "agentId",
         [
-          [{ companyId: companyB }],
+          [{ squadId: squadB }],
         ],
       ],
       [
-        "runId company",
+        "runId squad",
         [
-          [{ companyId: companyA }],
-          [{ companyId: companyB, agentId: agentA }],
+          [{ squadId: squadA }],
+          [{ squadId: squadB, agentId: agentA }],
         ],
       ],
       [
         "runId agent",
         [
-          [{ companyId: companyA }],
-          [{ companyId: companyA, agentId: "77777777-7777-4777-8777-777777777777" }],
+          [{ squadId: squadA }],
+          [{ squadId: squadA, agentId: "77777777-7777-4777-8777-777777777777" }],
         ],
       ],
       [
         "projectId",
         [
-          [{ companyId: companyA }],
-          [{ companyId: companyA, agentId: agentA }],
-          [{ companyId: companyB }],
+          [{ squadId: squadA }],
+          [{ squadId: squadA, agentId: agentA }],
+          [{ squadId: squadB }],
         ],
       ],
     ];
@@ -570,7 +570,7 @@ describe.sequential("plugin tool and bridge authz", () => {
           runContext: {
             agentId: agentA,
             runId: runA,
-            companyId: companyA,
+            squadId: squadA,
             projectId: projectA,
           },
         });
@@ -580,13 +580,13 @@ describe.sequential("plugin tool and bridge authz", () => {
     }
   });
 
-  it("allows tool execution when agent, run, and project all belong to runContext.companyId", async () => {
+  it("allows tool execution when agent, run, and project all belong to runContext.squadId", async () => {
     const executeTool = vi.fn().mockResolvedValue({ content: "ok" });
     const { app } = await createApp(boardActor(), {}, {
       db: createSelectQueueDb([
-        [{ companyId: companyA }],
-        [{ companyId: companyA, agentId: agentA }],
-        [{ companyId: companyA }],
+        [{ squadId: squadA }],
+        [{ squadId: squadA, agentId: agentA }],
+        [{ squadId: squadA }],
       ]),
       toolDeps: {
         toolDispatcher: {
@@ -605,7 +605,7 @@ describe.sequential("plugin tool and bridge authz", () => {
         runContext: {
           agentId: agentA,
           runId: runA,
-          companyId: companyA,
+          squadId: squadA,
           projectId: projectA,
         },
       });
@@ -617,7 +617,7 @@ describe.sequential("plugin tool and bridge authz", () => {
       {
         agentId: agentA,
         runId: runA,
-        companyId: companyA,
+        squadId: squadA,
         projectId: projectA,
       },
     );
@@ -628,7 +628,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     ["legacy action", "post", `/api/plugins/${pluginId}/bridge/action`, { key: "sync" }],
     ["url data", "post", `/api/plugins/${pluginId}/data/health`, {}],
     ["url action", "post", `/api/plugins/${pluginId}/actions/sync`, {}],
-  ] as const)("rejects %s bridge calls without companyId for non-admin users", async (_name, _method, path, body) => {
+  ] as const)("rejects %s bridge calls without squadId for non-admin users", async (_name, _method, path, body) => {
     readyPlugin();
     const call = vi.fn();
     const { app } = await createApp(boardActor(), {}, {
@@ -645,7 +645,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     expect(call).not.toHaveBeenCalled();
   });
 
-  it("forwards authorized bridge company scope to the plugin worker", async () => {
+  it("forwards authorized bridge squad scope to the plugin worker", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
     const { app } = await createApp(boardActor(), {}, {
@@ -656,24 +656,24 @@ describe.sequential("plugin tool and bridge authz", () => {
 
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/data/health`)
-      .send({ companyId: companyA, params: { view: "compact" } });
+      .send({ squadId: squadA, params: { view: "compact" } });
 
     expect(res.status).toBe(200);
     expect(call).toHaveBeenCalledWith(pluginId, "getData", {
       key: "health",
-      companyId: companyA,
+      squadId: squadA,
       params: { view: "compact" },
       renderEnvironment: null,
     });
   });
 
-  it("allows omitted-company bridge calls for instance admins as global plugin actions", async () => {
+  it("allows omitted-squad bridge calls for instance admins as global plugin actions", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
     const { app } = await createApp(boardActor({
       userId: "admin-1",
       isInstanceAdmin: true,
-      companyIds: [],
+      squadIds: [],
     }), {}, {
       bridgeDeps: {
         workerManager: { call },
@@ -693,13 +693,13 @@ describe.sequential("plugin tool and bridge authz", () => {
         userId: "admin-1",
         agentId: null,
         runId: null,
-        companyId: null,
+        squadId: null,
       },
       renderEnvironment: null,
     });
   });
 
-  it("passes authenticated actor context and overrides spoofed company scope for plugin actions", async () => {
+  it("passes authenticated actor context and overrides spoofed squad scope for plugin actions", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
     const { app } = await createApp(boardActor({ runId: runA }), {}, {
@@ -711,9 +711,9 @@ describe.sequential("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/actions/sync`)
       .send({
-        companyId: companyA,
+        squadId: squadA,
         params: {
-          companyId: companyB,
+          squadId: squadB,
           reviewerUserId: "spoofed-user",
         },
       });
@@ -722,7 +722,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     expect(call).toHaveBeenCalledWith(pluginId, "performAction", {
       key: "sync",
       params: {
-        companyId: companyA,
+        squadId: squadA,
         reviewerUserId: "spoofed-user",
       },
       actorContext: {
@@ -730,7 +730,7 @@ describe.sequential("plugin tool and bridge authz", () => {
         userId: "user-1",
         agentId: null,
         runId: runA,
-        companyId: companyA,
+        squadId: squadA,
       },
       renderEnvironment: null,
     });
@@ -747,14 +747,14 @@ describe.sequential("plugin tool and bridge authz", () => {
 
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/actions/sync`)
-      .send({ companyId: companyA });
+      .send({ squadId: squadA });
 
     expect(res.status).toBe(200);
     expect(call).toHaveBeenCalledWith(pluginId, "performAction", expect.objectContaining({
       actorContext: expect.objectContaining({
         type: "user",
         userId: null,
-        companyId: companyA,
+        squadId: squadA,
       }),
     }));
   });
@@ -771,9 +771,9 @@ describe.sequential("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/actions/sync`)
       .send({
-        companyId: companyA,
+        squadId: squadA,
         params: {
-          companyId: companyB,
+          squadId: squadB,
           reviewerAgentId: "spoofed-agent",
         },
       });
@@ -782,7 +782,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     expect(call).toHaveBeenCalledWith(pluginId, "performAction", {
       key: "sync",
       params: {
-        companyId: companyA,
+        squadId: squadA,
         reviewerAgentId: "spoofed-agent",
       },
       actorContext: {
@@ -790,7 +790,7 @@ describe.sequential("plugin tool and bridge authz", () => {
         userId: null,
         agentId: agentA,
         runId: runA,
-        companyId: companyA,
+        squadId: squadA,
       },
       renderEnvironment: null,
     });
@@ -800,9 +800,9 @@ describe.sequential("plugin tool and bridge authz", () => {
       .post(`/api/plugins/${pluginId}/bridge/action`)
       .send({
         key: "sync",
-        companyId: companyA,
+        squadId: squadA,
         params: {
-          companyId: companyB,
+          squadId: squadB,
           reviewerAgentId: "spoofed-agent",
         },
       });
@@ -811,7 +811,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     expect(call).toHaveBeenCalledWith(pluginId, "performAction", {
       key: "sync",
       params: {
-        companyId: companyA,
+        squadId: squadA,
         reviewerAgentId: "spoofed-agent",
       },
       actorContext: {
@@ -819,13 +819,13 @@ describe.sequential("plugin tool and bridge authz", () => {
         userId: null,
         agentId: agentA,
         runId: runA,
-        companyId: companyA,
+        squadId: squadA,
       },
       renderEnvironment: null,
     });
   });
 
-  it("rejects agent plugin actions outside the authenticated company scope", async () => {
+  it("rejects agent plugin actions outside the authenticated squad scope", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
     const { app } = await createApp(agentActor(), {}, {
@@ -836,7 +836,7 @@ describe.sequential("plugin tool and bridge authz", () => {
 
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/actions/sync`)
-      .send({ companyId: companyB });
+      .send({ squadId: squadB });
 
     expect(res.status).toBe(403);
     expect(call).not.toHaveBeenCalled();
@@ -857,7 +857,7 @@ describe.sequential("plugin tool and bridge authz", () => {
 
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/data/source-objects`)
-      .send({ companyId: companyA });
+      .send({ squadId: squadA });
 
     expect(res.status).toBe(502);
     expect(res.body).toMatchObject({
@@ -899,7 +899,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     const { app } = await createApp(boardActor({
       userId: "admin-1",
       isInstanceAdmin: true,
-      companyIds: [],
+      squadIds: [],
     }), {}, {
       jobDeps: { scheduler, jobStore },
     });

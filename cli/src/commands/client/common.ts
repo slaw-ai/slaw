@@ -13,20 +13,20 @@ export interface BaseClientOptions {
   profile?: string;
   apiBase?: string;
   apiKey?: string;
-  companyId?: string;
+  squadId?: string;
   json?: boolean;
 }
 
 export interface ResolvedClientContext {
   api: SlawApiClient;
-  companyId?: string;
+  squadId?: string;
   profileName: string;
   profile: ClientContextProfile;
   json: boolean;
   authSource: "explicit" | "env" | "profile_env" | "stored_board" | "none";
 }
 
-export function addCommonClientOptions(command: Command, opts?: { includeCompany?: boolean }): Command {
+export function addCommonClientOptions(command: Command, opts?: { includeSquad?: boolean }): Command {
   command
     .option("-c, --config <path>", "Path to Slaw config file")
     .option("-d, --data-dir <path>", "Slaw data directory root (isolates state from ~/.slaw)")
@@ -36,8 +36,8 @@ export function addCommonClientOptions(command: Command, opts?: { includeCompany
     .option("--api-key <token>", "Bearer token for agent-authenticated calls")
     .option("--json", "Output raw JSON");
 
-  if (opts?.includeCompany) {
-    command.option("-C, --company-id <id>", "Company ID (overrides context default)");
+  if (opts?.includeSquad) {
+    command.option("-C, --squad-id <id>", "Squad ID (overrides context default)");
   }
 
   return command;
@@ -45,7 +45,7 @@ export function addCommonClientOptions(command: Command, opts?: { includeCompany
 
 export function resolveCommandContext(
   options: BaseClientOptions,
-  opts?: { requireCompany?: boolean },
+  opts?: { requireSquad?: boolean },
 ): ResolvedClientContext {
   const context = readContext(options.context);
   const { name: profileName, profile } = resolveProfile(context, options.profile);
@@ -57,14 +57,14 @@ export function resolveCommandContext(
   const storedBoardCredential = explicitApiKey ? null : getStoredBoardCredential(apiBase);
   const apiKey = explicitApiKey || storedBoardCredential?.token;
 
-  const companyId =
-    options.companyId?.trim() ||
-    process.env.SLAW_COMPANY_ID?.trim() ||
-    profile.companyId;
+  const squadId =
+    options.squadId?.trim() ||
+    process.env.SLAW_SQUAD_ID?.trim() ||
+    profile.squadId;
 
-  if (opts?.requireCompany && !companyId) {
+  if (opts?.requireSquad && !squadId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set SLAW_COMPANY_ID, or set context profile companyId via `slaw context set`.",
+      "Squad ID is required. Pass --squad-id, set SLAW_SQUAD_ID, or set context profile squadId via `slaw context set`.",
     );
   }
 
@@ -83,7 +83,7 @@ export function resolveCommandContext(
           const login = await loginBoardCli({
             apiBase,
             requestedAccess,
-            requestedCompanyId: companyId ?? null,
+            requestedSquadId: squadId ?? null,
             command: buildCliCommandLabel(),
           });
           return login.token;
@@ -91,7 +91,7 @@ export function resolveCommandContext(
   });
   return {
     api,
-    companyId,
+    squadId,
     profileName,
     profile,
     json: Boolean(options.json),

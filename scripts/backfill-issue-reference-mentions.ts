@@ -1,4 +1,4 @@
-import { companies, createDb } from "../packages/db/src/index.js";
+import { squads, createDb } from "../packages/db/src/index.js";
 import { loadConfig } from "../server/src/config.js";
 import { issueReferenceService } from "../server/src/services/issue-references.js";
 
@@ -18,20 +18,20 @@ async function main() {
 
   const db = createDb(dbUrl);
   const refs = issueReferenceService(db);
-  const companyId = parseFlag("--company");
-  const companyRows = companyId
-    ? [{ id: companyId }]
-    : await db.select({ id: companies.id }).from(companies);
+  const squadId = parseFlag("--squad");
+  const squadRows = squadId
+    ? [{ id: squadId }]
+    : await db.select({ id: squads.id }).from(squads);
 
-  if (companyRows.length === 0) {
-    console.log("No companies found; nothing to backfill.");
+  if (squadRows.length === 0) {
+    console.log("No squads found; nothing to backfill.");
     return;
   }
 
-  console.log(`Backfilling issue reference mentions for ${companyRows.length} compan${companyRows.length === 1 ? "y" : "ies"}...`);
-  for (const company of companyRows) {
-    console.log(`- ${company.id}`);
-    await refs.syncAllForCompany(company.id);
+  console.log(`Backfilling issue reference mentions for ${squadRows.length} compan${squadRows.length === 1 ? "y" : "ies"}...`);
+  for (const squad of squadRows) {
+    console.log(`- ${squad.id}`);
+    await refs.syncAllForSquad(squad.id);
   }
   console.log("Issue reference backfill complete.");
 }

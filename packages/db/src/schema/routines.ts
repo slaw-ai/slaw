@@ -11,8 +11,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
-import { companies } from "./companies.js";
-import { companySecrets } from "./company_secrets.js";
+import { squads } from "./squads.js";
+import { squadSecrets } from "./squad_secrets.js";
 import { issues } from "./issues.js";
 import { projects } from "./projects.js";
 import { goals } from "./goals.js";
@@ -23,7 +23,7 @@ export const routines = pgTable(
   "routines",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
     goalId: uuid("goal_id").references(() => goals.id, { onDelete: "set null" }),
     parentIssueId: uuid("parent_issue_id").references(() => issues.id, { onDelete: "set null" }),
@@ -48,9 +48,9 @@ export const routines = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyStatusIdx: index("routines_company_status_idx").on(table.companyId, table.status),
-    companyAssigneeIdx: index("routines_company_assignee_idx").on(table.companyId, table.assigneeAgentId),
-    companyProjectIdx: index("routines_company_project_idx").on(table.companyId, table.projectId),
+    squadStatusIdx: index("routines_squad_status_idx").on(table.squadId, table.status),
+    squadAssigneeIdx: index("routines_squad_assignee_idx").on(table.squadId, table.assigneeAgentId),
+    squadProjectIdx: index("routines_squad_project_idx").on(table.squadId, table.projectId),
   }),
 );
 
@@ -58,7 +58,7 @@ export const routineRevisions = pgTable(
   "routine_revisions",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     routineId: uuid("routine_id").notNull().references(() => routines.id, { onDelete: "cascade" }),
     revisionNumber: integer("revision_number").notNull(),
     title: text("title").notNull(),
@@ -79,8 +79,8 @@ export const routineRevisions = pgTable(
       table.routineId,
       table.revisionNumber,
     ),
-    companyRoutineCreatedIdx: index("routine_revisions_company_routine_created_idx").on(
-      table.companyId,
+    squadRoutineCreatedIdx: index("routine_revisions_squad_routine_created_idx").on(
+      table.squadId,
       table.routineId,
       table.createdAt,
     ),
@@ -91,7 +91,7 @@ export const routineTriggers = pgTable(
   "routine_triggers",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     routineId: uuid("routine_id").notNull().references(() => routines.id, { onDelete: "cascade" }),
     kind: text("kind").notNull(),
     label: text("label"),
@@ -101,7 +101,7 @@ export const routineTriggers = pgTable(
     nextRunAt: timestamp("next_run_at", { withTimezone: true }),
     lastFiredAt: timestamp("last_fired_at", { withTimezone: true }),
     publicId: text("public_id"),
-    secretId: uuid("secret_id").references(() => companySecrets.id, { onDelete: "set null" }),
+    secretId: uuid("secret_id").references(() => squadSecrets.id, { onDelete: "set null" }),
     signingMode: text("signing_mode"),
     replayWindowSec: integer("replay_window_sec"),
     lastRotatedAt: timestamp("last_rotated_at", { withTimezone: true }),
@@ -114,8 +114,8 @@ export const routineTriggers = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyRoutineIdx: index("routine_triggers_company_routine_idx").on(table.companyId, table.routineId),
-    companyKindIdx: index("routine_triggers_company_kind_idx").on(table.companyId, table.kind),
+    squadRoutineIdx: index("routine_triggers_squad_routine_idx").on(table.squadId, table.routineId),
+    squadKindIdx: index("routine_triggers_squad_kind_idx").on(table.squadId, table.kind),
     nextRunIdx: index("routine_triggers_next_run_idx").on(table.nextRunAt),
     publicIdIdx: index("routine_triggers_public_id_idx").on(table.publicId),
     publicIdUq: uniqueIndex("routine_triggers_public_id_uq").on(table.publicId),
@@ -126,7 +126,7 @@ export const routineRuns = pgTable(
   "routine_runs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     routineId: uuid("routine_id").notNull().references(() => routines.id, { onDelete: "cascade" }),
     triggerId: uuid("trigger_id").references(() => routineTriggers.id, { onDelete: "set null" }),
     source: text("source").notNull(),
@@ -144,7 +144,7 @@ export const routineRuns = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyRoutineIdx: index("routine_runs_company_routine_idx").on(table.companyId, table.routineId, table.createdAt),
+    squadRoutineIdx: index("routine_runs_squad_routine_idx").on(table.squadId, table.routineId, table.createdAt),
     routineRevisionIdx: index("routine_runs_revision_idx").on(table.routineRevisionId),
     triggerIdx: index("routine_runs_trigger_idx").on(table.triggerId, table.createdAt),
     dispatchFingerprintIdx: index("routine_runs_dispatch_fingerprint_idx").on(table.routineId, table.dispatchFingerprint),

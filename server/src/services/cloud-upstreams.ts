@@ -13,15 +13,15 @@ import type {
   CloudUpstreamSummaryCount,
   CloudUpstreamTarget,
   CloudUpstreamWarning,
-  CompanyPortabilityExportResult,
-  CompanyPortabilityFileEntry,
+  SquadPortabilityExportResult,
+  SquadPortabilityFileEntry,
 } from "@slaw/shared";
 import type { Db } from "@slaw/db";
 import {
   agents,
   cloudUpstreamConnections,
   cloudUpstreamRuns,
-  companies,
+  squads,
   goals,
   issueComments,
   issues,
@@ -29,7 +29,7 @@ import {
   routines,
 } from "@slaw/db";
 import { badRequest, conflict, HttpError, notFound } from "../errors.js";
-import { companyPortabilityService } from "./company-portability.js";
+import { squadPortabilityService } from "./squad-portability.js";
 import { localEncryptedProvider } from "../secrets/local-encrypted-provider.js";
 
 const DEFAULT_SCOPES = ["upstream_import:preview", "upstream_import:write", "upstream_import:read"];
@@ -48,7 +48,7 @@ type NormalizedSha256 = `sha256:${string}`;
 
 type SourceEntityKey = {
   sourceInstanceId: string;
-  sourceCompanyId: string;
+  sourceSquadId: string;
   sourceEntityType: string;
   sourceEntityId: string;
   sourceNaturalKey?: string;
@@ -88,14 +88,14 @@ type UpstreamTransferManifest = {
   schema: typeof TRANSFER_SCHEMA;
   source: {
     sourceInstanceId: string;
-    sourceCompanyId: string;
+    sourceSquadId: string;
     sourceInstanceKeyFingerprint: string;
     exporterVersion: string;
     sourceSchemaVersion: string;
   };
   target: {
     targetStackId: string;
-    targetCompanyId: string;
+    targetSquadId: string;
     targetOrigin: string;
     supportedSchemaMajor: number;
   };
@@ -122,20 +122,20 @@ type RunRow = typeof cloudUpstreamRuns.$inferSelect;
 
 export function cloudUpstreamService(db: Db, options: { instanceId?: string } = {}) {
   const sourceInstanceId = `slaw-local-${options.instanceId ?? "default"}`;
-  const portability = companyPortabilityService(db);
+  const portability = squadPortabilityService(db);
 
   return {
-    list: async (companyId: string): Promise<CloudUpstreamsState> => {
+    list: async (squadId: string): Promise<CloudUpstreamsState> => {
       const [connectionRows, runRows] = await Promise.all([
         db
           .select()
           .from(cloudUpstreamConnections)
-          .where(eq(cloudUpstreamConnections.companyId, companyId))
+          .where(eq(cloudUpstreamConnections.squadId, squadId))
           .orderBy(desc(cloudUpstreamConnections.updatedAt)),
         db
           .select()
           .from(cloudUpstreamRuns)
-          .where(eq(cloudUpstreamRuns.companyId, companyId))
+          .where(eq(cloudUpstreamRuns.squadId, squadId))
           .orderBy(desc(cloudUpstreamRuns.createdAt))
           .limit(50),
       ]);
@@ -146,11 +146,11 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
     },
 
     startConnect: async (input: {
-      companyId: string;
+      squadId: string;
       remoteUrl: string;
       redirectUri: string;
     }): Promise<CloudUpstreamConnectStartResponse> => {
-      await requireCompany(input.companyId);
+      await requireSquad(input.squadId);
       const remoteUrl = input.remoteUrl.trim();
       if (!remoteUrl) throw badRequest("Remote URL is required");
 
@@ -169,7 +169,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
 
       const [row] = await db.insert(cloudUpstreamConnections).values({
         id: connectionId,
-        companyId: input.companyId,
+        squadId: input.squadId,
         remoteUrl,
         sourceInstanceId,
         sourceInstanceFingerprint,
@@ -180,7 +180,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
         targetStackId: target.stackId,
         targetStackSlug: target.stackSlug,
         targetStackDisplayName: target.stackDisplayName,
-        targetCompanyId: target.companyId,
+        targetSquadId: target.squadId,
         targetOrigin: target.origin,
         targetPrimaryHost: target.primaryHost,
         targetProduct: target.product,
@@ -250,8 +250,8 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       return connectionFromRow(updated);
     },
 
-    preview: async (connectionId: string, companyId: string): Promise<CloudUpstreamPreview> => {
-      const connection = await getConnectionRow(connectionId, companyId);
+    preview: async (connectionId: string, squadId: string): Promise<CloudUpstreamPreview> => {
+      const connection = await getConnectionRow(connectionId, squadId);
       const basePreview = await localPreview(connection);
       if (!basePreview.schemaCompatible || connection.tokenStatus !== "connected") {
         return basePreview;
@@ -263,7 +263,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
         if (!entity.conflictKeys || entity.conflictKeys.length === 0) continue;
         conflictKeysBySource[sourceEntityKeyString(entity.record.key)] = [...entity.conflictKeys];
       }
-      const remotePreview = await remotePost(connection, `/api/companies/${encodeURIComponent(connection.targetCompanyId)}/upstream-imports/preview`, {
+      const remotePreview = await remotePost(connection, `/api/squads/${encodeURIComponent(connection.targetSquadId)}/upstream-imports/preview`, {
         manifest: bundle.manifest,
         previewShape: "manifest_only",
         conflictKeysBySource,
@@ -275,12 +275,12 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       };
     },
 
-    createRun: async (input: { connectionId: string; companyId: string; retryOfRunId?: string | null }): Promise<CloudUpstreamRun> => {
-      const connection = await getConnectionRow(input.connectionId, input.companyId);
+    createRun: async (input: { connectionId: string; squadId: string; retryOfRunId?: string | null }): Promise<CloudUpstreamRun> => {
+      const connection = await getConnectionRow(input.connectionId, input.squadId);
       if (connection.tokenStatus !== "connected") {
         throw badRequest("Cloud upstream connection is not connected");
       }
-      await assertNoRunningRun(input.connectionId, input.companyId, db);
+      await assertNoRunningRun(input.connectionId, input.squadId, db);
       const preview = await localPreview(connection);
       if (!preview.schemaCompatible) {
         throw badRequest("Cloud stack schema is not compatible with this local Slaw version");
@@ -291,7 +291,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       const now = new Date();
       const initialEvents = [
         event(now.toISOString(), "connect", "completed", "Connected to the target Slaw Cloud stack."),
-        event(now.toISOString(), "scan", "completed", "Scanned the local company inventory."),
+        event(now.toISOString(), "scan", "completed", "Scanned the local squad inventory."),
         event(now.toISOString(), "preview", "completed", "Generated the transfer manifest."),
         ...(input.retryOfRunId
           ? [event(now.toISOString(), "push", "retrying", `Retrying run ${input.retryOfRunId} with the same import ledger idempotency key.`)]
@@ -299,13 +299,13 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       ];
       const created = await db.transaction(async (tx) => {
         await tx.execute(
-          sql`select ${cloudUpstreamConnections.id} from ${cloudUpstreamConnections} where ${cloudUpstreamConnections.id} = ${connection.id} and ${cloudUpstreamConnections.companyId} = ${connection.companyId} for update`,
+          sql`select ${cloudUpstreamConnections.id} from ${cloudUpstreamConnections} where ${cloudUpstreamConnections.id} = ${connection.id} and ${cloudUpstreamConnections.squadId} = ${connection.squadId} for update`,
         );
-        await assertNoRunningRun(input.connectionId, input.companyId, tx);
+        await assertNoRunningRun(input.connectionId, input.squadId, tx);
         const [row] = await tx.insert(cloudUpstreamRuns).values({
           id: runId,
           connectionId: connection.id,
-          companyId: connection.companyId,
+          squadId: connection.squadId,
           status: "running",
           activeStep: "push",
           progressPercent: 45,
@@ -327,7 +327,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       if (!created) throw badRequest("Failed to create cloud upstream run");
 
       try {
-        const remoteRun = await remotePost(connection, `/api/companies/${encodeURIComponent(connection.targetCompanyId)}/upstream-imports/runs`, {
+        const remoteRun = await remotePost(connection, `/api/squads/${encodeURIComponent(connection.targetSquadId)}/upstream-imports/runs`, {
           mode: "apply",
           manifest: bundle.manifest,
           entities: bundle.entities,
@@ -418,15 +418,15 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       }
     },
 
-    readRun: async (connectionId: string, runId: string, companyId: string): Promise<CloudUpstreamRun> => {
-      const row = await getRunRow(connectionId, runId, companyId);
+    readRun: async (connectionId: string, runId: string, squadId: string): Promise<CloudUpstreamRun> => {
+      const row = await getRunRow(connectionId, runId, squadId);
       return runFromRow(row);
     },
 
-    cancelRun: async (connectionId: string, runId: string, companyId: string): Promise<CloudUpstreamRun> => {
-      const row = await getRunRow(connectionId, runId, companyId);
+    cancelRun: async (connectionId: string, runId: string, squadId: string): Promise<CloudUpstreamRun> => {
+      const row = await getRunRow(connectionId, runId, squadId);
       if (row.status !== "running") return runFromRow(row);
-      const connection = await getConnectionRow(connectionId, companyId);
+      const connection = await getConnectionRow(connectionId, squadId);
       if (row.remoteRunId) {
         await remotePost(connection, `/api/upstream-import-runs/${encodeURIComponent(row.remoteRunId)}/cancel`, {}).catch(() => null);
       }
@@ -445,10 +445,10 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
     activateRunEntities: async (input: {
       connectionId: string;
       runId: string;
-      companyId: string;
+      squadId: string;
       entityType: CloudUpstreamActivationEntityType;
     }): Promise<CloudUpstreamRun> => {
-      const row = await getRunRow(input.connectionId, input.runId, input.companyId);
+      const row = await getRunRow(input.connectionId, input.runId, input.squadId);
       assertActivationEntityType(input.entityType);
       if (row.status !== "succeeded") {
         throw badRequest("Only succeeded cloud upstream runs can activate imported entities");
@@ -482,31 +482,31 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
     },
   };
 
-  async function requireCompany(companyId: string) {
-    const row = await db.select({ id: companies.id }).from(companies).where(eq(companies.id, companyId)).then((rows) => rows[0]);
-    if (!row) throw notFound("Company was not found");
+  async function requireSquad(squadId: string) {
+    const row = await db.select({ id: squads.id }).from(squads).where(eq(squads.id, squadId)).then((rows) => rows[0]);
+    if (!row) throw notFound("Squad was not found");
   }
 
-  async function getConnectionRow(connectionId: string, companyId?: string): Promise<ConnectionRow> {
+  async function getConnectionRow(connectionId: string, squadId?: string): Promise<ConnectionRow> {
     const row = await db
       .select()
       .from(cloudUpstreamConnections)
-      .where(companyId
-        ? and(eq(cloudUpstreamConnections.id, connectionId), eq(cloudUpstreamConnections.companyId, companyId))
+      .where(squadId
+        ? and(eq(cloudUpstreamConnections.id, connectionId), eq(cloudUpstreamConnections.squadId, squadId))
         : eq(cloudUpstreamConnections.id, connectionId))
       .then((rows) => rows[0]);
     if (!row) throw notFound("Cloud upstream connection was not found");
     return row;
   }
 
-  async function getRunRow(connectionId: string, runId: string, companyId: string): Promise<RunRow> {
+  async function getRunRow(connectionId: string, runId: string, squadId: string): Promise<RunRow> {
     const row = await db
       .select()
       .from(cloudUpstreamRuns)
       .where(and(
         eq(cloudUpstreamRuns.id, runId),
         eq(cloudUpstreamRuns.connectionId, connectionId),
-        eq(cloudUpstreamRuns.companyId, companyId),
+        eq(cloudUpstreamRuns.squadId, squadId),
       ))
       .then((rows) => rows[0]);
     if (!row) throw notFound("Cloud upstream run was not found");
@@ -515,7 +515,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
 
   async function assertNoRunningRun(
     connectionId: string,
-    companyId: string,
+    squadId: string,
     database: Pick<Db, "select">,
   ) {
     const [running] = await database
@@ -523,7 +523,7 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       .from(cloudUpstreamRuns)
       .where(and(
         eq(cloudUpstreamRuns.connectionId, connectionId),
-        eq(cloudUpstreamRuns.companyId, companyId),
+        eq(cloudUpstreamRuns.squadId, squadId),
         eq(cloudUpstreamRuns.status, "running"),
       ))
       .limit(1);
@@ -562,27 +562,27 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
   async function localPreview(connection: ConnectionRow): Promise<CloudUpstreamPreview> {
     return {
       connectionId: connection.id,
-      sourceCompanyId: connection.companyId,
+      sourceSquadId: connection.squadId,
       target: targetFromConnectionRow(connection),
       schemaCompatible: connection.targetSchemaMajor === TRANSFER_SCHEMA.major,
-      summary: await buildSummary(connection.companyId),
+      summary: await buildSummary(connection.squadId),
       warnings: buildWarnings(connection.targetSchemaMajor),
       conflicts: [],
       generatedAt: new Date().toISOString(),
     };
   }
 
-  async function buildSummary(companyId: string): Promise<CloudUpstreamSummaryCount[]> {
+  async function buildSummary(squadId: string): Promise<CloudUpstreamSummaryCount[]> {
     const [agentCount, projectCount, goalCount, issueCount, commentCount, routineCount] = await Promise.all([
-      db.select({ count: count() }).from(agents).where(eq(agents.companyId, companyId)).then((rows) => rows[0]?.count ?? 0),
-      db.select({ count: count() }).from(projects).where(eq(projects.companyId, companyId)).then((rows) => rows[0]?.count ?? 0),
-      db.select({ count: count() }).from(goals).where(eq(goals.companyId, companyId)).then((rows) => rows[0]?.count ?? 0),
-      db.select({ count: count() }).from(issues).where(eq(issues.companyId, companyId)).then((rows) => rows[0]?.count ?? 0),
-      db.select({ count: count() }).from(issueComments).where(eq(issueComments.companyId, companyId)).then((rows) => rows[0]?.count ?? 0),
-      db.select({ count: count() }).from(routines).where(eq(routines.companyId, companyId)).then((rows) => rows[0]?.count ?? 0),
+      db.select({ count: count() }).from(agents).where(eq(agents.squadId, squadId)).then((rows) => rows[0]?.count ?? 0),
+      db.select({ count: count() }).from(projects).where(eq(projects.squadId, squadId)).then((rows) => rows[0]?.count ?? 0),
+      db.select({ count: count() }).from(goals).where(eq(goals.squadId, squadId)).then((rows) => rows[0]?.count ?? 0),
+      db.select({ count: count() }).from(issues).where(eq(issues.squadId, squadId)).then((rows) => rows[0]?.count ?? 0),
+      db.select({ count: count() }).from(issueComments).where(eq(issueComments.squadId, squadId)).then((rows) => rows[0]?.count ?? 0),
+      db.select({ count: count() }).from(routines).where(eq(routines.squadId, squadId)).then((rows) => rows[0]?.count ?? 0),
     ]);
     return [
-      { key: "companies", label: "Companies", count: 1 },
+      { key: "squads", label: "Squads", count: 1 },
       { key: "goals", label: "Goals", count: goalCount },
       { key: "projects", label: "Projects", count: projectCount },
       { key: "agents", label: "Agents", count: agentCount },
@@ -594,9 +594,9 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
   }
 
   async function buildBundle(connection: ConnectionRow, mode: "preview" | "apply"): Promise<LocalUpstreamExportBundle> {
-    const exported = await portability.exportBundle(connection.companyId, {
+    const exported = await portability.exportBundle(connection.squadId, {
       include: {
-        company: true,
+        squad: true,
         agents: true,
         projects: true,
         issues: true,
@@ -610,21 +610,21 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
     });
     const source = {
       sourceInstanceId: connection.sourceInstanceId,
-      sourceCompanyId: connection.companyId,
+      sourceSquadId: connection.squadId,
       sourceInstanceKeyFingerprint: connection.sourceInstanceFingerprint,
       exporterVersion: "slaw-local-cloud-ui-v1",
       sourceSchemaVersion: TRANSFER_SCHEMA.version,
     };
     const target = {
       targetStackId: connection.targetStackId,
-      targetCompanyId: connection.targetCompanyId,
+      targetSquadId: connection.targetSquadId,
       targetOrigin: connection.targetOrigin,
       supportedSchemaMajor: connection.targetSchemaMajor,
     };
     const idempotencyKey = [
       mode,
       connection.sourceInstanceId,
-      connection.companyId,
+      connection.squadId,
       connection.targetStackId,
       sourceHash,
     ].join(":");
@@ -633,9 +633,9 @@ export function cloudUpstreamService(db: Db, options: { instanceId?: string } = 
       target,
       runId: `local-${mode}-${shortHash(idempotencyKey)}`,
       idempotencyKey,
-      entities: buildEntitiesFromPortableExport(connection.companyId, connection.sourceInstanceId, exported),
+      entities: buildEntitiesFromPortableExport(connection.squadId, connection.sourceInstanceId, exported),
       warnings: exported.warnings.map((message): UpstreamTransferWarning => ({
-        code: "local_company_export_warning",
+        code: "local_squad_export_warning",
         severity: "warning",
         message,
       })),
@@ -716,7 +716,7 @@ function targetFromDiscovery(discovery: Record<string, unknown>): CloudUpstreamT
     stackId: stringField(stack, "id"),
     stackSlug: optionalString(stack.slug),
     stackDisplayName: optionalString(stack.displayName),
-    companyId: stringField(stack, "companyId"),
+    squadId: stringField(stack, "squadId"),
     primaryHost: optionalString(stack.primaryHost) ?? new URL(origin).host,
     origin,
     product: optionalString(discovery.product) ?? "Slaw Cloud",
@@ -730,7 +730,7 @@ function targetFromConnectionRow(row: ConnectionRow): CloudUpstreamTarget {
     stackId: row.targetStackId,
     stackSlug: row.targetStackSlug,
     stackDisplayName: row.targetStackDisplayName,
-    companyId: row.targetCompanyId,
+    squadId: row.targetSquadId,
     primaryHost: row.targetPrimaryHost,
     origin: row.targetOrigin,
     product: row.targetProduct,
@@ -742,7 +742,7 @@ function targetFromConnectionRow(row: ConnectionRow): CloudUpstreamTarget {
 function connectionFromRow(row: ConnectionRow): CloudUpstreamConnection {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     remoteUrl: row.remoteUrl,
     target: targetFromConnectionRow(row),
     tokenStatus: cloudUpstreamTokenStatus(row.tokenStatus),
@@ -759,7 +759,7 @@ function runFromRow(row: RunRow): CloudUpstreamRun {
   return {
     id: row.id,
     connectionId: row.connectionId,
-    companyId: row.companyId,
+    squadId: row.squadId,
     status: cloudUpstreamRunStatus(row.status),
     activeStep: cloudUpstreamStep(row.activeStep),
     progressPercent: row.progressPercent,
@@ -833,28 +833,28 @@ type LocalUpstreamExportEntityInput = {
 };
 
 function buildEntitiesFromPortableExport(
-  localCompanyId: string,
+  localSquadId: string,
   sourceInstanceId: string,
-  exported: CompanyPortabilityExportResult,
+  exported: SquadPortabilityExportResult,
 ): LocalUpstreamExportEntityInput[] {
-  const companyKey: SourceEntityKey = {
+  const squadKey: SourceEntityKey = {
     sourceInstanceId,
-    sourceCompanyId: localCompanyId,
-    sourceEntityType: "company",
-    sourceEntityId: localCompanyId,
-    sourceNaturalKey: exported.manifest.company?.name ?? localCompanyId,
+    sourceSquadId: localSquadId,
+    sourceEntityType: "squad",
+    sourceEntityId: localSquadId,
+    sourceNaturalKey: exported.manifest.squad?.name ?? localSquadId,
   };
   const entities: LocalUpstreamExportEntityInput[] = [
     {
-      key: companyKey,
+      key: squadKey,
       body: {
-        kind: "slaw_company_portability_manifest",
+        kind: "slaw_squad_portability_manifest",
         manifest: exported.manifest,
         rootPath: exported.rootPath,
         slawExtensionPath: exported.slawExtensionPath,
         fileCount: Object.keys(exported.files).length,
       },
-      conflictKeys: [`company:${companyKey.sourceNaturalKey ?? localCompanyId}`],
+      conflictKeys: [`squad:${squadKey.sourceNaturalKey ?? localSquadId}`],
     },
   ];
 
@@ -862,8 +862,8 @@ function buildEntitiesFromPortableExport(
     entities.push({
       key: {
         sourceInstanceId,
-        sourceCompanyId: localCompanyId,
-        sourceEntityType: "company_setting",
+        sourceSquadId: localSquadId,
+        sourceEntityType: "squad_setting",
         sourceEntityId: shortHash(filePath),
         sourceNaturalKey: filePath,
       },
@@ -872,14 +872,14 @@ function buildEntitiesFromPortableExport(
         path: filePath,
         entry: normalizePortableFileEntry(entry),
       },
-      dependencies: [companyKey],
+      dependencies: [squadKey],
       conflictKeys: [`portable_file:${filePath}`],
     });
   }
   return entities;
 }
 
-function normalizePortableFileEntry(entry: CompanyPortabilityFileEntry): Record<string, unknown> {
+function normalizePortableFileEntry(entry: SquadPortabilityFileEntry): Record<string, unknown> {
   if (typeof entry === "string") {
     return { encoding: "utf8", data: entry };
   }
@@ -1233,7 +1233,7 @@ function shortHash(value: string): string {
 }
 
 function sourceEntityKeyString(key: SourceEntityKey): string {
-  return [key.sourceInstanceId, key.sourceCompanyId, key.sourceEntityType, key.sourceEntityId]
+  return [key.sourceInstanceId, key.sourceSquadId, key.sourceEntityType, key.sourceEntityId]
     .map((part) => encodeURIComponent(part))
     .join("/");
 }

@@ -24,7 +24,7 @@ import { StatusIcon } from "./StatusIcon";
 import { Button } from "@/components/ui/button";
 
 interface BlockedInboxViewProps {
-  companyId: string;
+  squadId: string;
   searchQuery: string;
   agentNameById: ReadonlyMap<string, string>;
   userLabelById?: ReadonlyMap<string, string>;
@@ -43,7 +43,7 @@ interface BlockedInboxViewProps {
 const BLOCKED_LIST_LIMIT = 200;
 
 export function BlockedInboxView({
-  companyId,
+  squadId,
   searchQuery,
   agentNameById,
   userLabelById,
@@ -67,9 +67,9 @@ export function BlockedInboxView({
     error,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.issues.listBlockedAttention(companyId),
+    queryKey: queryKeys.issues.listBlockedAttention(squadId),
     queryFn: () =>
-      issuesApi.list(companyId, {
+      issuesApi.list(squadId, {
         attention: "blocked",
         includeBlockedInboxAttention: true,
         includeBlockedBy: true,

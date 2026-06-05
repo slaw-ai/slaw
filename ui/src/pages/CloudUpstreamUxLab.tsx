@@ -137,7 +137,7 @@ function FixtureNav({ active }: { active: FixtureStateKey }) {
 }
 
 interface Fixture {
-  selectedCompanyName: string;
+  selectedSquadName: string;
   connection: CloudUpstreamConnection | null;
   preview: CloudUpstreamPreview | null;
   latestRun: CloudUpstreamRun | null;
@@ -147,7 +147,7 @@ interface Fixture {
 }
 
 function CloudUpstreamRender({ fixture }: { fixture: Fixture }) {
-  const { connection, preview, latestRun, history, notice, actionError, selectedCompanyName } = fixture;
+  const { connection, preview, latestRun, history, notice, actionError, selectedSquadName } = fixture;
   const activeStep: CloudUpstreamStep = latestRun?.activeStep
     ?? (preview ? "preview" : connection?.tokenStatus === "connected" ? "scan" : "connect");
   return (
@@ -159,7 +159,7 @@ function CloudUpstreamRender({ fixture }: { fixture: Fixture }) {
             <h1 className="text-lg font-semibold">Cloud upstream</h1>
           </div>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            Push {selectedCompanyName} into a Slaw Cloud stack. Automations stay paused until activation.
+            Push {selectedSquadName} into a Slaw Cloud stack. Automations stay paused until activation.
           </p>
         </div>
         {connection?.target.origin ? (
@@ -491,7 +491,7 @@ const STACK_TARGET = {
   stackId: "stk_2vKqz9D8mNFqQ7Rp",
   stackSlug: "slaw-prod",
   stackDisplayName: "Slaw Prod",
-  companyId: "co_4hT2yX",
+  squadId: "co_4hT2yX",
   primaryHost: "slaw.slaw.app",
   origin: "https://slaw.slaw.app",
   product: "slaw-cloud",
@@ -507,7 +507,7 @@ const STACK_TARGET_SCHEMA_BEHIND = {
 function connectedConnection(target = STACK_TARGET): CloudUpstreamConnection {
   return {
     id: "cu_conn_8d3f1b6a",
-    companyId: "co_4hT2yX",
+    squadId: "co_4hT2yX",
     remoteUrl: "https://slaw.slaw.app/PC521D/dashboard",
     target,
     tokenStatus: "connected",
@@ -596,7 +596,7 @@ const PREVIEW_CONFLICTS: CloudUpstreamConflict[] = [
 function basePreview(): CloudUpstreamPreview {
   return {
     connectionId: "cu_conn_8d3f1b6a",
-    sourceCompanyId: "co_local_pc521d",
+    sourceSquadId: "co_local_pc521d",
     target: STACK_TARGET,
     schemaCompatible: true,
     summary: PREVIEW_SUMMARY,
@@ -639,7 +639,7 @@ function runningRun(): CloudUpstreamRun {
   return {
     id: "run_3kQ8mNpW9bX2zL4Y",
     connectionId: "cu_conn_8d3f1b6a",
-    companyId: "co_local_pc521d",
+    squadId: "co_local_pc521d",
     status: "running",
     activeStep: "push",
     progressPercent: 62,
@@ -661,7 +661,7 @@ function failedRun(): CloudUpstreamRun {
   return {
     id: "run_5fXqR2bT7aD8zP1K",
     connectionId: "cu_conn_8d3f1b6a",
-    companyId: "co_local_pc521d",
+    squadId: "co_local_pc521d",
     status: "failed",
     activeStep: "push",
     progressPercent: 78,
@@ -692,7 +692,7 @@ function succeededRun(): CloudUpstreamRun {
   return {
     id: "run_7aBcD9eFgH2iJ3kL",
     connectionId: "cu_conn_8d3f1b6a",
-    companyId: "co_local_pc521d",
+    squadId: "co_local_pc521d",
     status: "succeeded",
     activeStep: "activate",
     progressPercent: 100,
@@ -736,7 +736,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
   switch (state) {
     case "settings-pane":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(),
         preview: null,
         latestRun: null,
@@ -746,7 +746,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "connect-wizard":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: null,
         preview: null,
         latestRun: null,
@@ -756,7 +756,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "schema-mismatch":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(STACK_TARGET_SCHEMA_BEHIND),
         preview: schemaMismatchPreview(),
         latestRun: null,
@@ -766,7 +766,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "preview":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(),
         preview: basePreview(),
         latestRun: null,
@@ -776,7 +776,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "preview-clean":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(),
         preview: cleanPreview(),
         latestRun: null,
@@ -786,7 +786,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "progress":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(),
         preview: null,
         latestRun: runningRun(),
@@ -796,7 +796,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "retry":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(),
         preview: null,
         latestRun: failedRun(),
@@ -808,7 +808,7 @@ function buildFixture(state: FixtureStateKey): Fixture {
       };
     case "finish":
       return {
-        selectedCompanyName: "Slaw · PC521D",
+        selectedSquadName: "Slaw · PC521D",
         connection: connectedConnection(),
         preview: null,
         latestRun: succeededRun(),

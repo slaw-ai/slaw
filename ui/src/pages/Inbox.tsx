@@ -19,7 +19,7 @@ import {
   type BlockedInboxGroupBy,
   type BlockedInboxSort,
 } from "../lib/blockedInbox";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useGeneralSettings } from "../context/GeneralSettingsContext";
 import { useSidebar } from "../context/SidebarContext";
@@ -32,7 +32,7 @@ import {
 } from "../lib/issue-filters";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
 import { formatAssigneeUserLabel } from "../lib/assignees";
-import { buildCompanyUserLabelMap, buildCompanyUserProfileMap } from "../lib/company-members";
+import { buildSquadUserLabelMap, buildSquadUserProfileMap } from "../lib/squad-members";
 import {
   armIssueDetailInboxQuickArchive,
   createIssueDetailLocationState,
@@ -148,7 +148,7 @@ import {
   type InboxIssueColumn,
   type InboxKeyboardNavEntry,
   saveLastInboxTab,
-  shouldShowCompanyAlerts,
+  shouldShowSquadAlerts,
   shouldShowInboxSection,
   type InboxGroupedSection,
   type InboxTab,
@@ -661,7 +661,7 @@ function JoinRequestInboxRow({
 }
 
 export function Inbox() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
   const { isMobile } = useSidebar();
@@ -679,14 +679,14 @@ export function Inbox() {
   const [searchQuery, setSearchQuery] = useState("");
   const normalizedSearchQuery = searchQuery.trim();
   const [filterPreferences, setFilterPreferences] = useState<InboxFilterPreferences>(
-    () => loadInboxFilterPreferences(selectedCompanyId),
+    () => loadInboxFilterPreferences(selectedSquadId),
   );
   const [groupBy, setGroupBy] = useState<InboxWorkItemGroupBy>(() => loadInboxWorkItemGroupBy());
   const [blockedGroupBy, setBlockedGroupBy] = useState<BlockedInboxGroupBy>("none");
   const [blockedSortBy, setBlockedSortBy] = useState<BlockedInboxSort>("most_recent");
   const [visibleIssueColumns, setVisibleIssueColumns] = useState<InboxIssueColumn[]>(loadInboxIssueColumns);
   const { dismissed: dismissedAlerts, dismiss: dismissAlert } = useDismissedInboxAlerts();
-  const { dismissedAtByKey, dismiss: dismissInboxItem } = useInboxDismissals(selectedCompanyId);
+  const { dismissedAtByKey, dismiss: dismissInboxItem } = useInboxDismissals(selectedSquadId);
   const { readItems, markRead: markItemRead, markUnread: markItemUnread } = useReadInboxItems();
   const { allCategoryFilter, allApprovalFilter, issueFilters } = filterPreferences;
 
@@ -716,28 +716,28 @@ export function Inbox() {
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: labels } = useQuery({
-    queryKey: queryKeys.issues.labels(selectedCompanyId!),
-    queryFn: () => issuesApi.listLabels(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.issues.labels(selectedSquadId!),
+    queryFn: () => issuesApi.listLabels(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const isolatedWorkspacesEnabled = experimentalSettings?.enableIsolatedWorkspaces === true;
   const { data: executionWorkspaces = [] } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.executionWorkspaces.summaryList(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.executionWorkspaces.summaryList(selectedSquadId)
       : ["execution-workspaces", "__disabled__"],
-    queryFn: () => executionWorkspacesApi.listSummaries(selectedCompanyId!),
-    enabled: !!selectedCompanyId && isolatedWorkspacesEnabled,
+    queryFn: () => executionWorkspacesApi.listSummaries(selectedSquadId!),
+    enabled: !!selectedSquadId && isolatedWorkspacesEnabled,
   });
 
   useEffect(() => {
@@ -750,33 +750,33 @@ export function Inbox() {
     setSearchQuery("");
   }, [tab]);
 
-  const previousSelectedCompanyIdRef = useRef<string | null>(selectedCompanyId);
+  const previousSelectedSquadIdRef = useRef<string | null>(selectedSquadId);
   useEffect(() => {
-    if (previousSelectedCompanyIdRef.current !== selectedCompanyId) {
-      previousSelectedCompanyIdRef.current = selectedCompanyId;
-      setFilterPreferences(loadInboxFilterPreferences(selectedCompanyId));
-      setCollapsedGroupKeys(loadCollapsedInboxGroupKeys(selectedCompanyId));
+    if (previousSelectedSquadIdRef.current !== selectedSquadId) {
+      previousSelectedSquadIdRef.current = selectedSquadId;
+      setFilterPreferences(loadInboxFilterPreferences(selectedSquadId));
+      setCollapsedGroupKeys(loadCollapsedInboxGroupKeys(selectedSquadId));
     }
-  }, [selectedCompanyId]);
+  }, [selectedSquadId]);
 
   const {
     data: approvals,
     isLoading: isApprovalsLoading,
     error: approvalsError,
   } = useQuery({
-    queryKey: queryKeys.approvals.list(selectedCompanyId!),
-    queryFn: () => approvalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.approvals.list(selectedSquadId!),
+    queryFn: () => approvalsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const {
     data: joinRequests = [],
     isLoading: isJoinRequestsLoading,
   } = useQuery({
-    queryKey: queryKeys.access.joinRequests(selectedCompanyId!),
+    queryKey: queryKeys.access.joinRequests(selectedSquadId!),
     queryFn: async () => {
       try {
-        return await accessApi.listJoinRequests(selectedCompanyId!, "pending_approval");
+        return await accessApi.listJoinRequests(selectedSquadId!, "pending_approval");
       } catch (err) {
         if (err instanceof ApiError && (err.status === 403 || err.status === 401)) {
           return [];
@@ -784,81 +784,81 @@ export function Inbox() {
         throw err;
       }
     },
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedSquadId,
     retry: false,
   });
 
   const { data: dashboard, isLoading: isDashboardLoading } = useQuery({
-    queryKey: queryKeys.dashboard(selectedCompanyId!),
-    queryFn: () => dashboardApi.summary(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.dashboard(selectedSquadId!),
+    queryFn: () => dashboardApi.summary(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: issues, isLoading: isIssuesLoading } = useQuery({
-    queryKey: [...queryKeys.issues.list(selectedCompanyId!), "with-routine-executions"],
+    queryKey: [...queryKeys.issues.list(selectedSquadId!), "with-routine-executions"],
     queryFn: () =>
-      issuesApi.list(selectedCompanyId!, {
+      issuesApi.list(selectedSquadId!, {
         includeRoutineExecutions: true,
         limit: INBOX_ISSUE_LIST_LIMIT,
       }),
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedSquadId,
   });
   const {
     data: mineIssuesRaw = [],
     isLoading: isMineIssuesLoading,
   } = useQuery({
-    queryKey: [...queryKeys.issues.listMineByMe(selectedCompanyId!), "with-routine-executions"],
+    queryKey: [...queryKeys.issues.listMineByMe(selectedSquadId!), "with-routine-executions"],
     queryFn: () =>
-      issuesApi.list(selectedCompanyId!, {
+      issuesApi.list(selectedSquadId!, {
         touchedByUserId: "me",
         inboxArchivedByUserId: "me",
         status: INBOX_MINE_ISSUE_STATUS_FILTER,
         includeRoutineExecutions: true,
         limit: INBOX_ISSUE_LIST_LIMIT,
       }),
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedSquadId,
   });
   const {
     data: touchedIssuesRaw = [],
     isLoading: isTouchedIssuesLoading,
   } = useQuery({
-    queryKey: [...queryKeys.issues.listTouchedByMe(selectedCompanyId!), "with-routine-executions"],
+    queryKey: [...queryKeys.issues.listTouchedByMe(selectedSquadId!), "with-routine-executions"],
     queryFn: () =>
-      issuesApi.list(selectedCompanyId!, {
+      issuesApi.list(selectedSquadId!, {
         touchedByUserId: "me",
         status: INBOX_MINE_ISSUE_STATUS_FILTER,
         includeRoutineExecutions: true,
         limit: INBOX_ISSUE_LIST_LIMIT,
       }),
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedSquadId,
   });
 
   const { data: heartbeatRuns, isLoading: isRunsLoading } = useQuery({
-    queryKey: [...queryKeys.heartbeats(selectedCompanyId!), "limit", INBOX_HEARTBEAT_RUN_LIMIT],
-    queryFn: () => heartbeatsApi.list(selectedCompanyId!, undefined, INBOX_HEARTBEAT_RUN_LIMIT),
-    enabled: !!selectedCompanyId,
+    queryKey: [...queryKeys.heartbeats(selectedSquadId!), "limit", INBOX_HEARTBEAT_RUN_LIMIT],
+    queryFn: () => heartbeatsApi.list(selectedSquadId!, undefined, INBOX_HEARTBEAT_RUN_LIMIT),
+    enabled: !!selectedSquadId,
   });
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(selectedCompanyId!),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.liveRuns(selectedSquadId!),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(selectedSquadId!),
+    enabled: !!selectedSquadId,
     refetchInterval: 5000,
   });
   const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const currentUserId = session?.user.id ?? session?.session.userId ?? null;
 
-  const companyUserLabelMap = useMemo(
-    () => buildCompanyUserLabelMap(companyMembers?.users),
-    [companyMembers?.users],
+  const squadUserLabelMap = useMemo(
+    () => buildSquadUserLabelMap(squadMembers?.users),
+    [squadMembers?.users],
   );
-  const companyUserProfileMap = useMemo(
-    () => buildCompanyUserProfileMap(companyMembers?.users),
-    [companyMembers?.users],
+  const squadUserProfileMap = useMemo(
+    () => buildSquadUserProfileMap(squadMembers?.users),
+    [squadMembers?.users],
   );
 
   const mineIssues = useMemo(() => getRecentTouchedIssues(mineIssuesRaw), [mineIssuesRaw]);
@@ -1009,12 +1009,12 @@ export function Inbox() {
       projectWorkspaceById,
       defaultProjectWorkspaceIdByProjectId,
       projectById,
-      userLabelById: companyUserLabelMap,
+      userLabelById: squadUserLabelMap,
       currentUserId,
     }),
     [
       agentById,
-      companyUserLabelMap,
+      squadUserLabelMap,
       currentUserId,
       defaultProjectWorkspaceIdByProjectId,
       executionWorkspaceById,
@@ -1161,15 +1161,15 @@ export function Inbox() {
     ],
   );
   const shouldUseIssueSearchSupplement =
-    !!selectedCompanyId
+    !!selectedSquadId
     && normalizedSearchQuery.length > 0;
   const { data: remoteIssueSearchResults = [] } = useQuery({
     queryKey: [
-      ...queryKeys.issues.search(selectedCompanyId!, normalizedSearchQuery, undefined, 25),
+      ...queryKeys.issues.search(selectedSquadId!, normalizedSearchQuery, undefined, 25),
       "inbox-supplement",
     ],
     queryFn: () =>
-      issuesApi.list(selectedCompanyId!, {
+      issuesApi.list(selectedSquadId!, {
         q: normalizedSearchQuery,
         limit: 25,
         includeRoutineExecutions: true,
@@ -1223,26 +1223,26 @@ export function Inbox() {
     });
   }, []);
   const [collapsedInboxParents, setCollapsedInboxParents] = useState<Set<string>>(new Set());
-  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(() => loadCollapsedInboxGroupKeys(selectedCompanyId));
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(() => loadCollapsedInboxGroupKeys(selectedSquadId));
   const toggleGroupCollapse = useCallback((groupKey: string) => {
     setCollapsedGroupKeys((prev) => {
       const next = new Set(prev);
       if (next.has(groupKey)) next.delete(groupKey);
       else next.add(groupKey);
-      saveCollapsedInboxGroupKeys(selectedCompanyId, next);
+      saveCollapsedInboxGroupKeys(selectedSquadId, next);
       return next;
     });
-  }, [selectedCompanyId]);
+  }, [selectedSquadId]);
   const setGroupCollapsed = useCallback((groupKey: string, collapsed: boolean) => {
     setCollapsedGroupKeys((prev) => {
       if (collapsed ? prev.has(groupKey) : !prev.has(groupKey)) return prev;
       const next = new Set(prev);
       if (collapsed) next.add(groupKey);
       else next.delete(groupKey);
-      saveCollapsedInboxGroupKeys(selectedCompanyId, next);
+      saveCollapsedInboxGroupKeys(selectedSquadId, next);
       return next;
     });
-  }, [selectedCompanyId]);
+  }, [selectedSquadId]);
   const groupedSections = useMemo<InboxGroupedSection[]>(() => [
     ...buildGroupedInboxSections(filteredWorkItems, groupBy, inboxWorkspaceGrouping, { nestingEnabled }),
     ...buildGroupedInboxSections(
@@ -1335,11 +1335,11 @@ export function Inbox() {
     (updater: (previous: InboxFilterPreferences) => InboxFilterPreferences) => {
       setFilterPreferences((previous) => {
         const next = updater(previous);
-        saveInboxFilterPreferences(selectedCompanyId, next);
+        saveInboxFilterPreferences(selectedSquadId, next);
         return next;
       });
     },
-    [selectedCompanyId],
+    [selectedSquadId],
   );
   const updateIssueFilters = useCallback((patch: Partial<IssueFilterState>) => {
     updateFilterPreferences((previous) => ({
@@ -1362,7 +1362,7 @@ export function Inbox() {
     mutationFn: (id: string) => approvalsApi.approve(id),
     onSuccess: (_approval, id) => {
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedSquadId!) });
       navigate(`/approvals/${id}?resolved=approved`);
     },
     onError: (err) => {
@@ -1374,7 +1374,7 @@ export function Inbox() {
     mutationFn: (id: string) => approvalsApi.reject(id),
     onSuccess: () => {
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedSquadId!) });
     },
     onError: (err) => {
       setActionError(err instanceof Error ? err.message : "Failed to reject");
@@ -1383,13 +1383,13 @@ export function Inbox() {
 
   const approveJoinMutation = useMutation({
     mutationFn: (joinRequest: JoinRequest) =>
-      accessApi.approveJoinRequest(selectedCompanyId!, joinRequest.id),
+      accessApi.approveJoinRequest(selectedSquadId!, joinRequest.id),
     onSuccess: () => {
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedCompanyId!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedSquadId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedSquadId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedSquadId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
     },
     onError: (err) => {
       setActionError(err instanceof Error ? err.message : "Failed to approve join request");
@@ -1398,11 +1398,11 @@ export function Inbox() {
 
   const rejectJoinMutation = useMutation({
     mutationFn: (joinRequest: JoinRequest) =>
-      accessApi.rejectJoinRequest(selectedCompanyId!, joinRequest.id),
+      accessApi.rejectJoinRequest(selectedSquadId!, joinRequest.id),
     onSuccess: () => {
       setActionError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedSquadId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedSquadId!) });
     },
     onError: (err) => {
       setActionError(err instanceof Error ? err.message : "Failed to reject join request");
@@ -1435,8 +1435,8 @@ export function Inbox() {
       setRetryingRunIds((prev) => new Set(prev).add(run.id));
     },
     onSuccess: ({ newRun, originalRun }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.companyId, originalRun.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(originalRun.squadId, originalRun.agentId) });
       navigate(`/agents/${originalRun.agentId}/runs/${newRun.id}`);
     },
     onSettled: (_data, _error, run) => {
@@ -1460,11 +1460,11 @@ export function Inbox() {
   const listRef = useRef<HTMLDivElement>(null);
 
   const invalidateInboxIssueQueries = () => {
-    if (!selectedCompanyId) return;
-    queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(selectedCompanyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedCompanyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(selectedCompanyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedCompanyId) });
+    if (!selectedSquadId) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(selectedSquadId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedSquadId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(selectedSquadId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedSquadId) });
   };
 
   const archiveIssueMutation = useMutation({
@@ -1475,9 +1475,9 @@ export function Inbox() {
 
       // Cancel in-flight refetches so they don't overwrite our optimistic update
       const queryKeys_ = [
-        [...queryKeys.issues.listMineByMe(selectedCompanyId!), "with-routine-executions"],
-        [...queryKeys.issues.listTouchedByMe(selectedCompanyId!), "with-routine-executions"],
-        queryKeys.issues.listUnreadTouchedByMe(selectedCompanyId!),
+        [...queryKeys.issues.listMineByMe(selectedSquadId!), "with-routine-executions"],
+        [...queryKeys.issues.listTouchedByMe(selectedSquadId!), "with-routine-executions"],
+        queryKeys.issues.listUnreadTouchedByMe(selectedSquadId!),
       ];
       await Promise.all(queryKeys_.map((qk) => queryClient.cancelQueries({ queryKey: qk })));
 
@@ -1643,7 +1643,7 @@ export function Inbox() {
   useEffect(() => {
     setUndoableArchiveIssueIds([]);
     setUnarchivingIssueIds(new Set());
-  }, [selectedCompanyId]);
+  }, [selectedSquadId]);
 
   // Use refs for keyboard handler to avoid stale closures
   const kbStateRef = useRef({
@@ -1865,20 +1865,20 @@ export function Inbox() {
     if (row) row.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={InboxIcon} message="Select a company to view inbox." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={InboxIcon} message="Select a squad to view inbox." />;
   }
 
   const hasRunFailures = failedRuns.length > 0;
-  const showCompanyAlerts = shouldShowCompanyAlerts(tab) && showAlertsCategory;
+  const showSquadAlerts = shouldShowSquadAlerts(tab) && showAlertsCategory;
   const showAggregateAgentError =
-    showCompanyAlerts &&
+    showSquadAlerts &&
     !!dashboard &&
     dashboard.agents.error > 0 &&
     !hasRunFailures &&
     !dismissedAlerts.has("alert:agent-errors");
   const showBudgetAlert =
-    showCompanyAlerts &&
+    showSquadAlerts &&
     !!dashboard &&
     dashboard.costs.monthBudgetCents > 0 &&
     dashboard.costs.monthUtilizationPercent >= 80 &&
@@ -2239,10 +2239,10 @@ export function Inbox() {
 
       {tab === "blocked" ? (
         <BlockedInboxView
-          companyId={selectedCompanyId!}
+          squadId={selectedSquadId!}
           searchQuery={searchQuery}
           agentNameById={agentById}
-          userLabelById={companyUserLabelMap}
+          userLabelById={squadUserLabelMap}
           issueLinkState={issueLinkState}
           groupBy={blockedGroupBy}
           sortBy={blockedSortBy}
@@ -2307,7 +2307,7 @@ export function Inbox() {
                   const isArchiving = archivingIssueIds.has(issue.id);
                   const project = issue.projectId ? projectById.get(issue.projectId) ?? null : null;
                   const assigneeUserProfile = issue.assigneeUserId
-                    ? companyUserProfileMap.get(issue.assigneeUserId) ?? null
+                    ? squadUserProfileMap.get(issue.assigneeUserId) ?? null
                     : null;
                   return (
                     <IssueRow
@@ -2388,7 +2388,7 @@ export function Inbox() {
                             })}
                             assigneeName={agentName(issue.assigneeAgentId)}
                             assigneeUserName={
-                              formatAssigneeUserLabel(issue.assigneeUserId, currentUserId, companyUserLabelMap)
+                              formatAssigneeUserLabel(issue.assigneeUserId, currentUserId, squadUserLabelMap)
                               ?? assigneeUserProfile?.label
                               ?? null
                             }

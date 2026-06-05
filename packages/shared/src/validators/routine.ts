@@ -73,7 +73,7 @@ export type UpdateRoutine = z.infer<typeof updateRoutineSchema>;
 
 export const routineRevisionSnapshotRoutineV1Schema = z.object({
   id: z.string().uuid(),
-  companyId: z.string().uuid(),
+  squadId: z.string().uuid(),
   projectId: z.string().uuid().nullable(),
   goalId: z.string().uuid().nullable(),
   parentIssueId: z.string().uuid().nullable(),

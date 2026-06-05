@@ -7,8 +7,8 @@ import { accessApi } from "../api/access";
 import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
-import { buildCompanyUserProfileMap } from "../lib/company-members";
-import { useCompany } from "../context/CompanyContext";
+import { buildSquadUserProfileMap } from "../lib/squad-members";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
@@ -35,7 +35,7 @@ function getRecentIssues(issues: Issue[]): Issue[] {
 }
 
 export function Dashboard() {
-  const { selectedCompanyId, companies } = useCompany();
+  const { selectedSquadId, squads } = useSquad();
   const { openOnboarding } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [animatedActivityIds, setAnimatedActivityIds] = useState<Set<string>>(new Set());
@@ -44,9 +44,9 @@ export function Dashboard() {
   const activityAnimationTimersRef = useRef<number[]>([]);
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   useEffect(() => {
@@ -54,38 +54,38 @@ export function Dashboard() {
   }, [setBreadcrumbs]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.dashboard(selectedCompanyId!),
-    queryFn: () => dashboardApi.summary(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.dashboard(selectedSquadId!),
+    queryFn: () => dashboardApi.summary(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: activity } = useQuery({
-    queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: DASHBOARD_ACTIVITY_LIMIT }],
-    queryFn: () => activityApi.list(selectedCompanyId!, { limit: DASHBOARD_ACTIVITY_LIMIT }),
-    enabled: !!selectedCompanyId,
+    queryKey: [...queryKeys.activity(selectedSquadId!), { limit: DASHBOARD_ACTIVITY_LIMIT }],
+    queryFn: () => activityApi.list(selectedSquadId!, { limit: DASHBOARD_ACTIVITY_LIMIT }),
+    enabled: !!selectedSquadId,
   });
 
   const { data: issues } = useQuery({
-    queryKey: queryKeys.issues.list(selectedCompanyId!),
-    queryFn: () => issuesApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.issues.list(selectedSquadId!),
+    queryFn: () => issuesApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const userProfileMap = useMemo(
-    () => buildCompanyUserProfileMap(companyMembers?.users),
-    [companyMembers?.users],
+    () => buildSquadUserProfileMap(squadMembers?.users),
+    [squadMembers?.users],
   );
 
   const recentIssues = issues ? getRecentIssues(issues) : [];
@@ -99,7 +99,7 @@ export function Dashboard() {
     seenActivityIdsRef.current = new Set();
     hydratedActivityRef.current = false;
     setAnimatedActivityIds(new Set());
-  }, [selectedCompanyId]);
+  }, [selectedSquadId]);
 
   useEffect(() => {
     if (recentActivity.length === 0) return;
@@ -171,19 +171,19 @@ export function Dashboard() {
     return agents.find((a) => a.id === id)?.name ?? null;
   };
 
-  if (!selectedCompanyId) {
-    if (companies.length === 0) {
+  if (!selectedSquadId) {
+    if (squads.length === 0) {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message="Welcome to Slaw. Set up your first company and agent to get started."
+          message="Welcome to Slaw. Set up your first squad and agent to get started."
           action="Get Started"
           onAction={openOnboarding}
         />
       );
     }
     return (
-      <EmptyState icon={LayoutDashboard} message="Create or select a company to view the dashboard." />
+      <EmptyState icon={LayoutDashboard} message="Create or select a squad to view the dashboard." />
     );
   }
 
@@ -206,7 +206,7 @@ export function Dashboard() {
             </p>
           </div>
           <button
-            onClick={() => openOnboarding({ initialStep: 2, companyId: selectedCompanyId! })}
+            onClick={() => openOnboarding({ initialStep: 2, squadId: selectedSquadId! })}
             className="text-sm font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline underline-offset-2 shrink-0"
           >
             Create one here
@@ -214,7 +214,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <ActiveAgentsPanel companyId={selectedCompanyId!} />
+      <ActiveAgentsPanel squadId={selectedSquadId!} />
 
       {data && (
         <>
@@ -308,7 +308,7 @@ export function Dashboard() {
 
           <PluginSlotOutlet
             slotTypes={["dashboardWidget"]}
-            context={{ companyId: selectedCompanyId }}
+            context={{ squadId: selectedSquadId }}
             className="grid gap-4 md:grid-cols-2"
             itemClassName="rounded-lg border bg-card p-4 shadow-sm"
           />

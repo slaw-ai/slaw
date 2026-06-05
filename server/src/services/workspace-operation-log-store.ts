@@ -28,7 +28,7 @@ export interface WorkspaceOperationLogFinalizeSummary {
 }
 
 export interface WorkspaceOperationLogStore {
-  begin(input: { companyId: string; operationId: string }): Promise<WorkspaceOperationLogHandle>;
+  begin(input: { squadId: string; operationId: string }): Promise<WorkspaceOperationLogHandle>;
   append(
     handle: WorkspaceOperationLogHandle,
     event: { stream: "stdout" | "stderr" | "system"; chunk: string; ts: string },
@@ -94,9 +94,9 @@ function createLocalFileWorkspaceOperationLogStore(basePath: string): WorkspaceO
 
   return {
     async begin(input) {
-      const [companyId] = safeSegments(input.companyId);
+      const [squadId] = safeSegments(input.squadId);
       const operationId = safeSegments(input.operationId)[0]!;
-      const relDir = companyId;
+      const relDir = squadId;
       const relPath = path.join(relDir, `${operationId}.ndjson`);
       await ensureDir(relDir);
 

@@ -5,7 +5,7 @@ import {
 } from "../services/issue-goal-fallback.ts";
 
 describe("issue goal fallback", () => {
-  it("assigns the company goal when creating an issue without project or goal", () => {
+  it("assigns the squad goal when creating an issue without project or goal", () => {
     expect(
       resolveIssueGoalId({
         projectId: null,
@@ -37,7 +37,7 @@ describe("issue goal fallback", () => {
     ).toBe("goal-2");
   });
 
-  it("does not force a company goal when the project has no goal", () => {
+  it("does not force a squad goal when the project has no goal", () => {
     expect(
       resolveIssueGoalId({
         projectId: "project-1",
@@ -48,7 +48,7 @@ describe("issue goal fallback", () => {
     ).toBeNull();
   });
 
-  it("backfills the company goal on update for legacy no-project issues", () => {
+  it("backfills the squad goal on update for legacy no-project issues", () => {
     expect(
       resolveNextIssueGoalId({
         currentProjectId: null,
@@ -59,7 +59,7 @@ describe("issue goal fallback", () => {
     ).toBe("goal-1");
   });
 
-  it("switches from the company fallback to the project goal when a project is added later", () => {
+  it("switches from the squad fallback to the project goal when a project is added later", () => {
     expect(
       resolveNextIssueGoalId({
         currentProjectId: null,

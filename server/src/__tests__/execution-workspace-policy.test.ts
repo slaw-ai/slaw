@@ -287,7 +287,7 @@ describe("execution workspace policy helpers", () => {
     });
   });
 
-  it("falls back to the agent default environment before the company default", () => {
+  it("falls back to the agent default environment before the squad default", () => {
     expect(
       resolveExecutionWorkspaceEnvironmentId({
         projectPolicy: null,

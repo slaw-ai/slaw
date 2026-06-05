@@ -104,7 +104,7 @@ describe("codex remote environment diagnostics", () => {
     };
 
     const result = await testEnvironment({
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "codex_local",
       config: {
         command: "codex",
@@ -171,7 +171,7 @@ describe("codex remote environment diagnostics", () => {
     };
 
     const result = await testEnvironment({
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "codex_local",
       config: {
         command: "codex",

@@ -9,7 +9,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { parseDocumentAnnotationHash } from "@/lib/document-annotation-hash";
 import { DocumentAnnotationLayer, type PendingAnchor } from "./DocumentAnnotationLayer";
 import { DocumentAnnotationPanel } from "./DocumentAnnotationPanel";
-import type { CompanyUserProfile } from "@/lib/company-members";
+import type { SquadUserProfile } from "@/lib/squad-members";
 
 const DESKTOP_ANNOTATION_PANEL_WIDTH = 360;
 const DESKTOP_ANNOTATION_PANEL_MIN_WIDTH = 280;
@@ -35,7 +35,7 @@ export interface IssueDocumentAnnotationsProps {
   panelOpen: boolean;
   onPanelOpenChange: (open: boolean) => void;
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
   /** Seed which thread is focused on mount. Used by Storybook/screenshot harness. */
   defaultFocusedThreadId?: string;
 }

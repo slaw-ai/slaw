@@ -72,7 +72,7 @@ Worker:
 - scoped JSON API routes declared with `apiRoutes`
 - entities
 - projects, project workspaces, and plugin-managed projects
-- companies
+- squads
 - issues, comments, namespaced `plugin:<pluginKey>` origins, blocker relations, checkout assertions, assignment wakeups, and orchestration summaries
 - agents, plugin-managed agents, and agent sessions
 - plugin-managed routines
@@ -121,25 +121,25 @@ apiRoutes: [
     auth: "board-or-agent",
     capability: "api.routes.register",
     checkoutPolicy: "required-for-agent-in-progress",
-    companyResolution: { from: "issue", param: "issueId" },
+    squadResolution: { from: "issue", param: "issueId" },
   },
 ]
 ```
 
 The host resolves the plugin, checks that it is ready, enforces
-`api.routes.register`, matches the declared method/path, resolves company access,
+`api.routes.register`, matches the declared method/path, resolves squad access,
 and applies checkout policy before dispatching to the worker's `onApiRequest`
 handler. The worker receives sanitized headers, route params, query, parsed JSON
-body, actor context, and company id. Do not use plugin routes to claim core
+body, actor context, and squad id. Do not use plugin routes to claim core
 paths; they always remain under `/api/plugins/:pluginId/api/*`.
 
 ## Managed Slaw resources
 
 Plugins that provide durable Slaw business objects should declare them in
-the manifest and let the host create or relink the actual records per company.
+the manifest and let the host create or relink the actual records per squad.
 Do this for plugin-owned agents, projects, routines, and skills.
 Do not hide long-lived work behind private plugin state when it should be visible
-to the board, scoped to a company, audited, budgeted, and assigned like normal
+to the board, scoped to a squad, audited, budgeted, and assigned like normal
 Slaw work.
 
 Content-oriented plugins, such as LLM Wiki-style ingestion or durable knowledge
@@ -155,7 +155,7 @@ Use these surfaces:
   normal Slaw agents with plugin ownership metadata, not background plugin
   workers.
 - Managed projects: declare top-level `projects[]` and require
-  `projects.managed`. Use this when the plugin needs a stable company-scoped
+  `projects.managed`. Use this when the plugin needs a stable squad-scoped
   project for its issues, routines, or workspace-oriented UI. Keep plugin work
   in a project instead of scattering generated issues across unrelated projects.
 - Managed routines: declare top-level `routines[]` and require
@@ -171,7 +171,7 @@ Managed resources are resolved by stable plugin keys, not hardcoded database
 ids. In a worker action or data handler, call `ctx.agents.managed.reconcile()`,
 `ctx.projects.managed.reconcile()`, `ctx.routines.managed.reconcile()`, and
 `ctx.skills.managed.reconcile()` for
-the current `companyId`. `reconcile()` creates the missing resource, relinks a
+the current `squadId`. `reconcile()` creates the missing resource, relinks a
 recoverable binding, or returns the existing resource. `reset()` reapplies the
 manifest defaults when the operator wants to restore the plugin's suggested
 configuration.
@@ -210,7 +210,7 @@ const manifest: SlawPluginManifestV1 = {
       displayName: "Researcher",
       role: "research",
       title: "Research Agent",
-      capabilities: "Runs recurring research briefs for this company.",
+      capabilities: "Runs recurring research briefs for this squad.",
       adapterPreference: ["codex_local", "claude_local", "process"],
       instructions: {
         content: "Follow the Slaw heartbeat and produce concise research briefs.",
@@ -267,21 +267,21 @@ export default manifest;
 ```
 
 In the worker, expose a small setup action or settings-page action that
-reconciles the resources for the selected company:
+reconciles the resources for the selected squad:
 
 ```ts
 import { definePlugin } from "@slaw/plugin-sdk";
 
 export default definePlugin({
   setup(ctx) {
-    ctx.actions.register("setup-company", async (params) => {
-      const companyId = String(params.companyId ?? "");
-      if (!companyId) throw new Error("companyId is required");
+    ctx.actions.register("setup-squad", async (params) => {
+      const squadId = String(params.squadId ?? "");
+      if (!squadId) throw new Error("squadId is required");
 
-      const project = await ctx.projects.managed.reconcile("research", companyId);
-      const agent = await ctx.agents.managed.reconcile("researcher", companyId);
-      const routine = await ctx.routines.managed.reconcile("weekly-brief", companyId);
-      const skill = await ctx.skills.managed.reconcile("weekly-brief-skills", companyId);
+      const project = await ctx.projects.managed.reconcile("research", squadId);
+      const agent = await ctx.agents.managed.reconcile("researcher", squadId);
+      const routine = await ctx.routines.managed.reconcile("weekly-brief", squadId);
+      const skill = await ctx.skills.managed.reconcile("weekly-brief-skills", squadId);
 
       return { project, agent, routine, skill };
     });
@@ -351,7 +351,7 @@ Currently exposed components include:
 
 - `MarkdownBlock` and `MarkdownEditor` for rendered and editable markdown.
 - `FileTree` for serializable file and directory trees.
-- `IssuesList` for a native company-scoped issue table.
+- `IssuesList` for a native squad-scoped issue table.
 - `AssigneePicker` for the same agent/user selector used in the new issue pane.
   Use the controlled `value` format `agent:<id>`, `user:<id>`, or `""`.
 - `ProjectPicker` for the same project selector used in the new issue pane.
@@ -361,19 +361,19 @@ Currently exposed components include:
 ```tsx
 import { AssigneePicker, ProjectPicker } from "@slaw/plugin-sdk/ui";
 
-export function PluginAssignmentControls({ companyId }: { companyId: string }) {
+export function PluginAssignmentControls({ squadId }: { squadId: string }) {
   const [assignee, setAssignee] = useState("");
   const [projectId, setProjectId] = useState("");
 
   return (
     <>
       <AssigneePicker
-        companyId={companyId}
+        squadId={squadId}
         value={assignee}
         onChange={(value) => setAssignee(value)}
       />
       <ProjectPicker
-        companyId={companyId}
+        squadId={squadId}
         value={projectId}
         onChange={setProjectId}
       />
@@ -487,7 +487,7 @@ export const manifest = {
 Use this when:
 
 - The data lives outside any project workspace.
-- Reads and writes need company-scoped configuration.
+- Reads and writes need squad-scoped configuration.
 - The operator picks the path once in plugin settings and the worker resolves
   files relative to that root.
 
@@ -521,12 +521,12 @@ through `FileTree`. The file browser example uses `ctx.projects.listWorkspaces`
 to pick a workspace and renders its on-disk tree through `FileTree` with lazy
 loading. Pick the boundary per data source, not per plugin.
 
-## Company routes
+## Squad routes
 
-Plugins may declare a `page` slot with `routePath` to own a company route like:
+Plugins may declare a `page` slot with `routePath` to own a squad route like:
 
 ```text
-/:companyPrefix/<routePath>
+/:squadPrefix/<routePath>
 ```
 
 Rules:

@@ -2,10 +2,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CompanyPortabilityExportResult } from "@slaw/shared";
+import type { SquadPortabilityExportResult } from "@slaw/shared";
 import {
   assertDiscoveryCompatible,
-  buildBundleFromLocalCompany,
+  buildBundleFromLocalSquad,
   cloudCommandExitCodes,
   connectCloud,
   resolveDeviceCodeExpiresAt,
@@ -60,7 +60,7 @@ describe("cloud CLI helpers", () => {
           scopes: ["upstream_import:preview"],
           token: {
             id: "token-1",
-            companyStackId: "stack-1",
+            squadStackId: "stack-1",
             targetOrigin: "https://cloud.example.test",
             sourceInstanceId: "slaw-local-default",
             sourceInstanceFingerprint: "sha256:test",
@@ -106,7 +106,7 @@ describe("cloud CLI helpers", () => {
     const calls: Array<{ path: string; body: unknown }> = [];
     const coordinator = new LocalUpstreamPushCoordinator({
       targetOrigin: "https://cloud.example.test",
-      slawCompanyId: "target-company-1",
+      slawSquadId: "target-squad-1",
       fetch: async (url, init) => {
         const parsed = new URL(String(url));
         const body = init?.body ? JSON.parse(String(init.body)) as unknown : {};
@@ -129,19 +129,19 @@ describe("cloud CLI helpers", () => {
 });
 
 async function buildTestBundle(): Promise<LocalUpstreamExportBundle> {
-  return buildBundleFromLocalCompany({
-    localCompanyId: "local-company-1",
+  return buildBundleFromLocalSquad({
+    localSquadId: "local-squad-1",
     connection: {
       id: "conn-1",
       remoteUrl: "https://cloud.example.test",
       targetOrigin: "https://cloud.example.test",
       targetHost: "cloud.example.test",
       stackId: "stack-1",
-      targetCompanyId: "target-company-1",
+      targetSquadId: "target-squad-1",
       accessToken: "upt_test",
       token: {
         id: "token-1",
-        companyStackId: "stack-1",
+        squadStackId: "stack-1",
         targetOrigin: "https://cloud.example.test",
         sourceInstanceId: "slaw-local-default",
         sourceInstanceFingerprint: "sha256:test",
@@ -172,7 +172,7 @@ function discovery(overrides: Partial<{ supportedSchemaMajor: number }> = {}) {
       id: "stack-1",
       slug: "cloud-test",
       displayName: "Cloud Test",
-      companyId: "target-company-1",
+      squadId: "target-squad-1",
       origin: "https://cloud.example.test",
     },
     auth: {
@@ -190,7 +190,7 @@ function discovery(overrides: Partial<{ supportedSchemaMajor: number }> = {}) {
   };
 }
 
-function portabilityExport(): CompanyPortabilityExportResult {
+function portabilityExport(): SquadPortabilityExportResult {
   return {
     rootPath: ".",
     slawExtensionPath: ".slaw.yaml",
@@ -198,19 +198,19 @@ function portabilityExport(): CompanyPortabilityExportResult {
       schemaVersion: 1,
       generatedAt: "2026-05-18T00:00:00.000Z",
       source: {
-        companyId: "local-company-1",
-        companyName: "Local Company",
+        squadId: "local-squad-1",
+        squadName: "Local Squad",
       },
       includes: {
-        company: true,
+        squad: true,
         agents: true,
         projects: true,
         issues: true,
         skills: true,
       },
-      company: {
-        path: "company.json",
-        name: "Local Company",
+      squad: {
+        path: "squad.json",
+        name: "Local Squad",
         description: null,
         brandColor: null,
         logoPath: null,
@@ -229,7 +229,7 @@ function portabilityExport(): CompanyPortabilityExportResult {
       envInputs: [],
     },
     files: {
-      "README.md": "Local Company",
+      "README.md": "Local Squad",
     },
     warnings: [],
   };

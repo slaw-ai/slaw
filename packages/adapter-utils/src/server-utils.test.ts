@@ -216,7 +216,7 @@ describe("adapter skill snapshots", () => {
     requiredReason: "Required for Slaw heartbeats.",
   };
   const optionalEntry = {
-    key: "company/ascii-heart",
+    key: "squad/ascii-heart",
     runtimeName: "ascii-heart",
     source: "/runtime/ascii-heart",
   };
@@ -251,28 +251,28 @@ describe("adapter skill snapshots", () => {
     ]);
   });
 
-  it("reports source-missing company runtime skills without orphan warnings", () => {
+  it("reports source-missing squad runtime skills without orphan warnings", () => {
     const snapshot = buildRuntimeMountedSkillSnapshot({
       adapterType: "codex_local",
       availableEntries: [{
-        key: "company/example/reflection-coach",
+        key: "squad/example/reflection-coach",
         runtimeName: "reflection-coach--abc123",
         source: "/slaw/skills/example/__runtime__/reflection-coach--abc123",
         sourceStatus: "missing",
-        missingDetail: "Company skill exists, but its local source is missing.",
+        missingDetail: "Squad skill exists, but its local source is missing.",
       }],
-      desiredSkills: ["company/example/reflection-coach"],
+      desiredSkills: ["squad/example/reflection-coach"],
       configuredDetail: "Mounted on next run.",
     });
 
     expect(snapshot.warnings).toEqual([]);
     expect(snapshot.entries).toEqual([
       expect.objectContaining({
-        key: "company/example/reflection-coach",
+        key: "squad/example/reflection-coach",
         state: "missing",
-        origin: "company_managed",
+        origin: "squad_managed",
         sourcePath: null,
-        detail: "Company skill exists, but its local source is missing.",
+        detail: "Squad skill exists, but its local source is missing.",
       }),
     ]);
   });
@@ -615,7 +615,7 @@ describe("renderSlawWakePrompt", () => {
     expect(DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE).toContain("confirmation:{issueId}:plan:{revisionId}");
     expect(DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE).toContain("Wait for acceptance before creating implementation subtasks");
     expect(DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE).toContain(
-      "Respect budget, pause/cancel, approval gates, and company boundaries",
+      "Respect budget, pause/cancel, approval gates, and squad boundaries",
     );
   });
 

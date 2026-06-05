@@ -12,7 +12,7 @@ const mockPluginsApi = vi.hoisted(() => ({
 
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
 const mockParams = vi.hoisted(() => ({
-  companyPrefix: "PAP" as string | undefined,
+  squadPrefix: "PAP" as string | undefined,
   pluginId: undefined as string | undefined,
   pluginRoutePath: undefined as string | undefined,
   "*": undefined as string | undefined,
@@ -28,10 +28,10 @@ vi.mock("@/context/BreadcrumbContext", () => ({
   }),
 }));
 
-vi.mock("@/context/CompanyContext", () => ({
-  useCompany: () => ({
-    companies: [{ id: "company-1", name: "Slaw", issuePrefix: "PAP" }],
-    selectedCompanyId: "company-1",
+vi.mock("@/context/SquadContext", () => ({
+  useSquad: () => ({
+    squads: [{ id: "squad-1", name: "Slaw", issuePrefix: "PAP" }],
+    selectedSquadId: "squad-1",
   }),
 }));
 
@@ -106,7 +106,7 @@ describe("PluginPage", () => {
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
-    mockParams.companyPrefix = "PAP";
+    mockParams.squadPrefix = "PAP";
     mockParams.pluginId = undefined;
     mockParams.pluginRoutePath = undefined;
     mockParams["*"] = undefined;

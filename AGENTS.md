@@ -4,7 +4,7 @@ Guidance for human and AI contributors working in this repository.
 
 ## 1. Purpose
 
-Slaw is a control plane for AI-agent companies.
+Slaw is a control plane for AI-agent squads.
 The current implementation target is V1 and is defined in `doc/SPEC-implementation.md`.
 
 ## 2. Read This First
@@ -49,7 +49,7 @@ Quick checks:
 
 ```sh
 curl http://localhost:3100/api/health
-curl http://localhost:3100/api/companies
+curl http://localhost:3100/api/squads
 ```
 
 Reset local dev DB:
@@ -61,8 +61,8 @@ pnpm dev
 
 ## 5. Core Engineering Rules
 
-1. Keep changes company-scoped.
-Every domain entity should be scoped to a company and company boundaries must be enforced in routes/services.
+1. Keep changes squad-scoped.
+Every domain entity should be scoped to a squad and squad boundaries must be enforced in routes/services.
 
 2. Keep contracts synchronized.
 If you change schema/API behavior, update all impacted layers:
@@ -143,11 +143,11 @@ If anything cannot be run, explicitly report what was not run and why.
 - Base path: `/api`
 - Board access is treated as full-control operator context
 - Agent access uses bearer API keys (`agent_api_keys`), hashed at rest
-- Agent keys must not access other companies
+- Agent keys must not access other squads
 
 When adding endpoints:
 
-- apply company access checks
+- apply squad access checks
 - enforce actor permissions (board vs agent)
 - write activity log entries for mutations
 - return consistent HTTP errors (`400/401/403/404/409/422/500`)
@@ -155,7 +155,7 @@ When adding endpoints:
 ## 9. UI Expectations
 
 - Keep routes and nav aligned with available API surface
-- Use company selection context for company-scoped pages
+- Use squad selection context for squad-scoped pages
 - Surface failures clearly; do not silently ignore API errors
 
 ## 10. Pull Request Requirements

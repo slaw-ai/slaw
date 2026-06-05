@@ -21,7 +21,7 @@ import type {
   PluginLauncherRenderContextSnapshot,
   PluginLauncherRenderEnvironment,
   PluginStateScopeKind,
-  Company,
+  Squad,
   Project,
   Issue,
   IssueComment,
@@ -92,7 +92,7 @@ export type JsonRpcId = string | number;
  * invocation id on nested worker→host calls, but they never author this scope.
  */
 export interface JsonRpcInvocationScope {
-  readonly companyId?: string | null;
+  readonly squadId?: string | null;
 }
 
 export interface JsonRpcInvocationContext {
@@ -246,7 +246,7 @@ export const PLUGIN_RPC_ERROR_CODES = {
   TIMEOUT: -32003,
   /** The worker does not implement the requested optional method. */
   METHOD_NOT_IMPLEMENTED: -32004,
-  /** The worker→host call attempted to escape the current invocation company scope. */
+  /** The worker→host call attempted to escape the current invocation squad scope. */
   INVOCATION_SCOPE_DENIED: -32005,
   /** A catch-all for errors that do not fit other categories. */
   UNKNOWN: -32099,
@@ -260,11 +260,11 @@ export type PluginRpcErrorCode =
 // ---------------------------------------------------------------------------
 
 /**
- * Company scope attached by the host to one top-level plugin invocation.
+ * Squad scope attached by the host to one top-level plugin invocation.
  * Absence of this metadata means the invocation is instance/global scoped.
  */
 export interface PluginInvocationScope {
-  companyId: string;
+  squadId: string;
 }
 
 /**
@@ -370,8 +370,8 @@ export interface RunJobParams {
 export interface GetDataParams {
   /** Plugin-defined data key (e.g. `"sync-health"`). */
   key: string;
-  /** Host-authorized active company scope, when this bridge call is company-scoped. */
-  companyId?: string | null;
+  /** Host-authorized active squad scope, when this bridge call is squad-scoped. */
+  squadId?: string | null;
   /** Context and query parameters from the UI. */
   params: Record<string, unknown>;
   /** Optional launcher/container metadata from the host render environment. */
@@ -394,22 +394,22 @@ export interface PluginPerformActionActorContext {
   agentId: string | null;
   /** Authenticated heartbeat/run id when available. */
   runId: string | null;
-  /** Company id authorized by the host bridge for this action, when applicable. */
-  companyId: string | null;
+  /** Squad id authorized by the host bridge for this action, when applicable. */
+  squadId: string | null;
 }
 
 export interface PluginPerformActionContext {
   /** Immutable authenticated actor context supplied by the host. */
   actor: Readonly<PluginPerformActionActorContext>;
-  /** Convenience alias for `actor.companyId`. */
-  companyId: string | null;
+  /** Convenience alias for `actor.squadId`. */
+  squadId: string | null;
 }
 
 export interface PerformActionParams {
   /** Plugin-defined action key (e.g. `"resync"`). */
   key: string;
-  /** Host-authorized active company scope, when this bridge call is company-scoped. */
-  companyId?: string | null;
+  /** Host-authorized active squad scope, when this bridge call is squad-scoped. */
+  squadId?: string | null;
   /** Action parameters from the UI. */
   params: Record<string, unknown>;
   /** Authenticated actor context resolved by the host, never by caller params. */
@@ -441,7 +441,7 @@ export interface PluginEnvironmentDiagnostic {
 
 export interface PluginEnvironmentDriverBaseParams {
   driverKey: string;
-  companyId: string;
+  squadId: string;
   environmentId: string;
   issueId?: string | null;
   config: Record<string, unknown>;
@@ -681,7 +681,7 @@ export interface WorkerToHostMethods {
   ];
   "localFolders.configure": [
     params: {
-      companyId: string;
+      squadId: string;
       folderKey: string;
       path: string;
       access?: "read" | "readWrite";
@@ -691,20 +691,20 @@ export interface WorkerToHostMethods {
     result: PluginLocalFolderStatus,
   ];
   "localFolders.status": [
-    params: { companyId: string; folderKey: string },
+    params: { squadId: string; folderKey: string },
     result: PluginLocalFolderStatus,
   ];
   "localFolders.list": [
-    params: { companyId: string; folderKey: string; relativePath?: string | null; recursive?: boolean; maxEntries?: number },
+    params: { squadId: string; folderKey: string; relativePath?: string | null; recursive?: boolean; maxEntries?: number },
     result: PluginLocalFolderListing,
   ];
   "localFolders.readText": [
-    params: { companyId: string; folderKey: string; relativePath: string },
+    params: { squadId: string; folderKey: string; relativePath: string },
     result: string,
   ];
   "localFolders.writeTextAtomic": [
     params: {
-      companyId: string;
+      squadId: string;
       folderKey: string;
       relativePath: string;
       contents: string;
@@ -712,7 +712,7 @@ export interface WorkerToHostMethods {
     result: PluginLocalFolderStatus,
   ];
   "localFolders.deleteFile": [
-    params: { companyId: string; folderKey: string; relativePath: string },
+    params: { squadId: string; folderKey: string; relativePath: string },
     result: PluginLocalFolderStatus,
   ];
 
@@ -793,7 +793,7 @@ export interface WorkerToHostMethods {
 
   // Events
   "events.emit": [
-    params: { name: string; companyId: string; payload: unknown },
+    params: { name: string; squadId: string; payload: unknown },
     result: void,
   ];
   "events.subscribe": [
@@ -816,7 +816,7 @@ export interface WorkerToHostMethods {
   // Activity
   "activity.log": [
     params: {
-      companyId: string;
+      squadId: string;
       message: string;
       entityType?: string;
       entityId?: string;
@@ -843,64 +843,64 @@ export interface WorkerToHostMethods {
     result: void,
   ];
 
-  // Companies (read)
-  "companies.list": [
+  // Squads (read)
+  "squads.list": [
     params: { limit?: number; offset?: number },
-    result: Company[],
+    result: Squad[],
   ];
-  "companies.get": [
-    params: { companyId: string },
-    result: Company | null,
+  "squads.get": [
+    params: { squadId: string },
+    result: Squad | null,
   ];
 
   // Projects (read)
   "projects.list": [
-    params: { companyId: string; limit?: number; offset?: number },
+    params: { squadId: string; limit?: number; offset?: number },
     result: Project[],
   ];
   "projects.get": [
-    params: { projectId: string; companyId: string },
+    params: { projectId: string; squadId: string },
     result: Project | null,
   ];
   "projects.listWorkspaces": [
-    params: { projectId: string; companyId: string },
+    params: { projectId: string; squadId: string },
     result: PluginWorkspace[],
   ];
   "projects.getPrimaryWorkspace": [
-    params: { projectId: string; companyId: string },
+    params: { projectId: string; squadId: string },
     result: PluginWorkspace | null,
   ];
   "projects.getWorkspaceForIssue": [
-    params: { issueId: string; companyId: string },
+    params: { issueId: string; squadId: string },
     result: PluginWorkspace | null,
   ];
   "executionWorkspaces.get": [
     params: {
       workspaceId: string;
-      companyId: string;
+      squadId: string;
     },
     result: PluginExecutionWorkspaceMetadata | null,
   ];
   "projects.managed.get": [
-    params: { projectKey: string; companyId: string },
+    params: { projectKey: string; squadId: string },
     result: PluginManagedProjectResolution,
   ];
   "projects.managed.reconcile": [
-    params: { projectKey: string; companyId: string },
+    params: { projectKey: string; squadId: string },
     result: PluginManagedProjectResolution,
   ];
   "projects.managed.reset": [
-    params: { projectKey: string; companyId: string },
+    params: { projectKey: string; squadId: string },
     result: PluginManagedProjectResolution,
   ];
   "routines.managed.get": [
-    params: { routineKey: string; companyId: string },
+    params: { routineKey: string; squadId: string },
     result: PluginManagedRoutineResolution,
   ];
   "routines.managed.reconcile": [
     params: {
       routineKey: string;
-      companyId: string;
+      squadId: string;
       assigneeAgentId?: string | null;
       projectId?: string | null;
     },
@@ -909,7 +909,7 @@ export interface WorkerToHostMethods {
   "routines.managed.reset": [
     params: {
       routineKey: string;
-      companyId: string;
+      squadId: string;
       assigneeAgentId?: string | null;
       projectId?: string | null;
     },
@@ -918,7 +918,7 @@ export interface WorkerToHostMethods {
   "routines.managed.update": [
     params: {
       routineKey: string;
-      companyId: string;
+      squadId: string;
       status?: string;
     },
     result: Routine,
@@ -926,29 +926,29 @@ export interface WorkerToHostMethods {
   "routines.managed.run": [
     params: {
       routineKey: string;
-      companyId: string;
+      squadId: string;
       assigneeAgentId?: string | null;
       projectId?: string | null;
     },
     result: RoutineRun,
   ];
   "skills.managed.get": [
-    params: { skillKey: string; companyId: string },
+    params: { skillKey: string; squadId: string },
     result: PluginManagedSkillResolution,
   ];
   "skills.managed.reconcile": [
-    params: { skillKey: string; companyId: string },
+    params: { skillKey: string; squadId: string },
     result: PluginManagedSkillResolution,
   ];
   "skills.managed.reset": [
-    params: { skillKey: string; companyId: string },
+    params: { skillKey: string; squadId: string },
     result: PluginManagedSkillResolution,
   ];
 
   // Issues
   "issues.list": [
     params: {
-      companyId: string;
+      squadId: string;
       projectId?: string;
       assigneeAgentId?: string;
       originKind?: string;
@@ -962,12 +962,12 @@ export interface WorkerToHostMethods {
     result: Issue[],
   ];
   "issues.get": [
-    params: { issueId: string; companyId: string },
+    params: { issueId: string; squadId: string },
     result: Issue | null,
   ];
   "issues.create": [
     params: {
-      companyId: string;
+      squadId: string;
       projectId?: string;
       goalId?: string;
       parentId?: string;
@@ -1000,18 +1000,18 @@ export interface WorkerToHostMethods {
     params: {
       issueId: string;
       patch: Record<string, unknown>;
-      companyId: string;
+      squadId: string;
     },
     result: Issue,
   ];
   "issues.relations.get": [
-    params: { issueId: string; companyId: string },
+    params: { issueId: string; squadId: string },
     result: PluginIssueRelationSummary,
   ];
   "issues.relations.setBlockedBy": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       blockedByIssueIds: string[];
       actorAgentId?: string | null;
       actorUserId?: string | null;
@@ -1022,7 +1022,7 @@ export interface WorkerToHostMethods {
   "issues.relations.addBlockers": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       blockerIssueIds: string[];
       actorAgentId?: string | null;
       actorUserId?: string | null;
@@ -1033,7 +1033,7 @@ export interface WorkerToHostMethods {
   "issues.relations.removeBlockers": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       blockerIssueIds: string[];
       actorAgentId?: string | null;
       actorUserId?: string | null;
@@ -1044,7 +1044,7 @@ export interface WorkerToHostMethods {
   "issues.assertCheckoutOwner": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       actorAgentId: string;
       actorRunId: string;
     },
@@ -1053,7 +1053,7 @@ export interface WorkerToHostMethods {
   "issues.getSubtree": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       includeRoot?: boolean;
       includeRelations?: boolean;
       includeDocuments?: boolean;
@@ -1065,7 +1065,7 @@ export interface WorkerToHostMethods {
   "issues.requestWakeup": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       reason?: string;
       contextSource?: string;
       idempotencyKey?: string | null;
@@ -1078,7 +1078,7 @@ export interface WorkerToHostMethods {
   "issues.requestWakeups": [
     params: {
       issueIds: string[];
-      companyId: string;
+      squadId: string;
       reason?: string;
       contextSource?: string;
       idempotencyKeyPrefix?: string | null;
@@ -1091,24 +1091,24 @@ export interface WorkerToHostMethods {
   "issues.summaries.getOrchestration": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       includeSubtree?: boolean;
       billingCode?: string | null;
     },
     result: PluginIssueOrchestrationSummary,
   ];
   "issues.listComments": [
-    params: { issueId: string; companyId: string },
+    params: { issueId: string; squadId: string },
     result: IssueComment[],
   ];
   "issues.createComment": [
-    params: { issueId: string; body: string; companyId: string; authorAgentId?: string },
+    params: { issueId: string; body: string; squadId: string; authorAgentId?: string },
     result: IssueComment,
   ];
   "issues.createInteraction": [
     params: {
       issueId: string;
-      companyId: string;
+      squadId: string;
       interaction: CreateIssueThreadInteraction;
       authorAgentId?: string | null;
     },
@@ -1117,11 +1117,11 @@ export interface WorkerToHostMethods {
 
   // Issue Documents
   "issues.documents.list": [
-    params: { issueId: string; companyId: string },
+    params: { issueId: string; squadId: string },
     result: IssueDocumentSummary[],
   ];
   "issues.documents.get": [
-    params: { issueId: string; key: string; companyId: string },
+    params: { issueId: string; key: string; squadId: string },
     result: IssueDocument | null,
   ];
   "issues.documents.upsert": [
@@ -1129,7 +1129,7 @@ export interface WorkerToHostMethods {
       issueId: string;
       key: string;
       body: string;
-      companyId: string;
+      squadId: string;
       title?: string;
       format?: string;
       changeSummary?: string;
@@ -1137,76 +1137,76 @@ export interface WorkerToHostMethods {
     result: IssueDocument,
   ];
   "issues.documents.delete": [
-    params: { issueId: string; key: string; companyId: string },
+    params: { issueId: string; key: string; squadId: string },
     result: void,
   ];
 
   // Agents (read)
   "agents.list": [
-    params: { companyId: string; status?: string; limit?: number; offset?: number },
+    params: { squadId: string; status?: string; limit?: number; offset?: number },
     result: Agent[],
   ];
   "agents.get": [
-    params: { agentId: string; companyId: string },
+    params: { agentId: string; squadId: string },
     result: Agent | null,
   ];
 
   // Agents (write)
   "agents.pause": [
-    params: { agentId: string; companyId: string },
+    params: { agentId: string; squadId: string },
     result: Agent,
   ];
   "agents.resume": [
-    params: { agentId: string; companyId: string },
+    params: { agentId: string; squadId: string },
     result: Agent,
   ];
   "agents.invoke": [
-    params: { agentId: string; companyId: string; prompt: string; reason?: string },
+    params: { agentId: string; squadId: string; prompt: string; reason?: string },
     result: { runId: string },
   ];
   "agents.managed.get": [
-    params: { agentKey: string; companyId: string },
+    params: { agentKey: string; squadId: string },
     result: PluginManagedAgentResolution,
   ];
   "agents.managed.reconcile": [
-    params: { agentKey: string; companyId: string },
+    params: { agentKey: string; squadId: string },
     result: PluginManagedAgentResolution,
   ];
   "agents.managed.reset": [
-    params: { agentKey: string; companyId: string },
+    params: { agentKey: string; squadId: string },
     result: PluginManagedAgentResolution,
   ];
 
   // Agent Sessions
   "agents.sessions.create": [
-    params: { agentId: string; companyId: string; taskKey?: string; reason?: string },
-    result: { sessionId: string; agentId: string; companyId: string; status: "active" | "closed"; createdAt: string },
+    params: { agentId: string; squadId: string; taskKey?: string; reason?: string },
+    result: { sessionId: string; agentId: string; squadId: string; status: "active" | "closed"; createdAt: string },
   ];
   "agents.sessions.list": [
-    params: { agentId: string; companyId: string },
-    result: Array<{ sessionId: string; agentId: string; companyId: string; status: "active" | "closed"; createdAt: string }>,
+    params: { agentId: string; squadId: string },
+    result: Array<{ sessionId: string; agentId: string; squadId: string; status: "active" | "closed"; createdAt: string }>,
   ];
   "agents.sessions.sendMessage": [
-    params: { sessionId: string; companyId: string; prompt: string; reason?: string },
+    params: { sessionId: string; squadId: string; prompt: string; reason?: string },
     result: { runId: string },
   ];
   "agents.sessions.close": [
-    params: { sessionId: string; companyId: string },
+    params: { sessionId: string; squadId: string },
     result: void,
   ];
 
   // Goals
   "goals.list": [
-    params: { companyId: string; level?: string; status?: string; limit?: number; offset?: number },
+    params: { squadId: string; level?: string; status?: string; limit?: number; offset?: number },
     result: Goal[],
   ];
   "goals.get": [
-    params: { goalId: string; companyId: string },
+    params: { goalId: string; squadId: string },
     result: Goal | null,
   ];
   "goals.create": [
     params: {
-      companyId: string;
+      squadId: string;
       title: string;
       description?: string;
       level?: string;
@@ -1220,24 +1220,24 @@ export interface WorkerToHostMethods {
     params: {
       goalId: string;
       patch: Record<string, unknown>;
-      companyId: string;
+      squadId: string;
     },
     result: Goal,
   ];
 
   // Access
   "access.members.list": [
-    params: { companyId: string; includeArchived?: boolean },
+    params: { squadId: string; includeArchived?: boolean },
     result: PluginAccessMember[],
   ];
   "access.members.get": [
-    params: { memberId: string; companyId: string },
+    params: { memberId: string; squadId: string },
     result: PluginAccessMember | null,
   ];
   "access.members.update": [
     params: {
       memberId: string;
-      companyId: string;
+      squadId: string;
       patch: {
         membershipRole?: string | null;
         status?: "pending" | "active" | "suspended";
@@ -1247,7 +1247,7 @@ export interface WorkerToHostMethods {
   ];
   "access.invites.list": [
     params: {
-      companyId: string;
+      squadId: string;
       state?: "active" | "revoked" | "accepted" | "expired";
       limit?: number;
       offset?: number;
@@ -1256,7 +1256,7 @@ export interface WorkerToHostMethods {
   ];
   "access.invites.create": [
     params: {
-      companyId: string;
+      squadId: string;
       allowedJoinTypes?: "human" | "agent" | "both";
       humanRole?: string | null;
       defaultsPayload?: Record<string, unknown> | null;
@@ -1265,18 +1265,18 @@ export interface WorkerToHostMethods {
     result: PluginAccessInvite & { token: string },
   ];
   "access.invites.revoke": [
-    params: { inviteId: string; companyId: string },
+    params: { inviteId: string; squadId: string },
     result: PluginAccessInvite,
   ];
 
   // Authorization
   "authorization.grants.list": [
-    params: { companyId: string; principalType?: string; principalId?: string },
+    params: { squadId: string; principalType?: string; principalId?: string },
     result: PrincipalPermissionGrant[],
   ];
   "authorization.grants.set": [
     params: {
-      companyId: string;
+      squadId: string;
       principalType: string;
       principalId: string;
       grants: Array<{ permissionKey: string; scope?: Record<string, unknown> | null }>;
@@ -1285,17 +1285,17 @@ export interface WorkerToHostMethods {
     result: PrincipalPermissionGrant[],
   ];
   "authorization.policies.summary": [
-    params: { companyId: string },
+    params: { squadId: string },
     result: PluginAuthorizationPolicySummary,
   ];
   "authorization.policies.get": [
-    params: { companyId: string; resourceType: "company" | "agent" | "project" | "issue"; resourceId: string },
+    params: { squadId: string; resourceType: "squad" | "agent" | "project" | "issue"; resourceId: string },
     result: PluginAuthorizationPolicyRecord | null,
   ];
   "authorization.policies.update": [
     params: {
-      companyId: string;
-      resourceType: "company" | "agent" | "project" | "issue";
+      squadId: string;
+      resourceType: "squad" | "agent" | "project" | "issue";
       resourceId: string;
       policy: Record<string, unknown> | null;
     },
@@ -1311,7 +1311,7 @@ export interface WorkerToHostMethods {
   ];
   "authorization.audit.search": [
     params: {
-      companyId: string;
+      squadId: string;
       action?: string;
       actorType?: string;
       actorId?: string;
@@ -1344,28 +1344,28 @@ export interface WorkerToHostNotifications {
    *
    * Emitted by the worker for each event on a stream channel. The host
    * publishes to the PluginStreamBus, which fans out to all SSE clients
-   * subscribed to the (pluginId, channel, companyId) tuple.
+   * subscribed to the (pluginId, channel, squadId) tuple.
    *
    * The `event` payload is JSON-serializable and sent as SSE `data:`.
    * The default SSE event type is `"message"`.
    */
   "streams.emit": {
     channel: string;
-    companyId: string;
+    squadId: string;
     event: unknown;
   };
 
   /**
    * Signal that a stream channel has been opened.
    *
-   * Emitted when the worker calls `ctx.streams.open(channel, companyId)`.
+   * Emitted when the worker calls `ctx.streams.open(channel, squadId)`.
    * UI clients may use this to display a "connected" indicator or begin
    * buffering input. The host tracks open channels so it can emit synthetic
    * close events if the worker crashes.
    */
   "streams.open": {
     channel: string;
-    companyId: string;
+    squadId: string;
   };
 
   /**
@@ -1378,7 +1378,7 @@ export interface WorkerToHostNotifications {
    */
   "streams.close": {
     channel: string;
-    companyId: string;
+    squadId: string;
   };
 }
 

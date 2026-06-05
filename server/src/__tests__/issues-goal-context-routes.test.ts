@@ -24,7 +24,7 @@ const mockProjectService = vi.hoisted(() => ({
 
 const mockGoalService = vi.hoisted(() => ({
   getById: vi.fn(),
-  getDefaultCompanyGoal: vi.fn(),
+  getDefaultSquadGoal: vi.fn(),
 }));
 
 const mockDocumentsService = vi.hoisted(() => ({
@@ -63,7 +63,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
       feedbackDataSharingPreference: "prompt",
     },
   })),
-  listCompanyIds: vi.fn(async () => ["company-1"]),
+  listSquadIds: vi.fn(async () => ["squad-1"]),
 }));
 
 const mockIssueReferenceService = vi.hoisted(() => ({
@@ -98,8 +98,8 @@ const mockDb = vi.hoisted(() => ({
 }));
 
 vi.mock("../services/index.js", () => ({
-  companyService: () => ({
-    getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+  squadService: () => ({
+    getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
   }),
   accessService: () => mockAccessService,
   agentService: () => mockAgentService,
@@ -140,7 +140,7 @@ function createApp() {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -153,10 +153,10 @@ function createApp() {
 
 const legacyProjectLinkedIssue = {
   id: "11111111-1111-4111-8111-111111111111",
-  companyId: "company-1",
+  squadId: "squad-1",
   identifier: "PAP-581",
   title: "Legacy onboarding task",
-  description: "Seed the first CEO task",
+  description: "Seed the first Squad Lead task",
   status: "todo",
   workMode: "planning",
   priority: "medium",
@@ -173,10 +173,10 @@ const legacyProjectLinkedIssue = {
 
 const projectGoal = {
   id: "44444444-4444-4444-8444-444444444444",
-  companyId: "company-1",
-  title: "Launch the company",
+  squadId: "squad-1",
+  title: "Launch the squad",
   description: null,
-  level: "company",
+  level: "squad",
   status: "active",
   parentId: null,
   ownerAgentId: null,
@@ -214,7 +214,7 @@ describe.sequential("issue goal context routes", () => {
     mockDb.execute.mockResolvedValue([]);
     mockProjectService.getById.mockResolvedValue({
       id: legacyProjectLinkedIssue.projectId,
-      companyId: "company-1",
+      squadId: "squad-1",
       urlKey: "onboarding",
       goalId: projectGoal.id,
       goalIds: [projectGoal.id],
@@ -235,8 +235,8 @@ describe.sequential("issue goal context routes", () => {
         defaultRef: null,
         repoName: null,
         localFolder: null,
-        managedFolder: "/tmp/company-1/project-1",
-        effectiveLocalFolder: "/tmp/company-1/project-1",
+        managedFolder: "/tmp/squad-1/project-1",
+        effectiveLocalFolder: "/tmp/squad-1/project-1",
         origin: "managed_checkout",
       },
       workspaces: [],
@@ -249,7 +249,7 @@ describe.sequential("issue goal context routes", () => {
     mockGoalService.getById.mockImplementation(async (id: string) =>
       id === projectGoal.id ? projectGoal : null,
     );
-    mockGoalService.getDefaultCompanyGoal.mockResolvedValue(null);
+    mockGoalService.getDefaultSquadGoal.mockResolvedValue(null);
   });
 
   it("surfaces the project goal from GET /issues/:id when the issue has no direct goal", async () => {
@@ -267,7 +267,7 @@ describe.sequential("issue goal context routes", () => {
       "11111111-1111-4111-8111-111111111111",
       { includeCommentBodies: false },
     );
-    expect(mockGoalService.getDefaultCompanyGoal).not.toHaveBeenCalled();
+    expect(mockGoalService.getDefaultSquadGoal).not.toHaveBeenCalled();
   });
 
   it("surfaces the project goal from GET /issues/:id/heartbeat-context", async () => {
@@ -284,7 +284,7 @@ describe.sequential("issue goal context routes", () => {
         title: projectGoal.title,
       }),
     );
-    expect(mockGoalService.getDefaultCompanyGoal).not.toHaveBeenCalled();
+    expect(mockGoalService.getDefaultSquadGoal).not.toHaveBeenCalled();
     expect(res.body.attachments).toEqual([]);
   });
 

@@ -8,7 +8,7 @@ import { defaultIssueFilterState } from "@/lib/issue-filters";
 import { queryKeys } from "@/lib/queryKeys";
 import { storybookIssues } from "../fixtures/slawData";
 
-const companyId = "company-storybook";
+const squadId = "squad-storybook";
 const blockedViewDefaults = {
   groupBy: "none" as const,
   sortBy: "most_recent" as const,
@@ -168,7 +168,7 @@ const fixtureIssues: Issue[] = [
 function PrimeBlockedFixtures({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   useMemo(() => {
-    queryClient.setQueryData(queryKeys.issues.listBlockedAttention(companyId), fixtureIssues);
+    queryClient.setQueryData(queryKeys.issues.listBlockedAttention(squadId), fixtureIssues);
   }, [queryClient]);
   return <>{children}</>;
 }
@@ -183,7 +183,7 @@ function BlockedTabSurface({ search = "" }: { search?: string }) {
         <div className="rounded-lg border border-border bg-background p-4">
           <BlockedInboxView
             {...blockedViewDefaults}
-            companyId={companyId}
+            squadId={squadId}
             searchQuery={search}
             agentNameById={new Map()}
             issueLinkState={null}
@@ -255,7 +255,7 @@ function BlockedTabEmptyState() {
     <div className="rounded-lg border border-border bg-background p-4">
       <BlockedInboxView
         {...blockedViewDefaults}
-        companyId="company-empty"
+        squadId="squad-empty"
         searchQuery=""
         agentNameById={new Map()}
         issueLinkState={null}

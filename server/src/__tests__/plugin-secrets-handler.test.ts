@@ -5,7 +5,7 @@ import {
 } from "../services/plugin-secrets-handler.js";
 
 describe("createPluginSecretsHandler", () => {
-  it("fails closed for plugin secret resolution until company scoping lands", async () => {
+  it("fails closed for plugin secret resolution until squad scoping lands", async () => {
     const handler = createPluginSecretsHandler({
       db: {} as never,
       pluginId: "11111111-1111-4111-8111-111111111111",

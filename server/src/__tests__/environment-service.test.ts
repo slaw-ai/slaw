@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { agents, companies, createDb, environmentLeases, environments, heartbeatRuns } from "@slaw/db";
+import { agents, squads, createDb, environmentLeases, environments, heartbeatRuns } from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -34,7 +34,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
     await db.delete(heartbeatRuns);
     await db.delete(agents);
     await db.delete(environments);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -42,13 +42,13 @@ describeEmbeddedPostgres("environmentService leases", () => {
   });
 
   async function seedEnvironment() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const environmentId = randomUUID();
     const runId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
       status: "active",
       createdAt: new Date(),
@@ -56,7 +56,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
     });
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -69,7 +69,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
     });
     await db.insert(environments).values({
       id: environmentId,
-      companyId,
+      squadId,
       name: "Local",
       driver: "local",
       status: "active",
@@ -79,7 +79,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
     });
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "manual",
       status: "running",
@@ -87,14 +87,14 @@ describeEmbeddedPostgres("environmentService leases", () => {
       updatedAt: new Date(),
     });
 
-    return { companyId, agentId, environmentId, runId };
+    return { squadId, agentId, environmentId, runId };
   }
 
   it("acquires and releases a lease for a run", async () => {
-    const { companyId, environmentId, runId } = await seedEnvironment();
+    const { squadId, environmentId, runId } = await seedEnvironment();
 
     const lease = await svc.acquireLease({
-      companyId,
+      squadId,
       environmentId,
       heartbeatRunId: runId,
       metadata: { driver: "local" },
@@ -110,12 +110,12 @@ describeEmbeddedPostgres("environmentService leases", () => {
   });
 
   it("releases all active leases for a run without touching unrelated rows", async () => {
-    const { companyId, agentId, environmentId, runId } = await seedEnvironment();
+    const { squadId, agentId, environmentId, runId } = await seedEnvironment();
     const otherRunId = randomUUID();
 
     await db.insert(heartbeatRuns).values({
       id: otherRunId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "manual",
       status: "running",
@@ -124,12 +124,12 @@ describeEmbeddedPostgres("environmentService leases", () => {
     });
 
     const targetLease = await svc.acquireLease({
-      companyId,
+      squadId,
       environmentId,
       heartbeatRunId: runId,
     });
     const otherLease = await svc.acquireLease({
-      companyId,
+      squadId,
       environmentId,
       heartbeatRunId: otherRunId,
     });
@@ -142,31 +142,31 @@ describeEmbeddedPostgres("environmentService leases", () => {
     expect(stillActive.map((lease) => lease.id)).toEqual([otherLease.id]);
   });
 
-  it("creates and then reuses the default local environment for a company", async () => {
-    const companyId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+  it("creates and then reuses the default local environment for a squad", async () => {
+    const squadId = randomUUID();
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
       status: "active",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    const created = await svc.ensureLocalEnvironment(companyId);
-    const reused = await svc.ensureLocalEnvironment(companyId);
+    const created = await svc.ensureLocalEnvironment(squadId);
+    const reused = await svc.ensureLocalEnvironment(squadId);
 
     expect(created.driver).toBe("local");
     expect(reused.id).toBe(created.id);
 
-    const rows = await db.select().from(environments).where(eq(environments.companyId, companyId));
+    const rows = await db.select().from(environments).where(eq(environments.squadId, squadId));
     expect(rows).toHaveLength(1);
     expect(rows[0]?.name).toBe("Local");
   });
 
   it("leaves an existing default local environment untouched", async () => {
-    const companyId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+    const squadId = randomUUID();
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
       status: "active",
       createdAt: new Date(),
@@ -176,7 +176,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
     const [existing] = await db
       .insert(environments)
       .values({
-        companyId,
+        squadId,
         name: "Archived Local",
         description: "Operator-managed local environment",
         driver: "local",
@@ -188,22 +188,22 @@ describeEmbeddedPostgres("environmentService leases", () => {
       })
       .returning();
 
-    const ensured = await svc.ensureLocalEnvironment(companyId);
+    const ensured = await svc.ensureLocalEnvironment(squadId);
 
     expect(ensured.id).toBe(existing?.id);
     expect(ensured.name).toBe("Archived Local");
     expect(ensured.status).toBe("archived");
     expect(ensured.metadata).toEqual({ owner: "operator" });
 
-    const rows = await db.select().from(environments).where(eq(environments.companyId, companyId));
+    const rows = await db.select().from(environments).where(eq(environments.squadId, squadId));
     expect(rows).toHaveLength(1);
     expect(rows[0]?.updatedAt.toISOString()).toBe(archivedAt.toISOString());
   });
 
   it("deduplicates concurrent default local environment creation", async () => {
-    const companyId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+    const squadId = randomUUID();
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
       status: "active",
       createdAt: new Date(),
@@ -211,33 +211,33 @@ describeEmbeddedPostgres("environmentService leases", () => {
     });
 
     const results = await Promise.all(
-      Array.from({ length: 8 }, () => svc.ensureLocalEnvironment(companyId)),
+      Array.from({ length: 8 }, () => svc.ensureLocalEnvironment(squadId)),
     );
 
     expect(new Set(results.map((environment) => environment.id)).size).toBe(1);
 
-    const rows = await db.select().from(environments).where(eq(environments.companyId, companyId));
+    const rows = await db.select().from(environments).where(eq(environments.squadId, squadId));
     expect(rows).toHaveLength(1);
     expect(rows[0]?.driver).toBe("local");
     expect(rows[0]?.status).toBe("active");
   });
 
-  it("allows multiple SSH environments for the same company", async () => {
-    const companyId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+  it("allows multiple SSH environments for the same squad", async () => {
+    const squadId = randomUUID();
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
       status: "active",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    const first = await svc.create(companyId, {
+    const first = await svc.create(squadId, {
       name: "Production SSH",
       driver: "ssh",
       config: { host: "prod.example.com", username: "deploy" },
     });
-    const second = await svc.create(companyId, {
+    const second = await svc.create(squadId, {
       name: "Staging SSH",
       driver: "ssh",
       config: { host: "staging.example.com", username: "deploy" },
@@ -245,7 +245,7 @@ describeEmbeddedPostgres("environmentService leases", () => {
 
     expect(first.id).not.toBe(second.id);
 
-    const rows = await db.select().from(environments).where(eq(environments.companyId, companyId));
+    const rows = await db.select().from(environments).where(eq(environments.squadId, squadId));
     expect(rows.filter((row) => row.driver === "ssh")).toHaveLength(2);
   });
 });

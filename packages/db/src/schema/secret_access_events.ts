@@ -1,6 +1,6 @@
 import { index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
-import { companySecrets } from "./company_secrets.js";
+import { squads } from "./squads.js";
+import { squadSecrets } from "./squad_secrets.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";
 import { issues } from "./issues.js";
 import { plugins } from "./plugins.js";
@@ -9,8 +9,8 @@ export const secretAccessEvents = pgTable(
   "secret_access_events",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
-    secretId: uuid("secret_id").notNull().references(() => companySecrets.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
+    secretId: uuid("secret_id").notNull().references(() => squadSecrets.id, { onDelete: "cascade" }),
     version: integer("version"),
     provider: text("provider").notNull(),
     actorType: text("actor_type").notNull(),
@@ -26,9 +26,9 @@ export const secretAccessEvents = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyCreatedIdx: index("secret_access_events_company_created_idx").on(table.companyId, table.createdAt),
+    squadCreatedIdx: index("secret_access_events_squad_created_idx").on(table.squadId, table.createdAt),
     secretCreatedIdx: index("secret_access_events_secret_created_idx").on(table.secretId, table.createdAt),
-    consumerIdx: index("secret_access_events_consumer_idx").on(table.companyId, table.consumerType, table.consumerId),
+    consumerIdx: index("secret_access_events_consumer_idx").on(table.squadId, table.consumerType, table.consumerId),
     runIdx: index("secret_access_events_run_idx").on(table.heartbeatRunId),
   }),
 );

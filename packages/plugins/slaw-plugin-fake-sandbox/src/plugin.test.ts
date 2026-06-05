@@ -25,7 +25,7 @@ describe("fake sandbox provider plugin", () => {
     });
     const base = {
       driverKey: "fake-plugin",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: { image: "fake:test", reuseLease: false },
     };
@@ -101,7 +101,7 @@ describe("fake sandbox provider plugin", () => {
       });
       const base = {
         driverKey: "fake-plugin",
-        companyId: "company-1",
+        squadId: "squad-1",
         environmentId: "env-1",
         config: { image: "fake:test", reuseLease: false },
       };
@@ -155,7 +155,7 @@ describe("fake sandbox provider plugin", () => {
     });
     const base = {
       driverKey: "fake-plugin",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: { image: "fake:test", reuseLease: false },
     };
@@ -197,7 +197,7 @@ describe("fake sandbox provider plugin", () => {
     });
     const base = {
       driverKey: "fake-plugin",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: { image: "fake:test", reuseLease: false },
     };

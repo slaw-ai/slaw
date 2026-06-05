@@ -6,7 +6,7 @@ function makeClient() {
   return new SlawApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
-    companyId: "11111111-1111-1111-1111-111111111111",
+    squadId: "11111111-1111-1111-1111-111111111111",
     agentId: "22222222-2222-2222-2222-222222222222",
     runId: "33333333-3333-3333-3333-333333333333",
   });
@@ -52,7 +52,7 @@ describe("slaw MCP tools", () => {
     );
   });
 
-  it("uses default company id for company-scoped list tools", async () => {
+  it("uses default squad id for squad-scoped list tools", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       mockJsonResponse([{ id: "issue-1" }]),
     );
@@ -64,7 +64,7 @@ describe("slaw MCP tools", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url] = fetchMock.mock.calls[0] as [string];
     expect(String(url)).toBe(
-      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/issues",
+      "http://localhost:3100/api/squads/11111111-1111-1111-1111-111111111111/issues",
     );
     expect(response.content[0]?.text).toContain("issue-1");
   });
@@ -101,7 +101,7 @@ describe("slaw MCP tools", () => {
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toBe(
-      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/issues",
+      "http://localhost:3100/api/squads/11111111-1111-1111-1111-111111111111/issues",
     );
     expect(init.method).toBe("POST");
     expect(JSON.parse(String(init.body))).toEqual({
@@ -292,7 +292,7 @@ describe("slaw MCP tools", () => {
     });
   });
 
-  it("creates approvals with the expected company-scoped payload", async () => {
+  it("creates approvals with the expected squad-scoped payload", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       mockJsonResponse({ id: "approval-1" }),
     );
@@ -308,7 +308,7 @@ describe("slaw MCP tools", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toBe(
-      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/approvals",
+      "http://localhost:3100/api/squads/11111111-1111-1111-1111-111111111111/approvals",
     );
     expect(init.method).toBe("POST");
     expect(JSON.parse(String(init.body))).toEqual({

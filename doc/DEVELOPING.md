@@ -77,7 +77,7 @@ account, and use the setup screen to claim the first instance admin from the
 browser. The CLI fallback remains:
 
 ```sh
-pnpm slaw auth bootstrap-ceo
+pnpm slaw auth bootstrap-squad-lead
 ```
 
 For Tailscale-only reachability on a detected tailnet address:
@@ -180,7 +180,7 @@ Every local install keeps runtime state directly under the selected instance roo
   secrets/master.key                             # local_encrypted master key
   workspaces/<agent-id>/                         # default agent workspaces
   projects/                                      # project execution workspaces
-  companies/<company-id>/codex-home/             # per-company codex_local home
+  squads/<squad-id>/codex-home/             # per-squad codex_local home
 ```
 
 `SLAW_HOME` and `SLAW_INSTANCE_ID` override the home root and instance id respectively. `slaw onboard` echoes the resolved values in its banner (`Local home: <home> | instance: <id> | config: <path>`) so you can confirm where state will land before continuing.
@@ -246,9 +246,9 @@ When a local agent run has no resolved project/session workspace, Slaw falls bac
 
 This path honors `SLAW_HOME` and `SLAW_INSTANCE_ID` in non-default setups.
 
-For `codex_local`, Slaw also manages a per-company Codex home under the instance root and seeds it from the shared Codex login/config home (`$CODEX_HOME` or `~/.codex`):
+For `codex_local`, Slaw also manages a per-squad Codex home under the instance root and seeds it from the shared Codex login/config home (`$CODEX_HOME` or `~/.codex`):
 
-- `~/.slaw/instances/default/companies/<company-id>/codex-home`
+- `~/.slaw/instances/default/squads/<squad-id>/codex-home`
 
 If the `codex` CLI is not installed or not on `PATH`, `codex_local` agent runs fail at execution time with a clear adapter error. Quota polling uses a short-lived `codex app-server` subprocess: when `codex` cannot be spawned, that provider reports `ok: false` in aggregated quota results and the API server keeps running (it must not exit on a missing binary).
 
@@ -276,7 +276,7 @@ This command:
 
 Seed modes:
 
-- `minimal` keeps core app state like companies, projects, issues, comments, approvals, and auth state, preserves schema for all tables, but omits row data from heavy operational history such as heartbeat runs, wake requests, activity logs, runtime services, and agent session state
+- `minimal` keeps core app state like squads, projects, issues, comments, approvals, and auth state, preserves schema for all tables, but omits row data from heavy operational history such as heartbeat runs, wake requests, activity logs, runtime services, and agent session state
 - `full` makes a full logical clone of the source instance
 - `--no-seed` creates an empty isolated instance
 
@@ -448,7 +448,7 @@ For project execution worktrees, Slaw can also run a project-defined provision c
 
 ## App-Shipped Skills Catalog
 
-The Slaw app ships a curated catalog of company skills out of the box. The
+The Slaw app ships a curated catalog of squad skills out of the box. The
 catalog is a workspace package at `packages/skills-catalog`:
 
 ```text
@@ -508,13 +508,13 @@ In another terminal:
 
 ```sh
 curl http://localhost:3100/api/health
-curl http://localhost:3100/api/companies
+curl http://localhost:3100/api/squads
 ```
 
 Expected:
 
 - `/api/health` returns `{"status":"ok"}`
-- `/api/companies` returns a JSON array
+- `/api/squads` returns a JSON array
 
 ## Reset Local Dev Database
 
@@ -588,11 +588,11 @@ CLI configuration support:
 - `pnpm slaw onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
 - `pnpm slaw configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
 - `pnpm slaw doctor` validates secrets adapter configuration, can create a missing local key file with `--repair`, and reports missing AWS Secrets Manager bootstrap env when that provider is selected.
-- Provider health is available at `GET /api/companies/:companyId/secret-providers/health` and reports local key permission warnings plus backup guidance.
+- Provider health is available at `GET /api/squads/:squadId/secret-providers/health` and reports local key permission warnings plus backup guidance.
 
-Per-company provider vaults are configured in the board UI under
-`Company Settings → Secrets → Provider vaults`, backed by
-`/api/companies/{companyId}/secret-provider-configs`. The CLI does not own
+Per-squad provider vaults are configured in the board UI under
+`Squad Settings → Secrets → Provider vaults`, backed by
+`/api/squads/{squadId}/secret-provider-configs`. The CLI does not own
 vault lifecycle today. See `docs/deploy/secrets.md` (`Provider Vaults` section)
 for the operator model.
 
@@ -603,12 +603,12 @@ pnpm secrets:migrate-inline-env         # dry run
 pnpm secrets:migrate-inline-env --apply # apply migration
 ```
 
-## Company Deletion Toggle
+## Squad Deletion Toggle
 
-Company deletion is intended as a dev/debug capability and can be disabled at runtime:
+Squad deletion is intended as a dev/debug capability and can be disabled at runtime:
 
 ```sh
-SLAW_ENABLE_COMPANY_DELETION=false
+SLAW_ENABLE_SQUAD_DELETION=false
 ```
 
 Default behavior:
@@ -623,15 +623,15 @@ Slaw CLI now includes client-side control-plane commands in addition to setup co
 Quick examples:
 
 ```sh
-pnpm slaw issue list --company-id <company-id>
-pnpm slaw issue create --company-id <company-id> --title "Investigate checkout conflict"
+pnpm slaw issue list --squad-id <squad-id>
+pnpm slaw issue create --squad-id <squad-id> --title "Investigate checkout conflict"
 pnpm slaw issue update <issue-id> --status in_progress --comment "Started triage"
 ```
 
 Set defaults once with context profiles:
 
 ```sh
-pnpm slaw context set --api-base http://localhost:3100 --company-id <company-id>
+pnpm slaw context set --api-base http://localhost:3100 --squad-id <squad-id>
 ```
 
 Then run commands without repeating flags:
@@ -647,7 +647,7 @@ See full command reference in `doc/CLI.md`.
 
 Agent-oriented invite onboarding now exposes machine-readable API docs:
 
-The board UI generates agent onboarding prompts from the add-agent modal (`+` in the agent sidebar), so agent onboarding sits with the rest of agent creation rather than company member invite settings.
+The board UI generates agent onboarding prompts from the add-agent modal (`+` in the agent sidebar), so agent onboarding sits with the rest of agent creation rather than squad member invite settings.
 
 - `GET /api/invites/:token` returns invite summary plus onboarding and skills index links.
 - `GET /api/invites/:token/onboarding` returns onboarding manifest details (registration endpoint, claim endpoint template, skill install hints).

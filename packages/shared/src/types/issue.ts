@@ -68,7 +68,7 @@ export interface IssueAncestor {
 
 export interface IssueLabel {
   id: string;
-  companyId: string;
+  squadId: string;
   name: string;
   color: string;
   createdAt: Date;
@@ -85,7 +85,7 @@ export type DocumentFormat = "markdown";
 
 export interface IssueDocumentSummary {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   key: string;
   title: string | null;
@@ -109,7 +109,7 @@ export interface IssueDocument extends IssueDocumentSummary {
 
 export interface DocumentRevision {
   id: string;
-  companyId: string;
+  squadId: string;
   documentId: string;
   issueId: string;
   key: string;
@@ -157,7 +157,7 @@ export interface AcceptedPlanDecompositionChild {
 
 export interface AcceptedPlanDecomposition {
   id: string;
-  companyId: string;
+  squadId: string;
   sourceIssueId: string;
   acceptedPlanRevisionId: string;
   acceptedInteractionId: string | null;
@@ -313,7 +313,7 @@ export interface IssueProductivityReview {
 
 export interface IssueRecoveryAction {
   id: string;
-  companyId: string;
+  squadId: string;
   sourceIssueId: string;
   recoveryIssueId: string | null;
   kind: IssueRecoveryActionKind;
@@ -382,7 +382,7 @@ export interface IssueRetryNowResponse {
 
 export interface IssueRelation {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   relatedIssueId: string;
   type: "blocks";
@@ -480,7 +480,7 @@ export interface IssueExecutionState {
 
 export interface IssueExecutionDecision {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   stageId: string;
   stageType: IssueExecutionStageType;
@@ -495,7 +495,7 @@ export interface IssueExecutionDecision {
 
 export interface Issue {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   projectWorkspaceId: string | null;
   goalId: string | null;
@@ -567,7 +567,7 @@ export interface Issue {
 
 export interface IssueComment {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   authorType: IssueCommentAuthorType;
   authorAgentId: string | null;
@@ -780,7 +780,7 @@ export interface RequestConfirmationResult {
 
 export interface IssueThreadInteractionBase extends IssueThreadInteractionActorFields {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   kind: IssueThreadInteractionKind;
   idempotencyKey?: string | null;
@@ -830,7 +830,7 @@ export type IssueThreadInteractionResult =
 
 export interface IssueAttachment {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   issueCommentId: string | null;
   assetId: string;

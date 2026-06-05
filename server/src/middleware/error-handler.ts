@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import { HttpError } from "../errors.js";
 import { trackErrorHandlerCrash } from "@slaw/shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
-import { COMPANY_IMPORT_API_PATH } from "../routes/company-import-paths.js";
+import { SQUAD_IMPORT_API_PATH } from "../routes/squad-import-paths.js";
 
 export interface ErrorContext {
   error: { message: string; stack?: string; name?: string; details?: unknown; raw?: unknown };
@@ -84,5 +84,5 @@ export function errorHandler(
 function shouldExposeTrustedCloudTenantImportError(req: Request) {
   return req.actor?.source === "cloud_tenant"
     && req.method === "POST"
-    && req.originalUrl.split("?")[0] === COMPANY_IMPORT_API_PATH;
+    && req.originalUrl.split("?")[0] === SQUAD_IMPORT_API_PATH;
 }

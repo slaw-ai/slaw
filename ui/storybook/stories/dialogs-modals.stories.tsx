@@ -16,14 +16,14 @@ import { NewGoalDialog } from "@/components/NewGoalDialog";
 import { NewIssueDialog } from "@/components/NewIssueDialog";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import { PathInstructionsModal } from "@/components/PathInstructionsModal";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { useDialog } from "@/context/DialogContext";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Agent } from "@slaw/shared";
 import {
   storybookAgents,
   storybookAuthSession,
-  storybookCompanies,
+  storybookSquads,
   storybookExecutionWorkspaces,
   storybookIssueDocuments,
   storybookIssueLabels,
@@ -31,17 +31,17 @@ import {
   storybookProjects,
 } from "../fixtures/slawData";
 
-const COMPANY_ID = "company-storybook";
-const SELECTED_COMPANY_STORAGE_KEY = "slaw.selectedCompanyId";
+const SQUAD_ID = "squad-storybook";
+const SELECTED_SQUAD_STORAGE_KEY = "slaw.selectedSquadId";
 const ISSUE_DRAFT_STORAGE_KEY = "slaw:issue-draft";
 
 const storybookGoals: Goal[] = [
   {
-    id: "goal-company",
-    companyId: COMPANY_ID,
+    id: "goal-squad",
+    squadId: SQUAD_ID,
     title: "Build Slaw",
-    description: "Make autonomous companies easier to run and govern.",
-    level: "company",
+    description: "Make autonomous squads easier to run and govern.",
+    level: "squad",
     status: "active",
     parentId: null,
     ownerAgentId: "agent-cto",
@@ -50,24 +50,24 @@ const storybookGoals: Goal[] = [
   },
   {
     id: "goal-storybook",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     title: "Complete Storybook coverage",
     description: "Expose dense board UI states for review before release.",
     level: "team",
     status: "active",
-    parentId: "goal-company",
+    parentId: "goal-squad",
     ownerAgentId: "agent-codex",
     createdAt: new Date("2026-04-17T09:00:00.000Z"),
     updatedAt: new Date("2026-04-20T11:10:00.000Z"),
   },
   {
     id: "goal-governance",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     title: "Tighten governance review",
     description: "Make review and approval gates visible in every operator flow.",
     level: "team",
     status: "planned",
-    parentId: "goal-company",
+    parentId: "goal-squad",
     ownerAgentId: "agent-cto",
     createdAt: new Date("2026-04-18T09:00:00.000Z"),
     updatedAt: new Date("2026-04-20T11:15:00.000Z"),
@@ -77,7 +77,7 @@ const storybookGoals: Goal[] = [
 const documentRevisions: DocumentRevision[] = [
   {
     id: "revision-plan-1",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     documentId: "document-plan-storybook",
     issueId: "issue-storybook-1",
     key: "plan",
@@ -98,7 +98,7 @@ const documentRevisions: DocumentRevision[] = [
   },
   {
     id: "revision-plan-2",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     documentId: "document-plan-storybook",
     issueId: "issue-storybook-1",
     key: "plan",
@@ -120,7 +120,7 @@ const documentRevisions: DocumentRevision[] = [
   },
   {
     id: "revision-plan-3",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     documentId: "document-plan-storybook",
     issueId: "issue-storybook-1",
     key: "plan",
@@ -213,7 +213,7 @@ const closeReadinessBlocked: ExecutionWorkspaceCloseReadiness = {
 const galleryImages: IssueAttachment[] = [
   {
     id: "attachment-storybook-dashboard",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     issueId: "issue-storybook-1",
     issueCommentId: null,
     assetId: "asset-dashboard",
@@ -232,7 +232,7 @@ const galleryImages: IssueAttachment[] = [
   },
   {
     id: "attachment-storybook-diff",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     issueId: "issue-storybook-1",
     issueCommentId: null,
     assetId: "asset-diff",
@@ -329,19 +329,19 @@ function DialogBackdropFrame({
 }
 
 function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
-  queryClient.setQueryData(queryKeys.companies.all, { companies: storybookCompanies, unauthorized: false });
+  queryClient.setQueryData(queryKeys.squads.all, { squads: storybookSquads, unauthorized: false });
   queryClient.setQueryData(queryKeys.auth.session, storybookAuthSession);
-  queryClient.setQueryData(queryKeys.agents.list(COMPANY_ID), storybookAgents);
-  queryClient.setQueryData(queryKeys.projects.list(COMPANY_ID), storybookProjects);
-  queryClient.setQueryData(queryKeys.goals.list(COMPANY_ID), storybookGoals);
-  queryClient.setQueryData(queryKeys.issues.list(COMPANY_ID), storybookIssues);
-  queryClient.setQueryData(queryKeys.issues.labels(COMPANY_ID), storybookIssueLabels);
+  queryClient.setQueryData(queryKeys.agents.list(SQUAD_ID), storybookAgents);
+  queryClient.setQueryData(queryKeys.projects.list(SQUAD_ID), storybookProjects);
+  queryClient.setQueryData(queryKeys.goals.list(SQUAD_ID), storybookGoals);
+  queryClient.setQueryData(queryKeys.issues.list(SQUAD_ID), storybookIssues);
+  queryClient.setQueryData(queryKeys.issues.labels(SQUAD_ID), storybookIssueLabels);
   queryClient.setQueryData(queryKeys.issues.documents("issue-storybook-1"), storybookIssueDocuments);
   queryClient.setQueryData(queryKeys.issues.documentRevisions("issue-storybook-1", "plan"), documentRevisions);
   queryClient.setQueryData(queryKeys.executionWorkspaces.closeReadiness("execution-workspace-storybook"), closeReadinessReady);
   queryClient.setQueryData(queryKeys.executionWorkspaces.closeReadiness("execution-workspace-blocked"), closeReadinessBlocked);
   queryClient.setQueryData(
-    queryKeys.executionWorkspaces.list(COMPANY_ID, {
+    queryKeys.executionWorkspaces.list(SQUAD_ID, {
       projectId: "project-board-ui",
       projectWorkspaceId: "workspace-board-ui",
       reuseEligible: true,
@@ -352,7 +352,7 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
     enableIsolatedWorkspaces: true,
     enableRoutineTriggers: true,
   });
-  queryClient.setQueryData(queryKeys.access.companyUserDirectory(COMPANY_ID), {
+  queryClient.setQueryData(queryKeys.access.squadUserDirectory(SQUAD_ID), {
     users: [
       {
         principalId: "user-board",
@@ -367,7 +367,7 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
     ],
   });
   queryClient.setQueryData(
-    queryKeys.sidebarPreferences.projectOrder(COMPANY_ID, storybookAuthSession.user.id),
+    queryKeys.sidebarPreferences.projectOrder(SQUAD_ID, storybookAuthSession.user.id),
     { orderedIds: storybookProjects.map((project) => project.id), updatedAt: null },
   );
   queryClient.setQueryData(queryKeys.adapters.all, [
@@ -402,11 +402,11 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
       },
     },
   ]);
-  queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "codex_local"), [
+  queryClient.setQueryData(queryKeys.agents.adapterModels(SQUAD_ID, "codex_local"), [
     { id: "gpt-5.4", label: "GPT-5.4" },
     { id: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
   ]);
-  queryClient.setQueryData(queryKeys.agents.adapterModelProfiles(COMPANY_ID, "codex_local"), [
+  queryClient.setQueryData(queryKeys.agents.adapterModelProfiles(SQUAD_ID, "codex_local"), [
     {
       key: "cheap",
       label: "Cheap",
@@ -418,7 +418,7 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
 
 const HERMES_AGENT: Agent = {
   id: "agent-hermes",
-  companyId: COMPANY_ID,
+  squadId: SQUAD_ID,
   name: "HermesRouter",
   urlKey: "hermesrouter",
   role: "engineer",
@@ -445,7 +445,7 @@ function StorybookDialogFixtures({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [ready] = useState(() => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(SELECTED_COMPANY_STORAGE_KEY, COMPANY_ID);
+      window.localStorage.setItem(SELECTED_SQUAD_STORAGE_KEY, SQUAD_ID);
       window.localStorage.removeItem(ISSUE_DRAFT_STORAGE_KEY);
     }
     hydrateDialogQueries(queryClient);
@@ -468,7 +468,7 @@ function useIssueCreateErrorMock(enabled: boolean) {
             ? input.href
             : input.url;
       const url = new URL(rawUrl, window.location.origin);
-      if (url.pathname === `/api/companies/${COMPANY_ID}/issues` && init?.method === "POST") {
+      if (url.pathname === `/api/squads/${SQUAD_ID}/issues` && init?.method === "POST") {
         return Response.json(
           { error: "Validation failed: add a reviewer before creating governed release work." },
           { status: 422 },
@@ -504,19 +504,19 @@ function clickButtonByText(text: string) {
   button?.click();
 }
 
-function useOpenWhenCompanyReady(open: () => void) {
-  const { selectedCompanyId, setSelectedCompanyId } = useCompany();
+function useOpenWhenSquadReady(open: () => void) {
+  const { selectedSquadId, setSelectedSquadId } = useSquad();
   const didOpenRef = useRef(false);
 
   useLayoutEffect(() => {
-    if (selectedCompanyId !== COMPANY_ID) {
-      setSelectedCompanyId(COMPANY_ID);
+    if (selectedSquadId !== SQUAD_ID) {
+      setSelectedSquadId(SQUAD_ID);
       return;
     }
     if (didOpenRef.current) return;
     didOpenRef.current = true;
     open();
-  }, [open, selectedCompanyId, setSelectedCompanyId]);
+  }, [open, selectedSquadId, setSelectedSquadId]);
 }
 
 function IssueDialogOpener({
@@ -527,7 +527,7 @@ function IssueDialogOpener({
   const { openNewIssue } = useDialog();
   useIssueCreateErrorMock(variant === "validation");
 
-  useOpenWhenCompanyReady(() => {
+  useOpenWhenSquadReady(() => {
     openNewIssue(
       variant === "empty"
         ? {}
@@ -564,7 +564,7 @@ function IssueDialogOpener({
 function AgentDialogOpener({ variant = "recommendation" }: { variant?: "recommendation" | "advanced" | "invite" }) {
   const { openNewAgent } = useDialog();
 
-  useOpenWhenCompanyReady(() => {
+  useOpenWhenSquadReady(() => {
     openNewAgent();
   });
 
@@ -582,8 +582,8 @@ function AgentDialogOpener({ variant = "recommendation" }: { variant?: "recommen
 function GoalDialogOpener({ populated }: { populated?: boolean }) {
   const { openNewGoal } = useDialog();
 
-  useOpenWhenCompanyReady(() => {
-    openNewGoal(populated ? { parentId: "goal-company" } : {});
+  useOpenWhenSquadReady(() => {
+    openNewGoal(populated ? { parentId: "goal-squad" } : {});
   });
 
   useEffect(() => {
@@ -600,7 +600,7 @@ function GoalDialogOpener({ populated }: { populated?: boolean }) {
 function ProjectDialogOpener({ populated }: { populated?: boolean }) {
   const { openNewProject } = useDialog();
 
-  useOpenWhenCompanyReady(() => {
+  useOpenWhenSquadReady(() => {
     openNewProject();
   });
 
@@ -715,7 +715,7 @@ function useCheapLaneAdapterOverrides(variant: CheapLaneVariant) {
   useLayoutEffect(() => {
     if (variant !== "unsupported") return;
     queryClient.setQueryData(
-      queryKeys.agents.list(COMPANY_ID),
+      queryKeys.agents.list(SQUAD_ID),
       [...storybookAgents, HERMES_AGENT],
     );
     queryClient.setQueryData(queryKeys.adapters.all, [
@@ -750,7 +750,7 @@ function useCheapLaneAdapterOverrides(variant: CheapLaneVariant) {
         },
       },
     ]);
-    queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "opencode_local"), [
+    queryClient.setQueryData(queryKeys.agents.adapterModels(SQUAD_ID, "opencode_local"), [
       { id: "anthropic/claude-haiku-4-5", label: "Claude Haiku 4.5" },
       { id: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini" },
     ]);
@@ -771,7 +771,7 @@ function CheapLaneIssueDialogOpener({ variant }: { variant: CheapLaneVariant }) 
       ? "HermesRouter runs on an adapter that does not advertise a cheap profile, so the Cheap lane should disappear instead of being greyed."
       : "Lower-cost runs should still pick up the agent's cheap profile so the model badge can show the requested lane.";
 
-  useOpenWhenCompanyReady(() => {
+  useOpenWhenSquadReady(() => {
     openNewIssue({
       title,
       description,
@@ -945,9 +945,9 @@ export const NewAgentRecommendation: Story = {
   render: () => (
     <DialogStory
       eyebrow="NewAgentDialog"
-      title="Recommended CEO-assisted setup"
-      description="Initial agent creation wizard state that routes operators toward CEO-owned agent setup."
-      badges={["empty", "wizard", "CEO handoff"]}
+      title="Recommended Squad Lead-assisted setup"
+      description="Initial agent creation wizard state that routes operators toward Squad Lead-owned agent setup."
+      badges={["empty", "wizard", "Squad Lead handoff"]}
     >
       <AgentDialogOpener />
     </DialogStory>
@@ -1002,7 +1002,7 @@ export const NewGoalWithParent: Story = {
     <DialogStory
       eyebrow="NewGoalDialog"
       title="Goal creation with parent context"
-      description="Populated goal creation state with a seeded title and company-level parent goal selected."
+      description="Populated goal creation state with a seeded title and squad-level parent goal selected."
       badges={["populated", "sub-goal", "parent selected"]}
     >
       <GoalDialogOpener populated />

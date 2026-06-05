@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "Luo ensimmäinen yrityksesi",
       "description": "Aloita luomalla yritys.",
-      "newCompany": "Uusi yritys"
+      "newSquad": "Uusi yritys"
     }
   }
 }

@@ -52,7 +52,7 @@ function printUsage() {
 Usage:
   SLAW_API_URL=http://localhost:3100 \\
   SLAW_API_KEY=... \\
-  SLAW_COMPANY_ID=... \\
+  SLAW_SQUAD_ID=... \\
   pnpm smoke:terminal-bench-loop-skill
 
 Options:
@@ -131,7 +131,7 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const apiUrl = requireEnv("SLAW_API_URL");
   const apiKey = requireEnv("SLAW_API_KEY");
-  const companyId = requireEnv("SLAW_COMPANY_ID");
+  const squadId = requireEnv("SLAW_SQUAD_ID");
   const runId = process.env.SLAW_RUN_ID ?? null;
   const api = createApiClient({ apiUrl, apiKey, runId });
 
@@ -151,7 +151,7 @@ async function main() {
     priority: "low",
   };
 
-  const loop = await api("POST", `/api/companies/${companyId}/issues`, {
+  const loop = await api("POST", `/api/squads/${squadId}/issues`, {
     body: {
       ...commonIssueFields,
       ...(sourceIssue ? { parentId: sourceIssue.id } : {}),
@@ -168,7 +168,7 @@ async function main() {
     },
   });
 
-  const iteration = await api("POST", `/api/companies/${companyId}/issues`, {
+  const iteration = await api("POST", `/api/squads/${squadId}/issues`, {
     body: {
       ...commonIssueFields,
       parentId: loop.id,

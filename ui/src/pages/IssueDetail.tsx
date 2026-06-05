@@ -12,14 +12,14 @@ import { accessApi, type CurrentBoardAccess } from "../api/access";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { projectsApi } from "../api/projects";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { usePanel } from "../context/PanelContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useToastActions } from "../context/ToastContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { assigneeValueFromSelection, suggestedCommentAssigneeValue } from "../lib/assignees";
-import { buildCompanyUserInlineOptions, buildCompanyUserLabelMap, buildCompanyUserProfileMap, buildMarkdownMentionOptions } from "../lib/company-members";
+import { buildSquadUserInlineOptions, buildSquadUserLabelMap, buildSquadUserProfileMap, buildMarkdownMentionOptions } from "../lib/squad-members";
 import { extractIssueTimelineEvents } from "../lib/issue-timeline-events";
 import { queryKeys } from "../lib/queryKeys";
 import { keepPreviousDataForSameQueryTail } from "../lib/query-placeholder-data";
@@ -218,17 +218,17 @@ function treeControlPreviewErrorCopy(error: unknown): string {
 }
 
 export function canBoardResolveRecoveryAction(
-  companyId: string | null | undefined,
+  squadId: string | null | undefined,
   boardAccess: CurrentBoardAccess | undefined,
 ) {
-  if (!companyId || !boardAccess) return false;
+  if (!squadId || !boardAccess) return false;
   if (boardAccess.source === "local_implicit" || boardAccess.isInstanceAdmin) return true;
   if (!boardAccess.memberships || boardAccess.memberships.length === 0) {
-    return boardAccess.companyIds.includes(companyId);
+    return boardAccess.squadIds.includes(squadId);
   }
 
   const membership = boardAccess.memberships.find(
-    (item) => item.companyId === companyId && item.status === "active",
+    (item) => item.squadId === squadId && item.status === "active",
   );
   if (!membership) return false;
   return membership.membershipRole !== "viewer" && membership.membershipRole !== null;
@@ -355,7 +355,7 @@ function mergeOptimisticFeedbackVote(
     ...existingVotes,
     {
       id: `optimistic:${nextVote.targetType}:${nextVote.targetId}`,
-      companyId: "",
+      squadId: "",
       issueId: nextVote.issueId,
       targetType: nextVote.targetType,
       targetId: nextVote.targetId,
@@ -372,7 +372,7 @@ function mergeOptimisticFeedbackVote(
   ];
 }
 
-function ActorIdentity({ evt, agentMap, userProfileMap }: { evt: ActivityEvent; agentMap: Map<string, Agent>; userProfileMap?: Map<string, import("../lib/company-members").CompanyUserProfile> }) {
+function ActorIdentity({ evt, agentMap, userProfileMap }: { evt: ActivityEvent; agentMap: Map<string, Agent>; userProfileMap?: Map<string, import("../lib/squad-members").SquadUserProfile> }) {
   const id = evt.actorId;
   if (evt.actorType === "agent") {
     const agent = agentMap.get(id);
@@ -613,7 +613,7 @@ function InboxMobileToolbar({
 
 type IssueDetailChatTabProps = {
   issueId: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   issueStatus: Issue["status"];
   issueWorkMode: IssueWorkMode;
@@ -646,7 +646,7 @@ type IssueDetailChatTabProps = {
   agentMap: Map<string, Agent>;
   currentUserId: string | null;
   userLabelMap: ReadonlyMap<string, string> | null;
-  userProfileMap: ReadonlyMap<string, import("../lib/company-members").CompanyUserProfile> | null;
+  userProfileMap: ReadonlyMap<string, import("../lib/squad-members").SquadUserProfile> | null;
   draftKey: string;
   reassignOptions: Array<{ id: string; label: string; searchText?: string }>;
   currentAssigneeValue: string;
@@ -686,7 +686,7 @@ type IssueDetailChatTabProps = {
 
 const IssueDetailChatTab = memo(function IssueDetailChatTab({
   issueId,
-  companyId,
+  squadId,
   projectId,
   issueWorkMode,
   issueStatus,
@@ -912,7 +912,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         onResolveRecoveryAction={onResolveRecoveryAction}
         canFalsePositiveRecoveryAction={canFalsePositiveRecoveryAction}
         legacyRecoverySourceIssue={legacyRecoverySourceIssue ?? null}
-        companyId={companyId}
+        squadId={squadId}
         projectId={projectId}
         issueStatus={issueStatus}
         agentMap={agentMap}
@@ -966,13 +966,13 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
 type IssueDetailActivityTabProps = {
   issue: Issue;
   issueId: string;
-  companyId: string;
+  squadId: string;
   issueStatus: Issue["status"];
   childIssues: Issue[];
   agentMap: Map<string, Agent>;
   hasLiveRuns: boolean;
   currentUserId: string | null;
-  userProfileMap: Map<string, import("../lib/company-members").CompanyUserProfile>;
+  userProfileMap: Map<string, import("../lib/squad-members").SquadUserProfile>;
   pendingApprovalAction: { approvalId: string; action: "approve" | "reject" } | null;
   onApprovalAction: (approvalId: string, action: "approve" | "reject") => void;
   onCheckMonitorNow: () => void;
@@ -983,7 +983,7 @@ type IssueDetailActivityTabProps = {
 function IssueDetailActivityTab({
   issue,
   issueId,
-  companyId,
+  squadId,
   issueStatus,
   childIssues,
   agentMap,
@@ -1169,7 +1169,7 @@ function IssueDetailActivityTab({
       <div className="mb-3">
         <IssueRunLedger
           issueId={issueId}
-          companyId={companyId}
+          squadId={squadId}
           issueStatus={issueStatus}
           childIssues={childIssues}
           agentMap={agentMap}
@@ -1229,7 +1229,7 @@ function IssueDetailActivityTab({
 
 export function IssueDetail() {
   const { issueId } = useParams<{ issueId: string }>();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { openNewIssue } = useDialogActions();
   const { openPanel, closePanel, panelVisible, setPanelVisible } = usePanel();
   const { setBreadcrumbs, setMobileToolbar } = useBreadcrumbs();
@@ -1282,7 +1282,7 @@ export function IssueDetail() {
     }),
     enabled: !!issueId,
   });
-  const resolvedCompanyId = issue?.companyId ?? selectedCompanyId;
+  const resolvedSquadId = issue?.squadId ?? selectedSquadId;
   const commentComposerDisabledReason = useMemo(() => {
     if (!issue?.currentExecutionWorkspace || !isClosedIsolatedExecutionWorkspace(issue.currentExecutionWorkspace)) {
       return null;
@@ -1379,11 +1379,11 @@ export function IssueDetail() {
 
   const { data: rawChildIssues = [], isLoading: childIssuesLoading } = useQuery({
     queryKey:
-      issue?.id && resolvedCompanyId
-        ? queryKeys.issues.listByDescendantRoot(resolvedCompanyId, issue.id)
+      issue?.id && resolvedSquadId
+        ? queryKeys.issues.listByDescendantRoot(resolvedSquadId, issue.id)
         : ["issues", "parent", "pending"],
-    queryFn: () => issuesApi.list(resolvedCompanyId!, { descendantOf: issue!.id, includeBlockedBy: true }),
-    enabled: !!resolvedCompanyId && !!issue?.id,
+    queryFn: () => issuesApi.list(resolvedSquadId!, { descendantOf: issue!.id, includeBlockedBy: true }),
+    enabled: !!resolvedSquadId && !!issue?.id,
     placeholderData: keepPreviousDataForSameQueryTail<Issue[]>(issue?.id ?? "pending"),
   });
   const {
@@ -1392,29 +1392,29 @@ export function IssueDetail() {
     isError: siblingIssuesError,
   } = useQuery({
     queryKey:
-      issue?.parentId && resolvedCompanyId
-        ? queryKeys.issues.listByParent(resolvedCompanyId, issue.parentId)
+      issue?.parentId && resolvedSquadId
+        ? queryKeys.issues.listByParent(resolvedSquadId, issue.parentId)
         : ["issues", "siblings", "pending"],
-    queryFn: () => issuesApi.list(resolvedCompanyId!, { parentId: issue!.parentId!, includeBlockedBy: true }),
-    enabled: !!resolvedCompanyId && !!issue?.parentId,
+    queryFn: () => issuesApi.list(resolvedSquadId!, { parentId: issue!.parentId!, includeBlockedBy: true }),
+    enabled: !!resolvedSquadId && !!issue?.parentId,
   });
-  const { data: companyLiveRuns } = useQuery({
-    queryKey: resolvedCompanyId ? queryKeys.liveRuns(resolvedCompanyId) : ["live-runs", "pending"],
-    queryFn: () => heartbeatsApi.liveRunsForCompany(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId,
+  const { data: squadLiveRuns } = useQuery({
+    queryKey: resolvedSquadId ? queryKeys.liveRuns(resolvedSquadId) : ["live-runs", "pending"],
+    queryFn: () => heartbeatsApi.liveRunsForSquad(resolvedSquadId!),
+    enabled: !!resolvedSquadId,
     refetchInterval: 5000,
-    placeholderData: keepPreviousDataForSameQueryTail<LiveRunForIssue[]>(resolvedCompanyId ?? "pending"),
+    placeholderData: keepPreviousDataForSameQueryTail<LiveRunForIssue[]>(resolvedSquadId ?? "pending"),
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: session } = useQuery({
@@ -1423,9 +1423,9 @@ export function IssueDetail() {
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const { data: boardAccess } = useQuery({
@@ -1435,10 +1435,10 @@ export function IssueDetail() {
     retry: false,
   });
   const canManageTreeControl = Boolean(
-    selectedCompanyId
-    && boardAccess?.companyIds?.includes(selectedCompanyId),
+    selectedSquadId
+    && boardAccess?.squadIds?.includes(selectedSquadId),
   );
-  const canResolveBoardRecoveryAction = canBoardResolveRecoveryAction(selectedCompanyId, boardAccess);
+  const canResolveBoardRecoveryAction = canBoardResolveRecoveryAction(selectedSquadId, boardAccess);
   const { data: feedbackVotes } = useQuery({
     queryKey: queryKeys.issues.feedbackVotes(issueId!),
     queryFn: () => issuesApi.listFeedbackVotes(issueId!),
@@ -1462,14 +1462,14 @@ export function IssueDetail() {
     instanceExperimentalSettings?.enableIssuePlanDecompositions === true;
   const { orderedProjects } = useProjectOrder({
     projects: projects ?? [],
-    companyId: selectedCompanyId,
+    squadId: selectedSquadId,
     userId: currentUserId,
   });
   const { slots: issuePluginDetailSlots } = usePluginSlots({
     slotTypes: ["detailTab"],
     entityType: "issue",
-    companyId: resolvedCompanyId,
-    enabled: !!resolvedCompanyId,
+    squadId: resolvedSquadId,
+    enabled: !!resolvedSquadId,
   });
   const issuePluginTabItems = useMemo(
     () => issuePluginDetailSlots.map((slot) => ({
@@ -1535,20 +1535,20 @@ export function IssueDetail() {
     return map;
   }, [agents]);
   const userProfileMap = useMemo(
-    () => buildCompanyUserProfileMap(companyMembers?.users),
-    [companyMembers?.users],
+    () => buildSquadUserProfileMap(squadMembers?.users),
+    [squadMembers?.users],
   );
   const userLabelMap = useMemo(
-    () => buildCompanyUserLabelMap(companyMembers?.users),
-    [companyMembers?.users],
+    () => buildSquadUserLabelMap(squadMembers?.users),
+    [squadMembers?.users],
   );
   const mentionOptions = useMemo<MentionOption[]>(() => {
     return buildMarkdownMentionOptions({
       agents,
       projects: orderedProjects,
-      members: companyMembers?.users,
+      members: squadMembers?.users,
     });
-  }, [agents, companyMembers?.users, orderedProjects]);
+  }, [agents, squadMembers?.users, orderedProjects]);
 
   const resolvedProject = useMemo(
     () => (issue?.projectId ? orderedProjects.find((project) => project.id === issue.projectId) ?? issue.project ?? null : null),
@@ -1561,7 +1561,7 @@ export function IssueDetail() {
     },
     [issue?.id, rawChildIssues],
   );
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(companyLiveRuns), [companyLiveRuns]);
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(squadLiveRuns), [squadLiveRuns]);
   const issuePanelKey = useMemo(
     () => buildIssuePropertiesPanelKey(issue ?? null, childIssues),
     [childIssues, issue],
@@ -1592,7 +1592,7 @@ export function IssueDetail() {
 
   const commentReassignOptions = useMemo(() => {
     const options: Array<{ id: string; label: string; searchText?: string }> = [];
-    options.push(...buildCompanyUserInlineOptions(companyMembers?.users, { excludeUserIds: [currentUserId] }));
+    options.push(...buildSquadUserInlineOptions(squadMembers?.users, { excludeUserIds: [currentUserId] }));
     const activeAgents = [...(agents ?? [])]
       .filter((agent) => agent.status !== "terminated")
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -1603,7 +1603,7 @@ export function IssueDetail() {
       options.push({ id: `user:${currentUserId}`, label: "Me" });
     }
     return options;
-  }, [agents, companyMembers?.users, currentUserId]);
+  }, [agents, squadMembers?.users, currentUserId]);
 
   const actualAssigneeValue = useMemo(
     () => assigneeValueFromSelection(issue ?? {}),
@@ -1674,14 +1674,14 @@ export function IssueDetail() {
   }, []);
 
   const invalidateIssueCollections = useCallback(() => {
-    if (selectedCompanyId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(selectedCompanyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedCompanyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(selectedCompanyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedCompanyId) });
+    if (selectedSquadId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedSquadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(selectedSquadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedSquadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(selectedSquadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedSquadId) });
     }
-  }, [queryClient, selectedCompanyId]);
+  }, [queryClient, selectedSquadId]);
   const upsertInteractionInCache = useCallback((interaction: IssueThreadInteraction) => {
     queryClient.setQueryData<IssueThreadInteraction[] | undefined>(
       queryKeys.issues.interactions(issueId!),
@@ -1705,12 +1705,12 @@ export function IssueDetail() {
       (cached) => (cached && matchesIssueRef(cached, refs) ? applyOptimisticIssueFieldUpdate(cached, data) : cached),
     );
 
-    if (!selectedCompanyId) return;
+    if (!selectedSquadId) return;
     queryClient.setQueryData<Issue[] | undefined>(
-      queryKeys.issues.list(selectedCompanyId),
+      queryKeys.issues.list(selectedSquadId),
       (cached) => applyOptimisticIssueFieldUpdateToCollection(cached, refs, data),
     );
-  }, [queryClient, selectedCompanyId]);
+  }, [queryClient, selectedSquadId]);
 
   const mergeIssueResponseIntoCaches = useCallback((refs: Iterable<string>, nextIssue: Issue) => {
     queryClient.setQueriesData<Issue>(
@@ -1718,21 +1718,21 @@ export function IssueDetail() {
       (cached) => (cached && matchesIssueRef(cached, refs) ? { ...cached, ...nextIssue } : cached),
     );
 
-    if (!selectedCompanyId) return;
+    if (!selectedSquadId) return;
     queryClient.setQueryData<Issue[] | undefined>(
-      queryKeys.issues.list(selectedCompanyId),
+      queryKeys.issues.list(selectedSquadId),
       (cached) => cached?.map((item) => (matchesIssueRef(item, refs) ? { ...item, ...nextIssue } : item)),
     );
-  }, [queryClient, selectedCompanyId]);
+  }, [queryClient, selectedSquadId]);
 
   const markIssueRead = useMutation({
     mutationFn: (id: string) => issuesApi.markRead(id),
     onSuccess: () => {
-      if (selectedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(selectedCompanyId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedCompanyId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(selectedCompanyId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedCompanyId) });
+      if (selectedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(selectedSquadId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedSquadId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(selectedSquadId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedSquadId) });
       }
     },
   });
@@ -1741,8 +1741,8 @@ export function IssueDetail() {
     mutationFn: (data: Record<string, unknown>) => issuesApi.update(issueId!, data),
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.issues.detail(issueId!) });
-      if (selectedCompanyId) {
-        await queryClient.cancelQueries({ queryKey: queryKeys.issues.list(selectedCompanyId) });
+      if (selectedSquadId) {
+        await queryClient.cancelQueries({ queryKey: queryKeys.issues.list(selectedSquadId) });
       }
 
       const previousIssue = queryClient.getQueryData<Issue>(queryKeys.issues.detail(issueId!));
@@ -1753,13 +1753,13 @@ export function IssueDetail() {
       const previousDetailQueries = queryClient
         .getQueriesData<Issue>({ queryKey: ["issues", "detail"] })
         .filter(([, cachedIssue]) => cachedIssue && matchesIssueRef(cachedIssue, issueRefs));
-      const previousList = selectedCompanyId
-        ? queryClient.getQueryData<Issue[]>(queryKeys.issues.list(selectedCompanyId))
+      const previousList = selectedSquadId
+        ? queryClient.getQueryData<Issue[]>(queryKeys.issues.list(selectedSquadId))
         : undefined;
 
       applyOptimisticIssueCacheUpdate(issueRefs, data);
 
-      return { previousDetailQueries, previousList, selectedCompanyId };
+      return { previousDetailQueries, previousList, selectedSquadId };
     },
     onSuccess: ({ comment: _comment, ...nextIssue }) => {
       const issueRefs = new Set<string>([issueId!, nextIssue.id]);
@@ -1772,8 +1772,8 @@ export function IssueDetail() {
       for (const [queryKey, previousIssue] of context?.previousDetailQueries ?? []) {
         queryClient.setQueryData(queryKey, previousIssue);
       }
-      if (context?.selectedCompanyId) {
-        queryClient.setQueryData(queryKeys.issues.list(context.selectedCompanyId), context.previousList);
+      if (context?.selectedSquadId) {
+        queryClient.setQueryData(queryKeys.issues.list(context.selectedSquadId), context.previousList);
       }
       pushToast({
         title: "Issue update failed",
@@ -1783,8 +1783,8 @@ export function IssueDetail() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issueId!) });
-      if (selectedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId) });
+      if (selectedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedSquadId) });
       }
     },
   });
@@ -1811,8 +1811,8 @@ export function IssueDetail() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issueId!) });
-      if (selectedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId) });
+      if (selectedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedSquadId) });
       }
     },
   });
@@ -1877,13 +1877,13 @@ export function IssueDetail() {
         queryClient.invalidateQueries({ queryKey: ["issues", "tree-holds", issueId ?? "pending"] }),
         queryClient.invalidateQueries({ queryKey: ["issues", "tree-control-preview", issueId ?? "pending"] }),
       ]);
-      if (selectedCompanyId) {
+      if (selectedSquadId) {
         await Promise.all([
-          queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedSquadId) }),
           ...(issue?.id
             ? [
-                queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByParent(selectedCompanyId, issue.id) }),
-                queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByDescendantRoot(selectedCompanyId, issue.id) }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByParent(selectedSquadId, issue.id) }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByDescendantRoot(selectedSquadId, issue.id) }),
               ]
             : []),
         ]);
@@ -1943,9 +1943,9 @@ export function IssueDetail() {
   const updateChildIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => issuesApi.update(id, data),
     onSuccess: () => {
-      if (resolvedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: ["issues", resolvedCompanyId] });
-        queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(resolvedCompanyId) });
+      if (resolvedSquadId) {
+        queryClient.invalidateQueries({ queryKey: ["issues", resolvedSquadId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(resolvedSquadId) });
       }
     },
     onError: (err) => {
@@ -1995,8 +1995,8 @@ export function IssueDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.approvals(issueId!) });
       invalidateIssueCollections();
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.detail(variables.approvalId) });
-      if (resolvedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(resolvedCompanyId) });
+      if (resolvedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(resolvedSquadId) });
       }
       pushToast({
         title: variables.action === "approve" ? "Approval approved" : "Approval rejected",
@@ -2026,7 +2026,7 @@ export function IssueDetail() {
       const queuedComment = !interrupt ? readIssueRunStateFromCache(queryClient, issueId!).runningIssueRun : null;
       const optimisticComment = issue
         ? createOptimisticIssueComment({
-            companyId: issue.companyId,
+            squadId: issue.squadId,
             issueId: issue.id,
             body,
             authorUserId: currentUserId,
@@ -2126,8 +2126,8 @@ export function IssueDetail() {
     }) => issuesApi.acceptInteraction(issueId!, interaction.id, { selectedClientKeys }),
     onSuccess: (interaction) => {
       upsertInteractionInCache(interaction);
-      if (interaction.kind === "suggest_tasks" && resolvedCompanyId && issue?.id) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByParent(resolvedCompanyId, issue.id) });
+      if (interaction.kind === "suggest_tasks" && resolvedSquadId && issue?.id) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByParent(resolvedSquadId, issue.id) });
       }
       invalidateIssueDetail();
       invalidateIssueCollections();
@@ -2248,7 +2248,7 @@ export function IssueDetail() {
       const queuedComment = !interrupt ? readIssueRunStateFromCache(queryClient, issueId!).runningIssueRun : null;
       const optimisticComment = issue
         ? createOptimisticIssueComment({
-            companyId: issue.companyId,
+            squadId: issue.squadId,
             issueId: issue.id,
             body,
             authorUserId: currentUserId,
@@ -2523,7 +2523,7 @@ export function IssueDetail() {
     },
     onSuccess: (_savedVote, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.feedbackVotes(issueId!) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.instance.generalSettings });
       pushToast({
         title:
@@ -2551,8 +2551,8 @@ export function IssueDetail() {
 
   const uploadAttachment = useMutation({
     mutationFn: async (file: File) => {
-      if (!selectedCompanyId) throw new Error("No company selected");
-      return issuesApi.uploadAttachment(selectedCompanyId, issueId!, file);
+      if (!selectedSquadId) throw new Error("No squad selected");
+      return issuesApi.uploadAttachment(selectedSquadId, issueId!, file);
     },
     onSuccess: () => {
       setAttachmentError(null);
@@ -3657,7 +3657,7 @@ export function IssueDetail() {
         slotTypes={["toolbarButton", "contextMenuItem"]}
         entityType="issue"
         context={{
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           projectId: issue.projectId ?? null,
           entityId: issue.id,
           entityType: "issue",
@@ -3671,7 +3671,7 @@ export function IssueDetail() {
         placementZones={["toolbarButton"]}
         entityType="issue"
         context={{
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           projectId: issue.projectId ?? null,
           entityId: issue.id,
           entityType: "issue",
@@ -3684,7 +3684,7 @@ export function IssueDetail() {
         slotTypes={["taskDetailView"]}
         entityType="issue"
         context={{
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           projectId: issue.projectId ?? null,
           entityId: issue.id,
           entityType: "issue",
@@ -3837,7 +3837,7 @@ export function IssueDetail() {
           {detailTab === "chat" ? (
             <IssueDetailChatTab
               issueId={issue.id}
-              companyId={issue.companyId}
+              squadId={issue.squadId}
               projectId={issue.projectId ?? null}
               issueStatus={issue.status}
               issueWorkMode={issue.workMode ?? "standard"}
@@ -3916,7 +3916,7 @@ export function IssueDetail() {
             <IssueDetailActivityTab
               issue={issue}
               issueId={issue.id}
-              companyId={issue.companyId}
+              squadId={issue.squadId}
               issueStatus={issue.status}
               childIssues={childIssues}
               agentMap={agentMap}
@@ -3943,7 +3943,7 @@ export function IssueDetail() {
             <PluginSlotMount
               slot={activePluginTab.slot}
               context={{
-                companyId: issue.companyId,
+                squadId: issue.squadId,
                 projectId: issue.projectId ?? null,
                 entityId: issue.id,
                 entityType: "issue",

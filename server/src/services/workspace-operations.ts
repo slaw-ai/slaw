@@ -13,7 +13,7 @@ type WorkspaceOperationRow = typeof workspaceOperations.$inferSelect;
 function toWorkspaceOperation(row: WorkspaceOperationRow): WorkspaceOperation {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     executionWorkspaceId: row.executionWorkspaceId ?? null,
     heartbeatRunId: row.heartbeatRunId ?? null,
     phase: row.phase as WorkspaceOperationPhase,
@@ -86,7 +86,7 @@ export function workspaceOperationService(db: Db) {
     getById,
 
     createRecorder(input: {
-      companyId: string;
+      squadId: string;
       heartbeatRunId?: string | null;
       executionWorkspaceId?: string | null;
     }): WorkspaceOperationRecorder {
@@ -113,7 +113,7 @@ export function workspaceOperationService(db: Db) {
           const startedAt = new Date();
           const id = randomUUID();
           const handle = await logStore.begin({
-            companyId: input.companyId,
+            squadId: input.squadId,
             operationId: id,
           });
 
@@ -133,7 +133,7 @@ export function workspaceOperationService(db: Db) {
 
           await db.insert(workspaceOperations).values({
             id,
-            companyId: input.companyId,
+            squadId: input.squadId,
             executionWorkspaceId,
             heartbeatRunId: input.heartbeatRunId ?? null,
             phase: recordInput.phase,

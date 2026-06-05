@@ -107,21 +107,21 @@ describe("CloudAccessGate", () => {
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
       userId: "user-1",
       isInstanceAdmin: false,
-      companyIds: [],
+      squadIds: [],
       source: "session",
       keyId: null,
     });
 
     const root = renderGate(container);
-    await waitForText(container, "No company access");
+    await waitForText(container, "No squad access");
 
-    expect(container.textContent).toContain("No company access");
+    expect(container.textContent).toContain("No squad access");
     expect(container.textContent).not.toContain("Outlet content");
 
     unmountRoot(root);
   });
 
-  it("allows authenticated users with company access through to the board", async () => {
+  it("allows authenticated users with squad access through to the board", async () => {
     mockAuthApi.getSession.mockResolvedValue({
       session: { id: "session-1", userId: "user-1" },
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
@@ -130,7 +130,7 @@ describe("CloudAccessGate", () => {
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
       userId: "user-1",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "session",
       keyId: null,
     });
@@ -139,7 +139,7 @@ describe("CloudAccessGate", () => {
     await waitForText(container, "Outlet content");
 
     expect(container.textContent).toContain("Outlet content");
-    expect(container.textContent).not.toContain("No company access");
+    expect(container.textContent).not.toContain("No squad access");
 
     unmountRoot(root);
   });
@@ -159,7 +159,7 @@ describe("CloudAccessGate", () => {
 
     expect(container.textContent).toContain("Finish setting up this Slaw");
     expect(container.textContent).toContain("Sign in / Create account");
-    expect(container.textContent).toContain("pnpm slaw auth bootstrap-ceo");
+    expect(container.textContent).toContain("pnpm slaw auth bootstrap-squad-lead");
     expect(mockAccessApi.getCurrentBoardAccess).not.toHaveBeenCalled();
 
     unmountRoot(root);

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "plugin_managed_resources" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"plugin_id" uuid NOT NULL,
 	"plugin_key" text NOT NULL,
 	"resource_kind" text NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "plugin_managed_resources" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
-	ALTER TABLE "plugin_managed_resources" ADD CONSTRAINT "plugin_managed_resources_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;
+	ALTER TABLE "plugin_managed_resources" ADD CONSTRAINT "plugin_managed_resources_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
 	WHEN duplicate_object THEN NULL;
 END $$;
@@ -23,7 +23,7 @@ EXCEPTION
 	WHEN duplicate_object THEN NULL;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "plugin_managed_resources_company_idx" ON "plugin_managed_resources" USING btree ("company_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "plugin_managed_resources_squad_idx" ON "plugin_managed_resources" USING btree ("squad_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "plugin_managed_resources_plugin_idx" ON "plugin_managed_resources" USING btree ("plugin_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "plugin_managed_resources_resource_idx" ON "plugin_managed_resources" USING btree ("resource_kind","resource_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "plugin_managed_resources_company_plugin_resource_uq" ON "plugin_managed_resources" USING btree ("company_id","plugin_id","resource_kind","resource_key");
+CREATE UNIQUE INDEX IF NOT EXISTS "plugin_managed_resources_squad_plugin_resource_uq" ON "plugin_managed_resources" USING btree ("squad_id","plugin_id","resource_kind","resource_key");

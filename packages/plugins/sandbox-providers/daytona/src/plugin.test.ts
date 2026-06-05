@@ -140,7 +140,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentProbe?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         snapshot: "base-snapshot",
@@ -170,7 +170,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     const lease = await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -201,7 +201,7 @@ describe("Daytona sandbox provider plugin", () => {
     await expect(
       plugin.definition.onEnvironmentAcquireLease?.({
         driverKey: "daytona",
-        companyId: "company-1",
+        squadId: "squad-1",
         environmentId: "env-1",
         runId: "run-1",
         config: {
@@ -227,7 +227,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     const lease = await plugin.definition.onEnvironmentAcquireLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       runId: "run-1",
       config: {
@@ -253,7 +253,7 @@ describe("Daytona sandbox provider plugin", () => {
     await expect(
       plugin.definition.onEnvironmentResumeLease?.({
         driverKey: "daytona",
-        companyId: "company-1",
+        squadId: "squad-1",
         environmentId: "env-1",
         providerLeaseId: "sandbox-resume",
         config: {
@@ -273,7 +273,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     await expect(plugin.definition.onEnvironmentResumeLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "sandbox-123",
       config: {
@@ -294,7 +294,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentReleaseLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "sandbox-reusable",
       config: {
@@ -304,7 +304,7 @@ describe("Daytona sandbox provider plugin", () => {
     });
     await plugin.definition.onEnvironmentReleaseLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "sandbox-ephemeral",
       config: {
@@ -326,7 +326,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentReleaseLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "sandbox-error",
       config: {
@@ -348,7 +348,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     await plugin.definition.onEnvironmentReleaseLease?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       providerLeaseId: "sandbox-running",
       config: {
@@ -374,7 +374,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         timeoutMs: 300000,
@@ -415,7 +415,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         timeoutMs: 300000,
@@ -453,7 +453,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     await expect(plugin.definition.onEnvironmentExecute?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         timeoutMs: 300000,
@@ -476,7 +476,7 @@ describe("Daytona sandbox provider plugin", () => {
 
     const result = await plugin.definition.onEnvironmentExecute?.({
       driverKey: "daytona",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       config: {
         timeoutMs: 300000,

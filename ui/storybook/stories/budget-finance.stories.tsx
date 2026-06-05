@@ -80,7 +80,7 @@ function CaseFrame({
 const budgetIncidents: BudgetIncident[] = [
   {
     id: "incident-agent-resolved",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     policyId: "budget-agent-codex",
     scopeType: "agent",
     scopeId: "agent-codex",
@@ -101,7 +101,7 @@ const budgetIncidents: BudgetIncident[] = [
   },
   {
     id: "incident-project-pending",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     policyId: "budget-project-app",
     scopeType: "project",
     scopeId: "project-board-ui",
@@ -121,11 +121,11 @@ const budgetIncidents: BudgetIncident[] = [
     updatedAt: at(8),
   },
   {
-    id: "incident-company-escalated",
-    companyId: "company-storybook",
-    policyId: "budget-company",
-    scopeType: "company",
-    scopeId: "company-storybook",
+    id: "incident-squad-escalated",
+    squadId: "squad-storybook",
+    policyId: "budget-squad",
+    scopeType: "squad",
+    scopeId: "squad-storybook",
     scopeName: "Slaw Storybook",
     metric: "billed_cents",
     windowKind: "calendar_month_utc",
@@ -278,7 +278,7 @@ const billerSpendRows: Array<{
   state: "healthy" | "warning" | "critical";
   row: CostByBiller;
   providerRows: CostByProviderModel[];
-  totalCompanySpendCents: number;
+  totalSquadSpendCents: number;
   weekSpendCents: number;
 }> = [
   {
@@ -298,7 +298,7 @@ const billerSpendRows: Array<{
       modelCount: 2,
     },
     providerRows: providerRowsByProvider.anthropic,
-    totalCompanySpendCents: 83_000,
+    totalSquadSpendCents: 83_000,
     weekSpendCents: 3_870,
   },
   {
@@ -318,7 +318,7 @@ const billerSpendRows: Array<{
       modelCount: 2,
     },
     providerRows: providerRowsByProvider.openai,
-    totalCompanySpendCents: 218_000,
+    totalSquadSpendCents: 218_000,
     weekSpendCents: 10_430,
   },
   {
@@ -338,7 +338,7 @@ const billerSpendRows: Array<{
       modelCount: 2,
     },
     providerRows: providerRowsByProvider.openrouter,
-    totalCompanySpendCents: 286_000,
+    totalSquadSpendCents: 286_000,
     weekSpendCents: 14_630,
   },
 ];
@@ -406,11 +406,11 @@ const financeKindRows: FinanceByKind[] = [
 const financeTimelineRows: FinanceEvent[] = [
   {
     id: "finance-event-openai-invoice",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     agentId: null,
     issueId: null,
     projectId: "project-board-ui",
-    goalId: "goal-company",
+    goalId: "goal-squad",
     heartbeatRunId: null,
     costEventId: null,
     billingCode: "product",
@@ -435,11 +435,11 @@ const financeTimelineRows: FinanceEvent[] = [
   },
   {
     id: "finance-event-bedrock-compute",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     agentId: "agent-codex",
     issueId: "issue-storybook-1",
     projectId: "project-board-ui",
-    goalId: "goal-company",
+    goalId: "goal-squad",
     heartbeatRunId: "run-storybook",
     costEventId: null,
     billingCode: "product",
@@ -464,11 +464,11 @@ const financeTimelineRows: FinanceEvent[] = [
   },
   {
     id: "finance-event-log-storage",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     agentId: null,
     issueId: null,
     projectId: "project-observability",
-    goalId: "goal-company",
+    goalId: "goal-squad",
     heartbeatRunId: null,
     costEventId: null,
     billingCode: "ops",
@@ -493,11 +493,11 @@ const financeTimelineRows: FinanceEvent[] = [
   },
   {
     id: "finance-event-credit-refund",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     agentId: null,
     issueId: null,
     projectId: null,
-    goalId: "goal-company",
+    goalId: "goal-squad",
     heartbeatRunId: null,
     costEventId: null,
     billingCode: "finance",
@@ -531,7 +531,7 @@ const sidebarMarkers: Array<{
   {
     level: "healthy",
     label: "Healthy",
-    detail: "27% of company budget used",
+    detail: "27% of squad budget used",
     icon: CheckCircle2,
   },
   {
@@ -586,7 +586,7 @@ function BudgetFinanceMatrix() {
                 onRaiseAndResume={() => undefined}
               />
             </CaseFrame>
-            <CaseFrame title="Escalated hard stop" detail="Company spend exceeded the cap and the first approval needs revision." tone="critical">
+            <CaseFrame title="Escalated hard stop" detail="Squad spend exceeded the cap and the first approval needs revision." tone="critical">
               <BudgetIncidentCard
                 incident={budgetIncidents[2]!}
                 onKeepPaused={() => undefined}
@@ -623,7 +623,7 @@ function BudgetFinanceMatrix() {
                 provider="anthropic"
                 rows={providerRowsByProvider.anthropic}
                 budgetMonthlyCents={250_000}
-                totalCompanySpendCents={83_000}
+                totalSquadSpendCents={83_000}
                 weekSpendCents={3_870}
                 windowRows={providerWindowRows.anthropic}
                 showDeficitNotch={false}
@@ -636,7 +636,7 @@ function BudgetFinanceMatrix() {
                 provider="openai"
                 rows={providerRowsByProvider.openai}
                 budgetMonthlyCents={250_000}
-                totalCompanySpendCents={218_000}
+                totalSquadSpendCents={218_000}
                 weekSpendCents={10_430}
                 windowRows={providerWindowRows.openai}
                 showDeficitNotch={false}
@@ -649,7 +649,7 @@ function BudgetFinanceMatrix() {
                 provider="openrouter"
                 rows={providerRowsByProvider.openrouter}
                 budgetMonthlyCents={250_000}
-                totalCompanySpendCents={286_000}
+                totalSquadSpendCents={286_000}
                 weekSpendCents={14_630}
                 windowRows={providerWindowRows.openrouter}
                 showDeficitNotch
@@ -680,7 +680,7 @@ function BudgetFinanceMatrix() {
                   row={entry.row}
                   weekSpendCents={entry.weekSpendCents}
                   budgetMonthlyCents={250_000}
-                  totalCompanySpendCents={entry.totalCompanySpendCents}
+                  totalSquadSpendCents={entry.totalSquadSpendCents}
                   providerRows={entry.providerRows}
                 />
               </CaseFrame>

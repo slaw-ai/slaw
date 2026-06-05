@@ -21,7 +21,7 @@ import { buildProjectWorkspaceSummaries } from "@/lib/project-workspaces-tab";
 import {
   storybookAgents,
   storybookAuthSession,
-  storybookCompanies,
+  storybookSquads,
   storybookExecutionWorkspaces,
   storybookGoals,
   storybookIssues,
@@ -29,14 +29,14 @@ import {
   storybookProjects,
 } from "../fixtures/slawData";
 
-const COMPANY_ID = "company-storybook";
+const SQUAD_ID = "squad-storybook";
 const boardProject = storybookProjects.find((project) => project.id === "project-board-ui") ?? storybookProjects[0]!;
 const archivedProject =
   storybookProjects.find((project) => project.id === "project-archived-import")
   ?? storybookProjects[storybookProjects.length - 1]!;
 
 const goalProgress = new Map<string, number>([
-  ["goal-company", 62],
+  ["goal-squad", 62],
   ["goal-board-ux", 74],
   ["goal-agent-runtime", 48],
   ["goal-storybook", 88],
@@ -66,30 +66,30 @@ function Section({
 
 function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.setQueryData(queryKeys.auth.session, storybookAuthSession);
-  queryClient.setQueryData(queryKeys.companies.all, { companies: storybookCompanies, unauthorized: false });
-  queryClient.setQueryData(queryKeys.agents.list(COMPANY_ID), storybookAgents);
-  queryClient.setQueryData(queryKeys.projects.list(COMPANY_ID), storybookProjects);
+  queryClient.setQueryData(queryKeys.squads.all, { squads: storybookSquads, unauthorized: false });
+  queryClient.setQueryData(queryKeys.agents.list(SQUAD_ID), storybookAgents);
+  queryClient.setQueryData(queryKeys.projects.list(SQUAD_ID), storybookProjects);
   queryClient.setQueryData(queryKeys.projects.detail(boardProject.id), boardProject);
   queryClient.setQueryData(queryKeys.projects.detail(boardProject.urlKey), boardProject);
   queryClient.setQueryData(queryKeys.projects.detail(archivedProject.id), archivedProject);
-  queryClient.setQueryData(queryKeys.goals.list(COMPANY_ID), storybookGoals);
+  queryClient.setQueryData(queryKeys.goals.list(SQUAD_ID), storybookGoals);
   for (const goal of storybookGoals) {
     queryClient.setQueryData(queryKeys.goals.detail(goal.id), goal);
   }
-  queryClient.setQueryData(queryKeys.issues.list(COMPANY_ID), storybookIssues);
-  queryClient.setQueryData(queryKeys.issues.listByProject(COMPANY_ID, boardProject.id), storybookIssues);
-  queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), []);
+  queryClient.setQueryData(queryKeys.issues.list(SQUAD_ID), storybookIssues);
+  queryClient.setQueryData(queryKeys.issues.listByProject(SQUAD_ID, boardProject.id), storybookIssues);
+  queryClient.setQueryData(queryKeys.secrets.list(SQUAD_ID), []);
   queryClient.setQueryData(queryKeys.instance.experimentalSettings, {
     enableIsolatedWorkspaces: true,
     enableRoutineTriggers: true,
   });
-  queryClient.setQueryData(queryKeys.executionWorkspaces.list(COMPANY_ID), storybookExecutionWorkspaces);
+  queryClient.setQueryData(queryKeys.executionWorkspaces.list(SQUAD_ID), storybookExecutionWorkspaces);
   queryClient.setQueryData(
-    queryKeys.executionWorkspaces.list(COMPANY_ID, { projectId: boardProject.id }),
+    queryKeys.executionWorkspaces.list(SQUAD_ID, { projectId: boardProject.id }),
     storybookExecutionWorkspaces,
   );
   queryClient.setQueryData(
-    queryKeys.executionWorkspaces.summaryList(COMPANY_ID),
+    queryKeys.executionWorkspaces.summaryList(SQUAD_ID),
     storybookExecutionWorkspaces.map((workspace) => ({
       id: workspace.id,
       name: workspace.name,
@@ -193,7 +193,7 @@ function WorkspacesMatrix() {
   return (
     <div className="space-y-5">
       <ProjectWorkspacesContent
-        companyId={COMPANY_ID}
+        squadId={SQUAD_ID}
         projectId={boardProject.id}
         projectRef={boardProject.urlKey}
         summaries={summaries}
@@ -213,7 +213,7 @@ function WorkspacesMatrix() {
       </div>
       <div className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
         <ProjectWorkspacesContent
-          companyId={COMPANY_ID}
+          squadId={SQUAD_ID}
           projectId={archivedProject.id}
           projectRef={archivedProject.urlKey}
           summaries={[]}

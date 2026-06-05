@@ -138,14 +138,14 @@ function buildCreateParams(
 }
 
 function buildSandboxLabels(input: {
-  companyId: string;
+  squadId: string;
   environmentId: string;
   runId?: string;
   reuseLease: boolean;
 }): Record<string, string> {
   return {
     "slaw-provider": "daytona",
-    "slaw-company-id": input.companyId,
+    "slaw-squad-id": input.squadId,
     "slaw-environment-id": input.environmentId,
     "slaw-reuse-lease": input.reuseLease ? "true" : "false",
     ...(input.runId ? { "slaw-run-id": input.runId } : {}),
@@ -296,7 +296,7 @@ async function createSandbox(
 ): Promise<Sandbox> {
   const client = createDaytonaClient(config);
   const createParams = buildCreateParams(config, buildSandboxLabels({
-    companyId: params.companyId,
+    squadId: params.squadId,
     environmentId: params.environmentId,
     runId: "runId" in params ? params.runId : undefined,
     reuseLease: config.reuseLease,

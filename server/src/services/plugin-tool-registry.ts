@@ -220,7 +220,7 @@ export interface PluginToolRegistry {
  * const result = await toolRegistry.executeTool(
  *   "acme.linear:search-issues",
  *   { query: "auth bug" },
- *   { agentId: "agent-1", runId: "run-1", companyId: "co-1", projectId: "proj-1" },
+ *   { agentId: "agent-1", runId: "run-1", squadId: "co-1", projectId: "proj-1" },
  * );
  * ```
  */

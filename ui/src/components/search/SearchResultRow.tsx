@@ -1,6 +1,6 @@
 import { memo, type ComponentType, type SVGProps } from "react";
 import { Bot, FileText, Hexagon, MessageSquare, Quote } from "lucide-react";
-import type { Agent, CompanySearchResult } from "@slaw/shared";
+import type { Agent, SquadSearchResult } from "@slaw/shared";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { StatusIcon } from "../StatusIcon";
@@ -44,7 +44,7 @@ function formatRelativeTime(input: string | null): string {
 }
 
 export interface SearchResultRowProps {
-  result: CompanySearchResult;
+  result: SquadSearchResult;
   agentsById?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
   isActive?: boolean;
   className?: string;

@@ -107,7 +107,7 @@ Verified `pi.on(...)` hook names:
 - `user_bash` can replace shell execution entirely
 - `input` can transform or fully handle user input before normal processing
 
-That is a good fit for a local coding harness. It is not automatically a good fit for a company control plane.
+That is a good fit for a local coding harness. It is not automatically a good fit for a squad control plane.
 
 ## What Slaw already has
 
@@ -161,7 +161,7 @@ Some `pi-mono` ideas do belong in Slaw, but only inside trusted adapter/runtime 
 - provider request customization
 - tool execution wrappers for local coding adapters
 
-This should be an adapter surface, not a general company plugin surface.
+This should be an adapter surface, not a general squad plugin surface.
 
 ## What should not transfer directly
 
@@ -175,7 +175,7 @@ Slaw should not let general plugins rewrite:
 - approval outcomes
 - budget enforcement
 - assignment rules
-- company scoping
+- squad scoping
 
 Those are core invariants.
 

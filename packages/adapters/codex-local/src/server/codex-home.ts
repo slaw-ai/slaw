@@ -29,15 +29,15 @@ function isWorktreeMode(env: NodeJS.ProcessEnv): boolean {
 
 export function resolveManagedCodexHomeDir(
   env: NodeJS.ProcessEnv,
-  companyId?: string,
+  squadId?: string,
 ): string {
   const instanceRoot = resolveSlawInstanceRootForAdapter({
     homeDir: nonEmpty(env.SLAW_HOME) ?? undefined,
     instanceId: nonEmpty(env.SLAW_INSTANCE_ID) ?? undefined,
     env,
   });
-  return companyId
-    ? path.resolve(instanceRoot, "companies", companyId, "codex-home")
+  return squadId
+    ? path.resolve(instanceRoot, "squads", squadId, "codex-home")
     : path.resolve(instanceRoot, "codex-home");
 }
 
@@ -106,10 +106,10 @@ export async function writeApiKeyAuthJson(home: string, apiKey: string): Promise
 export async function prepareManagedCodexHome(
   env: NodeJS.ProcessEnv,
   onLog: AdapterExecutionContext["onLog"],
-  companyId?: string,
+  squadId?: string,
   options: { apiKey?: string | null } = {},
 ): Promise<string> {
-  const targetHome = resolveManagedCodexHomeDir(env, companyId);
+  const targetHome = resolveManagedCodexHomeDir(env, squadId);
   const apiKey = nonEmpty(options.apiKey ?? undefined);
 
   const sourceHome = resolveSharedCodexHomeDir(env);

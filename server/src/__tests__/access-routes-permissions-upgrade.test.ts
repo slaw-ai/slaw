@@ -5,8 +5,8 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   activityLog,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   createDb,
   principalPermissionGrants,
 } from "@slaw/db";
@@ -27,7 +27,7 @@ const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : 
 
 type Db = ReturnType<typeof createDb>;
 
-async function createApp(db: Db, companyId: string, userId: string) {
+async function createApp(db: Db, squadId: string, userId: string) {
   process.env.SLAW_LOG_DIR = "/tmp/slaw-test-home/logs";
   process.env.SLAW_IN_WORKTREE = "false";
   const { accessRoutes } = await import("../routes/access.js");
@@ -38,8 +38,8 @@ async function createApp(db: Db, companyId: string, userId: string) {
       type: "board",
       userId,
       source: "local_implicit",
-      companyIds: [companyId],
-      memberships: [{ companyId, membershipRole: "owner", status: "active" }],
+      squadIds: [squadId],
+      memberships: [{ squadId, membershipRole: "owner", status: "active" }],
       isInstanceAdmin: true,
     };
     next();
@@ -56,9 +56,9 @@ async function createApp(db: Db, companyId: string, userId: string) {
   return app;
 }
 
-async function createCompanyWithOwner(db: Db) {
-  const company = await db
-    .insert(companies)
+async function createSquadWithOwner(db: Db) {
+  const squad = await db
+    .insert(squads)
     .values({
       name: `Access Routes ${randomUUID()}`,
       issuePrefix: `AR${randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}`,
@@ -66,9 +66,9 @@ async function createCompanyWithOwner(db: Db) {
     .returning()
     .then((rows) => rows[0]!);
   const owner = await db
-    .insert(companyMemberships)
+    .insert(squadMemberships)
     .values({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "user",
       principalId: `owner-${randomUUID()}`,
       status: "active",
@@ -76,7 +76,7 @@ async function createCompanyWithOwner(db: Db) {
     })
     .returning()
     .then((rows) => rows[0]!);
-  return { company, owner };
+  return { squad, owner };
 }
 
 describeEmbeddedPostgres("access routes permissions upgrade compatibility", () => {
@@ -91,8 +91,8 @@ describeEmbeddedPostgres("access routes permissions upgrade compatibility", () =
   afterEach(async () => {
     await db.delete(activityLog);
     await db.delete(principalPermissionGrants);
-    await db.delete(companyMemberships);
-    await db.delete(companies);
+    await db.delete(squadMemberships);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -100,10 +100,10 @@ describeEmbeddedPostgres("access routes permissions upgrade compatibility", () =
   });
 
   it("rejects owner self-lockout through the member route after the permissions upgrade", async () => {
-    const { company, owner } = await createCompanyWithOwner(db);
+    const { squad, owner } = await createSquadWithOwner(db);
 
-    const res = await request(await createApp(db, company.id, owner.principalId))
-      .patch(`/api/companies/${company.id}/members/${owner.id}`)
+    const res = await request(await createApp(db, squad.id, owner.principalId))
+      .patch(`/api/squads/${squad.id}/members/${owner.id}`)
       .send({ membershipRole: "admin" });
 
     expect(res.status, JSON.stringify(res.body)).toBe(403);
@@ -111,18 +111,18 @@ describeEmbeddedPostgres("access routes permissions upgrade compatibility", () =
 
     const unchanged = await db
       .select()
-      .from(companyMemberships)
-      .where(eq(companyMemberships.id, owner.id))
+      .from(squadMemberships)
+      .where(eq(squadMemberships.id, owner.id))
       .then((rows) => rows[0]!);
     expect(unchanged.membershipRole).toBe("owner");
   }, 10_000);
 
   it("keeps custom grants when the role-only member route changes a member role", async () => {
-    const { company, owner } = await createCompanyWithOwner(db);
+    const { squad, owner } = await createSquadWithOwner(db);
     const member = await db
-      .insert(companyMemberships)
+      .insert(squadMemberships)
       .values({
-        companyId: company.id,
+        squadId: squad.id,
         principalType: "user",
         principalId: `admin-${randomUUID()}`,
         status: "active",
@@ -132,7 +132,7 @@ describeEmbeddedPostgres("access routes permissions upgrade compatibility", () =
       .then((rows) => rows[0]!);
     const customScope = { projectIds: ["project-1"] };
     await db.insert(principalPermissionGrants).values({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "user",
       principalId: member.principalId,
       permissionKey: "tasks:assign_scope",
@@ -140,8 +140,8 @@ describeEmbeddedPostgres("access routes permissions upgrade compatibility", () =
       grantedByUserId: owner.principalId,
     });
 
-    const res = await request(await createApp(db, company.id, owner.principalId))
-      .patch(`/api/companies/${company.id}/members/${member.id}`)
+    const res = await request(await createApp(db, squad.id, owner.principalId))
+      .patch(`/api/squads/${squad.id}/members/${member.id}`)
       .send({ membershipRole: "operator" });
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
@@ -152,7 +152,7 @@ describeEmbeddedPostgres("access routes permissions upgrade compatibility", () =
       .from(principalPermissionGrants)
       .where(
         and(
-          eq(principalPermissionGrants.companyId, company.id),
+          eq(principalPermissionGrants.squadId, squad.id),
           eq(principalPermissionGrants.principalType, "user"),
           eq(principalPermissionGrants.principalId, member.principalId),
         ),

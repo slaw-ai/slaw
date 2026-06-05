@@ -4,17 +4,17 @@ import { createGoalSchema, updateGoalSchema } from "@slaw/shared";
 import { trackGoalCreated } from "@slaw/shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { goalService, logActivity } from "../services/index.js";
-import { assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertSquadAccess, getActorInfo } from "./authz.js";
 import { getTelemetryClient } from "../telemetry.js";
 
 export function goalRoutes(db: Db) {
   const router = Router();
   const svc = goalService(db);
 
-  router.get("/companies/:companyId/goals", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    const result = await svc.list(companyId);
+  router.get("/squads/:squadId/goals", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+    const result = await svc.list(squadId);
     res.json(result);
   });
 
@@ -25,17 +25,17 @@ export function goalRoutes(db: Db) {
       res.status(404).json({ error: "Goal not found" });
       return;
     }
-    assertCompanyAccess(req, goal.companyId);
+    assertSquadAccess(req, goal.squadId);
     res.json(goal);
   });
 
-  router.post("/companies/:companyId/goals", validate(createGoalSchema), async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    const goal = await svc.create(companyId, req.body);
+  router.post("/squads/:squadId/goals", validate(createGoalSchema), async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+    const goal = await svc.create(squadId, req.body);
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -58,7 +58,7 @@ export function goalRoutes(db: Db) {
       res.status(404).json({ error: "Goal not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     const goal = await svc.update(id, req.body);
     if (!goal) {
       res.status(404).json({ error: "Goal not found" });
@@ -67,7 +67,7 @@ export function goalRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: goal.companyId,
+      squadId: goal.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -87,7 +87,7 @@ export function goalRoutes(db: Db) {
       res.status(404).json({ error: "Goal not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     const goal = await svc.remove(id);
     if (!goal) {
       res.status(404).json({ error: "Goal not found" });
@@ -96,7 +96,7 @@ export function goalRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: goal.companyId,
+      squadId: goal.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,

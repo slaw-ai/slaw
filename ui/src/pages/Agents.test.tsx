@@ -15,7 +15,7 @@ const mockAgentsApi = vi.hoisted(() => ({
 }));
 
 const mockHeartbeatsApi = vi.hoisted(() => ({
-  liveRunsForCompany: vi.fn(),
+  liveRunsForSquad: vi.fn(),
 }));
 
 const mockResourceMembershipsApi = vi.hoisted(() => ({
@@ -34,8 +34,8 @@ vi.mock("@/lib/router", () => ({
   useNavigate: () => vi.fn(),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({ selectedCompanyId: "company-1" }),
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({ selectedSquadId: "squad-1" }),
 }));
 
 vi.mock("../context/DialogContext", () => ({
@@ -80,7 +80,7 @@ async function act(callback: () => void | Promise<void>) {
 function makeAgent(overrides: Partial<Agent>): Agent {
   return {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Alpha",
     urlKey: "alpha",
     role: "engineer",
@@ -137,7 +137,7 @@ describe("Agents", () => {
         reports: [],
       },
     ]);
-    mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([]);
+    mockHeartbeatsApi.liveRunsForSquad.mockResolvedValue([]);
     mockResourceMembershipsApi.listMine.mockResolvedValue({
       projectMemberships: {},
       agentMemberships: {},

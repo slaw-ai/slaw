@@ -4,7 +4,7 @@ import type {
   DocumentAnnotationAnchorState,
 } from "@slaw/shared";
 import { index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { documentAnnotationThreads } from "./document_annotation_threads.js";
 import { documentRevisions } from "./document_revisions.js";
 import { documents } from "./documents.js";
@@ -13,7 +13,7 @@ export const documentAnnotationAnchorSnapshots = pgTable(
   "document_annotation_anchor_snapshots",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     threadId: uuid("thread_id").notNull().references(() => documentAnnotationThreads.id, { onDelete: "cascade" }),
     documentId: uuid("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
     fromRevisionId: uuid("from_revision_id").references(() => documentRevisions.id, { onDelete: "set null" }),
@@ -28,13 +28,13 @@ export const documentAnnotationAnchorSnapshots = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyThreadCreatedAtIdx: index("document_annotation_anchor_snapshots_company_thread_created_at_idx").on(
-      table.companyId,
+    squadThreadCreatedAtIdx: index("document_annotation_anchor_snapshots_squad_thread_created_at_idx").on(
+      table.squadId,
       table.threadId,
       table.createdAt,
     ),
-    companyDocumentRevisionIdx: index("document_annotation_anchor_snapshots_company_document_revision_idx").on(
-      table.companyId,
+    squadDocumentRevisionIdx: index("document_annotation_anchor_snapshots_squad_document_revision_idx").on(
+      table.squadId,
       table.documentId,
       table.toRevisionNumber,
     ),

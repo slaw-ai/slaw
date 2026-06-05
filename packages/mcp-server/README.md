@@ -11,7 +11,7 @@ The server reads its configuration from environment variables:
 
 - `SLAW_API_URL` - Slaw base URL, for example `http://localhost:3100`
 - `SLAW_API_KEY` - bearer token used for `/api` requests
-- `SLAW_COMPANY_ID` - optional default company for company-scoped tools
+- `SLAW_SQUAD_ID` - optional default squad for squad-scoped tools
 - `SLAW_AGENT_ID` - optional default agent for checkout helpers
 - `SLAW_RUN_ID` - optional run id forwarded on mutating requests
 

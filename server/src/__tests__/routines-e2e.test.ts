@@ -7,8 +7,8 @@ import {
   activityLog,
   agentWakeupRequests,
   agents,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   createDb,
   executionWorkspaces,
   heartbeatRunEvents,
@@ -45,16 +45,16 @@ function registerRoutineServiceMock() {
               if (!issueId) return null;
 
               const issue = await db
-                .select({ companyId: issues.companyId })
+                .select({ squadId: issues.squadId })
                 .from(issues)
                 .where(eq(issues.id, issueId))
-                .then((rows: Array<{ companyId: string }>) => rows[0] ?? null);
+                .then((rows: Array<{ squadId: string }>) => rows[0] ?? null);
               if (!issue) return null;
 
               const queuedRunId = randomUUID();
               await db.insert(heartbeatRuns).values({
                 id: queuedRunId,
-                companyId: issue.companyId,
+                squadId: issue.squadId,
                 agentId,
                 invocationSource: wakeupOpts?.source ?? "assignment",
                 triggerDetail: wakeupOpts?.triggerDetail ?? null,
@@ -105,11 +105,11 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
     await db.delete(executionWorkspaces);
     await db.delete(projectWorkspaces);
     await db.delete(principalPermissionGrants);
-    await db.delete(companyMemberships);
+    await db.delete(squadMemberships);
     await db.delete(routines);
     await db.delete(projects);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
     await db.delete(instanceSettings);
   });
 
@@ -123,9 +123,9 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
     vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/issues.js");
-    vi.doUnmock("../services/companies.js");
+    vi.doUnmock("../services/squads.js");
     vi.doUnmock("../services/projects.js");
-    vi.doUnmock("../services/company-skills.js");
+    vi.doUnmock("../services/squad-skills.js");
     vi.doUnmock("../services/assets.js");
     vi.doUnmock("../services/agent-instructions.js");
     vi.doUnmock("../services/workspace-runtime.js");
@@ -173,14 +173,14 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   }
 
   async function seedFixture() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const projectId = randomUUID();
     const userId = randomUUID();
-    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -188,7 +188,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -200,35 +200,35 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
 
     await db.insert(projects).values({
       id: projectId,
-      companyId,
+      squadId,
       name: "Routine Project",
       status: "in_progress",
     });
 
     const access = accessService(db);
-    const membership = await access.ensureMembership(companyId, "user", userId, "owner", "active");
+    const membership = await access.ensureMembership(squadId, "user", userId, "owner", "active");
     await access.setMemberPermissions(
-      companyId,
+      squadId,
       membership.id,
       [{ permissionKey: "tasks:assign" }],
       userId,
     );
 
-    return { companyId, agentId, projectId, userId };
+    return { squadId, agentId, projectId, userId };
   }
 
   it("supports creating, scheduling, and manually running a routine through the API", async () => {
-    const { companyId, agentId, projectId, userId } = await seedFixture();
+    const { squadId, agentId, projectId, userId } = await seedFixture();
     const app = await createApp({
       type: "board",
       userId,
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const createRes = await request(app)
-      .post(`/api/companies/${companyId}/routines`)
+      .post(`/api/squads/${squadId}/routines`)
       .send({
         projectId,
         title: "Daily standup prep",
@@ -270,7 +270,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
     expect(runRes.body.source).toBe("manual");
     expect(runRes.body.linkedIssueId).toBeTruthy();
 
-    const listRes = await request(app).get(`/api/companies/${companyId}/routines`);
+    const listRes = await request(app).get(`/api/squads/${squadId}/routines`);
     expect(listRes.status).toBe(200);
     const listed = listRes.body.find((r: { id: string }) => r.id === routineId);
     expect(listed).toBeDefined();
@@ -316,7 +316,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
         action: activityLog.action,
       })
       .from(activityLog)
-      .where(eq(activityLog.companyId, companyId));
+      .where(eq(activityLog.squadId, squadId));
 
     expect(actions.map((entry) => entry.action)).toEqual(
       expect.arrayContaining([
@@ -328,17 +328,17 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   }, 15_000);
 
   it("runs routines with variable inputs and interpolates the execution issue description", async () => {
-    const { companyId, agentId, projectId, userId } = await seedFixture();
+    const { squadId, agentId, projectId, userId } = await seedFixture();
     const app = await createApp({
       type: "board",
       userId,
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const createRes = await request(app)
-      .post(`/api/companies/${companyId}/routines`)
+      .post(`/api/squads/${squadId}/routines`)
       .send({
         projectId,
         title: "Repository triage",
@@ -374,17 +374,17 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   });
 
   it("allows drafting a routine without defaults and running it with one-off overrides", async () => {
-    const { companyId, agentId, projectId, userId } = await seedFixture();
+    const { squadId, agentId, projectId, userId } = await seedFixture();
     const app = await createApp({
       type: "board",
       userId,
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const createRes = await request(app)
-      .post(`/api/companies/${companyId}/routines`)
+      .post(`/api/squads/${squadId}/routines`)
       .send({
         title: "Draft routine",
         description: "No saved defaults",
@@ -419,7 +419,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   });
 
   it("persists execution workspace selections from manual routine runs", async () => {
-    const { companyId, agentId, projectId, userId } = await seedFixture();
+    const { squadId, agentId, projectId, userId } = await seedFixture();
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
     const app = await createApp({
@@ -427,12 +427,12 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
       userId,
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     await db.insert(projectWorkspaces).values({
       id: projectWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       name: "Primary workspace",
       isPrimary: true,
@@ -440,7 +440,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
     });
     await db.insert(executionWorkspaces).values({
       id: executionWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       projectWorkspaceId,
       mode: "isolated_workspace",
@@ -464,7 +464,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
     });
 
     const createRes = await request(app)
-      .post(`/api/companies/${companyId}/routines`)
+      .post(`/api/squads/${squadId}/routines`)
       .send({
         projectId,
         title: "Workspace-aware routine",

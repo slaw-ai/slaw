@@ -1,8 +1,8 @@
-export const COMPANY_STATUSES = ["active", "paused", "archived"] as const;
-export type CompanyStatus = (typeof COMPANY_STATUSES)[number];
+export const SQUAD_STATUSES = ["active", "paused", "archived"] as const;
+export type SquadStatus = (typeof SQUAD_STATUSES)[number];
 
-export const DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
-export const MAX_COMPANY_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
+export const DEFAULT_SQUAD_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
+export const MAX_SQUAD_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
 
 export const DEPLOYMENT_MODES = ["local_trusted", "authenticated"] as const;
 export type DeploymentMode = (typeof DEPLOYMENT_MODES)[number];
@@ -42,7 +42,7 @@ export const AGENT_ADAPTER_TYPES = [
 export type AgentAdapterType = (typeof AGENT_ADAPTER_TYPES)[number] | (string & {});
 
 export const AGENT_ROLES = [
-  "ceo",
+  "squad_lead",
   "cto",
   "cmo",
   "cfo",
@@ -58,7 +58,7 @@ export const AGENT_ROLES = [
 export type AgentRole = (typeof AGENT_ROLES)[number];
 
 export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
-  ceo: "CEO",
+  squad_lead: "Squad Lead",
   cto: "CTO",
   cmo: "CMO",
   cfo: "CFO",
@@ -338,7 +338,7 @@ export type IssueExecutionMonitorClearReason = (typeof ISSUE_EXECUTION_MONITOR_C
 export const ISSUE_EXECUTION_DECISION_OUTCOMES = ["approved", "changes_requested"] as const;
 export type IssueExecutionDecisionOutcome = (typeof ISSUE_EXECUTION_DECISION_OUTCOMES)[number];
 
-export const GOAL_LEVELS = ["company", "team", "agent", "task"] as const;
+export const GOAL_LEVELS = ["squad", "team", "agent", "task"] as const;
 export type GoalLevel = (typeof GOAL_LEVELS)[number];
 
 export const GOAL_STATUSES = ["planned", "active", "achieved", "cancelled"] as const;
@@ -422,7 +422,7 @@ export const PROJECT_COLORS = [
 
 export const APPROVAL_TYPES = [
   "hire_agent",
-  "approve_ceo_strategy",
+  "approve_squad_lead_strategy",
   "budget_override_required",
   "request_board_approval",
 ] as const;
@@ -542,7 +542,7 @@ export const FINANCE_UNITS = [
 ] as const;
 export type FinanceUnit = (typeof FINANCE_UNITS)[number];
 
-export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
+export const BUDGET_SCOPE_TYPES = ["squad", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];
 
 export const BUDGET_METRICS = ["billed_cents"] as const;
@@ -627,24 +627,24 @@ export type PrincipalType = (typeof PRINCIPAL_TYPES)[number];
 export const MEMBERSHIP_STATUSES = ["pending", "active", "suspended", "archived"] as const;
 export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
 
-export const COMPANY_MEMBERSHIP_ROLES = [
+export const SQUAD_MEMBERSHIP_ROLES = [
   "owner",
   "admin",
   "operator",
   "viewer",
   "member",
 ] as const;
-export type CompanyMembershipRole = (typeof COMPANY_MEMBERSHIP_ROLES)[number];
+export type SquadMembershipRole = (typeof SQUAD_MEMBERSHIP_ROLES)[number];
 
-export const HUMAN_COMPANY_MEMBERSHIP_ROLES = [
+export const HUMAN_SQUAD_MEMBERSHIP_ROLES = [
   "owner",
   "admin",
   "operator",
   "viewer",
 ] as const;
-export type HumanCompanyMembershipRole = (typeof HUMAN_COMPANY_MEMBERSHIP_ROLES)[number];
+export type HumanSquadMembershipRole = (typeof HUMAN_SQUAD_MEMBERSHIP_ROLES)[number];
 
-export const HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS: Record<HumanCompanyMembershipRole, string> = {
+export const HUMAN_SQUAD_MEMBERSHIP_ROLE_LABELS: Record<HumanSquadMembershipRole, string> = {
   owner: "Owner",
   admin: "Admin",
   operator: "Operator",
@@ -654,7 +654,7 @@ export const HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS: Record<HumanCompanyMembership
 export const INSTANCE_USER_ROLES = ["instance_admin"] as const;
 export type InstanceUserRole = (typeof INSTANCE_USER_ROLES)[number];
 
-export const INVITE_TYPES = ["company_join", "bootstrap_ceo"] as const;
+export const INVITE_TYPES = ["squad_join", "bootstrap_squad_lead"] as const;
 export type InviteType = (typeof INVITE_TYPES)[number];
 
 export const INVITE_JOIN_TYPES = ["human", "agent", "both"] as const;
@@ -738,7 +738,7 @@ export type PluginCategory = (typeof PLUGIN_CATEGORIES)[number];
  */
 export const PLUGIN_CAPABILITIES = [
   // Data Read
-  "companies.read",
+  "squads.read",
   "projects.read",
   "project.workspaces.read",
   "execution.workspaces.read",
@@ -831,7 +831,7 @@ export const PLUGIN_DATABASE_MIGRATION_STATUSES = [
 export type PluginDatabaseMigrationStatus = (typeof PLUGIN_DATABASE_MIGRATION_STATUSES)[number];
 
 export const PLUGIN_DATABASE_CORE_READ_TABLES = [
-  "companies",
+  "squads",
   "projects",
   "goals",
   "agents",
@@ -881,20 +881,20 @@ export const PLUGIN_UI_SLOT_TYPES = [
   "commentAnnotation",
   "commentContextMenuItem",
   "settingsPage",
-  "companySettingsPage",
+  "squadSettingsPage",
 ] as const;
 export type PluginUiSlotType = (typeof PLUGIN_UI_SLOT_TYPES)[number];
 
 /**
- * Reserved company-scoped route segments that plugin page routes may not claim.
+ * Reserved squad-scoped route segments that plugin page routes may not claim.
  *
- * These map to first-class host pages under `/:companyPrefix/...`.
+ * These map to first-class host pages under `/:squadPrefix/...`.
  */
-export const PLUGIN_RESERVED_COMPANY_ROUTE_SEGMENTS = [
+export const PLUGIN_RESERVED_SQUAD_ROUTE_SEGMENTS = [
   "dashboard",
   "onboarding",
-  "companies",
-  "company",
+  "squads",
+  "squad",
   "settings",
   "plugins",
   "org",
@@ -909,14 +909,14 @@ export const PLUGIN_RESERVED_COMPANY_ROUTE_SEGMENTS = [
   "design-guide",
   "tests",
 ] as const;
-export type PluginReservedCompanyRouteSegment =
-  (typeof PLUGIN_RESERVED_COMPANY_ROUTE_SEGMENTS)[number];
+export type PluginReservedSquadRouteSegment =
+  (typeof PLUGIN_RESERVED_SQUAD_ROUTE_SEGMENTS)[number];
 
 /**
- * Reserved route segments under `/:companyPrefix/company/settings/...` that
- * plugin company settings pages may not claim.
+ * Reserved route segments under `/:squadPrefix/squad/settings/...` that
+ * plugin squad settings pages may not claim.
  */
-export const PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS = [
+export const PLUGIN_RESERVED_SQUAD_SETTINGS_ROUTE_SEGMENTS = [
   "general",
   "environments",
   "access",
@@ -924,8 +924,8 @@ export const PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS = [
   "invites",
   "secrets",
 ] as const;
-export type PluginReservedCompanySettingsRouteSegment =
-  (typeof PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS)[number];
+export type PluginReservedSquadSettingsRouteSegment =
+  (typeof PLUGIN_RESERVED_SQUAD_SETTINGS_ROUTE_SEGMENTS)[number];
 
 /**
  * Launcher placement zones describe where a plugin-owned launcher can appear
@@ -1015,7 +1015,7 @@ export type PluginUiSlotEntityType = (typeof PLUGIN_UI_SLOT_ENTITY_TYPES)[number
  */
 export const PLUGIN_STATE_SCOPE_KINDS = [
   "instance",
-  "company",
+  "squad",
   "project",
   "project_workspace",
   "agent",
@@ -1067,8 +1067,8 @@ export type PluginWebhookDeliveryStatus = (typeof PLUGIN_WEBHOOK_DELIVERY_STATUS
  * @see PLUGIN_SPEC.md §16 — Event System
  */
 export const PLUGIN_EVENT_TYPES = [
-  "company.created",
-  "company.updated",
+  "squad.created",
+  "squad.updated",
   "project.created",
   "project.updated",
   "project.workspace_created",

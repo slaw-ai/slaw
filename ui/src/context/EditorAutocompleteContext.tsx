@@ -1,9 +1,9 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { buildRoutineMentionHref, buildSkillMentionHref } from "@slaw/shared";
-import { companySkillsApi } from "../api/companySkills";
+import { squadSkillsApi } from "../api/squadSkills";
 import { routinesApi } from "../api/routines";
-import { useCompany } from "./CompanyContext";
+import { useSquad } from "./SquadContext";
 import { queryKeys } from "../lib/queryKeys";
 
 export interface SkillCommandOption {
@@ -39,25 +39,25 @@ const EditorAutocompleteContext = createContext<EditorAutocompleteContextValue>(
 });
 
 export function EditorAutocompleteProvider({ children }: { children: ReactNode }) {
-  const { selectedCompanyId } = useCompany();
-  const { data: companySkills = [] } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.companySkills.list(selectedCompanyId)
-      : ["company-skills", "__none__"],
-    queryFn: () => companySkillsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+  const { selectedSquadId } = useSquad();
+  const { data: squadSkills = [] } = useQuery({
+    queryKey: selectedSquadId
+      ? queryKeys.squadSkills.list(selectedSquadId)
+      : ["squad-skills", "__none__"],
+    queryFn: () => squadSkillsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
   const { data: routines = [] } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.routines.list(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.routines.list(selectedSquadId)
       : ["routines", "__none__", "__all-projects__"],
-    queryFn: () => routinesApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryFn: () => routinesApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
 
   const value = useMemo<EditorAutocompleteContextValue>(() => ({
     slashCommands: [
-      ...companySkills.map((skill) => ({
+      ...squadSkills.map((skill) => ({
         id: `skill:${skill.id}`,
         kind: "skill" as const,
         skillId: skill.id,
@@ -81,7 +81,7 @@ export function EditorAutocompleteProvider({ children }: { children: ReactNode }
           aliases: [`routine:${routine.title}`, routine.title, routine.id],
         })),
     ],
-  }), [companySkills, routines]);
+  }), [squadSkills, routines]);
 
   return (
     <EditorAutocompleteContext.Provider value={value}>

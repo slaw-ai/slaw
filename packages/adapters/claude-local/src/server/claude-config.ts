@@ -90,25 +90,25 @@ export function resolveSharedClaudeConfigDir(
 
 export function resolveManagedClaudeConfigSeedDir(
   env: NodeJS.ProcessEnv,
-  companyId?: string,
+  squadId?: string,
 ): string {
   const instanceRoot = resolveSlawInstanceRootForAdapter({
     homeDir: nonEmpty(env.SLAW_HOME) ?? undefined,
     instanceId: nonEmpty(env.SLAW_INSTANCE_ID) ?? undefined,
     env,
   });
-  return companyId
-    ? path.resolve(instanceRoot, "companies", companyId, "claude-config-seed")
+  return squadId
+    ? path.resolve(instanceRoot, "squads", squadId, "claude-config-seed")
     : path.resolve(instanceRoot, "claude-config-seed");
 }
 
 export async function prepareClaudeConfigSeed(
   env: NodeJS.ProcessEnv,
   onLog: AdapterExecutionContext["onLog"],
-  companyId?: string,
+  squadId?: string,
 ): Promise<string> {
   const sourceDir = resolveSharedClaudeConfigDir(env);
-  const targetRootDir = resolveManagedClaudeConfigSeedDir(env, companyId);
+  const targetRootDir = resolveManagedClaudeConfigSeedDir(env, squadId);
 
   if (path.resolve(sourceDir) === path.resolve(targetRootDir)) {
     return targetRootDir;

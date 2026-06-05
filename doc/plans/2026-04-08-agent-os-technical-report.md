@@ -5,9 +5,9 @@ Analyzed upstream: `rivet-dev/agent-os` at commit `0063cdccd1dcb1c8e211670cd0548
 
 ## Executive summary
 
-`agent-os` is not a competitor to Slaw's core product. It is an execution substrate: an embedded, VM-like runtime for agents, tools, filesystems, and session orchestration. Slaw is a control plane: company scoping, task hierarchy, approvals, budgets, activity logs, workspaces, and governance.
+`agent-os` is not a competitor to Slaw's core product. It is an execution substrate: an embedded, VM-like runtime for agents, tools, filesystems, and session orchestration. Slaw is a control plane: squad scoping, task hierarchy, approvals, budgets, activity logs, workspaces, and governance.
 
-The strongest takeaway is not "copy agent-os wholesale." The strongest takeaway is that Slaw could selectively use its runtime ideas to improve local agent execution safety, reproducibility, and portability while keeping all company/task/governance logic in Slaw.
+The strongest takeaway is not "copy agent-os wholesale." The strongest takeaway is that Slaw could selectively use its runtime ideas to improve local agent execution safety, reproducibility, and portability while keeping all squad/task/governance logic in Slaw.
 
 My recommendation is:
 
@@ -154,13 +154,13 @@ This is especially interesting for tasks that do not need a full git worktree.
 
 ### 3. A capability vocabulary for runtime governance
 
-Slaw has governance at the company/task level:
+Slaw has governance at the squad/task level:
 
 - approvals
 - budgets
 - activity logs
 - actor permissions
-- company scoping
+- squad scoping
 
 It has less structure at the runtime capability level. `agent-os` offers a clear vocabulary that Slaw could adopt even without adopting the runtime itself:
 
@@ -183,7 +183,7 @@ Slaw's plugin system and adapters already have the beginnings of a controlled ex
 Concrete Slaw uses:
 
 - board-approved toolkits for sensitive operations
-- company-scoped service tools
+- squad-scoped service tools
 - plugin-defined tools with explicit schemas
 - safer execution for common actions like git metadata inspection, preview lookups, deployment status checks, or document generation
 
@@ -223,7 +223,7 @@ That is better than forcing all tasks into the heaviest environment up front.
 - issues/comments
 - heartbeat runs
 - approvals
-- company/org structure
+- squad/org structure
 - execution workspaces
 - budget enforcement
 
@@ -231,11 +231,11 @@ If Slaw copied `agent-os` cron/workflow/queue ideas directly into core, we would
 
 Slaw should keep orchestration authoritative at the control-plane layer.
 
-### 2. It is not company-scoped or governance-native
+### 2. It is not squad-scoped or governance-native
 
-`agent-os` is runtime-first, not company-first. It has no native concepts for:
+`agent-os` is runtime-first, not squad-first. It has no native concepts for:
 
-- company boundaries
+- squad boundaries
 - board/operator actor types
 - audit logs for business actions
 - issue hierarchy
@@ -262,7 +262,7 @@ The permission model is good, but it is low-level. Slaw would still need to answ
 
 - who can authorize a capability
 - how approval decisions are logged
-- how policies are scoped by company/project/issue/agent
+- how policies are scoped by squad/project/issue/agent
 - how runtime permissions interact with budgets and task status
 
 In other words, `agent-os` can supply enforcement primitives, not the control policy system itself.
@@ -381,7 +381,7 @@ Without that mapping, they would create a second orchestration system inside the
 ### Poor fits right now
 
 - moving Slaw orchestration into agent-os workflows
-- replacing company/task/governance models with runtime constructs
+- replacing squad/task/governance models with runtime constructs
 - making Rust sidecars a mandatory dependency for all local execution
 
 ## Bottom line
@@ -392,6 +392,6 @@ Slaw should treat it the same way it treats sandboxes or agent CLIs:
 
 - execution substrate underneath the control plane
 - optional where the tradeoff is worth it
-- never the source of truth for company/task/governance state
+- never the source of truth for squad/task/governance state
 
 If we do one thing from this report, it should be a narrowly scoped `agentos_local` experiment plus a design pass on capability-based runtime permissions. Those two ideas have the best upside and the lowest architectural risk.

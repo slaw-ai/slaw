@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
 import { authApi } from "../api/auth";
@@ -53,8 +53,8 @@ const REORDER_POINTER_MEDIA = "(hover: hover) and (pointer: fine)";
 
 type ProjectItemProps = {
   activeProjectRef: string | null;
-  companyId: string | null;
-  companyPrefix: string | null;
+  squadId: string | null;
+  squadPrefix: string | null;
   isMobile: boolean;
   project: Project;
   projectSidebarSlots: ProjectSidebarSlot[];
@@ -107,8 +107,8 @@ function useFineReorderPointer() {
 
 function ProjectItem({
   activeProjectRef,
-  companyId,
-  companyPrefix,
+  squadId,
+  squadPrefix,
   isMobile,
   project,
   projectSidebarSlots,
@@ -184,8 +184,8 @@ function ProjectItem({
               key={`${project.id}:${slot.pluginKey}:${slot.id}`}
               slot={slot}
               context={{
-                companyId,
-                companyPrefix,
+                squadId,
+                squadPrefix,
                 projectId: project.id,
                 projectRef: routeRef,
                 entityId: project.id,
@@ -229,19 +229,19 @@ function SortableProjectItem(props: ProjectItemProps) {
 
 export function SidebarProjects() {
   const [open, setOpen] = useState(true);
-  const { selectedCompany, selectedCompanyId } = useCompany();
+  const { selectedSquad, selectedSquadId } = useSquad();
   const { openNewProject } = useDialogActions();
   const { isMobile, setSidebarOpen } = useSidebar();
   const fineReorderPointer = useFineReorderPointer();
   const location = useLocation();
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
-  const membershipsQuery = useResourceMemberships(selectedCompanyId);
-  const membershipMutation = useResourceMembershipMutation(selectedCompanyId);
+  const membershipsQuery = useResourceMemberships(selectedSquadId);
+  const membershipMutation = useResourceMembershipMutation(selectedSquadId);
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -249,15 +249,15 @@ export function SidebarProjects() {
   const { slots: projectSidebarSlots } = usePluginSlots({
     slotTypes: ["projectSidebarItem"],
     entityType: "project",
-    companyId: selectedCompanyId,
-    enabled: !!selectedCompanyId,
+    squadId: selectedSquadId,
+    enabled: !!selectedSquadId,
   });
 
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const sortModeStorageKey = useMemo(() => {
-    if (!selectedCompanyId) return null;
-    return getProjectSortModeStorageKey(selectedCompanyId, currentUserId);
-  }, [currentUserId, selectedCompanyId]);
+    if (!selectedSquadId) return null;
+    return getProjectSortModeStorageKey(selectedSquadId, currentUserId);
+  }, [currentUserId, selectedSquadId]);
   const [sortMode, setSortMode] = useState<ProjectSidebarSortMode>(() => {
     if (!sortModeStorageKey) return "top";
     return readProjectSortMode(sortModeStorageKey);
@@ -273,7 +273,7 @@ export function SidebarProjects() {
   );
   const { orderedProjects, persistOrder } = useProjectOrder({
     projects: visibleProjects,
-    companyId: selectedCompanyId,
+    squadId: selectedSquadId,
     userId: currentUserId,
   });
   const sortedProjects = useMemo(
@@ -370,8 +370,8 @@ export function SidebarProjects() {
     <ProjectItem
       key={project.id}
       activeProjectRef={activeProjectRef}
-      companyId={selectedCompanyId}
-      companyPrefix={selectedCompany?.issuePrefix ?? null}
+      squadId={selectedSquadId}
+      squadPrefix={selectedSquad?.issuePrefix ?? null}
       isMobile={isMobile}
       project={project}
       projectSidebarSlots={projectSidebarSlots}
@@ -417,8 +417,8 @@ export function SidebarProjects() {
                 <SortableProjectItem
                   key={project.id}
                   activeProjectRef={activeProjectRef}
-                  companyId={selectedCompanyId}
-                  companyPrefix={selectedCompany?.issuePrefix ?? null}
+                  squadId={selectedSquadId}
+                  squadPrefix={selectedSquad?.issuePrefix ?? null}
                   isMobile={isMobile}
                   project={project}
                   projectSidebarSlots={projectSidebarSlots}

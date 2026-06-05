@@ -11,7 +11,7 @@ export type NormalizedSha256 = `sha256:${string}`;
 
 export interface SourceEntityKey {
   sourceInstanceId: string;
-  sourceCompanyId: string;
+  sourceSquadId: string;
   sourceEntityType: string;
   sourceEntityId: string;
   sourceNaturalKey?: string;
@@ -33,7 +33,7 @@ export interface UpstreamTransferEntityRecord {
 
 export interface UpstreamTransferManifestSource {
   sourceInstanceId: string;
-  sourceCompanyId: string;
+  sourceSquadId: string;
   sourceInstanceKeyFingerprint: string;
   exporterVersion: string;
   sourceSchemaVersion: string;
@@ -41,7 +41,7 @@ export interface UpstreamTransferManifestSource {
 
 export interface UpstreamTransferManifestTarget {
   targetStackId: string;
-  targetCompanyId: string;
+  targetSquadId: string;
   targetOrigin: string;
   supportedSchemaMajor: number;
 }
@@ -112,7 +112,7 @@ export interface BuildLocalUpstreamExportBundleInput {
 
 export interface LocalUpstreamPushCoordinatorOptions {
   targetOrigin: string;
-  slawCompanyId: string;
+  slawSquadId: string;
   fetch?: typeof fetch;
   headers?: (input: { method: string; path: string }) => HeadersInit | Promise<HeadersInit>;
 }
@@ -130,26 +130,26 @@ export class UpstreamImportRequestError extends Error {
 
 export class LocalUpstreamPushCoordinator {
   readonly #targetOrigin: string;
-  readonly #slawCompanyId: string;
+  readonly #slawSquadId: string;
   readonly #fetch: typeof fetch;
   readonly #headers: NonNullable<LocalUpstreamPushCoordinatorOptions["headers"]>;
 
   constructor(options: LocalUpstreamPushCoordinatorOptions) {
     this.#targetOrigin = options.targetOrigin.replace(/\/+$/u, "");
-    this.#slawCompanyId = options.slawCompanyId;
+    this.#slawSquadId = options.slawSquadId;
     this.#fetch = options.fetch ?? fetch;
     this.#headers = options.headers ?? (() => ({}));
   }
 
   async preview(bundle: LocalUpstreamExportBundle): Promise<unknown> {
-    return this.post(`/api/companies/${encodeURIComponent(this.#slawCompanyId)}/upstream-imports/preview`, {
+    return this.post(`/api/squads/${encodeURIComponent(this.#slawSquadId)}/upstream-imports/preview`, {
       manifest: bundle.manifest,
       entities: bundle.entities,
     });
   }
 
   async apply(bundle: LocalUpstreamExportBundle): Promise<unknown> {
-    const run = await this.post(`/api/companies/${encodeURIComponent(this.#slawCompanyId)}/upstream-imports/runs`, {
+    const run = await this.post(`/api/squads/${encodeURIComponent(this.#slawSquadId)}/upstream-imports/runs`, {
       mode: "apply",
       manifest: bundle.manifest,
       entities: bundle.entities,

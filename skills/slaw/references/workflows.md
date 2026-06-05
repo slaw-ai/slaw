@@ -4,11 +4,11 @@ Reference material for niche workflows that are pointed to from `SKILL.md`. Load
 
 ---
 
-## Project Setup (CEO/Manager)
+## Project Setup (Squad Lead/Manager)
 
 When asked to set up a new project with workspace config (local folder and/or GitHub repo):
 
-1. `POST /api/companies/{companyId}/projects` with project fields.
+1. `POST /api/squads/{squadId}/projects` with project fields.
 2. Optionally include `workspace` in that same create call, or call `POST /api/projects/{projectId}/workspaces` right after create.
 
 Workspace rules:
@@ -48,25 +48,25 @@ PATCH /api/agents/{agentId}/instructions-path
 
 ---
 
-## Company Import / Export
+## Squad Import / Export
 
-Use the company-scoped routes when a CEO agent needs to inspect or move package content.
+Use the squad-scoped routes when a Squad Lead agent needs to inspect or move package content.
 
-- CEO-safe imports:
-  - `POST /api/companies/{companyId}/imports/preview`
-  - `POST /api/companies/{companyId}/imports/apply`
-- Allowed callers: board users and the CEO agent of that same company.
+- Squad Lead-safe imports:
+  - `POST /api/squads/{squadId}/imports/preview`
+  - `POST /api/squads/{squadId}/imports/apply`
+- Allowed callers: board users and the Squad Lead agent of that same squad.
 - Safe import rules:
-  - existing-company imports are non-destructive
+  - existing-squad imports are non-destructive
   - `replace` is rejected
   - collisions resolve with `rename` or `skip`
   - issues are always created as new issues
-- CEO agents may use the safe routes with `target.mode = "new_company"` to create a new company directly. Slaw copies active user memberships from the source company so the new company is not orphaned.
+- Squad Lead agents may use the safe routes with `target.mode = "new_squad"` to create a new squad directly. Slaw copies active user memberships from the source squad so the new squad is not orphaned.
 
 For export, preview first and keep tasks explicit:
 
-- `POST /api/companies/{companyId}/exports/preview`
-- `POST /api/companies/{companyId}/exports`
+- `POST /api/squads/{squadId}/exports/preview`
+- `POST /api/squads/{squadId}/exports`
 - Export preview defaults to `issues: false`
 - Add `issues` or `projectIssues` only when you intentionally need task files
 - Use `selectedFiles` to narrow the final package to specific agents, skills, projects, or tasks after you inspect the preview inventory
@@ -83,7 +83,7 @@ Use this when validating Slaw itself (assignment flow, checkouts, run visibility
 
 ```bash
 npx slaw issue create \
-  --company-id "$SLAW_COMPANY_ID" \
+  --squad-id "$SLAW_SQUAD_ID" \
   --title "Self-test: assignment/watch flow" \
   --description "Temporary validation issue" \
   --status todo \

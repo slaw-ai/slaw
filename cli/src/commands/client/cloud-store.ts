@@ -4,7 +4,7 @@ import { resolveSlawInstanceRoot } from "../../config/home.js";
 
 export interface CloudConnectionTokenRecord {
   id: string;
-  companyStackId: string;
+  squadStackId: string;
   targetOrigin: string;
   sourceInstanceId: string;
   sourceInstanceFingerprint: string;
@@ -21,7 +21,7 @@ export interface CloudConnection {
   stackId: string;
   stackSlug?: string | null;
   stackDisplayName?: string | null;
-  targetCompanyId: string;
+  targetSquadId: string;
   accessToken: string;
   token: CloudConnectionTokenRecord;
   privateKeyPem: string;
@@ -129,7 +129,7 @@ function normalizeConnection(value: unknown): CloudConnection | null {
   const targetOrigin = stringValue(record.targetOrigin);
   const targetHost = stringValue(record.targetHost);
   const stackId = stringValue(record.stackId);
-  const targetCompanyId = stringValue(record.targetCompanyId);
+  const targetSquadId = stringValue(record.targetSquadId);
   const accessToken = stringValue(record.accessToken);
   const token = typeof record.token === "object" && record.token !== null && !Array.isArray(record.token)
     ? record.token as CloudConnectionTokenRecord
@@ -141,7 +141,7 @@ function normalizeConnection(value: unknown): CloudConnection | null {
   const createdAt = stringValue(record.createdAt);
   const updatedAt = stringValue(record.updatedAt);
   if (
-    !id || !remoteUrl || !targetOrigin || !targetHost || !stackId || !targetCompanyId ||
+    !id || !remoteUrl || !targetOrigin || !targetHost || !stackId || !targetSquadId ||
     !accessToken || !token || !privateKeyPem || !sourcePublicKey || !sourceInstanceId ||
     !sourceInstanceFingerprint || !createdAt || !updatedAt
   ) {
@@ -155,7 +155,7 @@ function normalizeConnection(value: unknown): CloudConnection | null {
     stackId,
     stackSlug: stringValue(record.stackSlug),
     stackDisplayName: stringValue(record.stackDisplayName),
-    targetCompanyId,
+    targetSquadId,
     accessToken,
     token,
     privateKeyPem,

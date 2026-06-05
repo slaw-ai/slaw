@@ -6,15 +6,15 @@ ALTER TABLE "heartbeat_runs" ADD COLUMN IF NOT EXISTS "last_output_stream" text;
 --> statement-breakpoint
 ALTER TABLE "heartbeat_runs" ADD COLUMN IF NOT EXISTS "last_output_bytes" bigint;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "heartbeat_runs_company_status_last_output_idx"
-  ON "heartbeat_runs" USING btree ("company_id","status","last_output_at");
+CREATE INDEX IF NOT EXISTS "heartbeat_runs_squad_status_last_output_idx"
+  ON "heartbeat_runs" USING btree ("squad_id","status","last_output_at");
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "heartbeat_runs_company_status_process_started_idx"
-  ON "heartbeat_runs" USING btree ("company_id","status","process_started_at");
+CREATE INDEX IF NOT EXISTS "heartbeat_runs_squad_status_process_started_idx"
+  ON "heartbeat_runs" USING btree ("squad_id","status","process_started_at");
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "heartbeat_run_watchdog_decisions" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-  "company_id" uuid NOT NULL,
+  "squad_id" uuid NOT NULL,
   "run_id" uuid NOT NULL,
   "evaluation_issue_id" uuid,
   "decision" text NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS "heartbeat_run_watchdog_decisions" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "heartbeat_run_watchdog_decisions" ADD CONSTRAINT "heartbeat_run_watchdog_decisions_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "heartbeat_run_watchdog_decisions" ADD CONSTRAINT "heartbeat_run_watchdog_decisions_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -56,14 +56,14 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "heartbeat_run_watchdog_decisions_company_run_created_idx"
-  ON "heartbeat_run_watchdog_decisions" USING btree ("company_id","run_id","created_at");
+CREATE INDEX IF NOT EXISTS "heartbeat_run_watchdog_decisions_squad_run_created_idx"
+  ON "heartbeat_run_watchdog_decisions" USING btree ("squad_id","run_id","created_at");
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "heartbeat_run_watchdog_decisions_company_run_snooze_idx"
-  ON "heartbeat_run_watchdog_decisions" USING btree ("company_id","run_id","snoozed_until");
+CREATE INDEX IF NOT EXISTS "heartbeat_run_watchdog_decisions_squad_run_snooze_idx"
+  ON "heartbeat_run_watchdog_decisions" USING btree ("squad_id","run_id","snoozed_until");
 --> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "issues_active_stale_run_evaluation_uq"
-  ON "issues" USING btree ("company_id","origin_kind","origin_id")
+  ON "issues" USING btree ("squad_id","origin_kind","origin_id")
   WHERE "origin_kind" = 'stale_active_run_evaluation'
     AND "origin_id" IS NOT NULL
     AND "hidden_at" IS NULL

@@ -29,8 +29,8 @@ function createDbStub(inviteRows: unknown[]) {
 function createInvite(overrides: Record<string, unknown> = {}) {
   return {
     id: "invite-1",
-    companyId: "company-1",
-    inviteType: "company_join",
+    squadId: "squad-1",
+    inviteType: "squad_join",
     allowedJoinTypes: "agent",
     tokenHash: "hash",
     defaultsPayload: null,

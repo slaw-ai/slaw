@@ -27,8 +27,8 @@ function registerModuleMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => ({
       canUser: vi.fn(),
@@ -81,7 +81,7 @@ function registerModuleMocks() {
 function makeIssue(status: "todo" | "done") {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    companyId: "company-1",
+    squadId: "squad-1",
     status,
     assigneeAgentId: "agent-1",
     assigneeUserId: null,
@@ -131,7 +131,7 @@ describe("issue telemetry routes", () => {
   it("emits task-completed telemetry with the agent role, adapter type, and model", async () => {
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       role: "engineer",
       adapterType: "codex_local",
       adapterConfig: { model: "claude-sonnet-4-6" },
@@ -140,7 +140,7 @@ describe("issue telemetry routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       runId: null,
     });
     const res = await request(app)
@@ -162,7 +162,7 @@ describe("issue telemetry routes", () => {
     const app = await createApp({
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     });

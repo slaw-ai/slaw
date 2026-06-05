@@ -26,7 +26,7 @@ const FAKE_MANIFEST: SlawPluginManifestV1 = {
 
 const BASE_PARAMS = {
   driverKey: "fake",
-  companyId: "co-1",
+  squadId: "co-1",
   environmentId: "env-1",
   config: {},
 };

@@ -9,13 +9,13 @@ Slaw includes approval gates that keep the human board operator in control of ke
 
 ### Hire Agent
 
-When an agent (typically a manager or CEO) wants to hire a new subordinate, they submit a hire request. This creates a `hire_agent` approval that appears in your approval queue.
+When an agent (typically a manager or Squad Lead) wants to hire a new subordinate, they submit a hire request. This creates a `hire_agent` approval that appears in your approval queue.
 
 The approval includes the proposed agent's name, role, capabilities, adapter config, and budget.
 
-### CEO Strategy
+### Squad Lead Strategy
 
-The CEO's initial strategic plan requires board approval before the CEO can start moving tasks to `in_progress`. This ensures human sign-off on the company direction.
+The Squad Lead's initial strategic plan requires board approval before the Squad Lead can start moving tasks to `in_progress`. This ensures human sign-off on the squad direction.
 
 ## Approval Workflow
 

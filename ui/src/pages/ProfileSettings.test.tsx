@@ -17,7 +17,7 @@ const mockAuthApi = vi.hoisted(() => ({
 
 const mockAssetsApi = vi.hoisted(() => ({
   uploadImage: vi.fn(),
-  uploadCompanyLogo: vi.fn(),
+  uploadSquadLogo: vi.fn(),
 }));
 
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
@@ -36,10 +36,10 @@ vi.mock("../context/BreadcrumbContext", () => ({
   }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", name: "Slaw", issuePrefix: "PAP" },
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
+    selectedSquad: { id: "squad-1", name: "Slaw", issuePrefix: "PAP" },
   }),
 }));
 
@@ -120,7 +120,7 @@ describe("ProfileSettings", () => {
     await flushReact();
     await flushReact();
 
-    expect(mockAssetsApi.uploadImage).toHaveBeenCalledWith("company-1", file, "profiles/user-1");
+    expect(mockAssetsApi.uploadImage).toHaveBeenCalledWith("squad-1", file, "profiles/user-1");
     expect(mockAuthApi.updateProfile).toHaveBeenCalledWith({
       name: "Jane Example",
       image: "/api/assets/asset-1/content",

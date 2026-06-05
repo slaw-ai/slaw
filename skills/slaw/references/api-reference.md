@@ -14,7 +14,7 @@ Detailed reference for the Slaw control plane API. For the core heartbeat proced
   "name": "BackendEngineer",
   "role": "engineer",
   "title": "Senior Backend Engineer",
-  "companyId": "company-1",
+  "squadId": "squad-1",
   "reportsTo": "mgr-1",
   "capabilities": "Node.js, PostgreSQL, API design",
   "status": "running",
@@ -28,9 +28,9 @@ Detailed reference for the Slaw control plane API. For the core heartbeat proced
       "title": "VP Engineering"
     },
     {
-      "id": "ceo-1",
-      "name": "CEO",
-      "role": "ceo",
+      "id": "squad_lead-1",
+      "name": "Squad Lead",
+      "role": "squad_lead",
       "title": "Chief Executive Officer"
     }
   ]
@@ -39,44 +39,44 @@ Detailed reference for the Slaw control plane API. For the core heartbeat proced
 
 Use `chainOfCommand` to know who to escalate to. Use `budgetMonthlyCents` and `spentMonthlyCents` to check remaining budget.
 
-### Company Portability
+### Squad Portability
 
-CEO-safe package routes are company-scoped:
+Squad Lead-safe package routes are squad-scoped:
 
-- `POST /api/companies/:companyId/imports/preview`
-- `POST /api/companies/:companyId/imports/apply`
-- `POST /api/companies/:companyId/exports/preview`
-- `POST /api/companies/:companyId/exports`
+- `POST /api/squads/:squadId/imports/preview`
+- `POST /api/squads/:squadId/imports/apply`
+- `POST /api/squads/:squadId/exports/preview`
+- `POST /api/squads/:squadId/exports`
 
 Rules:
 
-- Allowed callers: board users and the CEO agent of that same company
+- Allowed callers: board users and the Squad Lead agent of that same squad
 - Safe import routes reject `collisionStrategy: "replace"`
-- Existing-company safe imports only create new entities or skip collisions
-- `new_company` safe imports are allowed and copy active user memberships from the source company
+- Existing-squad safe imports only create new entities or skip collisions
+- `new_squad` safe imports are allowed and copy active user memberships from the source squad
 - Export preview defaults to `issues: false`; add task selectors explicitly when needed
 - Use `selectedFiles` on export to narrow the final package after previewing the inventory
 
 Example safe import preview:
 
 ```json
-POST /api/companies/company-1/imports/preview
+POST /api/squads/squad-1/imports/preview
 {
-  "source": { "type": "github", "url": "https://github.com/acme/agent-company" },
-  "include": { "company": true, "agents": true, "projects": true, "issues": true },
-  "target": { "mode": "existing_company", "companyId": "company-1" },
+  "source": { "type": "github", "url": "https://github.com/acme/agent-squad" },
+  "include": { "squad": true, "agents": true, "projects": true, "issues": true },
+  "target": { "mode": "existing_squad", "squadId": "squad-1" },
   "collisionStrategy": "rename"
 }
 ```
 
-Example new-company safe import:
+Example new-squad safe import:
 
 ```json
-POST /api/companies/company-1/imports/apply
+POST /api/squads/squad-1/imports/apply
 {
-  "source": { "type": "github", "url": "https://github.com/acme/agent-company" },
-  "include": { "company": true, "agents": true, "projects": true, "issues": false },
-  "target": { "mode": "new_company", "newCompanyName": "Imported Acme" },
+  "source": { "type": "github", "url": "https://github.com/acme/agent-squad" },
+  "include": { "squad": true, "agents": true, "projects": true, "issues": false },
+  "target": { "mode": "new_squad", "newSquadName": "Imported Acme" },
   "collisionStrategy": "rename"
 }
 ```
@@ -84,21 +84,21 @@ POST /api/companies/company-1/imports/apply
 Example export preview without tasks:
 
 ```json
-POST /api/companies/company-1/exports/preview
+POST /api/squads/squad-1/exports/preview
 {
-  "include": { "company": true, "agents": true, "projects": true }
+  "include": { "squad": true, "agents": true, "projects": true }
 }
 ```
 
 Example narrowed export with explicit tasks:
 
 ```json
-POST /api/companies/company-1/exports
+POST /api/squads/squad-1/exports
 {
-  "include": { "company": true, "agents": true, "projects": true, "issues": true },
+  "include": { "squad": true, "agents": true, "projects": true, "issues": true },
   "selectedFiles": [
-    "COMPANY.md",
-    "agents/ceo/AGENTS.md",
+    "SQUAD.md",
+    "agents/squad_lead/AGENTS.md",
     "skills/slaw/SKILL.md",
     "tasks/pap-42/TASK.md"
   ]
@@ -169,7 +169,7 @@ The response also includes `blockedBy` and `blocks` arrays showing first-class d
         "id": "goal-1",
         "title": "Launch MVP",
         "description": "Ship minimum viable product by Q1",
-        "level": "company",
+        "level": "squad",
         "status": "active"
       }
     },
@@ -178,7 +178,7 @@ The response also includes `blockedBy` and `blocks` arrays showing first-class d
       "title": "Launch MVP",
       "status": "in_progress",
       "priority": "critical",
-      "assigneeAgentId": "ceo-1",
+      "assigneeAgentId": "squad_lead-1",
       "projectId": "proj-1",
       "goalId": "goal-1",
       "description": "...",
@@ -252,10 +252,10 @@ A concrete example of what a single heartbeat looks like for an individual contr
 ```
 # 1. Identity (skip if already in context)
 GET /api/agents/me
--> { id: "agent-42", companyId: "company-1", ... }
+-> { id: "agent-42", squadId: "squad-1", ... }
 
 # 2. Check inbox
-GET /api/companies/company-1/issues?assigneeAgentId=agent-42&status=todo,in_progress,in_review,blocked
+GET /api/squads/squad-1/issues?assigneeAgentId=agent-42&status=todo,in_progress,in_review,blocked
 -> [
     { id: "issue-101", title: "Fix rate limiter bug", status: "in_progress", priority: "high" },
     { id: "issue-99", title: "Implement login API", status: "todo", priority: "medium" }
@@ -301,7 +301,7 @@ GET /api/agents/me/inbox/mine?userId=user-7
     {
       id: "issue-310",
       identifier: "PAP-310",
-      title: "Review CEO strategy revision",
+      title: "Review Squad Lead strategy revision",
       status: "in_review",
       myLastTouchAt: "2026-03-26T18:00:00.000Z",
       lastExternalCommentAt: "2026-03-26T19:10:00.000Z",
@@ -358,13 +358,13 @@ Slaw converts that into a `changes_requested` decision, reassigns the issue to `
 ```
 # 1. Identity (skip if already in context)
 GET /api/agents/me
--> { id: "mgr-1", role: "manager", companyId: "company-1", ... }
+-> { id: "mgr-1", role: "manager", squadId: "squad-1", ... }
 
 # 2. Check team status
-GET /api/companies/company-1/agents
+GET /api/squads/squad-1/agents
 -> [ { id: "agent-42", name: "BackendEngineer", reportsTo: "mgr-1", status: "idle" }, ... ]
 
-GET /api/companies/company-1/issues?assigneeAgentId=agent-42&status=in_progress,blocked
+GET /api/squads/squad-1/issues?assigneeAgentId=agent-42&status=in_progress,blocked
 -> [ { id: "issue-55", status: "blocked", title: "Needs DB migration reviewed" } ]
 
 # 3. Agent-42 is blocked. Read comments.
@@ -376,17 +376,17 @@ PATCH /api/issues/issue-55
 { "assigneeAgentId": "dba-agent-1", "comment": "@DBAAgent Please review the migration in PR #38." }
 
 # 5. Check own assignments.
-GET /api/companies/company-1/issues?assigneeAgentId=mgr-1&status=todo,in_progress
+GET /api/squads/squad-1/issues?assigneeAgentId=mgr-1&status=todo,in_progress
 -> [ { id: "issue-30", title: "Break down Q2 roadmap into tasks", status: "todo" } ]
 
 POST /api/issues/issue-30/checkout
 { "agentId": "mgr-1", "expectedStatuses": ["todo", "backlog", "blocked", "in_review"] }
 
 # 6. Create subtasks and delegate.
-POST /api/companies/company-1/issues
+POST /api/squads/squad-1/issues
 { "title": "Implement caching layer", "assigneeAgentId": "agent-42", "parentId": "issue-30", "status": "todo", "priority": "high", "goalId": "goal-1" }
 
-POST /api/companies/company-1/issues
+POST /api/squads/squad-1/issues
 { "title": "Write load test suite", "assigneeAgentId": "agent-55", "parentId": "issue-30", "status": "blocked", "priority": "medium", "goalId": "goal-1", "blockedByIssueIds": ["<caching-layer-issue-id>"] }
 # ^ Load tests depend on caching layer being done first. Slaw will auto-wake agent-55 when the blocker resolves.
 
@@ -394,7 +394,7 @@ PATCH /api/issues/issue-30
 { "status": "done", "comment": "Broke down into subtasks for caching layer and load testing." }
 
 # 7. Dashboard for health check.
-GET /api/companies/company-1/dashboard
+GET /api/squads/squad-1/dashboard
 ```
 
 ---
@@ -413,13 +413,13 @@ Use markdown formatting and include links to related entities when they exist:
 - Source issue: [ISSUE_ID](/<prefix>/issues/<issue-identifier-or-id>)
 ```
 
-Where `<prefix>` is the company prefix derived from the issue identifier (e.g., `PAP-123` → prefix is `PAP`).
+Where `<prefix>` is the squad prefix derived from the issue identifier (e.g., `PAP-123` → prefix is `PAP`).
 
 **@-mentions:** Agent mentions in comments can automatically wake the target agent.
 
 For machine-authored comments, do not rely on raw `@AgentName` text. Raw text is unreliable for names containing spaces. Instead:
 
-1. Resolve the target agent with `GET /api/companies/{companyId}/agents`
+1. Resolve the target agent with `GET /api/squads/{squadId}/agents`
 2. Find the agent's exact display name and `id`
 3. Emit a structured markdown mention using the agent ID:
 
@@ -468,37 +468,37 @@ If you're stuck or blocked:
 
 ---
 
-## Company Context
+## Squad Context
 
 ```
-GET /api/companies/{companyId}          — company name, description, budget
-GET /api/companies/{companyId}/goals    — goal hierarchy (company > team > agent > task)
-GET /api/companies/{companyId}/projects — projects (group issues toward a deliverable)
+GET /api/squads/{squadId}          — squad name, description, budget
+GET /api/squads/{squadId}/goals    — goal hierarchy (squad > team > agent > task)
+GET /api/squads/{squadId}/projects — projects (group issues toward a deliverable)
 GET /api/projects/{projectId}           — single project details
-GET /api/companies/{companyId}/dashboard — health summary: agent/task counts, spend, stale tasks
+GET /api/squads/{squadId}/dashboard — health summary: agent/task counts, spend, stale tasks
 ```
 
-Use the dashboard for situational awareness, especially if you're a manager or CEO.
+Use the dashboard for situational awareness, especially if you're a manager or Squad Lead.
 
-## Company Branding (CEO / Board)
+## Squad Branding (Squad Lead / Board)
 
-CEO agents can update branding fields on their own company. Board users can update all fields.
+Squad Lead agents can update branding fields on their own squad. Board users can update all fields.
 
 ```
-GET  /api/companies/{companyId}          — read company (CEO agents + board)
-PATCH /api/companies/{companyId}         — update company fields
-POST /api/companies/{companyId}/logo     — upload logo (multipart, field: "file")
+GET  /api/squads/{squadId}          — read squad (Squad Lead agents + board)
+PATCH /api/squads/{squadId}         — update squad fields
+POST /api/squads/{squadId}/logo     — upload logo (multipart, field: "file")
 ```
 
-**CEO-allowed fields:** `name`, `description`, `brandColor` (hex e.g. `#FF5733` or null), `logoAssetId` (UUID or null).
+**Squad Lead-allowed fields:** `name`, `description`, `brandColor` (hex e.g. `#FF5733` or null), `logoAssetId` (UUID or null).
 
 **Board-only fields:** `status`, `budgetMonthlyCents`, `spentMonthlyCents`, `requireBoardApprovalForNewAgents`.
 
-**Not updateable:** `issuePrefix` (used as company slug/identifier — protected from changes).
+**Not updateable:** `issuePrefix` (used as squad slug/identifier — protected from changes).
 
 **Logo workflow:**
-1. `POST /api/companies/{companyId}/logo` with file upload → returns `{ assetId }`.
-2. `PATCH /api/companies/{companyId}` with `{ "logoAssetId": "<assetId>" }`.
+1. `POST /api/squads/{squadId}/logo` with file upload → returns `{ assetId }`.
+2. `PATCH /api/squads/{squadId}` with `{ "logoAssetId": "<assetId>" }`.
 
 ## Setting Agent Instructions Path
 
@@ -535,12 +535,12 @@ PATCH /api/agents/{agentId}/instructions-path
 
 ## Project Setup (Create + Workspace)
 
-When a CEO/manager task asks you to "set up a new project" and wire local + GitHub context, use this sequence.
+When a Squad Lead/manager task asks you to "set up a new project" and wire local + GitHub context, use this sequence.
 
 ### Option A: One-call create with workspace
 
 ```
-POST /api/companies/{companyId}/projects
+POST /api/squads/{squadId}/projects
 {
   "name": "Slaw Mobile App",
   "description": "Ship iOS + Android client",
@@ -559,7 +559,7 @@ POST /api/companies/{companyId}/projects
 ### Option B: Two calls (project first, then workspace)
 
 ```
-POST /api/companies/{companyId}/projects
+POST /api/squads/{squadId}/projects
 {
   "name": "Slaw Mobile App",
   "description": "Ship iOS + Android client",
@@ -592,7 +592,7 @@ Some actions require board approval. You cannot bypass these gates.
 ### Requesting a hire (management only)
 
 ```
-POST /api/companies/{companyId}/agent-hires
+POST /api/squads/{squadId}/agent-hires
 {
   "name": "Marketing Analyst",
   "role": "researcher",
@@ -602,20 +602,20 @@ POST /api/companies/{companyId}/agent-hires
 }
 ```
 
-If company policy requires approval, the new agent is created as `pending_approval` and a linked `hire_agent` approval is created automatically.
+If squad policy requires approval, the new agent is created as `pending_approval` and a linked `hire_agent` approval is created automatically.
 
-**Do NOT** request hires unless you are a manager or CEO. IC agents should ask their manager.
+**Do NOT** request hires unless you are a manager or Squad Lead. IC agents should ask their manager.
 Leave timer heartbeats off by default for new hires. Only enable a scheduled heartbeat when the role truly needs recurring timed work or the user explicitly asked for one.
 
 Use `slaw-create-agent` for the full hiring workflow (reflection + config comparison + prompt drafting).
 
-### CEO strategy approval
+### Squad Lead strategy approval
 
-If you are the CEO, your first strategic plan must be approved before you can move tasks to `in_progress`:
+If you are the Squad Lead, your first strategic plan must be approved before you can move tasks to `in_progress`:
 
 ```
-POST /api/companies/{companyId}/approvals
-{ "type": "approve_ceo_strategy", "requestedByAgentId": "{your-agent-id}", "payload": { "plan": "..." } }
+POST /api/squads/{squadId}/approvals
+{ "type": "approve_squad_lead_strategy", "requestedByAgentId": "{your-agent-id}", "payload": { "plan": "..." } }
 ```
 
 ### Issue-thread confirmations
@@ -670,7 +670,7 @@ Rules:
 ### Checking approval status
 
 ```
-GET /api/companies/{companyId}/approvals?status=pending
+GET /api/squads/{squadId}/approvals?status=pending
 ```
 
 ### Approval follow-up (requesting agent)
@@ -715,7 +715,7 @@ Terminal states: `done`, `cancelled`
 - `completed_at` is auto-set on `done`.
 - One assignee per task at a time.
 - `parentId` is structural and does not create a blocker relationship by itself.
-- Use formal approvals for governed actions such as hires, budget overrides, or CEO strategy gates.
+- Use formal approvals for governed actions such as hires, budget overrides, or Squad Lead strategy gates.
 - Use issue-thread interactions for issue-scoped board/user decisions such as plan acceptance, proposed task breakdowns, or missing-answer questions.
 - Use `blockedByIssueIds` for real work dependencies between issues so Slaw can wake the blocked assignee when all blockers resolve.
 
@@ -728,7 +728,7 @@ Terminal states: `done`, `cancelled`
 | 400  | Validation error   | Check your request body against expected fields                      |
 | 401  | Unauthenticated    | API key missing or invalid                                           |
 | 403  | Unauthorized       | You don't have permission for this action                            |
-| 404  | Not found          | Entity doesn't exist or isn't in your company                        |
+| 404  | Not found          | Entity doesn't exist or isn't in your squad                        |
 | 409  | Conflict           | Another agent owns the task. Pick a different one. **Do not retry.** |
 | 422  | Semantic violation | Invalid state transition (e.g. `backlog` -> `done`)                  |
 | 500  | Server error       | Transient failure. Comment on the task and move on.                  |
@@ -744,16 +744,16 @@ Terminal states: `done`, `cancelled`
 | GET    | `/api/agents/me`                   | Your agent record + chain of command |
 | GET    | `/api/agents/me/inbox/mine?userId=:userId` | Mine-tab issue list for a specific board user |
 | GET    | `/api/agents/:agentId`             | Agent details + chain of command     |
-| GET    | `/api/companies/:companyId/agents` | List all agents in company           |
-| POST   | `/api/companies/:companyId/agents` | Create agent directly (no approval)  |
+| GET    | `/api/squads/:squadId/agents` | List all agents in squad           |
+| POST   | `/api/squads/:squadId/agents` | Create agent directly (no approval)  |
 | PATCH  | `/api/agents/:agentId`             | Update agent config or budget        |
 | POST   | `/api/agents/:agentId/pause`       | Temporarily stop heartbeats          |
 | POST   | `/api/agents/:agentId/resume`      | Resume a paused agent                |
 | POST   | `/api/agents/:agentId/terminate`   | Permanently deactivate agent (irreversible) |
 | POST   | `/api/agents/:agentId/keys`        | Create long-lived API key (full value shown once) |
 | POST   | `/api/agents/:agentId/heartbeat/invoke` | Manually trigger a heartbeat    |
-| GET    | `/api/companies/:companyId/org`    | Org chart tree                       |
-| GET    | `/api/companies/:companyId/adapters/:adapterType/models` | List selectable models for an adapter type |
+| GET    | `/api/squads/:squadId/org`    | Org chart tree                       |
+| GET    | `/api/squads/:squadId/adapters/:adapterType/models` | List selectable models for an adapter type |
 | PATCH  | `/api/agents/:agentId/instructions-path` | Set/clear instructions path (`AGENTS.md`) |
 | GET    | `/api/agents/:agentId/config-revisions` | List config revisions            |
 | POST   | `/api/agents/:agentId/config-revisions/:revisionId/rollback` | Roll back config |
@@ -762,10 +762,10 @@ Terminal states: `done`, `cancelled`
 
 | Method | Path                               | Description                                                                              |
 | ------ | ---------------------------------- | ---------------------------------------------------------------------------------------- |
-| GET    | `/api/companies/:companyId/issues` | List issues, sorted by priority. Filters: `?status=`, `?assigneeAgentId=`, `?assigneeUserId=`, `?projectId=`, `?labelId=`, `?q=` (full-text search across title, identifier, description, comments) |
+| GET    | `/api/squads/:squadId/issues` | List issues, sorted by priority. Filters: `?status=`, `?assigneeAgentId=`, `?assigneeUserId=`, `?projectId=`, `?labelId=`, `?q=` (full-text search across title, identifier, description, comments) |
 | GET    | `/api/issues/:issueId`             | Issue details + ancestors                                                                |
 | GET    | `/api/issues/:issueId/heartbeat-context` | Compact context for heartbeat: issue state, ancestor summaries, comment cursor  |
-| POST   | `/api/companies/:companyId/issues` | Create issue (supports `blockedByIssueIds: string[]` for dependencies)                   |
+| POST   | `/api/squads/:squadId/issues` | Create issue (supports `blockedByIssueIds: string[]` for dependencies)                   |
 | PATCH  | `/api/issues/:issueId`             | Update issue (optional `comment` field; `blockedByIssueIds` replaces blocker set)        |
 | POST   | `/api/issues/:issueId/checkout`    | Atomic checkout (claim + start). Idempotent if you already own it.                       |
 | POST   | `/api/issues/:issueId/release`     | Release task ownership                                                                   |
@@ -791,36 +791,36 @@ Terminal states: `done`, `cancelled`
 | POST   | `/api/execution-workspaces/:workspaceId/runtime-services/restart` | Restart configured workspace services |
 | POST   | `/api/execution-workspaces/:workspaceId/runtime-services/stop` | Stop workspace runtime services |
 
-### Companies, Projects, Goals
+### Squads, Projects, Goals
 
 | Method | Path                                 | Description        |
 | ------ | ------------------------------------ | ------------------ |
-| GET    | `/api/companies`                     | List all companies |
-| POST   | `/api/companies`                     | Create company     |
-| GET    | `/api/companies/:companyId`          | Company details    |
-| PATCH  | `/api/companies/:companyId`          | Update company fields                |
-| POST   | `/api/companies/:companyId/logo`     | Upload company logo (multipart)      |
-| POST   | `/api/companies/:companyId/archive`  | Archive company    |
-| GET    | `/api/companies/:companyId/projects` | List projects      |
+| GET    | `/api/squads`                     | List all squads |
+| POST   | `/api/squads`                     | Create squad     |
+| GET    | `/api/squads/:squadId`          | Squad details    |
+| PATCH  | `/api/squads/:squadId`          | Update squad fields                |
+| POST   | `/api/squads/:squadId/logo`     | Upload squad logo (multipart)      |
+| POST   | `/api/squads/:squadId/archive`  | Archive squad    |
+| GET    | `/api/squads/:squadId/projects` | List projects      |
 | GET    | `/api/projects/:projectId`           | Project details    |
-| POST   | `/api/companies/:companyId/projects` | Create project (optional inline `workspace`) |
+| POST   | `/api/squads/:squadId/projects` | Create project (optional inline `workspace`) |
 | PATCH  | `/api/projects/:projectId`           | Update project     |
 | GET    | `/api/projects/:projectId/workspaces` | List project workspaces |
 | POST   | `/api/projects/:projectId/workspaces` | Create project workspace |
 | PATCH  | `/api/projects/:projectId/workspaces/:workspaceId` | Update project workspace |
 | DELETE | `/api/projects/:projectId/workspaces/:workspaceId` | Delete project workspace |
-| GET    | `/api/companies/:companyId/goals`    | List goals         |
+| GET    | `/api/squads/:squadId/goals`    | List goals         |
 | GET    | `/api/goals/:goalId`                 | Goal details       |
-| POST   | `/api/companies/:companyId/goals`    | Create goal        |
+| POST   | `/api/squads/:squadId/goals`    | Create goal        |
 | PATCH  | `/api/goals/:goalId`                 | Update goal        |
 
 ### Routines
 
 | Method | Path | Description |
 | ------ | ---- | ----------- |
-| GET    | `/api/companies/:companyId/routines` | List all routines in company |
+| GET    | `/api/squads/:squadId/routines` | List all routines in squad |
 | GET    | `/api/routines/:routineId` | Routine details including triggers |
-| POST   | `/api/companies/:companyId/routines` | Create routine (`assigneeAgentId` + `projectId` required; agents: own only) |
+| POST   | `/api/squads/:squadId/routines` | Create routine (`assigneeAgentId` + `projectId` required; agents: own only) |
 | PATCH  | `/api/routines/:routineId` | Update routine (agents: own only, cannot reassign) |
 | POST   | `/api/routines/:routineId/triggers` | Add trigger (`schedule`, `webhook`, or `api` kind) |
 | PATCH  | `/api/routine-triggers/:triggerId` | Update trigger (e.g. disable, change cron) |
@@ -834,9 +834,9 @@ Terminal states: `done`, `cancelled`
 
 | Method | Path                                         | Description                        |
 | ------ | -------------------------------------------- | ---------------------------------- |
-| GET    | `/api/companies/:companyId/approvals`        | List approvals (`?status=pending`) |
-| POST   | `/api/companies/:companyId/approvals`        | Create approval request            |
-| POST   | `/api/companies/:companyId/agent-hires`      | Create hire request/agent draft    |
+| GET    | `/api/squads/:squadId/approvals`        | List approvals (`?status=pending`) |
+| POST   | `/api/squads/:squadId/approvals`        | Create approval request            |
+| POST   | `/api/squads/:squadId/agent-hires`      | Create hire request/agent draft    |
 | GET    | `/api/approvals/:approvalId`                 | Approval details                   |
 | GET    | `/api/approvals/:approvalId/issues`          | Issues linked to approval          |
 | GET    | `/api/approvals/:approvalId/comments`        | Approval comments                  |
@@ -845,19 +845,19 @@ Terminal states: `done`, `cancelled`
 | POST   | `/api/approvals/:approvalId/reject`          | Reject approval request            |
 | POST   | `/api/approvals/:approvalId/request-revision`| Board asks for revision            |
 | POST   | `/api/approvals/:approvalId/resubmit`        | Resubmit revised approval          |
-| POST   | `/api/companies/:companyId/cost-events`      | Report cost event                  |
-| GET    | `/api/companies/:companyId/costs/summary`    | Company cost summary               |
-| GET    | `/api/companies/:companyId/costs/by-agent`   | Costs by agent                     |
-| GET    | `/api/companies/:companyId/costs/by-project` | Costs by project                   |
-| GET    | `/api/companies/:companyId/activity`         | Activity log                       |
-| GET    | `/api/companies/:companyId/dashboard`        | Company health summary             |
+| POST   | `/api/squads/:squadId/cost-events`      | Report cost event                  |
+| GET    | `/api/squads/:squadId/costs/summary`    | Squad cost summary               |
+| GET    | `/api/squads/:squadId/costs/by-agent`   | Costs by agent                     |
+| GET    | `/api/squads/:squadId/costs/by-project` | Costs by project                   |
+| GET    | `/api/squads/:squadId/activity`         | Activity log                       |
+| GET    | `/api/squads/:squadId/dashboard`        | Squad health summary             |
 
 ### Secrets
 
 | Method | Path | Description |
 | ------ | ---- | ----------- |
-| GET    | `/api/companies/:companyId/secrets` | List secrets (metadata only)        |
-| POST   | `/api/companies/:companyId/secrets` | Create secret                       |
+| GET    | `/api/squads/:squadId/secrets` | List secrets (metadata only)        |
+| POST   | `/api/squads/:squadId/secrets` | Create secret                       |
 | PATCH  | `/api/secrets/:secretId`            | Update secret value (creates new version) |
 
 ---

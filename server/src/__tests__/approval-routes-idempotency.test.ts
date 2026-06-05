@@ -50,7 +50,7 @@ async function createApp(actorOverrides: Record<string, unknown> = {}) {
     (req as any).actor = {
       type: "board",
       userId: "user-1",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "session",
       isInstanceAdmin: false,
       ...actorOverrides,
@@ -73,7 +73,7 @@ async function createAgentApp() {
     (req as any).actor = {
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "api_key",
       isInstanceAdmin: false,
     };
@@ -115,7 +115,7 @@ describe("approval routes idempotent retries", () => {
   it("does not emit duplicate approval side effects when approve is already resolved", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "approved",
       payload: {},
@@ -124,7 +124,7 @@ describe("approval routes idempotent retries", () => {
     mockApprovalService.approve.mockResolvedValue({
       approval: {
         id: "approval-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         type: "hire_agent",
         status: "approved",
         payload: {},
@@ -146,7 +146,7 @@ describe("approval routes idempotent retries", () => {
   it("does not emit duplicate rejection logs when reject is already resolved", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "rejected",
       payload: {},
@@ -154,7 +154,7 @@ describe("approval routes idempotent retries", () => {
     mockApprovalService.reject.mockResolvedValue({
       approval: {
         id: "approval-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         type: "hire_agent",
         status: "rejected",
         payload: {},
@@ -170,10 +170,10 @@ describe("approval routes idempotent retries", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("rejects approval decisions for companies outside the caller scope", async () => {
+  it("rejects approval decisions for squads outside the caller scope", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-2",
-      companyId: "company-2",
+      squadId: "squad-2",
       type: "hire_agent",
       status: "pending",
       payload: {},
@@ -187,10 +187,10 @@ describe("approval routes idempotent retries", () => {
     expect(mockApprovalService.approve).not.toHaveBeenCalled();
   });
 
-  it("rejects approval revision requests for companies outside the caller scope", async () => {
+  it("rejects approval revision requests for squads outside the caller scope", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-3",
-      companyId: "company-2",
+      squadId: "squad-2",
       type: "hire_agent",
       status: "pending",
       payload: {},
@@ -207,7 +207,7 @@ describe("approval routes idempotent retries", () => {
   it("derives approval attribution from the authenticated actor on approve", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-4",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "pending",
       payload: {},
@@ -216,7 +216,7 @@ describe("approval routes idempotent retries", () => {
     mockApprovalService.approve.mockResolvedValue({
       approval: {
         id: "approval-4",
-        companyId: "company-1",
+        squadId: "squad-1",
         type: "hire_agent",
         status: "approved",
         payload: {},
@@ -236,7 +236,7 @@ describe("approval routes idempotent retries", () => {
   it("derives approval attribution from the authenticated actor on reject", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-5",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "pending",
       payload: {},
@@ -244,7 +244,7 @@ describe("approval routes idempotent retries", () => {
     mockApprovalService.reject.mockResolvedValue({
       approval: {
         id: "approval-5",
-        companyId: "company-1",
+        squadId: "squad-1",
         type: "hire_agent",
         status: "rejected",
         payload: {},
@@ -263,14 +263,14 @@ describe("approval routes idempotent retries", () => {
   it("derives approval attribution from the authenticated actor on request revision", async () => {
     mockApprovalService.getById.mockResolvedValue({
       id: "approval-6",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "pending",
       payload: {},
     });
     mockApprovalService.requestRevision.mockResolvedValue({
       id: "approval-6",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "revision_requested",
       payload: {},
@@ -291,7 +291,7 @@ describe("approval routes idempotent retries", () => {
   it("lets agents create generic issue-linked board approval requests", async () => {
     mockApprovalService.create.mockResolvedValue({
       id: "approval-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "request_board_approval",
       requestedByAgentId: "agent-1",
       requestedByUserId: null,
@@ -305,7 +305,7 @@ describe("approval routes idempotent retries", () => {
     });
 
     const res = await request(await createAgentApp())
-      .post("/api/companies/company-1/approvals")
+      .post("/api/squads/squad-1/approvals")
       .send({
         type: "request_board_approval",
         issueIds: ["00000000-0000-0000-0000-000000000001"],
@@ -314,7 +314,7 @@ describe("approval routes idempotent retries", () => {
 
     expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
     expect(res.body).toMatchObject({
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "request_board_approval",
       requestedByAgentId: "agent-1",
       requestedByUserId: null,
@@ -329,7 +329,7 @@ describe("approval routes idempotent retries", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         actorType: "agent",
         actorId: "agent-1",
         action: "approval.created",

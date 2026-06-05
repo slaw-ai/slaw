@@ -15,7 +15,7 @@ function createTempContextPath(): string {
 function agent(overrides: Record<string, unknown> = {}) {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    companyId: "22222222-2222-4222-8222-222222222222",
+    squadId: "22222222-2222-4222-8222-222222222222",
     name: "Worker",
     urlKey: "worker",
     role: "Engineer",
@@ -75,7 +75,7 @@ describe("prompt handoff", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(agent()), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({
         id: "issue-1",
-        companyId: "22222222-2222-4222-8222-222222222222",
+        squadId: "22222222-2222-4222-8222-222222222222",
         title: "Investigate queue lag",
         status: "todo",
         priority: "medium",
@@ -92,7 +92,7 @@ describe("prompt handoff", () => {
     expect(result.mode).toBe("issue");
     expect(result.agent.id).toBe("11111111-1111-4111-8111-111111111111");
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(fetchMock.mock.calls[1]?.[0]).toBe("http://localhost:3100/api/companies/22222222-2222-4222-8222-222222222222/issues");
+    expect(fetchMock.mock.calls[1]?.[0]).toBe("http://localhost:3100/api/squads/22222222-2222-4222-8222-222222222222/issues");
     expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
       title: "Investigate queue lag",
       assigneeAgentId: "11111111-1111-4111-8111-111111111111",

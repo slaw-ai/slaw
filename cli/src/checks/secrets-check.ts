@@ -187,7 +187,7 @@ function awsSecretsManagerCheck(): CheckResult {
       message,
       canRepair: false,
       repairHint:
-        "AWS static environment credentials are visible. Use only short-lived shell credentials locally; prefer IAM role/workload identity for hosted deployments and never store AWS access keys in Slaw company secrets.",
+        "AWS static environment credentials are visible. Use only short-lived shell credentials locally; prefer IAM role/workload identity for hosted deployments and never store AWS access keys in Slaw squad secrets.",
     };
   }
 

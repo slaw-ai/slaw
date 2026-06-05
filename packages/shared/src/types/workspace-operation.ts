@@ -9,7 +9,7 @@ export type WorkspaceOperationStatus = "running" | "succeeded" | "failed" | "ski
 
 export interface WorkspaceOperation {
   id: string;
-  companyId: string;
+  squadId: string;
   executionWorkspaceId: string | null;
   heartbeatRunId: string | null;
   phase: WorkspaceOperationPhase;

@@ -17,8 +17,8 @@ const mockIssueService = vi.hoisted(() => ({
 }));
 
 vi.mock("../services/index.js", () => ({
-  companyService: () => ({
-    getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+  squadService: () => ({
+    getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
   }),
   accessService: () => ({
     canUser: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock("../services/index.js", () => ({
   feedbackService: () => ({}),
   goalService: () => ({
     getById: vi.fn(),
-    getDefaultCompanyGoal: vi.fn(),
+    getDefaultSquadGoal: vi.fn(),
   }),
   heartbeatService: () => ({
     wakeup: mockWakeup,
@@ -46,7 +46,7 @@ vi.mock("../services/index.js", () => ({
   getIssueContinuationSummaryDocument: vi.fn(async () => null),
   instanceSettingsService: () => ({
     get: vi.fn(),
-    listCompanyIds: vi.fn(),
+    listSquadIds: vi.fn(),
   }),
   issueApprovalService: () => ({}),
   issueReferenceService: () => ({
@@ -96,7 +96,7 @@ async function createApp() {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -129,7 +129,7 @@ describe("issue dependency wakeups in issue routes", () => {
   it("wakes dependents when the final blocker transitions to done", async () => {
     mockIssueService.getById.mockResolvedValue({
       id: "issue-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-100",
       title: "Finish blocker",
       description: null,
@@ -146,7 +146,7 @@ describe("issue dependency wakeups in issue routes", () => {
     });
     mockIssueService.update.mockResolvedValue({
       id: "issue-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-100",
       title: "Finish blocker",
       description: null,
@@ -188,7 +188,7 @@ describe("issue dependency wakeups in issue routes", () => {
   it("wakes the parent when all direct children become terminal", async () => {
     mockIssueService.getById.mockResolvedValue({
       id: "child-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-101",
       title: "Last child",
       description: null,
@@ -205,7 +205,7 @@ describe("issue dependency wakeups in issue routes", () => {
     });
     mockIssueService.update.mockResolvedValue({
       id: "child-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-101",
       title: "Last child",
       description: null,

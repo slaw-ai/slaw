@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   activityLog,
   agents,
-  companies,
+  squads,
   createDb,
   heartbeatRuns,
   issueComments,
@@ -43,7 +43,7 @@ describeEmbeddedPostgres("productivity review service", () => {
   }, 30_000);
 
   afterEach(async () => {
-    await db.execute(sql.raw(`TRUNCATE TABLE "companies" CASCADE`));
+    await db.execute(sql.raw(`TRUNCATE TABLE "squads" CASCADE`));
   });
 
   afterAll(async () => {
@@ -56,15 +56,15 @@ describeEmbeddedPostgres("productivity review service", () => {
     parentId?: string | null;
     originKind?: string;
   }) {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const managerId = randomUUID();
     const coderId = randomUUID();
     const issueId = randomUUID();
-    const issuePrefix = `PR${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `PR${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     const createdAt = new Date("2026-04-28T10:00:00.000Z");
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Productivity Review Co",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -72,7 +72,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     await db.insert(agents).values([
       {
         id: managerId,
-        companyId,
+        squadId,
         name: "CTO",
         role: "cto",
         status: "idle",
@@ -83,7 +83,7 @@ describeEmbeddedPostgres("productivity review service", () => {
       },
       {
         id: coderId,
-        companyId,
+        squadId,
         name: "Coder",
         role: "engineer",
         status: "idle",
@@ -96,7 +96,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     ]);
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Implement data import",
       status: opts?.status ?? "in_progress",
       priority: "medium",
@@ -110,11 +110,11 @@ describeEmbeddedPostgres("productivity review service", () => {
       updatedAt: createdAt,
     });
 
-    return { companyId, managerId, coderId, issueId, issuePrefix, createdAt };
+    return { squadId, managerId, coderId, issueId, issuePrefix, createdAt };
   }
 
   async function insertRuns(input: {
-    companyId: string;
+    squadId: string;
     agentId: string;
     issueId: string;
     count: number;
@@ -127,7 +127,7 @@ describeEmbeddedPostgres("productivity review service", () => {
       const createdAt = new Date(input.now.getTime() - index * 60_000);
       runs.push({
         id: runId,
-        companyId: input.companyId,
+        squadId: input.squadId,
         agentId: input.agentId,
         status: "succeeded",
         invocationSource: "assignment",
@@ -146,7 +146,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     if (input.withRunComments) {
       await db.insert(issueComments).values(
         runs.map((run, index) => ({
-          companyId: input.companyId,
+          squadId: input.squadId,
           issueId: input.issueId,
           authorAgentId: input.agentId,
           createdByRunId: run.id,
@@ -160,11 +160,11 @@ describeEmbeddedPostgres("productivity review service", () => {
     return runs;
   }
 
-  async function listProductivityReviews(companyId: string) {
+  async function listProductivityReviews(squadId: string) {
     return db
       .select()
       .from(issues)
-      .where(and(eq(issues.companyId, companyId), eq(issues.originKind, PRODUCTIVITY_REVIEW_ORIGIN_KIND)))
+      .where(and(eq(issues.squadId, squadId), eq(issues.originKind, PRODUCTIVITY_REVIEW_ORIGIN_KIND)))
       .orderBy(issues.createdAt);
   }
 
@@ -183,7 +183,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: DEFAULT_PRODUCTIVITY_REVIEW_NO_COMMENT_STREAK_RUNS,
@@ -191,13 +191,13 @@ describeEmbeddedPostgres("productivity review service", () => {
     });
 
     const service = productivityReviewService(db);
-    const first = await service.reconcileProductivityReviews({ now, companyId: seeded.companyId });
-    const second = await service.reconcileProductivityReviews({ now, companyId: seeded.companyId });
+    const first = await service.reconcileProductivityReviews({ now, squadId: seeded.squadId });
+    const second = await service.reconcileProductivityReviews({ now, squadId: seeded.squadId });
 
     expect(first.created).toBe(1);
     expect(second.updated).toBe(0);
     expect(second.existing).toBe(1);
-    const reviews = await listProductivityReviews(seeded.companyId);
+    const reviews = await listProductivityReviews(seeded.squadId);
     expect(reviews).toHaveLength(1);
     expect(reviews[0]?.parentId).toBe(seeded.issueId);
     expect(reviews[0]?.assigneeAgentId).toBe(seeded.managerId);
@@ -214,7 +214,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: DEFAULT_PRODUCTIVITY_REVIEW_NO_COMMENT_STREAK_RUNS,
@@ -222,29 +222,29 @@ describeEmbeddedPostgres("productivity review service", () => {
     });
 
     const service = productivityReviewService(db);
-    await service.reconcileProductivityReviews({ now, companyId: seeded.companyId });
-    const [review] = await listProductivityReviews(seeded.companyId);
+    await service.reconcileProductivityReviews({ now, squadId: seeded.squadId });
+    const [review] = await listProductivityReviews(seeded.squadId);
 
     const firstRefreshAt = new Date(now.getTime() + DEFAULT_PRODUCTIVITY_REVIEW_REFRESH_INTERVAL_MS);
     const firstRefresh = await service.reconcileProductivityReviews({
       now: firstRefreshAt,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
     const tooSoonRefresh = await service.reconcileProductivityReviews({
       now: new Date(firstRefreshAt.getTime() + 30 * 60 * 1000),
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
     await service.reconcileProductivityReviews({
       now: new Date(firstRefreshAt.getTime() + DEFAULT_PRODUCTIVITY_REVIEW_REFRESH_INTERVAL_MS),
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
     await service.reconcileProductivityReviews({
       now: new Date(firstRefreshAt.getTime() + 2 * DEFAULT_PRODUCTIVITY_REVIEW_REFRESH_INTERVAL_MS),
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
     const cappedRefresh = await service.reconcileProductivityReviews({
       now: new Date(firstRefreshAt.getTime() + 3 * DEFAULT_PRODUCTIVITY_REVIEW_REFRESH_INTERVAL_MS),
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
 
     expect(firstRefresh.updated).toBe(1);
@@ -259,7 +259,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: DEFAULT_PRODUCTIVITY_REVIEW_NO_COMMENT_STREAK_RUNS,
@@ -270,7 +270,7 @@ describeEmbeddedPostgres("productivity review service", () => {
         const createdAt = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
         return {
           id: randomUUID(),
-          companyId: seeded.companyId,
+          squadId: seeded.squadId,
           title: `Completed productivity review ${index + 1}`,
           status: "done",
           priority: "high",
@@ -288,19 +288,19 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await productivityReviewService(db).reconcileProductivityReviews({
       now,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
 
     expect(result.created).toBe(0);
     expect(result.creationCapped).toBe(1);
-    expect(await listProductivityReviews(seeded.companyId)).toHaveLength(3);
+    expect(await listProductivityReviews(seeded.squadId)).toHaveLength(3);
   });
 
   it("does not count cancelled productivity reviews toward the creation cap", async () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: DEFAULT_PRODUCTIVITY_REVIEW_NO_COMMENT_STREAK_RUNS,
@@ -311,7 +311,7 @@ describeEmbeddedPostgres("productivity review service", () => {
         const createdAt = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
         return {
           id: randomUUID(),
-          companyId: seeded.companyId,
+          squadId: seeded.squadId,
           title: `Cancelled productivity review ${index + 1}`,
           status: "cancelled",
           priority: "high",
@@ -329,12 +329,12 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await productivityReviewService(db).reconcileProductivityReviews({
       now,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
 
     expect(result.created).toBe(1);
     expect(result.creationCapped).toBe(0);
-    expect(await listProductivityReviews(seeded.companyId)).toHaveLength(4);
+    expect(await listProductivityReviews(seeded.squadId)).toHaveLength(4);
   });
 
   it("creates a long-active review without enabling a continuation hold", async () => {
@@ -345,16 +345,16 @@ describeEmbeddedPostgres("productivity review service", () => {
     });
     const service = productivityReviewService(db);
 
-    const result = await service.reconcileProductivityReviews({ now, companyId: seeded.companyId });
+    const result = await service.reconcileProductivityReviews({ now, squadId: seeded.squadId });
     const hold = await service.isProductivityReviewContinuationHoldActive({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       issueId: seeded.issueId,
       agentId: seeded.coderId,
       now,
     });
 
     expect(result.created).toBe(1);
-    const [review] = await listProductivityReviews(seeded.companyId);
+    const [review] = await listProductivityReviews(seeded.squadId);
     expect(review?.description).toContain("Primary trigger: `long_active_duration`");
     expect(review?.priority).toBe("medium");
     expect(hold.held).toBe(false);
@@ -364,7 +364,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: 10,
@@ -374,11 +374,11 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await productivityReviewService(db).reconcileProductivityReviews({
       now,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
 
     expect(result.created).toBe(1);
-    const [review] = await listProductivityReviews(seeded.companyId);
+    const [review] = await listProductivityReviews(seeded.squadId);
     expect(review?.description).toContain("Primary trigger: `high_churn`");
     expect(review?.description).toContain("Runs in rolling windows: 10/1h");
   });
@@ -387,14 +387,14 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: 9,
       now,
     });
     const managerRuns = await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.managerId,
       issueId: seeded.issueId,
       count: 10,
@@ -402,7 +402,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     });
     await db.insert(issueComments).values(
       managerRuns.map((run, index) => ({
-        companyId: seeded.companyId,
+        squadId: seeded.squadId,
         issueId: seeded.issueId,
         authorAgentId: seeded.managerId,
         createdByRunId: run.id,
@@ -414,11 +414,11 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await productivityReviewService(db).reconcileProductivityReviews({
       now,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
 
     expect(result.created).toBe(0);
-    expect(await listProductivityReviews(seeded.companyId)).toHaveLength(0);
+    expect(await listProductivityReviews(seeded.squadId)).toHaveLength(0);
   });
 
   it("skips productivity-review descendants so reviews cannot recursively spawn reviews", async () => {
@@ -428,7 +428,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     const childId = randomUUID();
     await db.insert(issues).values({
       id: reviewId,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       title: "Existing productivity review",
       status: "todo",
       priority: "high",
@@ -441,7 +441,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     });
     await db.insert(issues).values({
       id: childId,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       title: "Review follow-up child",
       status: "in_progress",
       priority: "medium",
@@ -452,7 +452,7 @@ describeEmbeddedPostgres("productivity review service", () => {
       startedAt: new Date(now.getTime() - 7 * 60 * 60 * 1000),
     });
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: childId,
       count: 10,
@@ -461,9 +461,9 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await productivityReviewService(db).reconcileProductivityReviews({
       now,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
-    const reviews = await listProductivityReviews(seeded.companyId);
+    const reviews = await listProductivityReviews(seeded.squadId);
 
     expect(result.created).toBe(0);
     expect(reviews).toHaveLength(1);
@@ -473,15 +473,15 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: 10,
       now,
     });
     const service = productivityReviewService(db);
-    await service.reconcileProductivityReviews({ now, companyId: seeded.companyId });
-    const [review] = await listProductivityReviews(seeded.companyId);
+    await service.reconcileProductivityReviews({ now, squadId: seeded.squadId });
+    const [review] = await listProductivityReviews(seeded.squadId);
     await db
       .update(issues)
       .set({ status: "done", updatedAt: now })
@@ -489,9 +489,9 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await service.reconcileProductivityReviews({
       now: new Date(now.getTime() + 30 * 60 * 1000),
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
-    const reviews = await listProductivityReviews(seeded.companyId);
+    const reviews = await listProductivityReviews(seeded.squadId);
 
     expect(result.snoozed).toBe(1);
     expect(reviews).toHaveLength(1);
@@ -501,18 +501,18 @@ describeEmbeddedPostgres("productivity review service", () => {
     const now = new Date("2026-04-28T12:00:00.000Z");
     const seeded = await seedAssignedIssue();
     const [latestRun] = await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: 10,
       now,
     });
     const service = productivityReviewService(db);
-    await service.reconcileProductivityReviews({ now, companyId: seeded.companyId });
-    const [review] = await listProductivityReviews(seeded.companyId);
+    await service.reconcileProductivityReviews({ now, squadId: seeded.squadId });
+    const [review] = await listProductivityReviews(seeded.squadId);
 
     const hold = await service.isProductivityReviewContinuationHoldActive({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       issueId: seeded.issueId,
       agentId: seeded.coderId,
       now,
@@ -521,7 +521,7 @@ describeEmbeddedPostgres("productivity review service", () => {
     if (!hold.held) return;
 
     await service.recordContinuationHold({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       issueId: seeded.issueId,
       runId: latestRun!.id as string,
       agentId: seeded.coderId,
@@ -547,7 +547,7 @@ describeEmbeddedPostgres("productivity review service", () => {
       .where(eq(issues.id, seeded.issueId));
 
     await insertRuns({
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
       agentId: seeded.coderId,
       issueId: seeded.issueId,
       count: DEFAULT_PRODUCTIVITY_REVIEW_NO_COMMENT_STREAK_RUNS,
@@ -556,11 +556,11 @@ describeEmbeddedPostgres("productivity review service", () => {
 
     const result = await productivityReviewService(db).reconcileProductivityReviews({
       now,
-      companyId: seeded.companyId,
+      squadId: seeded.squadId,
     });
 
     expect(result.failed).toBe(0);
-    const [review] = await listProductivityReviews(seeded.companyId);
+    const [review] = await listProductivityReviews(seeded.squadId);
     expect(review?.requestDepth).toBe(MAX_ISSUE_REQUEST_DEPTH);
   });
 });

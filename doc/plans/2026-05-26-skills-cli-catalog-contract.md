@@ -10,18 +10,18 @@ contract, not a full product spec.
 
 ## Decisions
 
-- `slaw skills` manages Slaw company skills. It does not manage
+- `slaw skills` manages Slaw squad skills. It does not manage
   local adapter homes directly.
-- Installing a skill means adding or updating a company-scoped
-  `company_skills` record.
+- Installing a skill means adding or updating a squad-scoped
+  `squad_skills` record.
 - Attaching a skill to an agent is a separate agent desired-state operation.
 - Adapter runtime sync is a third step handled through adapter skill APIs.
 - Root `skills/` remains reserved for Slaw runtime and operational skills.
 - App-shipped catalog skills live in `packages/skills-catalog`, not root
   `skills/`.
-- Catalog skills are inspectable before install. Inspection never mutates company
+- Catalog skills are inspectable before install. Inspection never mutates squad
   state.
-- External sources continue to use the existing company skill import API in the
+- External sources continue to use the existing squad skill import API in the
   first release. No separate marketplace, tap, or source registry is part of this
   phase.
 - Agent desired skills continue to live in
@@ -31,9 +31,9 @@ contract, not a full product spec.
 
 ## Terms
 
-- Company skill: a row in `company_skills`, owned by one company.
+- Squad skill: a row in `squad_skills`, owned by one squad.
 - Catalog skill: an app-shipped skill entry in `@slaw/skills-catalog`.
-- Skill ref: a user-supplied company skill reference. The CLI accepts company
+- Skill ref: a user-supplied squad skill reference. The CLI accepts squad
   skill `id`, canonical `key`, or unique `slug`.
 - Catalog ref: a user-supplied catalog reference. The CLI accepts catalog `id`,
   canonical `key`, or unique `slug`.
@@ -47,8 +47,8 @@ All skills commands use the existing client command stack:
 
 - Global client options: `--data-dir`, `--config`, `--context`, `--profile`,
   `--api-base`, `--api-key`, and `--json`.
-- Company-scoped commands also accept `-C, --company-id <id>` and otherwise use
-  `SLAW_COMPANY_ID` or the active context profile.
+- Squad-scoped commands also accept `-C, --squad-id <id>` and otherwise use
+  `SLAW_SQUAD_ID` or the active context profile.
 - Human output goes to stdout. Errors go to stderr.
 - `--json` prints pretty JSON and no decorative labels.
 - Successful commands exit `0`. Validation, API, or conflict errors exit `1`.
@@ -58,40 +58,40 @@ All skills commands use the existing client command stack:
 - Commands that can delete or clear state must prompt in a TTY. In non-TTY mode
   they must require `--yes`.
 
-### Company Skill Commands
+### Squad Skill Commands
 
 These commands are Phase B and must work over existing APIs.
 
 | Command | Behavior | JSON output |
 |---|---|---|
-| `skills list` | Lists company skills from `GET /api/companies/:companyId/skills`. Human rows include `id`, `key`, `slug`, `name`, `source`, `trust`, `compatibility`, and `attachedAgents`. | `CompanySkillListItem[]` |
-| `skills show <skill-ref>` | Resolves `id`, `key`, or unique `slug`, then reads detail. Ambiguous slugs are conflicts. | `CompanySkillDetail` |
-| `skills file <skill-ref> [--path <path>]` | Resolves the skill, reads a file with default `SKILL.md`, and prints raw file content in human mode. This command must remain pipeable. | `CompanySkillFileDetail` |
-| `skills import <source>` | Calls existing import API. Source may be a local path, GitHub URL, skills.sh URL or command, `owner/repo`, `owner/repo/skill`, or URL-like source already accepted by the server. | `CompanySkillImportResult` |
-| `skills create --name <name> [--slug <slug>] [--description <text>] [--body-file <path|->]` | Creates a managed local company skill. If `--body-file` is omitted, the server default body is used. `-` reads markdown from stdin. | `CompanySkill` |
-| `skills scan-projects [--project-id <id>...] [--workspace-id <id>...]` | Calls project scan. Repeated flags become arrays. With neither flag, scan all accessible project workspaces. | `CompanySkillProjectScanResult` |
-| `skills check [skill-ref]` | Reads update status for one skill, or for every listed company skill when no ref is provided. Unsupported statuses are shown, not hidden. | `CompanySkillCheckRow[]` |
-| `skills update <skill-ref>` | Installs the update for one skill through the existing install-update API. | `CompanySkillUpdateRow` |
-| `skills update --all` | Checks all skills, installs only those with `hasUpdate=true`, and reports skipped unsupported or current skills. | `CompanySkillUpdateRow[]` |
-| `skills remove <skill-ref> [--yes]` | Deletes one company skill after confirmation. | `CompanySkill` |
+| `skills list` | Lists squad skills from `GET /api/squads/:squadId/skills`. Human rows include `id`, `key`, `slug`, `name`, `source`, `trust`, `compatibility`, and `attachedAgents`. | `SquadSkillListItem[]` |
+| `skills show <skill-ref>` | Resolves `id`, `key`, or unique `slug`, then reads detail. Ambiguous slugs are conflicts. | `SquadSkillDetail` |
+| `skills file <skill-ref> [--path <path>]` | Resolves the skill, reads a file with default `SKILL.md`, and prints raw file content in human mode. This command must remain pipeable. | `SquadSkillFileDetail` |
+| `skills import <source>` | Calls existing import API. Source may be a local path, GitHub URL, skills.sh URL or command, `owner/repo`, `owner/repo/skill`, or URL-like source already accepted by the server. | `SquadSkillImportResult` |
+| `skills create --name <name> [--slug <slug>] [--description <text>] [--body-file <path|->]` | Creates a managed local squad skill. If `--body-file` is omitted, the server default body is used. `-` reads markdown from stdin. | `SquadSkill` |
+| `skills scan-projects [--project-id <id>...] [--workspace-id <id>...]` | Calls project scan. Repeated flags become arrays. With neither flag, scan all accessible project workspaces. | `SquadSkillProjectScanResult` |
+| `skills check [skill-ref]` | Reads update status for one skill, or for every listed squad skill when no ref is provided. Unsupported statuses are shown, not hidden. | `SquadSkillCheckRow[]` |
+| `skills update <skill-ref>` | Installs the update for one skill through the existing install-update API. | `SquadSkillUpdateRow` |
+| `skills update --all` | Checks all skills, installs only those with `hasUpdate=true`, and reports skipped unsupported or current skills. | `SquadSkillUpdateRow[]` |
+| `skills remove <skill-ref> [--yes]` | Deletes one squad skill after confirmation. | `SquadSkill` |
 
-`CompanySkillCheckRow` is a CLI-side shape:
+`SquadSkillCheckRow` is a CLI-side shape:
 
 ```ts
-interface CompanySkillCheckRow {
-  skill: Pick<CompanySkillListItem, "id" | "key" | "slug" | "name">;
-  status: CompanySkillUpdateStatus;
+interface SquadSkillCheckRow {
+  skill: Pick<SquadSkillListItem, "id" | "key" | "slug" | "name">;
+  status: SquadSkillUpdateStatus;
 }
 ```
 
-`CompanySkillUpdateRow` is a CLI-side shape:
+`SquadSkillUpdateRow` is a CLI-side shape:
 
 ```ts
-interface CompanySkillUpdateRow {
+interface SquadSkillUpdateRow {
   skillRef: string;
   action: "updated" | "skipped" | "failed";
-  skill?: CompanySkill;
-  status?: CompanySkillUpdateStatus;
+  skill?: SquadSkill;
+  status?: SquadSkillUpdateStatus;
   reason?: string;
 }
 ```
@@ -117,8 +117,8 @@ These commands are Phase E and depend on the catalog APIs from Phase D.
 |---|---|---|
 | `skills browse [--kind bundled|optional] [--category <slug>] [--query <text>]` | Lists app-shipped catalog skills. Human rows include `id`, `key`, `kind`, `category`, `slug`, `name`, `trust`, and `recommendedForRoles`. | `CatalogSkillListItem[]` |
 | `skills search <query> [--kind bundled|optional] [--category <slug>]` | Alias for catalog browse with `query`. | `CatalogSkillListItem[]` |
-| `skills inspect <catalog-ref>` | Shows app-shipped catalog detail and file inventory. Does not mutate company state. | `CatalogSkillDetail` |
-| `skills install <catalog-ref> [--as <slug>] [--force]` | Installs a catalog skill into a company library. `--as` overrides the company skill slug. `--force` may replace a same-key catalog skill but must not bypass hard validation or dangerous security findings. | `CompanySkillInstallCatalogResult` |
+| `skills inspect <catalog-ref>` | Shows app-shipped catalog detail and file inventory. Does not mutate squad state. | `CatalogSkillDetail` |
+| `skills install <catalog-ref> [--as <slug>] [--force]` | Installs a catalog skill into a squad library. `--as` overrides the squad skill slug. `--force` may replace a same-key catalog skill but must not bypass hard validation or dangerous security findings. | `SquadSkillInstallCatalogResult` |
 
 Catalog commands are for the app-shipped Slaw catalog only. External GitHub,
 skills.sh, local path, and URL installs remain under `skills import <source>` in
@@ -218,7 +218,7 @@ interface CatalogSkillFile {
 slaw:<kind>:<category>:<slug>
 ```
 
-`key` is the canonical company skill key installed into `company_skills`:
+`key` is the canonical squad skill key installed into `squad_skills`:
 
 ```text
 slaw/<kind>/<category>/<slug>
@@ -312,13 +312,13 @@ the first one.
 
 ## Catalog API Contract
 
-Phase D adds read APIs and one company install API.
+Phase D adds read APIs and one squad install API.
 
 ```text
 GET  /api/skills/catalog
 GET  /api/skills/catalog/:catalogId
 GET  /api/skills/catalog/:catalogId/files?path=SKILL.md
-POST /api/companies/:companyId/skills/install-catalog
+POST /api/squads/:squadId/skills/install-catalog
 ```
 
 `GET /api/skills/catalog` accepts:
@@ -334,7 +334,7 @@ but route parameters use `id` to avoid slash handling ambiguity.
 Install request:
 
 ```ts
-interface CompanySkillInstallCatalogRequest {
+interface SquadSkillInstallCatalogRequest {
   catalogSkillId: string;
   slug?: string | null;
   force?: boolean;
@@ -344,9 +344,9 @@ interface CompanySkillInstallCatalogRequest {
 Install result:
 
 ```ts
-interface CompanySkillInstallCatalogResult {
+interface SquadSkillInstallCatalogResult {
   action: "created" | "updated" | "unchanged";
-  skill: CompanySkill;
+  skill: SquadSkill;
   catalogSkill: CatalogSkill;
   warnings: string[];
 }
@@ -354,10 +354,10 @@ interface CompanySkillInstallCatalogResult {
 
 Install behavior:
 
-- Creates or updates a company skill with `sourceType="catalog"`.
-- Uses catalog `key` as the company skill canonical key.
+- Creates or updates a squad skill with `sourceType="catalog"`.
+- Uses catalog `key` as the squad skill canonical key.
 - Uses catalog `slug` unless `slug` is provided.
-- Materializes the catalog files into a company-managed skill directory so
+- Materializes the catalog files into a squad-managed skill directory so
   existing skill file reads continue to work.
 - Stores provenance in metadata:
   - `catalogId`
@@ -375,7 +375,7 @@ Install behavior:
 - Returns `409` for duplicate slug/key conflicts that cannot be resolved safely.
 - Returns `422` for invalid, incompatible, or hard-blocked catalog entries.
 - `force` may replace a same-key catalog-managed skill. It must not bypass
-  company boundaries, permission checks, hard validation, or hard security
+  squad boundaries, permission checks, hard validation, or hard security
   findings.
 
 ## Error Semantics
@@ -385,7 +385,7 @@ Use existing HTTP semantics:
 - `400`: invalid CLI arguments, invalid query/body shape, or malformed refs.
 - `401`: missing or invalid auth.
 - `403`: authenticated principal lacks access or mutation permission.
-- `404`: skill, catalog entry, agent, file, company, or source not found.
+- `404`: skill, catalog entry, agent, file, squad, or source not found.
 - `409`: ambiguous slug, duplicate key/slug, update conflict, or unsafe overwrite.
 - `422`: semantic violation such as invalid skill content or unsupported source.
 - `500`: unexpected server failure.
@@ -393,7 +393,7 @@ Use existing HTTP semantics:
 CLI messages should name the next useful correction, for example:
 
 - `Skill slug "review" is ambiguous. Use an id or key.`
-- `Company ID is required. Pass --company-id, set SLAW_COMPANY_ID, or set a context profile.`
+- `Squad ID is required. Pass --squad-id, set SLAW_SQUAD_ID, or set a context profile.`
 - `Catalog skill contains executable scripts and cannot be force-installed until security review semantics allow it.`
 
 ## Phase Acceptance Criteria
@@ -404,11 +404,11 @@ thread links it.
 Phase B, CLI MVP:
 
 - `slaw skills --help` exposes the Phase B command group.
-- All Phase B commands work against existing company skills and agent skills
+- All Phase B commands work against existing squad skills and agent skills
   APIs without schema or server changes.
 - Skill refs resolve by id, key, or unique slug.
 - Human and JSON output are covered by focused CLI tests.
-- `doc/CLI.md` documents company install vs agent desired sync vs runtime sync.
+- `doc/CLI.md` documents squad install vs agent desired sync vs runtime sync.
 
 Phase C, catalog package:
 
@@ -422,10 +422,10 @@ Phase C, catalog package:
 Phase D, catalog APIs:
 
 - Catalog list/detail/file APIs are read-only and covered by tests.
-- Install-from-catalog creates auditable company-scoped skill records with
+- Install-from-catalog creates auditable squad-scoped skill records with
   provenance metadata and materialized files.
-- Company boundary and mutation permission checks match or exceed existing
-  company skill mutations.
+- Squad boundary and mutation permission checks match or exceed existing
+  squad skill mutations.
 - Duplicate and unsafe overwrite behavior is explicit and tested.
 
 Phase E, catalog CLI:
@@ -453,8 +453,8 @@ Phase G, adapter truth model:
 
 Phase H, UI:
 
-- The existing Company Skills page is extended rather than replaced.
-- UX guidance covers Company, Bundled, Optional, and External source views.
+- The existing Squad Skills page is extended rather than replaced.
+- UX guidance covers Squad, Bundled, Optional, and External source views.
 - Install preview shows source, trust, provenance, update state, and file
   inventory.
 - Agent attach/detach states are clear.
@@ -483,4 +483,4 @@ Phase J, QA and docs:
 - No normalized `agent_skills` table in the first release.
 - No skill sets or bundles in the first release.
 - No automatic install of every optional catalog skill.
-- No replacement of company import/export as the portability path.
+- No replacement of squad import/export as the portability path.

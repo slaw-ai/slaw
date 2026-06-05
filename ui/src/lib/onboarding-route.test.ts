@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isOnboardingPath,
   resolveRouteOnboardingOptions,
-  shouldRedirectCompanylessRouteToOnboarding,
+  shouldRedirectSquadlessRouteToOnboarding,
 } from "./onboarding-route";
 
 describe("isOnboardingPath", () => {
@@ -10,7 +10,7 @@ describe("isOnboardingPath", () => {
     expect(isOnboardingPath("/onboarding")).toBe(true);
   });
 
-  it("matches a company-prefixed onboarding route", () => {
+  it("matches a squad-prefixed onboarding route", () => {
     expect(isOnboardingPath("/pap/onboarding")).toBe(true);
   });
 
@@ -20,60 +20,60 @@ describe("isOnboardingPath", () => {
 });
 
 describe("resolveRouteOnboardingOptions", () => {
-  it("opens company creation for the global onboarding route", () => {
+  it("opens squad creation for the global onboarding route", () => {
     expect(
       resolveRouteOnboardingOptions({
         pathname: "/onboarding",
-        companies: [],
+        squads: [],
       }),
     ).toEqual({ initialStep: 1 });
   });
 
-  it("opens agent creation when the prefixed company exists", () => {
+  it("opens agent creation when the prefixed squad exists", () => {
     expect(
       resolveRouteOnboardingOptions({
         pathname: "/pap/onboarding",
-        companyPrefix: "pap",
-        companies: [{ id: "company-1", issuePrefix: "PAP" }],
+        squadPrefix: "pap",
+        squads: [{ id: "squad-1", issuePrefix: "PAP" }],
       }),
-    ).toEqual({ initialStep: 2, companyId: "company-1" });
+    ).toEqual({ initialStep: 2, squadId: "squad-1" });
   });
 
-  it("falls back to company creation when the prefixed company is missing", () => {
+  it("falls back to squad creation when the prefixed squad is missing", () => {
     expect(
       resolveRouteOnboardingOptions({
         pathname: "/pap/onboarding",
-        companyPrefix: "pap",
-        companies: [],
+        squadPrefix: "pap",
+        squads: [],
       }),
     ).toEqual({ initialStep: 1 });
   });
 });
 
-describe("shouldRedirectCompanylessRouteToOnboarding", () => {
-  it("redirects companyless entry routes into onboarding", () => {
+describe("shouldRedirectSquadlessRouteToOnboarding", () => {
+  it("redirects squadless entry routes into onboarding", () => {
     expect(
-      shouldRedirectCompanylessRouteToOnboarding({
+      shouldRedirectSquadlessRouteToOnboarding({
         pathname: "/",
-        hasCompanies: false,
+        hasSquads: false,
       }),
     ).toBe(true);
   });
 
   it("does not redirect when already on onboarding", () => {
     expect(
-      shouldRedirectCompanylessRouteToOnboarding({
+      shouldRedirectSquadlessRouteToOnboarding({
         pathname: "/onboarding",
-        hasCompanies: false,
+        hasSquads: false,
       }),
     ).toBe(false);
   });
 
-  it("does not redirect when companies exist", () => {
+  it("does not redirect when squads exist", () => {
     expect(
-      shouldRedirectCompanylessRouteToOnboarding({
+      shouldRedirectSquadlessRouteToOnboarding({
         pathname: "/issues",
-        hasCompanies: true,
+        hasSquads: true,
       }),
     ).toBe(false);
   });

@@ -4,7 +4,7 @@ import { test, expect, request as pwRequest, type APIRequestContext } from "@pla
  * E2E: Signoff execution policy flow.
  *
  * Validates the full signoff lifecycle through the API and UI:
- *   1. Create a company with executor + reviewer + approver agents
+ *   1. Create a squad with executor + reviewer + approver agents
  *   2. Create an issue with a two-stage execution policy (review → approval)
  *   3. Executor marks done → issue routes to reviewer (in_review)
  *   4. Reviewer approves → issue routes to approver
@@ -23,7 +23,7 @@ import { test, expect, request as pwRequest, type APIRequestContext } from "@pla
 
 const PORT = Number(process.env.SLAW_E2E_PORT ?? 3199);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
-const COMPANY_NAME = `E2E-Signoff-${Date.now()}`;
+const SQUAD_NAME = `E2E-Signoff-${Date.now()}`;
 
 interface AgentAuth {
   agentId: string;
@@ -33,8 +33,8 @@ interface AgentAuth {
 }
 
 interface TestContext {
-  companyId: string;
-  companyPrefix: string;
+  squadId: string;
+  squadPrefix: string;
   executor: AgentAuth;
   reviewer: AgentAuth;
   approver: AgentAuth;
@@ -138,7 +138,7 @@ async function agentCheckoutAndPatch(
   return res;
 }
 
-async function setupCompany(boardRequest: APIRequestContext): Promise<TestContext> {
+async function setupSquad(boardRequest: APIRequestContext): Promise<TestContext> {
   // Verify server is in local_trusted mode
   const healthRes = await boardRequest.get(`${BASE_URL}/api/health`);
   expect(healthRes.ok()).toBe(true);
@@ -151,21 +151,21 @@ async function setupCompany(boardRequest: APIRequestContext): Promise<TestContex
     );
   }
 
-  // Create company
-  const companyRes = await boardRequest.post(`${BASE_URL}/api/companies`, {
-    data: { name: COMPANY_NAME },
+  // Create squad
+  const squadRes = await boardRequest.post(`${BASE_URL}/api/squads`, {
+    data: { name: SQUAD_NAME },
   });
-  if (!companyRes.ok()) {
-    const errBody = await companyRes.text();
-    throw new Error(`POST /api/companies → ${companyRes.status()}: ${errBody}`);
+  if (!squadRes.ok()) {
+    const errBody = await squadRes.text();
+    throw new Error(`POST /api/squads → ${squadRes.status()}: ${errBody}`);
   }
-  const company = await companyRes.json();
-  const companyId = company.id;
-  const companyPrefix = company.issuePrefix ?? company.prefix ?? company.urlKey ?? "E2E";
+  const squad = await squadRes.json();
+  const squadId = squad.id;
+  const squadPrefix = squad.issuePrefix ?? squad.prefix ?? squad.urlKey ?? "E2E";
 
   // Helper: hire/approve agent + API key + request context
   async function createAgent(name: string, role: string, title: string): Promise<AgentAuth> {
-    const agentRes = await boardRequest.post(`${BASE_URL}/api/companies/${companyId}/agent-hires`, {
+    const agentRes = await boardRequest.post(`${BASE_URL}/api/squads/${squadId}/agent-hires`, {
       data: {
         name,
         role,
@@ -206,8 +206,8 @@ async function setupCompany(boardRequest: APIRequestContext): Promise<TestContex
   const approver = await createAgent("Approver", "cto", "CTO");
 
   return {
-    companyId,
-    companyPrefix,
+    squadId,
+    squadPrefix,
     executor,
     reviewer,
     approver,
@@ -221,7 +221,7 @@ async function createIssueWithPolicy(ctx: TestContext, title: string, stages?: u
     { type: "review", participants: [{ type: "agent", agentId: ctx.reviewer.agentId }] },
     { type: "approval", participants: [{ type: "agent", agentId: ctx.approver.agentId }] },
   ];
-  const res = await ctx.boardRequest.post(`${BASE_URL}/api/companies/${ctx.companyId}/issues`, {
+  const res = await ctx.boardRequest.post(`${BASE_URL}/api/squads/${ctx.squadId}/issues`, {
     data: {
       title,
       status: "in_progress",
@@ -240,7 +240,7 @@ test.describe("Signoff execution policy", () => {
 
   test.beforeAll(async () => {
     const boardRequest = await pwRequest.newContext({ baseURL: BASE_URL });
-    ctx = await setupCompany(boardRequest);
+    ctx = await setupSquad(boardRequest);
   });
 
   test.afterAll(async () => {
@@ -252,7 +252,7 @@ test.describe("Signoff execution policy", () => {
       await agent.request.dispose();
     }
 
-    // Clean up issues, keys, agents, company (best-effort)
+    // Clean up issues, keys, agents, squad (best-effort)
     for (const issueId of ctx.issueIds) {
       await board.patch(`${BASE_URL}/api/issues/${issueId}`, {
         data: { status: "cancelled", comment: "E2E test cleanup." },
@@ -262,7 +262,7 @@ test.describe("Signoff execution policy", () => {
       await board.delete(`${BASE_URL}/api/agents/${agent.agentId}/keys/${agent.keyId}`).catch(() => {});
       await board.delete(`${BASE_URL}/api/agents/${agent.agentId}`).catch(() => {});
     }
-    await board.delete(`${BASE_URL}/api/companies/${ctx.companyId}`).catch(() => {});
+    await board.delete(`${BASE_URL}/api/squads/${ctx.squadId}`).catch(() => {});
     await board.dispose();
   });
 
@@ -295,7 +295,7 @@ test.describe("Signoff execution policy", () => {
     });
 
     // Step 2: Navigate to issue in UI and verify execution label
-    await page.goto(`/${ctx.companyPrefix}/issues/${issue.identifier}`);
+    await page.goto(`/${ctx.squadPrefix}/issues/${issue.identifier}`);
     await expect(page.locator("text=Review pending")).toBeVisible({ timeout: 10_000 });
 
     // Step 3: Reviewer approves → should route to approver

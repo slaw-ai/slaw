@@ -26,9 +26,9 @@
 
 ## What is Slaw?
 
-# Open-source orchestration for zero-human companies
+# Open-source orchestration for zero-human squads
 
-**If an agent is an _employee_, Slaw is the _company_**
+**If an agent is an _employee_, Slaw is the _squad_**
 
 Slaw is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track your agents' work and costs from one dashboard.
 
@@ -39,12 +39,12 @@ It looks like a task manager — but under the hood it has org charts, budgets, 
 |        | Step            | Example                                                            |
 | ------ | --------------- | ------------------------------------------------------------------ |
 | **01** | Define the goal | _"Build the #1 AI note-taking app to $1M MRR."_                    |
-| **02** | Hire the team   | CEO, CTO, engineers, designers, marketers — any bot, any provider. |
+| **02** | Hire the team   | Squad Lead, CTO, engineers, designers, marketers — any bot, any provider. |
 | **03** | Approve and run | Review strategy. Set budgets. Hit go. Monitor from the dashboard.  |
 
 <br/>
 
-> **COMING SOON: Clipmart** — Download and run entire companies with one click. Browse pre-built company templates — full org structures, agent configs, and skills — and import them into your Slaw instance in seconds.
+> **COMING SOON: Clipmart** — Download and run entire squads with one click. Browse pre-built squad templates — full org structures, agent configs, and skills — and import them into your Slaw instance in seconds.
 
 <br/>
 
@@ -68,7 +68,7 @@ It looks like a task manager — but under the hood it has org charts, budgets, 
 
 ## Slaw is right for you if
 
-- ✅ You want to build **autonomous AI companies**
+- ✅ You want to build **autonomous AI squads**
 - ✅ You **coordinate many different agents** (Codex, Claude, Cursor) toward a common goal
 - ✅ You have **20 simultaneous Claude Code terminals** open and lose track of what everyone is doing
 - ✅ You want agents running **autonomously 24/7**, but still want to audit work and chime in when needed
@@ -88,7 +88,7 @@ Any agent, any runtime, one org chart. If it can receive a heartbeat, it's hired
 </td>
 <td align="center" width="33%">
 <h3>🎯 Goal Alignment</h3>
-Every task traces back to the company mission. Agents know <em>what</em> to do and <em>why</em>.
+Every task traces back to the squad mission. Agents know <em>what</em> to do and <em>why</em>.
 </td>
 <td align="center" width="33%">
 <h3>💓 Heartbeats</h3>
@@ -101,8 +101,8 @@ Agents wake on a schedule, check work, and act. Delegation flows up and down the
 Monthly budgets per agent. When they hit the limit, they stop. No runaway costs.
 </td>
 <td align="center">
-<h3>🏢 Multi-Company</h3>
-One deployment, many companies. Complete data isolation. One control plane for your portfolio.
+<h3>🏢 Multi-Squad</h3>
+One deployment, many squads. Complete data isolation. One control plane for your portfolio.
 </td>
 <td align="center">
 <h3>🎫 Ticket System</h3>
@@ -132,8 +132,8 @@ Monitor and manage your autonomous businesses from anywhere.
 | Without Slaw                                                                                                                     | With Slaw                                                                                                                         |
 | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | ❌ You have 20 Claude Code tabs open and can't track which one does what. On reboot you lose everything.                              | ✅ Tasks are ticket-based, conversations are threaded, sessions persist across reboots.                                                |
-| ❌ You manually gather context from several places to remind your bot what you're actually doing.                                     | ✅ Context flows from the task up through the project and company goals — your agent always knows what to do and why.                  |
-| ❌ Folders of agent configs are disorganized and you're re-inventing task management, communication, and coordination between agents. | ✅ Slaw gives you org charts, ticketing, delegation, and governance out of the box — so you run a company, not a pile of scripts. |
+| ❌ You manually gather context from several places to remind your bot what you're actually doing.                                     | ✅ Context flows from the task up through the project and squad goals — your agent always knows what to do and why.                  |
+| ❌ Folders of agent configs are disorganized and you're re-inventing task management, communication, and coordination between agents. | ✅ Slaw gives you org charts, ticketing, delegation, and governance out of the box — so you run a squad, not a pile of scripts. |
 | ❌ Runaway loops waste hundreds of dollars of tokens and max your quota before you even know what happened.                           | ✅ Cost tracking surfaces token budgets and throttles agents when they're out. Management prioritizes with budgets.                    |
 | ❌ You have recurring jobs (customer support, social, reports) and have to remember to manually kick them off.                        | ✅ Heartbeats handle regular work on a schedule. Management supervises.                                                                |
 | ❌ You have an idea, you have to find your repo, fire up Claude Code, keep a tab open, and babysit it.                                | ✅ Add a task in Slaw. Your coding agent works on it until it's done. Management reviews their work.                              |
@@ -151,8 +151,8 @@ Slaw handles the hard orchestration details correctly.
 | **Runtime skill injection.**      | Agents can learn Slaw workflows and project context at runtime, without retraining.                      |
 | **Governance with rollback.**     | Approval gates are enforced, config changes are revisioned, and bad changes can be rolled back safely.        |
 | **Goal-aware execution.**         | Tasks carry full goal ancestry so agents consistently see the "why," not just a title.                        |
-| **Portable company templates.**   | Export/import orgs, agents, and skills with secret scrubbing and collision handling.                          |
-| **True multi-company isolation.** | Every entity is company-scoped, so one deployment can run many companies with separate data and audit trails. |
+| **Portable squad templates.**   | Export/import orgs, agents, and skills with secret scrubbing and collision handling.                          |
+| **True multi-squad isolation.** | Every entity is squad-scoped, so one deployment can run many squads with separate data and audit trails. |
 
 <br/>
 
@@ -161,8 +161,8 @@ Slaw handles the hard orchestration details correctly.
 |                              |                                                                                                                      |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **Not a chatbot.**           | Agents have jobs, not chat windows.                                                                                  |
-| **Not an agent framework.**  | We don't tell you how to build agents. We tell you how to run a company made of them.                                |
-| **Not a workflow builder.**  | No drag-and-drop pipelines. Slaw models companies — with org charts, goals, budgets, and governance.            |
+| **Not an agent framework.**  | We don't tell you how to build agents. We tell you how to run a squad made of them.                                |
+| **Not a workflow builder.**  | No drag-and-drop pipelines. Slaw models squads — with org charts, goals, budgets, and governance.            |
 | **Not a prompt manager.**    | Agents bring their own prompts, models, and runtimes. Slaw manages the organization they work in.               |
 | **Not a single-agent tool.** | This is for teams. If you have one agent, you probably don't need Slaw. If you have twenty — you definitely do. |
 | **Not a code review tool.**  | Slaw orchestrates work, not pull requests. Bring your own review process.                                       |
@@ -209,11 +209,11 @@ Locally, a single Node.js process manages an embedded Postgres and local file st
 
 If you're a solo-entreprenuer you can use Tailscale to access Slaw on the go. Then later you can deploy to e.g. Vercel when you need it.
 
-**Can I run multiple companies?**
-Yes. A single deployment can run an unlimited number of companies with complete data isolation.
+**Can I run multiple squads?**
+Yes. A single deployment can run an unlimited number of squads with complete data isolation.
 
 **How is Slaw different from agents like Claude Code?**
-Slaw _uses_ those agents. It orchestrates them into a company — with org charts, budgets, goals, governance, and accountability.
+Slaw _uses_ those agents. It orchestrates them into a squad — with org charts, budgets, goals, governance, and accountability.
 
 **Why should I use Slaw instead of just pointing my agent to Asana or Trello?**
 Agent orchestration has subtleties in how you coordinate who has work checked out, how to maintain sessions, monitoring costs, establishing governance - Slaw does this for you.
@@ -232,13 +232,13 @@ Cloud upstream sync is behind the `Cloud Sync` experimental setting. Enable it i
 ```bash
 slaw cloud connect https://your-stack.slaw.app
 slaw cloud connect https://your-stack.slaw.app --no-browser
-slaw cloud push --company <local-company-id> --dry-run
-slaw cloud push --company <local-company-id>
+slaw cloud push --squad <local-squad-id> --dry-run
+slaw cloud push --squad <local-squad-id>
 ```
 
 `cloud connect` authorizes the local instance against the target stack and stores the upstream token in the local instance secret store. The default path opens a browser for consent; `--no-browser` uses the device-code flow and prints the verification URL and user code.
 
-`cloud push --dry-run` exports the selected local company, sends a preview bundle to the connected Cloud stack, and exits with code `2` when conflicts need user resolution. A schema mismatch exits with code `3`. Running without `--dry-run` stages chunks idempotently, applies the run, and prints the final summary and recent progress events.
+`cloud push --dry-run` exports the selected local squad, sends a preview bundle to the connected Cloud stack, and exits with code `2` when conflicts need user resolution. A schema mismatch exits with code `3`. Running without `--dry-run` stages chunks idempotently, applies the run, and prints the final summary and recent progress events.
 
 ## Development
 
@@ -265,13 +265,13 @@ See [doc/DEVELOPING.md](https://github.com/slaw/slaw/blob/master/doc/DEVELOPING.
 
 - ✅ Plugin system (e.g. add a knowledge base, custom tracing, queues, etc)
 - ✅ Get continuous agent employees
-- ✅ companies.sh - import and export entire organizations
+- ✅ squads.sh - import and export entire organizations
 - ✅ Easy AGENTS.md configurations
 - ✅ Skills Manager
 - ✅ Scheduled Routines
 - ✅ Better Budgeting
 - ⚪ Artifacts & Deployments
-- ⚪ CEO Chat
+- ⚪ Squad Lead Chat
 - ⚪ MAXIMIZER MODE
 - ✅ Multiple Human Users
 - ⚪ Cloud / Sandbox agents (e.g. Cursor / e2b agents)
@@ -316,5 +316,5 @@ MIT &copy; 2026 Slaw
 </p>
 
 <p align="center">
-  <sub>Open source under MIT. Built for people who want to run companies, not babysit agents.</sub>
+  <sub>Open source under MIT. Built for people who want to run squads, not babysit agents.</sub>
 </p>

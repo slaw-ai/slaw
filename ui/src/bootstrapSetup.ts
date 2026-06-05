@@ -1,1 +1,1 @@
-export const BOOTSTRAP_FALLBACK_COMMAND = "pnpm slaw auth bootstrap-ceo";
+export const BOOTSTRAP_FALLBACK_COMMAND = "pnpm slaw auth bootstrap-squad-lead";

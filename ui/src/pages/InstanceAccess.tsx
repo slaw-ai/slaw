@@ -6,18 +6,18 @@ import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function InstanceAccess() {
-  const { companies } = useCompany();
+  const { squads } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<string>>(new Set());
+  const [selectedSquadIds, setSelectedSquadIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setBreadcrumbs([
@@ -37,8 +37,8 @@ export function InstanceAccess() {
   );
 
   const userAccessQuery = useQuery({
-    queryKey: queryKeys.access.userCompanyAccess(selectedUserId ?? ""),
-    queryFn: () => accessApi.getUserCompanyAccess(selectedUserId!),
+    queryKey: queryKeys.access.userSquadAccess(selectedUserId ?? ""),
+    queryFn: () => accessApi.getUserSquadAccess(selectedUserId!),
     enabled: !!selectedUserId,
   });
 
@@ -50,21 +50,21 @@ export function InstanceAccess() {
 
   useEffect(() => {
     if (!userAccessQuery.data) return;
-    setSelectedCompanyIds(
+    setSelectedSquadIds(
       new Set(
-        userAccessQuery.data.companyAccess
+        userAccessQuery.data.squadAccess
           .filter((membership) => membership.status === "active")
-          .map((membership) => membership.companyId),
+          .map((membership) => membership.squadId),
       ),
     );
   }, [userAccessQuery.data]);
 
-  const updateCompanyAccessMutation = useMutation({
-    mutationFn: () => accessApi.setUserCompanyAccess(selectedUserId!, [...selectedCompanyIds]),
+  const updateSquadAccessMutation = useMutation({
+    mutationFn: () => accessApi.setUserSquadAccess(selectedUserId!, [...selectedSquadIds]),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.userCompanyAccess(selectedUserId!) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.userSquadAccess(selectedUserId!) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.adminUsers(search) });
-      pushToast({ title: "Company access updated", tone: "success" });
+      pushToast({ title: "Squad access updated", tone: "success" });
     },
   });
 
@@ -77,7 +77,7 @@ export function InstanceAccess() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.adminUsers(search) });
       if (selectedUserId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.access.userCompanyAccess(selectedUserId) });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.access.userSquadAccess(selectedUserId) });
       }
       pushToast({ title: "Instance role updated", tone: "success" });
     },
@@ -105,7 +105,7 @@ export function InstanceAccess() {
           <h1 className="text-lg font-semibold">Instance Access</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Search users, manage instance-admin status, and control which companies they can access.
+          Search users, manage instance-admin status, and control which squads they can access.
         </p>
       </div>
 
@@ -142,7 +142,7 @@ export function InstanceAccess() {
                   ) : null}
                 </div>
                 <div className="mt-2 text-xs text-muted-foreground">
-                  {user.activeCompanyMembershipCount} active company memberships
+                  {user.activeSquadMembershipCount} active squad memberships
                 </div>
               </button>
             ))}
@@ -180,41 +180,41 @@ export function InstanceAccess() {
 
               <div className="space-y-3">
                 <div>
-                  <h2 className="text-sm font-semibold">Company access</h2>
+                  <h2 className="text-sm font-semibold">Squad access</h2>
                   <p className="text-sm text-muted-foreground">
-                    Toggle company membership for this user. New access defaults to an active operator membership.
+                    Toggle squad membership for this user. New access defaults to an active operator membership.
                   </p>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
-                  {companies.map((company) => (
+                  {squads.map((squad) => (
                     <label
-                      key={company.id}
+                      key={squad.id}
                       className="flex items-start gap-3 rounded-lg border border-border px-3 py-3"
                     >
                       <Checkbox
-                        checked={selectedCompanyIds.has(company.id)}
+                        checked={selectedSquadIds.has(squad.id)}
                         onCheckedChange={(checked) => {
-                          setSelectedCompanyIds((current) => {
+                          setSelectedSquadIds((current) => {
                             const next = new Set(current);
-                            if (checked) next.add(company.id);
-                            else next.delete(company.id);
+                            if (checked) next.add(squad.id);
+                            else next.delete(squad.id);
                             return next;
                           });
                         }}
                       />
                       <span className="space-y-1">
-                        <span className="block text-sm font-medium">{company.name}</span>
-                        <span className="block text-xs text-muted-foreground">{company.issuePrefix}</span>
+                        <span className="block text-sm font-medium">{squad.name}</span>
+                        <span className="block text-xs text-muted-foreground">{squad.issuePrefix}</span>
                       </span>
                     </label>
                   ))}
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    onClick={() => updateCompanyAccessMutation.mutate()}
-                    disabled={updateCompanyAccessMutation.isPending}
+                    onClick={() => updateSquadAccessMutation.mutate()}
+                    disabled={updateSquadAccessMutation.isPending}
                   >
-                    {updateCompanyAccessMutation.isPending ? "Saving…" : "Save company access"}
+                    {updateSquadAccessMutation.isPending ? "Saving…" : "Save squad access"}
                   </Button>
                 </div>
               </div>
@@ -222,13 +222,13 @@ export function InstanceAccess() {
               <div className="space-y-2">
                 <h2 className="text-sm font-semibold">Current memberships</h2>
                 <div className="space-y-2">
-                  {(userAccessQuery.data?.companyAccess ?? []).map((membership) => (
+                  {(userAccessQuery.data?.squadAccess ?? []).map((membership) => (
                     <div
                       key={membership.id}
                       className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
                     >
                       <div>
-                        <div className="font-medium">{membership.companyName || membership.companyId}</div>
+                        <div className="font-medium">{membership.squadName || membership.squadId}</div>
                         <div className="text-muted-foreground">
                           {membership.membershipRole || "unset"} • {membership.status}
                         </div>

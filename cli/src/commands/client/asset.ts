@@ -12,7 +12,7 @@ import {
 } from "./common.js";
 
 interface AssetOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   file?: string;
   namespace?: string;
   alt?: string;
@@ -26,40 +26,40 @@ export function registerAssetCommands(program: Command): void {
   addCommonClientOptions(
     asset
       .command("image:upload")
-      .description("Upload a company image asset")
+      .description("Upload a squad image asset")
       .requiredOption("--file <path>", "Image file path")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .option("--namespace <value>", "Asset namespace suffix")
       .option("--alt <text>", "Alt text metadata")
       .option("--title <text>", "Title metadata")
       .action(async (opts: AssetOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await uploadAsset(ctx.api.apiBase, ctx.api.apiKey, apiPath`/api/companies/${ctx.companyId}/assets/images`, opts);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await uploadAsset(ctx.api.apiBase, ctx.api.apiKey, apiPath`/api/squads/${ctx.squadId}/assets/images`, opts);
           printOutput(result, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
     asset
       .command("logo:upload")
-      .description("Upload a company logo")
+      .description("Upload a squad logo")
       .requiredOption("--file <path>", "Logo file path")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .action(async (opts: AssetOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await uploadAsset(ctx.api.apiBase, ctx.api.apiKey, apiPath`/api/companies/${ctx.companyId}/logo`, opts);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await uploadAsset(ctx.api.apiBase, ctx.api.apiKey, apiPath`/api/squads/${ctx.squadId}/logo`, opts);
           printOutput(result, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(

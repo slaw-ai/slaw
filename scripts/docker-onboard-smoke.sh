@@ -93,7 +93,7 @@ generate_bootstrap_invite_url() {
       -e SLAW_PUBLIC_URL="$SLAW_PUBLIC_URL" \
       -e SLAW_HOME="/slaw" \
       "$CONTAINER_NAME" bash -lc \
-      'timeout 20s npx --yes "slaw@${SLAW_VERSION}" auth bootstrap-ceo --data-dir "$SLAW_HOME" --base-url "$SLAW_PUBLIC_URL"' \
+      'timeout 20s npx --yes "slaw@${SLAW_VERSION}" auth bootstrap-squad-lead --data-dir "$SLAW_HOME" --base-url "$SLAW_PUBLIC_URL"' \
       2>&1
   )"; then
     bootstrap_status=0
@@ -102,7 +102,7 @@ generate_bootstrap_invite_url() {
   fi
 
   if [[ $bootstrap_status -ne 0 && $bootstrap_status -ne 124 ]]; then
-    echo "Smoke bootstrap failed: could not run bootstrap-ceo inside container" >&2
+    echo "Smoke bootstrap failed: could not run bootstrap-squad-lead inside container" >&2
     printf '%s\n' "$bootstrap_output" >&2
     return 1
   fi
@@ -115,13 +115,13 @@ generate_bootstrap_invite_url() {
   )"
 
   if [[ -z "$invite_url" ]]; then
-    echo "Smoke bootstrap failed: bootstrap-ceo did not print an invite URL" >&2
+    echo "Smoke bootstrap failed: bootstrap-squad-lead did not print an invite URL" >&2
     printf '%s\n' "$bootstrap_output" >&2
     return 1
   fi
 
   if [[ $bootstrap_status -eq 124 ]]; then
-    echo "    Smoke bootstrap: bootstrap-ceo timed out after printing invite URL; continuing" >&2
+    echo "    Smoke bootstrap: bootstrap-squad-lead timed out after printing invite URL; continuing" >&2
   fi
 
   printf '%s\n' "$invite_url"
@@ -200,7 +200,7 @@ auto_bootstrap_authenticated_smoke() {
   else
     local invite_url
     invite_url="$(generate_bootstrap_invite_url)"
-    echo "    Smoke bootstrap: generated bootstrap invite via auth bootstrap-ceo"
+    echo "    Smoke bootstrap: generated bootstrap invite via auth bootstrap-squad-lead"
 
     local invite_token="${invite_url##*/}"
     local accept_response="$TMP_DIR/accept.json"
@@ -226,11 +226,11 @@ auto_bootstrap_authenticated_smoke() {
     return 1
   fi
 
-  local companies_json
-  companies_json="$(get_with_cookies "$SLAW_PUBLIC_URL/api/companies")"
-  if [[ "${companies_json:0:1}" != "[" ]]; then
-    echo "Smoke bootstrap failed: board companies endpoint did not return JSON array" >&2
-    echo "$companies_json" >&2
+  local squads_json
+  squads_json="$(get_with_cookies "$SLAW_PUBLIC_URL/api/squads")"
+  if [[ "${squads_json:0:1}" != "[" ]]; then
+    echo "Smoke bootstrap failed: board squads endpoint did not return JSON array" >&2
+    echo "$squads_json" >&2
     return 1
   fi
 

@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NewAgentDialog } from "./NewAgentDialog";
 
-const createCompanyInviteMock = vi.hoisted(() => vi.fn());
+const createSquadInviteMock = vi.hoisted(() => vi.fn());
 const getInviteOnboardingMock = vi.hoisted(() => vi.fn());
 const listAgentsMock = vi.hoisted(() => vi.fn());
 const listAdaptersMock = vi.hoisted(() => vi.fn());
@@ -29,9 +29,9 @@ vi.mock("../context/DialogContext", () => ({
   }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
   }),
 }));
 
@@ -41,15 +41,15 @@ vi.mock("../context/ToastContext", () => ({
 
 vi.mock("../api/access", () => ({
   accessApi: {
-    createCompanyInvite: (companyId: string, input: unknown) =>
-      createCompanyInviteMock(companyId, input),
+    createSquadInvite: (squadId: string, input: unknown) =>
+      createSquadInviteMock(squadId, input),
     getInviteOnboarding: (token: string) => getInviteOnboardingMock(token),
   },
 }));
 
 vi.mock("../api/agents", () => ({
   agentsApi: {
-    list: (companyId: string) => listAgentsMock(companyId),
+    list: (squadId: string) => listAgentsMock(squadId),
   },
 }));
 
@@ -97,10 +97,10 @@ describe("NewAgentDialog", () => {
     document.body.appendChild(container);
 
     listAgentsMock.mockResolvedValue([
-      { id: "agent-ceo", role: "ceo" },
+      { id: "agent-squad_lead", role: "squad_lead" },
     ]);
     listAdaptersMock.mockResolvedValue([]);
-    createCompanyInviteMock.mockResolvedValue({
+    createSquadInviteMock.mockResolvedValue({
       id: "invite-1",
       token: "agent-token",
       inviteUrl: "https://slaw.local/invite/agent-token",
@@ -160,7 +160,7 @@ describe("NewAgentDialog", () => {
     });
 
     expect(container.textContent).toContain("Generate a one-time onboarding prompt");
-    expect(container.textContent).not.toContain("Company Invites");
+    expect(container.textContent).not.toContain("Squad Invites");
 
     const generateButton = Array.from(container.querySelectorAll("button")).find(
       (button) => button.textContent === "Generate onboarding prompt",
@@ -172,14 +172,14 @@ describe("NewAgentDialog", () => {
     await flushReact();
     await flushReact();
 
-    expect(createCompanyInviteMock).toHaveBeenCalledWith("company-1", {
+    expect(createSquadInviteMock).toHaveBeenCalledWith("squad-1", {
       allowedJoinTypes: "agent",
       humanRole: null,
       agentMessage: null,
     });
     expect(getInviteOnboardingMock).toHaveBeenCalledWith("agent-token");
     expect(clipboardWriteTextMock).toHaveBeenCalledWith(
-      expect.stringContaining("You're invited to join a Slaw company as an agent."),
+      expect.stringContaining("You're invited to join a Slaw squad as an agent."),
     );
     expect(container.textContent).toContain("Agent onboarding prompt");
     expect(container.textContent).toContain("Send this prompt to the external agent");

@@ -10,7 +10,7 @@ const HIRE_APPROVED_MESSAGE =
   "Tell your user that your hire was approved, now they should assign you a task in Slaw or ask you to create issues.";
 
 export interface NotifyHireApprovedInput {
-  companyId: string;
+  squadId: string;
   agentId: string;
   source: "join_request" | "approval";
   sourceId: string;
@@ -25,17 +25,17 @@ export async function notifyHireApproved(
   db: Db,
   input: NotifyHireApprovedInput,
 ): Promise<void> {
-  const { companyId, agentId, source, sourceId } = input;
+  const { squadId, agentId, source, sourceId } = input;
   const approvedAt = input.approvedAt ?? new Date();
 
   const row = await db
     .select()
     .from(agents)
-    .where(and(eq(agents.id, agentId), eq(agents.companyId, companyId)))
+    .where(and(eq(agents.id, agentId), eq(agents.squadId, squadId)))
     .then((rows) => rows[0] ?? null);
 
   if (!row) {
-    logger.warn({ companyId, agentId, source, sourceId }, "hire hook: agent not found in company, skipping");
+    logger.warn({ squadId, agentId, source, sourceId }, "hire hook: agent not found in squad, skipping");
     return;
   }
 
@@ -47,7 +47,7 @@ export async function notifyHireApproved(
   }
 
   const payload: HireApprovedPayload = {
-    companyId,
+    squadId,
     agentId,
     agentName: row.name,
     adapterType,
@@ -66,7 +66,7 @@ export async function notifyHireApproved(
     const result = await onHireApproved(payload, adapterConfig);
     if (result.ok) {
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "system",
         actorId: "hire_hook",
         action: "hire_hook.succeeded",
@@ -78,11 +78,11 @@ export async function notifyHireApproved(
     }
 
     logger.warn(
-      { companyId, agentId, adapterType, source, sourceId, error: result.error, detail: result.detail },
+      { squadId, agentId, adapterType, source, sourceId, error: result.error, detail: result.detail },
       "hire hook: adapter returned failure",
     );
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: "system",
       actorId: "hire_hook",
       action: "hire_hook.failed",
@@ -92,11 +92,11 @@ export async function notifyHireApproved(
     });
   } catch (err) {
     logger.error(
-      { err, companyId, agentId, adapterType, source, sourceId },
+      { err, squadId, agentId, adapterType, source, sourceId },
       "hire hook: adapter threw",
     );
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: "system",
       actorId: "hire_hook",
       action: "hire_hook.error",

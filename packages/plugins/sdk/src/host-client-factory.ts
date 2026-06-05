@@ -74,8 +74,8 @@ export class CapabilityDeniedError extends Error {
 }
 
 /**
- * Thrown when a worker→host call asks for company-scoped data outside the
- * company authorized for the current top-level plugin invocation.
+ * Thrown when a worker→host call asks for squad-scoped data outside the
+ * squad authorized for the current top-level plugin invocation.
  */
 export class InvocationScopeDeniedError extends Error {
   override readonly name = "InvocationScopeDeniedError";
@@ -103,7 +103,7 @@ export interface HostServices {
     get(): Promise<Record<string, unknown>>;
   };
 
-  /** Provides trusted company-scoped local folder helpers. */
+  /** Provides trusted squad-scoped local folder helpers. */
   localFolders: {
     declarations(params: WorkerToHostMethods["localFolders.declarations"][0]): Promise<WorkerToHostMethods["localFolders.declarations"][1]>;
     configure(params: WorkerToHostMethods["localFolders.configure"][0]): Promise<WorkerToHostMethods["localFolders.configure"][1]>;
@@ -153,7 +153,7 @@ export interface HostServices {
   /** Provides `activity.log`. */
   activity: {
     log(params: {
-      companyId: string;
+      squadId: string;
       message: string;
       entityType?: string;
       entityId?: string;
@@ -176,10 +176,10 @@ export interface HostServices {
     log(params: WorkerToHostMethods["log"][0]): Promise<void>;
   };
 
-  /** Provides `companies.list`, `companies.get`. */
-  companies: {
-    list(params: WorkerToHostMethods["companies.list"][0]): Promise<WorkerToHostMethods["companies.list"][1]>;
-    get(params: WorkerToHostMethods["companies.get"][0]): Promise<WorkerToHostMethods["companies.get"][1]>;
+  /** Provides `squads.list`, `squads.get`. */
+  squads: {
+    list(params: WorkerToHostMethods["squads.list"][0]): Promise<WorkerToHostMethods["squads.list"][1]>;
+    get(params: WorkerToHostMethods["squads.get"][0]): Promise<WorkerToHostMethods["squads.get"][1]>;
   };
 
   /** Provides `projects.list`, `projects.get`, `projects.listWorkspaces`, `projects.getPrimaryWorkspace`, `projects.getWorkspaceForIssue`. */
@@ -399,9 +399,9 @@ const METHOD_CAPABILITY_MAP: Record<WorkerToHostMethodName, PluginCapability | n
   // Logger — always allowed
   "log": null,
 
-  // Companies
-  "companies.list": "companies.read",
-  "companies.get": "companies.read",
+  // Squads
+  "squads.list": "squads.read",
+  "squads.get": "squads.read",
 
   // Projects
   "projects.list": "projects.read",
@@ -515,12 +515,12 @@ export function createHostClientHandlers(
   const { pluginId, services } = options;
   const capabilitySet = new Set<PluginCapability>(options.capabilities);
 
-  type CompanyScopeRequest =
+  type SquadScopeRequest =
     | { kind: "none" }
-    | { kind: "single"; companyId: string }
+    | { kind: "single"; squadId: string }
     | { kind: "all" };
 
-  const noCompanyScope: CompanyScopeRequest = { kind: "none" };
+  const noSquadScope: SquadScopeRequest = { kind: "none" };
 
   function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -530,35 +530,35 @@ export function createHostClientHandlers(
     return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
   }
 
-  function requestedCompanyScope(
+  function requestedSquadScope(
     method: WorkerToHostMethodName,
     params: unknown,
-  ): CompanyScopeRequest {
-    if (method === "companies.list") return { kind: "all" };
-    if (!isRecord(params)) return noCompanyScope;
+  ): SquadScopeRequest {
+    if (method === "squads.list") return { kind: "all" };
+    if (!isRecord(params)) return noSquadScope;
 
-    const companyId = readNonEmptyString(params.companyId);
-    if (companyId) return { kind: "single", companyId };
+    const squadId = readNonEmptyString(params.squadId);
+    if (squadId) return { kind: "single", squadId };
 
-    if (params.scopeKind === "company") {
+    if (params.scopeKind === "squad") {
       const scopeId = readNonEmptyString(params.scopeId);
-      return scopeId ? { kind: "single", companyId: scopeId } : { kind: "all" };
+      return scopeId ? { kind: "single", squadId: scopeId } : { kind: "all" };
     }
 
     if (method === "events.subscribe" && isRecord(params.filter)) {
-      const filterCompanyId = readNonEmptyString(params.filter.companyId);
-      if (filterCompanyId) return { kind: "single", companyId: filterCompanyId };
+      const filterSquadId = readNonEmptyString(params.filter.squadId);
+      if (filterSquadId) return { kind: "single", squadId: filterSquadId };
     }
 
-    return noCompanyScope;
+    return noSquadScope;
   }
 
-  function requireInvocationCompanyScope(
+  function requireInvocationSquadScope(
     method: WorkerToHostMethodName,
     params: unknown,
     context?: WorkerHostCallContext,
   ): void {
-    const requested = requestedCompanyScope(method, params);
+    const requested = requestedSquadScope(method, params);
     if (requested.kind === "none") return;
 
     if (context?.invalidInvocationScope) {
@@ -569,23 +569,23 @@ export function createHostClientHandlers(
       );
     }
 
-    const allowedCompanyId = readNonEmptyString(context?.invocationScope?.companyId);
-    if (!allowedCompanyId) return;
+    const allowedSquadId = readNonEmptyString(context?.invocationScope?.squadId);
+    if (!allowedSquadId) return;
 
     if (requested.kind === "all") {
-      if (method === "companies.list") return;
+      if (method === "squads.list") return;
       throw new InvocationScopeDeniedError(
         pluginId,
         method,
-        `the current invocation is scoped to company "${allowedCompanyId}"`,
+        `the current invocation is scoped to squad "${allowedSquadId}"`,
       );
     }
 
-    if (requested.companyId !== allowedCompanyId) {
+    if (requested.squadId !== allowedSquadId) {
       throw new InvocationScopeDeniedError(
         pluginId,
         method,
-        `requested company "${requested.companyId}" but the current invocation is scoped to company "${allowedCompanyId}"`,
+        `requested squad "${requested.squadId}" but the current invocation is scoped to squad "${allowedSquadId}"`,
       );
     }
   }
@@ -616,7 +616,7 @@ export function createHostClientHandlers(
   ): HostHandler<M> {
     return async (params: WorkerToHostMethods[M][0], context?: WorkerHostCallContext) => {
       requireCapability(method);
-      requireInvocationCompanyScope(method, params, context);
+      requireInvocationSquadScope(method, params, context);
       return handler(params, context);
     };
   }
@@ -720,17 +720,17 @@ export function createHostClientHandlers(
       return services.logger.log(params);
     }),
 
-    // Companies
-    "companies.list": gated("companies.list", async (params, context) => {
-      const rows = await services.companies.list(params);
-      const allowedCompanyId = readNonEmptyString(context?.invocationScope?.companyId);
-      if (!allowedCompanyId) return rows;
-      return rows.filter((company) =>
-        isRecord(company) && company.id === allowedCompanyId,
-      ) as WorkerToHostMethods["companies.list"][1];
+    // Squads
+    "squads.list": gated("squads.list", async (params, context) => {
+      const rows = await services.squads.list(params);
+      const allowedSquadId = readNonEmptyString(context?.invocationScope?.squadId);
+      if (!allowedSquadId) return rows;
+      return rows.filter((squad) =>
+        isRecord(squad) && squad.id === allowedSquadId,
+      ) as WorkerToHostMethods["squads.list"][1];
     }),
-    "companies.get": gated("companies.get", async (params) => {
-      return services.companies.get(params);
+    "squads.get": gated("squads.get", async (params) => {
+      return services.squads.get(params);
     }),
 
     // Projects

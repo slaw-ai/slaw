@@ -1,8 +1,8 @@
-# ClipHub — The Company Registry
+# ClipHub — The Squad Registry
 
-**Download a company.**
+**Download a squad.**
 
-ClipHub is the public registry where people share, discover, and download Slaw company configurations. A company template is a portable artifact containing an entire org — agents, reporting structure, adapter configs, role definitions, seed tasks — ready to spin up with one command.
+ClipHub is the public registry where people share, discover, and download Slaw squad configurations. A squad template is a portable artifact containing an entire org — agents, reporting structure, adapter configs, role definitions, seed tasks — ready to spin up with one command.
 
 ---
 
@@ -10,36 +10,36 @@ ClipHub is the public registry where people share, discover, and download Slaw c
 
 ClipHub is to Slaw what a package registry is to a programming language. Slaw already supports exportable org configs (see [SPEC.md](./SPEC.md) §2). ClipHub is the public directory where those exports live.
 
-A user builds a working company in Slaw — a dev shop, a marketing agency, a research lab, a content studio — exports the template, and publishes it to ClipHub. Anyone can browse, search, download, and spin up that company on their own Slaw instance.
+A user builds a working squad in Slaw — a dev shop, a marketing agency, a research lab, a content studio — exports the template, and publishes it to ClipHub. Anyone can browse, search, download, and spin up that squad on their own Slaw instance.
 
-The tagline: **you can literally download a company.**
+The tagline: **you can literally download a squad.**
 
 ---
 
 ## What Gets Published
 
-A ClipHub package is a **company template export** — the portable artifact format defined in the Slaw spec. It contains:
+A ClipHub package is a **squad template export** — the portable artifact format defined in the Slaw spec. It contains:
 
 | Component | Description |
 |---|---|
-| **Company metadata** | Name, description, intended use case, category |
+| **Squad metadata** | Name, description, intended use case, category |
 | **Org chart** | Full reporting hierarchy — who reports to whom |
 | **Agent definitions** | Every agent: name, role, title, capabilities description |
 | **Adapter configs** | Per-agent adapter type and configuration (SOUL.md, HEARTBEAT.md, CLAUDE.md, process commands, webhook URLs — whatever the adapter needs) |
-| **Seed tasks** | Optional starter tasks and initiatives to bootstrap the company's first run |
-| **Budget defaults** | Suggested token/cost budgets per agent and per company |
+| **Seed tasks** | Optional starter tasks and initiatives to bootstrap the squad's first run |
+| **Budget defaults** | Suggested token/cost budgets per agent and per squad |
 
 Templates are **structure, not state.** No in-progress tasks, no historical cost data, no runtime artifacts. Just the blueprint.
 
 ### Sub-packages
 
-Not every use case needs a whole company. ClipHub also supports publishing individual components:
+Not every use case needs a whole squad. ClipHub also supports publishing individual components:
 
 - **Agent templates** — a single agent config (e.g. "Senior TypeScript Engineer", "SEO Content Writer", "DevOps Agent")
 - **Team templates** — a subtree of the org chart (e.g. "Marketing Team: CMO + 3 reports", "Engineering Pod: Tech Lead + 4 Engineers")
 - **Adapter configs** — reusable adapter configurations independent of any specific agent role
 
-These can be mixed into existing companies. Download an agent, slot it into your org, assign a manager, go.
+These can be mixed into existing squads. Download an agent, slot it into your org, assign a manager, go.
 
 ---
 
@@ -47,7 +47,7 @@ These can be mixed into existing companies. Download an agent, slot it into your
 
 ### Browse & Discover
 
-The homepage surfaces companies across several dimensions:
+The homepage surfaces squads across several dimensions:
 
 - **Featured** — editorially curated, high-quality templates
 - **Popular** — ranked by downloads, stars, and forks
@@ -60,17 +60,17 @@ Each listing shows: name, short description, org size (agent count), category, a
 
 Search is **semantic, not keyword-only.** Powered by vector embeddings so you can search by intent:
 
-- "marketing agency that runs facebook ads" → finds relevant company templates even if those exact words aren't in the title
+- "marketing agency that runs facebook ads" → finds relevant squad templates even if those exact words aren't in the title
 - "small dev team for building APIs" → finds lean engineering orgs
 - "content pipeline with writers and editors" → finds content studio templates
 
 Also supports filtering by: category, agent count range, adapter types, star count, recency.
 
-### Company Detail Page
+### Squad Detail Page
 
-Clicking into a company template shows:
+Clicking into a squad template shows:
 
-- **Full description** — what this company does, how it operates, what to expect
+- **Full description** — what this squad does, how it operates, what to expect
 - **Interactive org chart** — visual tree of every agent with role, title, and capabilities
 - **Agent list** — expandable details for each agent (adapter type, config summary, role description)
 - **Seed tasks** — the starter initiatives and tasks included
@@ -85,9 +85,9 @@ Two ways to use a template:
 
 **Install (fresh start):**
 ```
-slaw install cliphub:<publisher>/<company-slug>
+slaw install cliphub:<publisher>/<squad-slug>
 ```
-Downloads the template and creates a new company in your local Slaw instance. You add your own API keys, set budgets, customize agents, and hit go.
+Downloads the template and creates a new squad in your local Slaw instance. You add your own API keys, set budgets, customize agents, and hit go.
 
 **Fork:**
 Forking creates a copy of the template under your own ClipHub account. You can modify it, republish it as your own variant, and the fork lineage is tracked. This enables evolutionary improvement — someone publishes a marketing agency, you fork it, add a social media team, republish.
@@ -118,11 +118,11 @@ Anyone with a GitHub account can publish to ClipHub. Authentication is via GitHu
 
 ### How to Publish
 
-From within Slaw, export your company as a template, then publish:
+From within Slaw, export your squad as a template, then publish:
 
 ```
-slaw export --template my-company
-slaw publish cliphub my-company
+slaw export --template my-squad
+slaw publish cliphub my-squad
 ```
 
 Or use the web UI to upload a template export directly.
@@ -135,7 +135,7 @@ When publishing, you specify:
 |---|---|---|
 | `slug` | yes | URL-safe identifier (e.g. `lean-dev-shop`) |
 | `name` | yes | Display name |
-| `description` | yes | What this company does and who it's for |
+| `description` | yes | What this squad does and who it's for |
 | `category` | yes | Primary category (see below) |
 | `tags` | no | Additional tags for discovery |
 | `version` | yes | Semver (e.g. `1.0.0`) |
@@ -155,13 +155,13 @@ For power users who maintain multiple templates:
 slaw cliphub sync
 ```
 
-Scans your local exported templates and publishes any that are new or updated. Useful for maintaining a portfolio of company templates from a single repo.
+Scans your local exported templates and publishes any that are new or updated. Useful for maintaining a portfolio of squad templates from a single repo.
 
 ---
 
 ## Categories
 
-Company templates are organized by use case:
+Squad templates are organized by use case:
 
 | Category | Examples |
 |---|---|
@@ -187,7 +187,7 @@ Publishers who meet certain thresholds (account age, published templates with go
 
 ### Security Review
 
-Company templates contain adapter configurations, which may include executable commands (process adapter) or webhook URLs (HTTP adapter). The moderation system:
+Squad templates contain adapter configurations, which may include executable commands (process adapter) or webhook URLs (HTTP adapter). The moderation system:
 
 1. **Automated scanning** — checks adapter configs for suspicious patterns (arbitrary code execution, exfiltration URLs, credential harvesting)
 2. **Community reporting** — any signed-in user can flag a template. Auto-hidden after multiple reports pending review.
@@ -255,25 +255,25 @@ Report
 
 ## User Flows
 
-### "I want to start a company"
+### "I want to start a squad"
 
 1. Open ClipHub, browse by category or search "dev shop for building SaaS"
-2. Find a template that fits — "Lean SaaS Dev Shop (CEO + CTO + 3 Engineers)"
+2. Find a template that fits — "Lean SaaS Dev Shop (Squad Lead + CTO + 3 Engineers)"
 3. Read the description, inspect the org chart, check the comments
 4. Run `slaw install cliphub:acme/lean-saas-shop`
-5. Slaw creates the company locally with all agents pre-configured
+5. Slaw creates the squad locally with all agents pre-configured
 6. Set your API keys, adjust budgets, add your initial tasks
 7. Hit go
 
 ### "I built something great and want to share it"
 
-1. Build and iterate on a company in Slaw until it works well
+1. Build and iterate on a squad in Slaw until it works well
 2. Export: `slaw export --template my-agency`
 3. Publish: `slaw publish cliphub my-agency`
 4. Fill in description, category, tags on the web UI
 5. Template is live — others can find and install it
 
-### "I want to improve someone else's company"
+### "I want to improve someone else's squad"
 
 1. Find a template on ClipHub that's close to what you need
 2. Fork it to your account
@@ -281,23 +281,23 @@ Report
 4. Export and re-publish as your own variant
 5. Fork lineage visible on both the original and your version
 
-### "I just need one great agent, not a whole company"
+### "I just need one great agent, not a whole squad"
 
 1. Search ClipHub for agent templates: "senior python engineer"
 2. Find a well-starred agent config
 3. Install just that agent: `slaw install cliphub:acme/senior-python-eng --agent`
-4. Assign it to a manager in your existing company
+4. Assign it to a manager in your existing squad
 5. Done
 
 ---
 
 ## Relationship to Slaw
 
-ClipHub is **not required** to use Slaw. You can build companies entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
+ClipHub is **not required** to use Slaw. You can build squads entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
 
-- **New users** get a working company in minutes instead of hours
+- **New users** get a working squad in minutes instead of hours
 - **Experienced users** share proven configurations with the community
-- **The ecosystem** compounds — every good template makes the next company easier to build
+- **The ecosystem** compounds — every good template makes the next squad easier to build
 
 ClipHub is to Slaw what a package registry is to a language runtime: optional, but transformative.
 
@@ -333,4 +333,4 @@ ClipHub is to Slaw what a package registry is to a language runtime: optional, b
 
 - Paid / premium templates (everything is free and public, at least initially)
 - Private registries (may be a future enterprise feature)
-- Running companies on ClipHub (it's a registry, not a runtime — consistent with Slaw's own philosophy)
+- Running squads on ClipHub (it's a registry, not a runtime — consistent with Slaw's own philosophy)

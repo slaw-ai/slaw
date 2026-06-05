@@ -29,11 +29,11 @@
   - assertKnownAdapterType(...)
 
    Used it in:
-  - /companies/:companyId/adapters/:type/models
-  - /companies/:companyId/adapters/:type/detect-model
-  - /companies/:companyId/adapters/:type/test-environment
-  - POST /companies/:companyId/agents
-  - POST /companies/:companyId/agent-hires
+  - /squads/:squadId/adapters/:type/models
+  - /squads/:squadId/adapters/:type/detect-model
+  - /squads/:squadId/adapters/:type/test-environment
+  - POST /squads/:squadId/agents
+  - POST /squads/:squadId/agent-hires
   - PATCH /agents/:id when adapterType is touched
 
    Why:

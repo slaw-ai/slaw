@@ -28,7 +28,7 @@ import {
   agentWakeupRequests,
   activityLog,
   approvals,
-  companySkills as companySkillsTable,
+  squadSkills as squadSkillsTable,
   documentAnnotationComments,
   documentAnnotationThreads,
   documentRevisions,
@@ -66,7 +66,7 @@ import { parseObject, asBoolean, asNumber, appendWithByteCap, MAX_EXCERPT_BYTES 
 import { costService } from "./costs.js";
 import { trackAgentFirstHeartbeat } from "@slaw/shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
-import { companySkillService } from "./company-skills.js";
+import { squadSkillService } from "./squad-skills.js";
 import { budgetService, type BudgetEnforcementScope } from "./budgets.js";
 import { secretService } from "./secrets.js";
 import { resolveDefaultAgentWorkspaceDir, resolveManagedProjectWorkspaceDir } from "../home-paths.js";
@@ -356,7 +356,7 @@ function stripSlawRuntimeEnvFromAdapterConfig(config: Record<string, unknown>): 
 }
 
 export async function resolveExecutionRunAdapterConfig(input: {
-  companyId: string;
+  squadId: string;
   agentId?: string | null;
   issueId?: string | null;
   heartbeatRunId?: string | null;
@@ -371,7 +371,7 @@ export async function resolveExecutionRunAdapterConfig(input: {
   const projectEnv = stripSlawRuntimeEnvBindings(input.projectEnv);
   const routineEnv = stripSlawRuntimeEnvBindings(input.routineEnv);
   const { config: resolvedConfig, secretKeys, manifest } = await input.secretsSvc.resolveAdapterConfigForRuntime(
-    input.companyId,
+    input.squadId,
     executionRunConfig,
     input.agentId
       ? {
@@ -386,7 +386,7 @@ export async function resolveExecutionRunAdapterConfig(input: {
   );
   const projectEnvResolution = projectEnv
     ? await input.secretsSvc.resolveEnvBindings(
-        input.companyId,
+        input.squadId,
         projectEnv,
         input.projectId
           ? {
@@ -411,7 +411,7 @@ export async function resolveExecutionRunAdapterConfig(input: {
   }
   const routineEnvResolution = routineEnv
     ? await input.secretsSvc.resolveEnvBindings(
-        input.companyId,
+        input.squadId,
         routineEnv,
         input.routineId
           ? {
@@ -500,7 +500,7 @@ export function computeBoundedTransientHeartbeatRetrySchedule(
 
 async function resolveRunScopedMentionedSkillKeys(input: {
   db: Db;
-  companyId: string;
+  squadId: string;
   issueId: string | null;
 }): Promise<string[]> {
   if (!input.issueId) return [];
@@ -511,7 +511,7 @@ async function resolveRunScopedMentionedSkillKeys(input: {
       description: issues.description,
     })
     .from(issues)
-    .where(and(eq(issues.id, input.issueId), eq(issues.companyId, input.companyId)))
+    .where(and(eq(issues.id, input.issueId), eq(issues.squadId, input.squadId)))
     .then((rows) => rows[0] ?? null);
   if (!issue) return [];
 
@@ -521,7 +521,7 @@ async function resolveRunScopedMentionedSkillKeys(input: {
     .where(
       and(
         eq(issueComments.issueId, input.issueId),
-        eq(issueComments.companyId, input.companyId),
+        eq(issueComments.squadId, input.squadId),
       ),
     );
   const mentionedSkillIds = extractMentionedSkillIdsFromSources([
@@ -533,14 +533,14 @@ async function resolveRunScopedMentionedSkillKeys(input: {
 
   const skillRows = await input.db
     .select({
-      id: companySkillsTable.id,
-      key: companySkillsTable.key,
+      id: squadSkillsTable.id,
+      key: squadSkillsTable.key,
     })
-    .from(companySkillsTable)
+    .from(squadSkillsTable)
     .where(
       and(
-        eq(companySkillsTable.companyId, input.companyId),
-        inArray(companySkillsTable.id, mentionedSkillIds),
+        eq(squadSkillsTable.squadId, input.squadId),
+        inArray(squadSkillsTable.id, mentionedSkillIds),
       ),
     );
   const skillKeyById = new Map(skillRows.map((row) => [row.id, row.key]));
@@ -722,12 +722,12 @@ function deriveRepoNameFromRepoUrl(repoUrl: string | null): string | null {
 }
 
 async function ensureManagedProjectWorkspace(input: {
-  companyId: string;
+  squadId: string;
   projectId: string;
   repoUrl: string | null;
 }): Promise<{ cwd: string; warning: string | null }> {
   const cwd = resolveManagedProjectWorkspaceDir({
-    companyId: input.companyId,
+    squadId: input.squadId,
     projectId: input.projectId,
     repoName: deriveRepoNameFromRepoUrl(input.repoUrl),
   });
@@ -777,7 +777,7 @@ const heartbeatRunProcessGroupIdColumn =
 
 const heartbeatRunListColumns = {
   id: heartbeatRuns.id,
-  companyId: heartbeatRuns.companyId,
+  squadId: heartbeatRuns.squadId,
   agentId: heartbeatRuns.agentId,
   invocationSource: heartbeatRuns.invocationSource,
   triggerDetail: heartbeatRuns.triggerDetail,
@@ -905,7 +905,7 @@ const heartbeatRunSqlAsciiSafeColumns = {
 
 const heartbeatRunLogAccessColumns = {
   id: heartbeatRuns.id,
-  companyId: heartbeatRuns.companyId,
+  squadId: heartbeatRuns.squadId,
   logStore: heartbeatRuns.logStore,
   logRef: heartbeatRuns.logRef,
 } as const;
@@ -1383,7 +1383,7 @@ function normalizeBilledCostCents(costUsd: number | null | undefined, billingTyp
 
 async function resolveLedgerScopeForRun(
   db: Db,
-  companyId: string,
+  squadId: string,
   run: typeof heartbeatRuns.$inferSelect,
 ) {
   const context = parseObject(run.contextSnapshot);
@@ -1403,7 +1403,7 @@ async function resolveLedgerScopeForRun(
       projectId: issues.projectId,
     })
     .from(issues)
-    .where(and(eq(issues.id, contextIssueId), eq(issues.companyId, companyId)))
+    .where(and(eq(issues.id, contextIssueId), eq(issues.squadId, squadId)))
     .then((rows) => rows[0] ?? null);
 
   return {
@@ -1698,7 +1698,7 @@ function allowsIssueInteractionWake(
 
 async function listUnresolvedBlockerSummaries(
   dbOrTx: Pick<Db, "select">,
-  companyId: string,
+  squadId: string,
   issueId: string,
   unresolvedBlockerIssueIds: string[],
 ) {
@@ -1718,7 +1718,7 @@ async function listUnresolvedBlockerSummaries(
     .innerJoin(issues, eq(issueRelations.issueId, issues.id))
     .where(
       and(
-        eq(issueRelations.companyId, companyId),
+        eq(issueRelations.squadId, squadId),
         eq(issueRelations.type, "blocks"),
         eq(issueRelations.relatedIssueId, issueId),
         inArray(issues.id, ids),
@@ -1944,7 +1944,7 @@ type AcceptedPlanWakeRoutingDecision = {
 
 async function resolveAcceptedPlanWakeRoutingDecision(args: {
   db: Db;
-  companyId: string;
+  squadId: string;
   agentId: string;
   issueId: string | null;
   acceptedPlanContinuationWake: boolean;
@@ -1962,7 +1962,7 @@ async function resolveAcceptedPlanWakeRoutingDecision(args: {
     .from(issuePlanDecompositions)
     .innerJoin(issues, eq(issues.id, issuePlanDecompositions.sourceIssueId))
     .where(and(
-      eq(issuePlanDecompositions.companyId, args.companyId),
+      eq(issuePlanDecompositions.squadId, args.squadId),
       eq(issuePlanDecompositions.ownerAgentId, args.agentId),
       eq(issuePlanDecompositions.status, "in_flight"),
     ))
@@ -2014,7 +2014,7 @@ export function mergeCoalescedContextSnapshot(
 
 async function buildSlawWakePayload(input: {
   db: Db;
-  companyId: string;
+  squadId: string;
   contextSnapshot: Record<string, unknown>;
   continuationSummary?:
     | {
@@ -2053,7 +2053,7 @@ async function buildSlawWakePayload(input: {
             workMode: issues.workMode,
           })
           .from(issues)
-          .where(and(eq(issues.id, issueId), eq(issues.companyId, input.companyId)))
+          .where(and(eq(issues.id, issueId), eq(issues.squadId, input.squadId)))
           .then((rows) => rows[0] ?? null)
       : null);
   if (commentIds.length === 0 && Object.keys(executionStage).length === 0 && !issueSummary) return null;
@@ -2076,7 +2076,7 @@ async function buildSlawWakePayload(input: {
           .from(issueComments)
           .where(
             and(
-              eq(issueComments.companyId, input.companyId),
+              eq(issueComments.squadId, input.squadId),
               inArray(issueComments.id, commentIds),
             ),
           );
@@ -2151,7 +2151,7 @@ async function buildSlawWakePayload(input: {
       .from(documentAnnotationComments)
       .innerJoin(documentAnnotationThreads, eq(documentAnnotationComments.threadId, documentAnnotationThreads.id))
       .where(and(
-        eq(documentAnnotationComments.companyId, input.companyId),
+        eq(documentAnnotationComments.squadId, input.squadId),
         eq(documentAnnotationComments.id, annotationCommentId),
       ))
       .then((rows) => rows.map((row) => ({
@@ -2513,7 +2513,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
   const runLogStore = getRunLogStore();
   const secretsSvc = secretService(db);
-  const companySkills = companySkillService(db);
+  const squadSkills = squadSkillService(db);
   const issuesSvc = issueService(db);
   const treeControlSvc = issueTreeControlService(db);
   const executionWorkspacesSvc = executionWorkspaceService(db);
@@ -2537,14 +2537,14 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
   async function releaseEnvironmentLeasesForRun(input: {
     runId: string;
-    companyId: string;
+    squadId: string;
     agentId: string;
     status: string | null | undefined;
     failureReason?: string | null;
   }) {
     const releaseResult = await envOrchestrator.releaseForRun({
       heartbeatRunId: input.runId,
-      companyId: input.companyId,
+      squadId: input.squadId,
       agentId: input.agentId,
       status: leaseReleaseStatusForRunStatus(input.status),
       failureReason: input.failureReason ?? undefined,
@@ -2610,7 +2610,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .then((rows) => rows[0] ?? null);
   }
 
-  async function getIssueExecutionContext(companyId: string, issueId: string) {
+  async function getIssueExecutionContext(squadId: string, issueId: string) {
     return db
       .select({
         id: issues.id,
@@ -2632,12 +2632,12 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         originRunId: issues.originRunId,
       })
       .from(issues)
-      .where(and(eq(issues.id, issueId), eq(issues.companyId, companyId)))
+      .where(and(eq(issues.id, issueId), eq(issues.squadId, squadId)))
       .then((rows) => rows[0] ?? null);
   }
 
   async function getRoutineEnvForExecutionIssue(
-    companyId: string,
+    squadId: string,
     issueContext: Awaited<ReturnType<typeof getIssueExecutionContext>> | null,
   ) {
     if (!issueContext || issueContext.originKind !== "routine_execution" || !issueContext.originId) {
@@ -2653,7 +2653,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .where(
             and(
               eq(routineRuns.id, issueContext.originRunId),
-              eq(routineRuns.companyId, companyId),
+              eq(routineRuns.squadId, squadId),
               eq(routineRuns.routineId, issueContext.originId),
             ),
           )
@@ -2669,7 +2669,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .where(
           and(
             eq(routineRevisions.id, routineRun.routineRevisionId),
-            eq(routineRevisions.companyId, companyId),
+            eq(routineRevisions.squadId, squadId),
             eq(routineRevisions.routineId, issueContext.originId),
           ),
         )
@@ -2683,7 +2683,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const routine = await db
       .select({ env: routines.env })
       .from(routines)
-      .where(and(eq(routines.id, issueContext.originId), eq(routines.companyId, companyId)))
+      .where(and(eq(routines.id, issueContext.originId), eq(routines.squadId, squadId)))
       .then((rows) => rows[0] ?? null);
     return { routineId: issueContext.originId, env: routine?.env ?? null };
   }
@@ -2697,7 +2697,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }
 
   async function getTaskSession(
-    companyId: string,
+    squadId: string,
     agentId: string,
     adapterType: string,
     taskKey: string,
@@ -2707,7 +2707,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .from(agentTaskSessions)
       .where(
         and(
-          eq(agentTaskSessions.companyId, companyId),
+          eq(agentTaskSessions.squadId, squadId),
           eq(agentTaskSessions.agentId, agentId),
           eq(agentTaskSessions.adapterType, adapterType),
           eq(agentTaskSessions.taskKey, taskKey),
@@ -2742,7 +2742,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
   const issueMonitorDispatchColumns = {
     id: issues.id,
-    companyId: issues.companyId,
+    squadId: issues.squadId,
     projectId: issues.projectId,
     goalId: issues.goalId,
     identifier: issues.identifier,
@@ -2764,7 +2764,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
   interface IssueMonitorDispatchRow {
     id: string;
-    companyId: string;
+    squadId: string;
     projectId: string | null;
     goalId: string | null;
     identifier: string | null;
@@ -2869,7 +2869,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, claimed.companyId),
+          eq(issues.squadId, claimed.squadId),
           eq(issues.originKind, RECOVERY_ORIGIN_KINDS.strandedIssueRecovery),
           eq(issues.originId, claimed.id),
           isNull(issues.hiddenAt),
@@ -2907,7 +2907,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     if (input.recoveryPolicy === "create_recovery_issue") {
       let recoveryIssue = await findOpenIssueMonitorRecoveryIssue(input.claimed);
       if (!recoveryIssue) {
-        recoveryIssue = await issuesSvc.create(input.claimed.companyId, {
+        recoveryIssue = await issuesSvc.create(input.claimed.squadId, {
           title: `Recover external-service monitor for ${input.claimed.identifier ?? input.claimed.title}`,
           description: monitorRecoveryComment({
             issue: input.claimed,
@@ -2948,7 +2948,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       }
 
       await logActivity(db, {
-        companyId: input.claimed.companyId,
+        squadId: input.claimed.squadId,
         actorType: input.actorType,
         actorId: input.actorId,
         agentId: input.agentId,
@@ -2967,7 +2967,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     if (input.recoveryPolicy === "escalate_to_board") {
       await db.insert(issueComments).values({
-        companyId: input.claimed.companyId,
+        squadId: input.claimed.squadId,
         issueId: input.claimed.id,
         body: monitorRecoveryComment({
           issue: input.claimed,
@@ -2978,7 +2978,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       });
 
       await logActivity(db, {
-        companyId: input.claimed.companyId,
+        squadId: input.claimed.squadId,
         actorType: input.actorType,
         actorId: input.actorId,
         agentId: input.agentId,
@@ -3021,7 +3021,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     });
 
     await logActivity(db, {
-      companyId: input.claimed.companyId,
+      squadId: input.claimed.squadId,
       actorType: input.actorType,
       actorId: input.actorId,
       agentId: input.agentId,
@@ -3062,7 +3062,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .where(eq(issues.id, input.claimed.id));
 
     await logActivity(db, {
-      companyId: input.claimed.companyId,
+      squadId: input.claimed.squadId,
       actorType: input.actorType,
       actorId: input.actorId,
       agentId: input.agentId,
@@ -3189,7 +3189,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .where(eq(issues.id, claimed.id));
 
       await logActivity(db, {
-        companyId: claimed.companyId,
+        squadId: claimed.squadId,
         actorType: input.actorType,
         actorId: input.actorId,
         agentId: input.agentId,
@@ -3226,7 +3226,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             .where(eq(issues.id, claimed.id));
 
           await logActivity(db, {
-            companyId: claimed.companyId,
+            squadId: claimed.squadId,
             actorType: input.actorType,
             actorId: input.actorId,
             agentId: input.agentId,
@@ -3592,7 +3592,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     if (taskKey) {
       const codec = getAdapterSessionCodec(agent.adapterType);
       const existingTaskSession = await getTaskSession(
-        agent.companyId,
+        agent.squadId,
         agent.id,
         agent.adapterType,
         taskKey,
@@ -3630,7 +3630,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .where(
         and(
           eq(heartbeatRuns.id, resumeFromRunId),
-          eq(heartbeatRuns.companyId, agent.companyId),
+          eq(heartbeatRuns.squadId, agent.squadId),
           eq(heartbeatRuns.agentId, agent.id),
         ),
       )
@@ -3640,7 +3640,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const resumeContext = parseObject(resumeRun.contextSnapshot);
     const resumeTaskKey = deriveTaskKey(resumeContext, null) ?? taskKey;
     const resumeTaskSession = resumeTaskKey
-      ? await getTaskSession(agent.companyId, agent.id, agent.adapterType, resumeTaskKey)
+      ? await getTaskSession(agent.squadId, agent.id, agent.adapterType, resumeTaskKey)
       : null;
     const sessionCodec = getAdapterSessionCodec(agent.adapterType);
     const sessionOverride = buildExplicitResumeSessionOverride({
@@ -3678,7 +3678,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             projectWorkspaceId: issues.projectWorkspaceId,
           })
           .from(issues)
-          .where(and(eq(issues.id, issueId), eq(issues.companyId, agent.companyId)))
+          .where(and(eq(issues.id, issueId), eq(issues.squadId, agent.squadId)))
           .then((rows) => rows[0] ?? null)
       : null;
     const issueProjectId = issueProjectRef?.projectId ?? null;
@@ -3694,7 +3694,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(projectWorkspaces)
           .where(
             and(
-              eq(projectWorkspaces.companyId, agent.companyId),
+              eq(projectWorkspaces.squadId, agent.squadId),
               eq(projectWorkspaces.projectId, workspaceProjectId),
             ),
           )
@@ -3729,7 +3729,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         if (!projectCwd || projectCwd === REPO_ONLY_CWD_SENTINEL) {
           try {
             const managedWorkspace = await ensureManagedProjectWorkspace({
-              companyId: agent.companyId,
+              squadId: agent.squadId,
               projectId: workspaceProjectId ?? resolvedProjectId ?? workspace.projectId,
               repoUrl: readNonEmptyString(workspace.repoUrl),
             });
@@ -3801,7 +3801,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     if (workspaceProjectId) {
       const managedWorkspace = await ensureManagedProjectWorkspace({
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         projectId: workspaceProjectId,
         repoUrl: null,
       });
@@ -3871,7 +3871,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }
 
   async function upsertTaskSession(input: {
-    companyId: string;
+    squadId: string;
     agentId: string;
     adapterType: string;
     taskKey: string;
@@ -3881,7 +3881,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     lastError: string | null;
   }) {
     const existing = await getTaskSession(
-      input.companyId,
+      input.squadId,
       input.agentId,
       input.adapterType,
       input.taskKey,
@@ -3904,7 +3904,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     return db
       .insert(agentTaskSessions)
       .values({
-        companyId: input.companyId,
+        squadId: input.squadId,
         agentId: input.agentId,
         adapterType: input.adapterType,
         taskKey: input.taskKey,
@@ -3918,12 +3918,12 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }
 
   async function clearTaskSessions(
-    companyId: string,
+    squadId: string,
     agentId: string,
     opts?: { taskKey?: string | null; adapterType?: string | null },
   ) {
     const conditions = [
-      eq(agentTaskSessions.companyId, companyId),
+      eq(agentTaskSessions.squadId, squadId),
       eq(agentTaskSessions.agentId, agentId),
     ];
     if (opts?.taskKey) {
@@ -3948,7 +3948,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .insert(agentRuntimeState)
       .values({
         agentId: agent.id,
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         adapterType: agent.adapterType,
         stateJson: {},
       })
@@ -3980,7 +3980,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     if (updated) {
       publishLiveEvent({
-        companyId: updated.companyId,
+        squadId: updated.squadId,
         type: "heartbeat.run.status",
         payload: {
           runId: updated.id,
@@ -4020,7 +4020,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       actorType: "agent",
       entityId: run.id,
       entityType: "heartbeat_run",
-      companyId: run.companyId,
+      squadId: run.squadId,
       payload: {
         runId: run.id,
         agentId: run.agentId,
@@ -4060,7 +4060,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .from(issueComments)
       .where(
         and(
-          eq(issueComments.companyId, input.run.companyId),
+          eq(issueComments.squadId, input.run.squadId),
           eq(issueComments.issueId, input.issueId),
           eq(issueComments.createdByRunId, input.run.id),
           sql`${issueComments.body} like 'Bounded liveness continuation exhausted%'`,
@@ -4087,7 +4087,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       db
         .select({
           id: issues.id,
-          companyId: issues.companyId,
+          squadId: issues.squadId,
           identifier: issues.identifier,
           title: issues.title,
           status: issues.status,
@@ -4096,12 +4096,12 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           projectId: issues.projectId,
         })
         .from(issues)
-        .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
+        .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId)))
         .then((rows) => rows[0] ?? null),
       db
         .select({
           id: agents.id,
-          companyId: agents.companyId,
+          squadId: agents.squadId,
           status: agents.status,
         })
         .from(agents)
@@ -4111,14 +4111,14 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     const budgetBlock =
       issue && agent
-        ? await budgets.getInvocationBlock(issue.companyId, agent.id, {
+        ? await budgets.getInvocationBlock(issue.squadId, agent.id, {
           issueId: issue.id,
           projectId: issue.projectId,
         })
         : null;
     if (issue) {
       const productivityHold = await productivityReviews.isProductivityReviewContinuationHoldActive({
-        companyId: issue.companyId,
+        squadId: issue.squadId,
         issueId: issue.id,
         agentId: run.agentId,
       });
@@ -4128,7 +4128,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             `${run.livenessReason ?? "Run ended without concrete progress"}; continuation held by productivity review ${productivityHold.reviewIdentifier ?? productivityHold.reviewIssueId}`,
         });
         await productivityReviews.recordContinuationHold({
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           issueId: issue.id,
           runId: run.id,
           agentId: run.agentId,
@@ -4151,7 +4151,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       : null;
     const existingWake = idempotencyKey
       ? await findExistingRunLivenessContinuationWake(db, {
-        companyId: run.companyId,
+        squadId: run.squadId,
         idempotencyKey,
       })
       : null;
@@ -4237,7 +4237,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .from(issueComments)
       .where(
         and(
-          eq(issueComments.companyId, input.run.companyId),
+          eq(issueComments.squadId, input.run.squadId),
           eq(issueComments.issueId, input.issue.id),
           eq(issueComments.createdByRunId, input.run.id),
           sql`(${issueComments.body} = ${SUCCESSFUL_RUN_HANDOFF_REQUIRED_NOTICE_BODY} or ${issueComments.body} like '## This issue still needs a next step%' or ${issueComments.body} like '## Successful run missing issue disposition%')`,
@@ -4268,7 +4268,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const issue = await db
       .select({
         id: issues.id,
-        companyId: issues.companyId,
+        squadId: issues.squadId,
         identifier: issues.identifier,
         title: issues.title,
         status: issues.status,
@@ -4278,7 +4278,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         projectId: issues.projectId,
       })
       .from(issues)
-      .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
+      .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId)))
       .then((rows) => rows[0] ?? null);
     const idempotencyKey = issue
       ? buildFinishSuccessfulRunHandoffIdempotencyKey({
@@ -4306,7 +4306,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(heartbeatRuns)
           .where(
             and(
-              eq(heartbeatRuns.companyId, issue.companyId),
+              eq(heartbeatRuns.squadId, issue.squadId),
               eq(heartbeatRuns.agentId, run.agentId),
               inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES]),
               sql`(
@@ -4325,7 +4325,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(agentWakeupRequests)
           .where(
             and(
-              eq(agentWakeupRequests.companyId, issue.companyId),
+              eq(agentWakeupRequests.squadId, issue.squadId),
               eq(agentWakeupRequests.agentId, run.agentId),
               inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution", "claimed"]),
               sql`(
@@ -4345,7 +4345,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(issueThreadInteractions)
           .where(
             and(
-              eq(issueThreadInteractions.companyId, issue.companyId),
+              eq(issueThreadInteractions.squadId, issue.squadId),
               eq(issueThreadInteractions.issueId, issue.id),
               eq(issueThreadInteractions.status, "pending"),
             ),
@@ -4360,7 +4360,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .innerJoin(approvals, eq(issueApprovals.approvalId, approvals.id))
           .where(
             and(
-              eq(issueApprovals.companyId, issue.companyId),
+              eq(issueApprovals.squadId, issue.squadId),
               eq(issueApprovals.issueId, issue.id),
               inArray(approvals.status, ["pending", "revision_requested"]),
             ),
@@ -4374,14 +4374,14 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(issueRelations)
           .where(
             and(
-              eq(issueRelations.companyId, issue.companyId),
+              eq(issueRelations.squadId, issue.squadId),
               eq(issueRelations.relatedIssueId, issue.id),
               eq(issueRelations.type, "blocks"),
               sql`exists (
                 select 1
                 from issues blocker
                 where blocker.id = ${issueRelations.issueId}
-                  and blocker.company_id = ${issue.companyId}
+                  and blocker.squad_id = ${issue.squadId}
                   and blocker.status not in ('done', 'cancelled')
                   and blocker.hidden_at is null
               )`,
@@ -4396,7 +4396,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(issues)
           .where(
             and(
-              eq(issues.companyId, issue.companyId),
+              eq(issues.squadId, issue.squadId),
               inArray(issues.originKind, [
                 RECOVERY_ORIGIN_KINDS.strandedIssueRecovery,
                 RECOVERY_ORIGIN_KINDS.issueGraphLivenessEscalation,
@@ -4411,18 +4411,18 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         : Promise.resolve(null),
       idempotencyKey
         ? findExistingFinishSuccessfulRunHandoffWake(db, {
-          companyId: run.companyId,
+          squadId: run.squadId,
           idempotencyKey,
         })
         : Promise.resolve(null),
       issue
-        ? budgets.getInvocationBlock(issue.companyId, run.agentId, {
+        ? budgets.getInvocationBlock(issue.squadId, run.agentId, {
           issueId: issue.id,
           projectId: issue.projectId,
         })
         : Promise.resolve(null),
       issue
-        ? treeControlSvc.getActivePauseHoldGate(issue.companyId, issue.id)
+        ? treeControlSvc.getActivePauseHoldGate(issue.squadId, issue.id)
         : Promise.resolve(null),
     ]);
 
@@ -4464,7 +4464,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       detectedProgressSummary: detectedProgressSummary ?? "The run reported progress, but did not choose a next step.",
     });
     await logActivity(db, {
-      companyId: issue.companyId,
+      squadId: issue.squadId,
       actorType: "system",
       actorId: "heartbeat",
       agentId: run.agentId,
@@ -4509,7 +4509,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       : secretSanitizedPayload;
 
     await db.insert(heartbeatRunEvents).values({
-      companyId: run.companyId,
+      squadId: run.squadId,
       runId: run.id,
       agentId: run.agentId,
       seq,
@@ -4522,7 +4522,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     });
 
     publishLiveEvent({
-      companyId: run.companyId,
+      squadId: run.squadId,
       type: "heartbeat.run.event",
       payload: {
         runId: run.id,
@@ -4598,7 +4598,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .then((rows) => rows[0] ?? null);
   }
 
-  async function findRunIssueComment(runId: string, companyId: string, issueId: string) {
+  async function findRunIssueComment(runId: string, squadId: string, issueId: string) {
     return db
       .select({
         id: issueComments.id,
@@ -4606,7 +4606,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .from(issueComments)
       .where(
         and(
-          eq(issueComments.companyId, companyId),
+          eq(issueComments.squadId, squadId),
           eq(issueComments.issueId, issueId),
           eq(issueComments.createdByRunId, runId),
         ),
@@ -4676,20 +4676,20 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     const retryRun = await db.transaction(async (tx) => {
       await tx.execute(
-        sql`select id from issues where company_id = ${run.companyId} and execution_run_id = ${run.id} for update`,
+        sql`select id from issues where squad_id = ${run.squadId} and execution_run_id = ${run.id} for update`,
       );
 
       const issue = await tx
         .select({ id: issues.id })
         .from(issues)
-        .where(and(eq(issues.companyId, run.companyId), eq(issues.executionRunId, run.id)))
+        .where(and(eq(issues.squadId, run.squadId), eq(issues.executionRunId, run.id)))
         .then((rows) => rows[0] ?? null);
       if (!issue) return null;
 
       const wakeupRequest = await tx
         .insert(agentWakeupRequests)
         .values({
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           source: "automation",
           triggerDetail: "system",
@@ -4710,7 +4710,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const queuedRun = await tx
         .insert(heartbeatRuns)
         .values({
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           invocationSource: "automation",
           triggerDetail: "system",
@@ -4758,7 +4758,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     if (!retryRun) return null;
 
     publishLiveEvent({
-      companyId: retryRun.companyId,
+      squadId: retryRun.squadId,
       type: "heartbeat.run.queued",
       payload: {
         runId: retryRun.id,
@@ -4772,13 +4772,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     return retryRun;
   }
 
-  async function hasDeferredIssueCommentWake(companyId: string, issueId: string, agentId: string) {
+  async function hasDeferredIssueCommentWake(squadId: string, issueId: string, agentId: string) {
     const deferredPayloads = await db
       .select({ payload: agentWakeupRequests.payload })
       .from(agentWakeupRequests)
       .where(
         and(
-          eq(agentWakeupRequests.companyId, companyId),
+          eq(agentWakeupRequests.squadId, squadId),
           eq(agentWakeupRequests.agentId, agentId),
           eq(agentWakeupRequests.status, "deferred_issue_execution"),
           sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}`,
@@ -4809,7 +4809,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       return { outcome: "not_applicable" as const, queuedRun: null };
     }
 
-    const postedComment = await findRunIssueComment(run.id, run.companyId, issueId);
+    const postedComment = await findRunIssueComment(run.id, run.squadId, issueId);
     if (postedComment) {
       await patchRunIssueCommentStatus(run.id, {
         issueCommentStatus: "satisfied",
@@ -4844,7 +4844,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       return { outcome: "not_applicable" as const, queuedRun: null };
     }
 
-    if (await hasDeferredIssueCommentWake(run.companyId, issueId, run.agentId)) {
+    if (await hasDeferredIssueCommentWake(run.squadId, issueId, run.agentId)) {
       await patchRunIssueCommentStatus(run.id, {
         issueCommentStatus: "not_applicable",
         issueCommentSatisfiedByCommentId: null,
@@ -4897,7 +4897,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const wakeupRequest = await tx
         .insert(agentWakeupRequests)
         .values({
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           source: "automation",
           triggerDetail: "system",
@@ -4917,7 +4917,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const retryRun = await tx
         .insert(heartbeatRuns)
         .values({
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           invocationSource: "automation",
           triggerDetail: "system",
@@ -4949,14 +4949,14 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             executionLockedAt: now,
             updatedAt: now,
           })
-          .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId), eq(issues.executionRunId, run.id)));
+          .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId), eq(issues.executionRunId, run.id)));
       }
 
       return retryRun;
     });
 
     publishLiveEvent({
-      companyId: queued.companyId,
+      squadId: queued.squadId,
       type: "heartbeat.run.queued",
       payload: {
         runId: queued.id,
@@ -5015,7 +5015,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const issueId = readNonEmptyString(contextSnapshot.issueId);
     const projectId = readNonEmptyString(contextSnapshot.projectId);
 
-    const budgetBlock = await budgets.getInvocationBlock(run.companyId, run.agentId, {
+    const budgetBlock = await budgets.getInvocationBlock(run.squadId, run.agentId, {
       issueId,
       projectId,
     });
@@ -5056,7 +5056,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         executionState: issues.executionState,
       })
       .from(issues)
-      .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
+      .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId)))
       .then((rows) => rows[0] ?? null);
 
     if (!issue) {
@@ -5143,7 +5143,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       }
     }
 
-    const activePauseHold = await treeControlSvc.getActivePauseHoldGate(run.companyId, issueId);
+    const activePauseHold = await treeControlSvc.getActivePauseHoldGate(run.squadId, issueId);
     if (activePauseHold) {
       return {
         allowed: false,
@@ -5158,7 +5158,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       };
     }
 
-    const dependencyReadiness = await issuesSvc.listDependencyReadiness(run.companyId, [issueId]);
+    const dependencyReadiness = await issuesSvc.listDependencyReadiness(run.squadId, [issueId]);
     const readiness = dependencyReadiness.get(issueId);
     if (readiness && !readiness.isDependencyReady) {
       return {
@@ -5226,7 +5226,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         })
         .where(
           and(
-            eq(issues.companyId, cancelled.companyId),
+            eq(issues.squadId, cancelled.squadId),
             eq(issues.id, gate.issueId),
             eq(issues.executionRunId, cancelled.id),
           ),
@@ -5340,7 +5340,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     });
 
     publishLiveEvent({
-      companyId: promoted.companyId,
+      squadId: promoted.squadId,
       type: "heartbeat.run.queued",
       payload: {
         runId: promoted.id,
@@ -5460,7 +5460,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       ...(codexTransientFallbackMode ? { codexTransientFallbackMode } : {}),
     }, "normal_model");
     const maxTurnContinuationIdempotencyKey = retryReason === MAX_TURN_CONTINUATION_RETRY_REASON
-      ? `max-turn-continuation:${run.companyId}:${issueId ?? "no-issue"}:${run.id}:${schedule.attempt}`
+      ? `max-turn-continuation:${run.squadId}:${issueId ?? "no-issue"}:${run.id}:${schedule.attempt}`
       : null;
 
     type ScheduledRetryTransactionResult =
@@ -5487,11 +5487,11 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       if (retryReason === MAX_TURN_CONTINUATION_RETRY_REASON) {
         if (issueId) {
           await tx.execute(
-            sql`select id from issues where company_id = ${run.companyId} and id = ${issueId} for update`,
+            sql`select id from issues where squad_id = ${run.squadId} and id = ${issueId} for update`,
           );
         } else {
           await tx.execute(
-            sql`select id from heartbeat_runs where company_id = ${run.companyId} and id = ${run.id} for update`,
+            sql`select id from heartbeat_runs where squad_id = ${run.squadId} and id = ${run.id} for update`,
           );
         }
 
@@ -5500,7 +5500,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(heartbeatRuns)
           .where(
             and(
-              eq(heartbeatRuns.companyId, run.companyId),
+              eq(heartbeatRuns.squadId, run.squadId),
               eq(heartbeatRuns.retryOfRunId, run.id),
               eq(heartbeatRuns.scheduledRetryReason, retryReason),
               eq(heartbeatRuns.scheduledRetryAttempt, schedule.attempt),
@@ -5547,7 +5547,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
               executionRunId: issues.executionRunId,
             })
             .from(issues)
-            .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
+            .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId)))
             .then((rows) => rows[0] ?? null);
 
           if (!lockedIssue) {
@@ -5614,7 +5614,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const wakeupRequest = await tx
         .insert(agentWakeupRequests)
         .values({
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           source: "automation",
           triggerDetail: "system",
@@ -5641,7 +5641,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const scheduledRun = await tx
         .insert(heartbeatRuns)
         .values({
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           invocationSource: "automation",
           triggerDetail: "system",
@@ -5676,7 +5676,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             executionLockedAt: now,
             updatedAt: now,
           })
-          .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId), eq(issues.executionRunId, run.id)));
+          .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId), eq(issues.executionRunId, run.id)));
       }
 
       return {
@@ -5791,7 +5791,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }
 
   async function getIssueRetryRun(
-    companyId: string,
+    squadId: string,
     issueId: string,
     statuses: Array<"scheduled_retry" | "queued" | "running" | "cancelled">,
   ) {
@@ -5805,7 +5805,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .innerJoin(agents, eq(heartbeatRuns.agentId, agents.id))
       .where(
         and(
-          eq(heartbeatRuns.companyId, companyId),
+          eq(heartbeatRuns.squadId, squadId),
           inArray(heartbeatRuns.status, statuses),
           sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
           sql`${heartbeatRuns.retryOfRunId} is not null`,
@@ -5840,15 +5840,15 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }) {
     const now = input.now ?? new Date();
     const issue = await db
-      .select({ id: issues.id, companyId: issues.companyId })
+      .select({ id: issues.id, squadId: issues.squadId })
       .from(issues)
       .where(eq(issues.id, input.issueId))
       .then((rows) => rows[0] ?? null);
     if (!issue) throw notFound("Issue not found");
 
-    const scheduled = await getIssueRetryRun(issue.companyId, issue.id, ["scheduled_retry"]);
+    const scheduled = await getIssueRetryRun(issue.squadId, issue.id, ["scheduled_retry"]);
     if (!scheduled) {
-      const alreadyPromoted = await getIssueRetryRun(issue.companyId, issue.id, ["queued", "running"]);
+      const alreadyPromoted = await getIssueRetryRun(issue.squadId, issue.id, ["queued", "running"]);
       if (alreadyPromoted) {
         return {
           outcome: "already_promoted" as const,
@@ -5909,7 +5909,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     });
 
     if (!updated) {
-      const alreadyPromoted = await getIssueRetryRun(issue.companyId, issue.id, ["queued", "running"]);
+      const alreadyPromoted = await getIssueRetryRun(issue.squadId, issue.id, ["queued", "running"]);
       if (alreadyPromoted) {
         return {
           outcome: "already_promoted" as const,
@@ -5940,7 +5940,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     });
 
     const promotion = await promoteScheduledRetryRun(updated, now);
-    const promotedRow = await getIssueRetryRun(issue.companyId, issue.id, ["queued", "running", "cancelled"]);
+    const promotedRow = await getIssueRetryRun(issue.squadId, issue.id, ["queued", "running", "cancelled"]);
     const scheduledRetry = promotedRow
       ? summarizeIssueScheduledRetryRun(promotedRow)
       : summarizeIssueScheduledRetryRun({ run: promotion.run ?? updated, agentName: scheduled.agentName });
@@ -6008,7 +6008,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }
 
   async function listQueuedRunDependencyReadiness(
-    companyId: string,
+    squadId: string,
     queuedRuns: Array<typeof heartbeatRuns.$inferSelect>,
   ) {
     const issueIds = [...new Set(
@@ -6019,7 +6019,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     if (issueIds.length === 0) {
       return new Map<string, Awaited<ReturnType<typeof issuesSvc.getDependencyReadiness>>>();
     }
-    return issuesSvc.listDependencyReadiness(companyId, issueIds);
+    return issuesSvc.listDependencyReadiness(squadId, issueIds);
   }
 
   async function countRunningRunsForAgent(agentId: string) {
@@ -6043,7 +6043,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
 
     const context = parseObject(run.contextSnapshot);
-    const budgetBlock = await budgets.getInvocationBlock(run.companyId, run.agentId, {
+    const budgetBlock = await budgets.getInvocationBlock(run.squadId, run.agentId, {
       issueId: readNonEmptyString(context.issueId),
       projectId: readNonEmptyString(context.projectId),
     });
@@ -6054,9 +6054,9 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     const issueId = readNonEmptyString(context.issueId);
     if (issueId) {
-      const activePauseHold = await treeControlSvc.getActivePauseHoldGate(run.companyId, issueId);
+      const activePauseHold = await treeControlSvc.getActivePauseHoldGate(run.squadId, issueId);
       const treeHoldInteractionWake = activePauseHold && await isVerifiedIssueTreeControlInteractionWake(db, {
-        companyId: run.companyId,
+        squadId: run.squadId,
         issueId,
         agentId: run.agentId,
         runId: run.id,
@@ -6066,7 +6066,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       if (activePauseHold && !treeHoldInteractionWake) {
         await cancelRunInternal(run.id, "Cancelled because issue is held by an active subtree pause hold");
         await logActivity(db, {
-          companyId: run.companyId,
+          squadId: run.squadId,
           actorType: "system",
           actorId: "system",
           agentId: run.agentId,
@@ -6085,7 +6085,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         return null;
       }
 
-      const dependencyReadiness = await issuesSvc.listDependencyReadiness(run.companyId, [issueId]);
+      const dependencyReadiness = await issuesSvc.listDependencyReadiness(run.squadId, [issueId]);
       const readiness = dependencyReadiness.get(issueId);
       const unresolvedBlockerCount = readiness?.unresolvedBlockerCount ?? 0;
       if (unresolvedBlockerCount > 0 && !allowsIssueInteractionWake(context)) {
@@ -6119,7 +6119,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     if (!claimed) return null;
 
     publishLiveEvent({
-      companyId: claimed.companyId,
+      squadId: claimed.squadId,
       type: "heartbeat.run.status",
       payload: {
         runId: claimed.id,
@@ -6155,7 +6155,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .where(
           and(
             eq(issues.id, claimedIssueId),
-            eq(issues.companyId, claimed.companyId),
+            eq(issues.squadId, claimed.squadId),
             // Mention/context runs can touch an issue, but only the current assignee
             // owns the issue execution lock shown as the active run.
             eq(issues.assigneeAgentId, claimed.agentId),
@@ -6205,7 +6205,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       })
       .where(
         and(
-          eq(issues.companyId, run.companyId),
+          eq(issues.squadId, run.squadId),
           eq(issues.id, issueId),
           eq(issues.executionRunId, run.id),
         ),
@@ -6255,7 +6255,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         executionState: issues.executionState,
       })
       .from(issues)
-      .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
+      .where(and(eq(issues.id, issueId), eq(issues.squadId, run.squadId)))
       .then((rows) => rows[0] ?? null);
 
     if (!issue) {
@@ -6411,7 +6411,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       })
       .where(
         and(
-          eq(issues.companyId, run.companyId),
+          eq(issues.squadId, run.squadId),
           eq(issues.id, issueId),
           eq(issues.executionRunId, run.id),
         ),
@@ -6467,7 +6467,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     if (updated) {
       publishLiveEvent({
-        companyId: updated.companyId,
+        squadId: updated.squadId,
         type: "agent.status",
         payload: {
           agentId: updated.id,
@@ -6540,7 +6540,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           description: issues.description,
         })
         .from(issues)
-        .where(and(eq(issues.companyId, run.companyId), eq(issues.id, contextIssueId)))
+        .where(and(eq(issues.squadId, run.squadId), eq(issues.id, contextIssueId)))
         .then((rows) => rows[0] ?? null)
       : null;
 
@@ -6553,7 +6553,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(issueComments)
         .where(
           and(
-            eq(issueComments.companyId, run.companyId),
+            eq(issueComments.squadId, run.squadId),
             eq(issueComments.issueId, contextIssueId),
             eq(issueComments.createdByRunId, run.id),
           ),
@@ -6566,7 +6566,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(issueComments)
         .where(
           and(
-            eq(issueComments.companyId, run.companyId),
+            eq(issueComments.squadId, run.squadId),
             eq(issueComments.issueId, contextIssueId),
             eq(issueComments.createdByRunId, run.id),
           ),
@@ -6591,9 +6591,9 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .innerJoin(issueDocuments, eq(documentRevisions.documentId, issueDocuments.documentId))
         .where(
           and(
-            eq(documentRevisions.companyId, run.companyId),
+            eq(documentRevisions.squadId, run.squadId),
             eq(documentRevisions.createdByRunId, run.id),
-            eq(issueDocuments.companyId, run.companyId),
+            eq(issueDocuments.squadId, run.squadId),
             eq(issueDocuments.issueId, contextIssueId),
             sql`${issueDocuments.key} != ${ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY}`,
           ),
@@ -6609,7 +6609,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(issueWorkProducts)
         .where(
           and(
-            eq(issueWorkProducts.companyId, run.companyId),
+            eq(issueWorkProducts.squadId, run.squadId),
             eq(issueWorkProducts.issueId, contextIssueId),
             eq(issueWorkProducts.createdByRunId, run.id),
           ),
@@ -6622,7 +6622,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         latestAt: sql<Date | null>`max(${workspaceOperations.startedAt})`,
       })
       .from(workspaceOperations)
-      .where(and(eq(workspaceOperations.companyId, run.companyId), eq(workspaceOperations.heartbeatRunId, run.id)));
+      .where(and(eq(workspaceOperations.squadId, run.squadId), eq(workspaceOperations.heartbeatRunId, run.id)));
 
     const [activityStats] = await db
       .select({
@@ -6632,7 +6632,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .from(activityLog)
       .where(
         and(
-          eq(activityLog.companyId, run.companyId),
+          eq(activityLog.squadId, run.squadId),
           eq(activityLog.runId, run.id),
           notInArray(activityLog.action, LIVENESS_BOOKKEEPING_ACTIVITY_ACTIONS),
         ),
@@ -6644,7 +6644,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         latestAt: sql<Date | null>`max(${heartbeatRunEvents.createdAt}) filter (where ${heartbeatRunEvents.eventType} not in ('lifecycle', 'adapter.invoke', 'error'))`,
       })
       .from(heartbeatRunEvents)
-      .where(and(eq(heartbeatRunEvents.companyId, run.companyId), eq(heartbeatRunEvents.runId, run.id)));
+      .where(and(eq(heartbeatRunEvents.squadId, run.squadId), eq(heartbeatRunEvents.runId, run.id)));
 
     return {
       runStatus: run.status,
@@ -6783,7 +6783,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       finalizedRun = await classifyAndPersistRunLiveness(finalizedRun, parseObject(finalizedRun.resultJson)) ?? finalizedRun;
       await releaseEnvironmentLeasesForRun({
         runId: finalizedRun.id,
-        companyId: finalizedRun.companyId,
+        squadId: finalizedRun.squadId,
         agentId: finalizedRun.agentId,
         status: finalizedRun.status,
         failureReason: finalizedRun.error ?? undefined,
@@ -6855,18 +6855,18 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       readNonEmptyString(nestedContext.taskId);
   }
 
-  async function scanSilentActiveRuns(opts?: { now?: Date; companyId?: string }) {
+  async function scanSilentActiveRuns(opts?: { now?: Date; squadId?: string }) {
     return recovery.scanSilentActiveRuns(opts);
   }
 
-  async function reconcileProductivityReviews(opts?: { now?: Date; companyId?: string }) {
+  async function reconcileProductivityReviews(opts?: { now?: Date; squadId?: string }) {
     return productivityReviews.reconcileProductivityReviews(opts);
   }
 
   async function buildRunOutputSilence(
     run: Pick<
       typeof heartbeatRuns.$inferSelect,
-      "id" | "companyId" | "status" | "lastOutputAt" | "lastOutputSeq" | "lastOutputStream" | "processStartedAt" | "startedAt" | "createdAt"
+      "id" | "squadId" | "status" | "lastOutputAt" | "lastOutputSeq" | "lastOutputStream" | "processStartedAt" | "startedAt" | "createdAt"
     >,
     now = new Date(),
   ) {
@@ -6902,7 +6902,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const hasTokenUsage = inputTokens > 0 || outputTokens > 0 || cachedInputTokens > 0;
     const provider = result.provider ?? "unknown";
     const biller = resolveLedgerBiller(result);
-    const ledgerScope = await resolveLedgerScopeForRun(db, agent.companyId, run);
+    const ledgerScope = await resolveLedgerScopeForRun(db, agent.squadId, run);
 
     await db
       .update(agentRuntimeState)
@@ -6922,7 +6922,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     if (additionalCostCents > 0 || hasTokenUsage) {
       const costs = costService(db, budgetHooks);
-      await costs.createEvent(agent.companyId, {
+      await costs.createEvent(agent.squadId, {
         heartbeatRunId: run.id,
         agentId: agent.id,
         issueId: ledgerScope.issueId,
@@ -6959,7 +6959,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .orderBy(asc(heartbeatRuns.createdAt));
       if (queuedRuns.length === 0) return [];
 
-      const dependencyReadiness = await listQueuedRunDependencyReadiness(agent.companyId, queuedRuns);
+      const dependencyReadiness = await listQueuedRunDependencyReadiness(agent.squadId, queuedRuns);
       const queuedIssueIds = [...new Set(
         queuedRuns
           .map((run) => readNonEmptyString(parseObject(run.contextSnapshot).issueId))
@@ -6974,7 +6974,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(issues)
         .where(
           queuedIssueIds.length > 0
-            ? and(eq(issues.companyId, agent.companyId), inArray(issues.id, queuedIssueIds))
+            ? and(eq(issues.squadId, agent.squadId), inArray(issues.id, queuedIssueIds))
             : sql`false`,
         );
       const issueById = new Map(issueRows.map((row) => [row.id, row]));
@@ -7051,9 +7051,9 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const taskKey = deriveTaskKeyWithHeartbeatFallback(context, null);
     const sessionCodec = getAdapterSessionCodec(agent.adapterType);
     const issueId = readNonEmptyString(context.issueId);
-    let issueContext = issueId ? await getIssueExecutionContext(agent.companyId, issueId) : null;
+    let issueContext = issueId ? await getIssueExecutionContext(agent.squadId, issueId) : null;
     const issueDependencyReadiness = issueId
-      ? await issuesSvc.listDependencyReadiness(agent.companyId, [issueId]).then((rows) => rows.get(issueId) ?? null)
+      ? await issuesSvc.listDependencyReadiness(agent.squadId, [issueId]).then((rows) => rows.get(issueId) ?? null)
       : null;
     if (
       issueId &&
@@ -7073,7 +7073,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         if (!isCheckoutConflictError(error)) throw error;
         context[SLAW_HARNESS_CHECKOUT_KEY] = false;
       }
-      issueContext = await getIssueExecutionContext(agent.companyId, issueId);
+      issueContext = await getIssueExecutionContext(agent.squadId, issueId);
     }
     const wakeCommentId = deriveCommentId(context, null);
     const wakeCommentContext =
@@ -7092,7 +7092,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             .where(and(
               eq(issueComments.id, wakeCommentId),
               eq(issueComments.issueId, issueContext.id),
-              eq(issueComments.companyId, agent.companyId),
+              eq(issueComments.squadId, agent.squadId),
             ))
             .then((rows) => rows[0] ?? null)
         : null;
@@ -7116,13 +7116,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             env: projects.env,
           })
           .from(projects)
-          .where(and(eq(projects.id, executionProjectId), eq(projects.companyId, agent.companyId)))
+          .where(and(eq(projects.id, executionProjectId), eq(projects.squadId, agent.squadId)))
           .then((rows) => rows[0] ?? null)
       : null;
     const acceptedPlanWakeRoutingDecision = issueContext
       ? await resolveAcceptedPlanWakeRoutingDecision({
           db,
-          companyId: agent.companyId,
+          squadId: agent.squadId,
           agentId: agent.id,
           issueId,
           acceptedPlanContinuationWake:
@@ -7150,13 +7150,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     } else {
       delete context.acceptedPlanWakeRouting;
     }
-    const routineEnvContext = await getRoutineEnvForExecutionIssue(agent.companyId, issueContext);
+    const routineEnvContext = await getRoutineEnvForExecutionIssue(agent.squadId, issueContext);
     const projectExecutionWorkspacePolicy = gateProjectExecutionWorkspacePolicy(
       parseProjectExecutionWorkspacePolicy(projectContext?.executionWorkspacePolicy),
       isolatedWorkspacesEnabled,
     );
     const taskSession = taskKey
-      ? await getTaskSession(agent.companyId, agent.id, agent.adapterType, taskKey)
+      ? await getTaskSession(agent.squadId, agent.id, agent.adapterType, taskKey)
       : null;
     const resetTaskSession = shouldResetTaskSessionForWake(context);
     const sessionResetReason = describeSessionResetReason(context);
@@ -7215,7 +7215,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
     const slawWakePayload = await buildSlawWakePayload({
       db,
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       contextSnapshot: context,
       continuationSummary,
       issueSummary: issueRef
@@ -7283,7 +7283,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const requestedReusableExecutionWorkspaceConfig = requestedShouldReuseExisting
       ? existingExecutionWorkspace?.config ?? null
       : null;
-    const defaultEnvironment = await environmentsSvc.ensureLocalEnvironment(agent.companyId);
+    const defaultEnvironment = await environmentsSvc.ensureLocalEnvironment(agent.squadId);
     const environmentResolution = resolveExecutionWorkspaceEnvironmentId({
       projectPolicy: projectExecutionWorkspacePolicy,
       issueSettings: issueExecutionWorkspaceSettings,
@@ -7350,7 +7350,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       logger.warn(
         {
           err: error,
-          companyId: agent.companyId,
+          squadId: agent.squadId,
           agentId: agent.id,
           adapterType: agent.adapterType,
           runId: run.id,
@@ -7380,7 +7380,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const configSnapshot = buildExecutionWorkspaceConfigSnapshot(mergedConfig, selectedEnvironmentId);
     const executionRunConfig = stripWorkspaceRuntimeFromExecutionRunConfig(mergedConfig);
     const { resolvedConfig, secretKeys, secretManifest } = await resolveExecutionRunAdapterConfig({
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       agentId: agent.id,
       issueId,
       heartbeatRunId: run.id,
@@ -7400,20 +7400,20 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
     const runScopedMentionedSkillKeys = await resolveRunScopedMentionedSkillKeys({
       db,
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       issueId,
     });
     const effectiveResolvedConfig = applyRunScopedMentionedSkillKeys(
       resolvedConfig,
       runScopedMentionedSkillKeys,
     );
-    const runtimeSkillEntries = await companySkills.listRuntimeSkillEntries(agent.companyId);
+    const runtimeSkillEntries = await squadSkills.listRuntimeSkillEntries(agent.squadId);
     let runtimeConfig = {
       ...effectiveResolvedConfig,
       slawRuntimeSkills: runtimeSkillEntries,
     };
     const workspaceOperationRecorder = workspaceOperationsSvc.createRecorder({
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       heartbeatRunId: run.id,
       executionWorkspaceId: existingExecutionWorkspace?.id ?? null,
     });
@@ -7450,7 +7450,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           agent: {
             id: agent.id,
             name: agent.name,
-            companyId: agent.companyId,
+            squadId: agent.squadId,
           },
           recorder: workspaceOperationRecorder,
         }) ?? buildRealizedExecutionWorkspaceFromPersisted({
@@ -7465,7 +7465,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           agent: {
             id: agent.id,
             name: agent.name,
-            companyId: agent.companyId,
+            squadId: agent.squadId,
           },
           recorder: workspaceOperationRecorder,
         });
@@ -7496,7 +7496,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           })
         : resolvedProjectId
           ? await executionWorkspacesSvc.create({
-              companyId: agent.companyId,
+              squadId: agent.squadId,
               projectId: resolvedProjectId,
               projectWorkspaceId: resolvedProjectWorkspaceId,
               sourceIssueId: issueRef?.id ?? null,
@@ -7612,7 +7612,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
     const persistedEnvironmentId = persistedExecutionWorkspace?.config?.environmentId ?? selectedEnvironmentId;
     const acquiredEnvironment = await envOrchestrator.acquireForRun({
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       selectedEnvironmentId: persistedEnvironmentId,
       defaultEnvironmentId: defaultEnvironment.id,
       adapterType: agent.adapterType,
@@ -7631,7 +7631,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       environment: selectedEnvironment,
       lease: activeEnvironmentLease.lease,
       adapterType: agent.adapterType,
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       issueId: issueId ?? null,
       heartbeatRunId: run.id,
       executionWorkspace,
@@ -7836,7 +7836,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       if (runningAgent) {
         publishLiveEvent({
-          companyId: runningAgent.companyId,
+          squadId: runningAgent.squadId,
           type: "agent.status",
           payload: {
             agentId: runningAgent.id,
@@ -7855,7 +7855,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       });
 
       handle = await runLogStore.begin({
-        companyId: run.companyId,
+        squadId: run.squadId,
         agentId: run.agentId,
         runId,
       });
@@ -7902,7 +7902,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             : sanitizedChunk;
 
         publishLiveEvent({
-          companyId: run.companyId,
+          squadId: run.squadId,
           type: "heartbeat.run.log",
           payload: {
             runId: run.id,
@@ -7935,7 +7935,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         agent: {
           id: agent.id,
           name: agent.name,
-          companyId: agent.companyId,
+          squadId: agent.squadId,
         },
         issue: issueRef,
         workspace: executionWorkspace,
@@ -7994,12 +7994,12 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       const adapter = getServerAdapter(agent.adapterType);
       const authToken = adapter.supportsLocalAgentJwt
-        ? createLocalAgentJwt(agent.id, agent.companyId, agent.adapterType, run.id)
+        ? createLocalAgentJwt(agent.id, agent.squadId, agent.adapterType, run.id)
         : null;
       if (adapter.supportsLocalAgentJwt && !authToken) {
         logger.warn(
           {
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId: agent.id,
             runId: run.id,
             adapterType: agent.adapterType,
@@ -8089,7 +8089,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             agent: {
               id: agent.id,
               name: agent.name,
-              companyId: agent.companyId,
+              squadId: agent.squadId,
             },
             issue: issueRef,
             workspace: executionWorkspace,
@@ -8276,7 +8276,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         const skipRunIssueComment = parseObject(livenessRun.contextSnapshot).skipIssueComment === true;
         if (issueId && outcome === "succeeded" && !skipRunIssueComment) {
           try {
-            const existingRunComment = await findRunIssueComment(livenessRun.id, livenessRun.companyId, issueId);
+            const existingRunComment = await findRunIssueComment(livenessRun.id, livenessRun.squadId, issueId);
             if (!existingRunComment) {
               const issueComment = buildHeartbeatRunIssueComment(persistedResultJson);
               if (issueComment) {
@@ -8382,13 +8382,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         }, normalizedUsage);
         if (taskKey) {
           if (adapterResult.clearSession || (!nextSessionState.params && !nextSessionState.displayId)) {
-            await clearTaskSessions(agent.companyId, agent.id, {
+            await clearTaskSessions(agent.squadId, agent.id, {
               taskKey,
               adapterType: agent.adapterType,
             });
           } else {
             await upsertTaskSession({
-              companyId: agent.companyId,
+              squadId: agent.squadId,
               agentId: agent.id,
               adapterType: agent.adapterType,
               taskKey,
@@ -8466,7 +8466,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
         if (taskKey && (previousSessionParams || previousSessionDisplayId || taskSession)) {
           await upsertTaskSession({
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId: agent.id,
             adapterType: agent.adapterType,
             taskKey,
@@ -8526,7 +8526,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           const latestRun = await getRun(run.id).catch(() => null);
           await releaseEnvironmentLeasesForRun({
             runId: run.id,
-            companyId: run.companyId,
+            squadId: run.squadId,
             agentId: run.agentId,
             status: latestRun?.status,
             failureReason: latestRun?.error ?? undefined,
@@ -8575,11 +8575,11 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const promotionResult = await db.transaction(async (tx) => {
       if (contextIssueId) {
         await tx.execute(
-          sql`select id from issues where company_id = ${run.companyId} and id = ${contextIssueId} for update`,
+          sql`select id from issues where squad_id = ${run.squadId} and id = ${contextIssueId} for update`,
         );
       } else {
         await tx.execute(
-          sql`select id from issues where company_id = ${run.companyId} and execution_run_id = ${run.id} for update`,
+          sql`select id from issues where squad_id = ${run.squadId} and execution_run_id = ${run.id} for update`,
         );
       }
 
@@ -8588,7 +8588,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(issues)
         .where(
           and(
-            eq(issues.companyId, run.companyId),
+            eq(issues.squadId, run.squadId),
             contextIssueId ? eq(issues.id, contextIssueId) : eq(issues.executionRunId, run.id),
           ),
         )
@@ -8615,7 +8615,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           .from(agentWakeupRequests)
           .where(
             and(
-              eq(agentWakeupRequests.companyId, issue.companyId),
+              eq(agentWakeupRequests.squadId, issue.squadId),
               eq(agentWakeupRequests.status, "deferred_issue_execution"),
               sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issue.id}`,
             ),
@@ -8634,7 +8634,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
         if (
           !deferredAgent ||
-          deferredAgent.companyId !== issue.companyId ||
+          deferredAgent.squadId !== issue.squadId ||
           deferredAgent.status === "paused" ||
           deferredAgent.status === "terminated" ||
           deferredAgent.status === "pending_approval"
@@ -8653,9 +8653,9 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
         const deferredPayload = parseObject(deferred.payload);
         const deferredContextSeed = parseObject(deferredPayload[DEFERRED_WAKE_CONTEXT_KEY]);
-        const activePauseHold = await treeControlSvc.getActivePauseHoldGate(issue.companyId, issue.id);
+        const activePauseHold = await treeControlSvc.getActivePauseHoldGate(issue.squadId, issue.id);
         const treeHoldInteractionWake = activePauseHold && await isVerifiedIssueTreeControlInteractionWake(tx, {
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           issueId: issue.id,
           agentId: deferred.agentId,
           contextSnapshot: deferredContextSeed,
@@ -8721,7 +8721,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
               promotedContextSeed.reopenedFrom = reopenedFromStatus;
             }
             reopenedActivity = {
-              companyId: issue.companyId,
+              squadId: issue.squadId,
               actorType: "system",
               actorId: "heartbeat",
               agentId: deferred.agentId,
@@ -8769,7 +8769,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         const newRun = await tx
           .insert(heartbeatRuns)
           .values({
-            companyId: deferredAgent.companyId,
+            squadId: deferredAgent.squadId,
             agentId: deferredAgent.id,
             invocationSource: promotedSource,
             triggerDetail: promotedTriggerDetail,
@@ -8828,7 +8828,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(heartbeatRuns)
         .where(
           and(
-            eq(heartbeatRuns.companyId, issue.companyId),
+            eq(heartbeatRuns.squadId, issue.squadId),
             inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES]),
             sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issue.id}`,
             sql`${heartbeatRuns.id} <> ${run.id}`,
@@ -8840,7 +8840,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         return { kind: "released" as const };
       }
 
-      if (await isAutomaticRecoverySuppressedByPauseHold(db, issue.companyId, issue.id, treeControlSvc)) {
+      if (await isAutomaticRecoverySuppressedByPauseHold(db, issue.squadId, issue.id, treeControlSvc)) {
         return { kind: "released" as const };
       }
 
@@ -8877,7 +8877,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const wakeupRequest = await tx
         .insert(agentWakeupRequests)
         .values({
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           agentId: recoveryAgent.id,
           source: "automation",
           triggerDetail: "system",
@@ -8897,7 +8897,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const queuedRun = await tx
         .insert(heartbeatRuns)
         .values({
-          companyId: issue.companyId,
+          squadId: issue.squadId,
           agentId: recoveryAgent.id,
           invocationSource: "automation",
           triggerDetail: "system",
@@ -8969,7 +8969,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
 
     publishLiveEvent({
-      companyId: promotedRun.companyId,
+      squadId: promotedRun.squadId,
       type: "heartbeat.run.queued",
       payload: {
         runId: promotedRun.id,
@@ -9029,7 +9029,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     const writeSkippedRequest = async (skipReason: string) => {
       await db.insert(agentWakeupRequests).values({
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         agentId,
         source,
         triggerDetail,
@@ -9046,8 +9046,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     let projectId = readNonEmptyString(enrichedContextSnapshot.projectId);
     if (!projectId && issueId) {
       // Look up by either UUID or identifier (e.g. "ENV-13"), but always scope
-      // by companyId so a row from another tenant can never be returned even
-      // when identifiers collide across companies. Guard the UUID arm because
+      // by squadId so a row from another tenant can never be returned even
+      // when identifiers collide across squads. Guard the UUID arm because
       // issues.id is a Postgres uuid column — passing "ENV-13" into eq(issues.id, …)
       // would fail with an invalid-input-syntax cast error before the OR is
       // evaluated.
@@ -9058,7 +9058,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const resolvedIssue = await db
         .select({ id: issues.id, projectId: issues.projectId })
         .from(issues)
-        .where(and(eq(issues.companyId, agent.companyId), idMatch))
+        .where(and(eq(issues.squadId, agent.squadId), idMatch))
         .then((rows) => rows[0] ?? null);
       if (resolvedIssue) {
         projectId = resolvedIssue.projectId ?? null;
@@ -9078,7 +9078,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       enrichedContextSnapshot.projectId = projectId;
     }
 
-    const budgetBlock = await budgets.getInvocationBlock(agent.companyId, agentId, {
+    const budgetBlock = await budgets.getInvocationBlock(agent.squadId, agentId, {
       issueId,
       projectId,
     });
@@ -9110,10 +9110,10 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
 
     if (issueId) {
-      const activePauseHold = await treeControlSvc.getActivePauseHoldGate(agent.companyId, issueId);
+      const activePauseHold = await treeControlSvc.getActivePauseHoldGate(agent.squadId, issueId);
       if (activePauseHold) {
         const treeHoldInteractionWake = await isVerifiedIssueTreeControlInteractionWake(db, {
-          companyId: agent.companyId,
+          squadId: agent.squadId,
           issueId,
           agentId,
           contextSnapshot: enrichedContextSnapshot,
@@ -9124,7 +9124,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         if (!treeHoldInteractionWake) {
           await writeSkippedRequest("issue_tree_hold_active");
           await logActivity(db, {
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             actorType: "system",
             actorId: "system",
             agentId,
@@ -9164,25 +9164,25 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       const outcome = await db.transaction(async (tx) => {
         await tx.execute(
-          sql`select id from issues where id = ${issueId} and company_id = ${agent.companyId} for update`,
+          sql`select id from issues where id = ${issueId} and squad_id = ${agent.squadId} for update`,
         );
 
         const issue = await tx
           .select({
             id: issues.id,
-            companyId: issues.companyId,
+            squadId: issues.squadId,
             status: issues.status,
             assigneeAgentId: issues.assigneeAgentId,
             executionRunId: issues.executionRunId,
             executionAgentNameKey: issues.executionAgentNameKey,
           })
           .from(issues)
-          .where(and(eq(issues.id, issueId), eq(issues.companyId, agent.companyId)))
+          .where(and(eq(issues.id, issueId), eq(issues.squadId, agent.squadId)))
           .then((rows) => rows[0] ?? null);
 
         if (!issue) {
           await tx.insert(agentWakeupRequests).values({
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId,
             source,
             triggerDetail,
@@ -9255,7 +9255,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             .where(eq(heartbeatRunEvents.runId, cancelled.id));
 
           await tx.insert(heartbeatRunEvents).values({
-            companyId: cancelled.companyId,
+            squadId: cancelled.squadId,
             runId: cancelled.id,
             agentId: cancelled.agentId,
             seq: Number(eventSeq?.maxSeq ?? 0) + 1,
@@ -9318,7 +9318,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             .from(heartbeatRuns)
             .where(
               and(
-                eq(heartbeatRuns.companyId, issue.companyId),
+                eq(heartbeatRuns.squadId, issue.squadId),
                 inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES]),
                 sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issue.id}`,
               ),
@@ -9354,7 +9354,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         }
 
         const dependencyReadiness = await issuesSvc.listDependencyReadiness(
-          issue.companyId,
+          issue.squadId,
           [issue.id],
           tx,
         ).then((rows) => rows.get(issue.id) ?? null);
@@ -9373,7 +9373,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           enrichedContextSnapshot.unresolvedBlockerCount = dependencyReadiness.unresolvedBlockerCount;
           enrichedContextSnapshot.unresolvedBlockerSummaries = await listUnresolvedBlockerSummaries(
             tx,
-            issue.companyId,
+            issue.squadId,
             issue.id,
             dependencyReadiness.unresolvedBlockerIssueIds,
           );
@@ -9381,7 +9381,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
         if (!activeExecutionRun && dependencyReadiness && !dependencyReadiness.isDependencyReady && !blockedInteractionWake) {
           await tx.insert(agentWakeupRequests).values({
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId,
             source,
             triggerDetail,
@@ -9432,7 +9432,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
               .then((rows) => rows[0] ?? activeExecutionRun);
 
             await tx.insert(agentWakeupRequests).values({
-              companyId: agent.companyId,
+              squadId: agent.squadId,
               agentId,
               source,
               triggerDetail,
@@ -9461,7 +9461,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
             .from(agentWakeupRequests)
             .where(
               and(
-                eq(agentWakeupRequests.companyId, agent.companyId),
+                eq(agentWakeupRequests.squadId, agent.squadId),
                 eq(agentWakeupRequests.agentId, agentId),
                 eq(agentWakeupRequests.status, "deferred_issue_execution"),
                 sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issue.id}`,
@@ -9498,7 +9498,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
           }
 
           await tx.insert(agentWakeupRequests).values({
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId,
             source,
             triggerDetail,
@@ -9516,7 +9516,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         const wakeupRequest = await tx
           .insert(agentWakeupRequests)
           .values({
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId,
             source,
             triggerDetail,
@@ -9533,7 +9533,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         const newRun = await tx
           .insert(heartbeatRuns)
           .values({
-            companyId: agent.companyId,
+            squadId: agent.squadId,
             agentId,
             invocationSource: source,
             triggerDetail,
@@ -9569,7 +9569,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
       const newRun = outcome.run;
       publishLiveEvent({
-        companyId: newRun.companyId,
+        squadId: newRun.squadId,
         type: "heartbeat.run.queued",
         payload: {
           runId: newRun.id,
@@ -9625,7 +9625,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .then((rows) => rows[0] ?? coalescedTargetRun);
 
       await db.insert(agentWakeupRequests).values({
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         agentId,
         source,
         triggerDetail,
@@ -9645,7 +9645,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const wakeupRequest = await db
       .insert(agentWakeupRequests)
       .values({
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         agentId,
         source,
         triggerDetail,
@@ -9662,7 +9662,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const newRun = await db
       .insert(heartbeatRuns)
       .values({
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         agentId,
         invocationSource: source,
         triggerDetail,
@@ -9684,7 +9684,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .where(eq(agentWakeupRequests.id, wakeupRequest.id));
 
     publishLiveEvent({
-      companyId: newRun.companyId,
+      squadId: newRun.squadId,
       type: "heartbeat.run.queued",
       payload: {
         runId: newRun.id,
@@ -9700,7 +9700,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     return newRun;
   }
 
-  async function listProjectScopedRunIds(companyId: string, projectId: string) {
+  async function listProjectScopedRunIds(squadId: string, projectId: string) {
     const runIssueId = sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'issueId'`;
     const effectiveProjectId = sql<string | null>`coalesce(${heartbeatRuns.contextSnapshot} ->> 'projectId', ${issues.projectId}::text)`;
 
@@ -9710,13 +9710,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .leftJoin(
         issues,
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           sql`${issues.id}::text = ${runIssueId}`,
         ),
       )
       .where(
         and(
-          eq(heartbeatRuns.companyId, companyId),
+          eq(heartbeatRuns.squadId, squadId),
           inArray(heartbeatRuns.status, [...CANCELLABLE_HEARTBEAT_RUN_STATUSES]),
           sql`${effectiveProjectId} = ${projectId}`,
         ),
@@ -9725,7 +9725,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     return rows.map((row) => row.id);
   }
 
-  async function listProjectScopedWakeupIds(companyId: string, projectId: string) {
+  async function listProjectScopedWakeupIds(squadId: string, projectId: string) {
     const wakeIssueId = sql<string | null>`${agentWakeupRequests.payload} ->> 'issueId'`;
     const effectiveProjectId = sql<string | null>`coalesce(${agentWakeupRequests.payload} ->> 'projectId', ${issues.projectId}::text)`;
 
@@ -9735,13 +9735,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .leftJoin(
         issues,
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           sql`${issues.id}::text = ${wakeIssueId}`,
         ),
       )
       .where(
         and(
-          eq(agentWakeupRequests.companyId, companyId),
+          eq(agentWakeupRequests.squadId, squadId),
           inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"]),
           sql`${agentWakeupRequests.runId} is null`,
           sql`${effectiveProjectId} = ${projectId}`,
@@ -9755,13 +9755,13 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const now = new Date();
     let wakeupIds: string[] = [];
 
-    if (scope.scopeType === "company") {
+    if (scope.scopeType === "squad") {
       wakeupIds = await db
         .select({ id: agentWakeupRequests.id })
         .from(agentWakeupRequests)
         .where(
           and(
-            eq(agentWakeupRequests.companyId, scope.companyId),
+            eq(agentWakeupRequests.squadId, scope.squadId),
             inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"]),
             sql`${agentWakeupRequests.runId} is null`,
           ),
@@ -9773,7 +9773,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(agentWakeupRequests)
         .where(
           and(
-            eq(agentWakeupRequests.companyId, scope.companyId),
+            eq(agentWakeupRequests.squadId, scope.squadId),
             eq(agentWakeupRequests.agentId, scope.scopeId),
             inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"]),
             sql`${agentWakeupRequests.runId} is null`,
@@ -9781,7 +9781,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         )
         .then((rows) => rows.map((row) => row.id));
     } else {
-      wakeupIds = await listProjectScopedWakeupIds(scope.companyId, scope.scopeId);
+      wakeupIds = await listProjectScopedWakeupIds(scope.squadId, scope.scopeId);
     }
 
     if (wakeupIds.length === 0) return 0;
@@ -9907,18 +9907,18 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     }
 
     const runIds =
-      scope.scopeType === "company"
+      scope.scopeType === "squad"
         ? await db
           .select({ id: heartbeatRuns.id })
           .from(heartbeatRuns)
           .where(
             and(
-              eq(heartbeatRuns.companyId, scope.companyId),
+              eq(heartbeatRuns.squadId, scope.squadId),
               inArray(heartbeatRuns.status, [...CANCELLABLE_HEARTBEAT_RUN_STATUSES]),
             ),
           )
           .then((rows) => rows.map((row) => row.id))
-        : await listProjectScopedRunIds(scope.companyId, scope.scopeId);
+        : await listProjectScopedRunIds(scope.squadId, scope.scopeId);
 
     for (const runId of runIds) {
       await cancelRunInternal(runId, "Cancelled due to budget pause");
@@ -9928,7 +9928,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   }
 
   return {
-    list: async (companyId: string, agentId?: string, limit?: number) => {
+    list: async (squadId: string, agentId?: string, limit?: number) => {
       const safeForLegacyEncoding = await hasUnsafeTextProjectionDatabase();
       const query = db
         .select(
@@ -9947,8 +9947,8 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         .from(heartbeatRuns)
         .where(
           agentId
-            ? and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.agentId, agentId))
-            : eq(heartbeatRuns.companyId, companyId),
+            ? and(eq(heartbeatRuns.squadId, squadId), eq(heartbeatRuns.agentId, agentId))
+            : eq(heartbeatRuns.squadId, squadId),
         )
         .orderBy(desc(heartbeatRuns.createdAt));
 
@@ -10020,7 +10020,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       const latestTaskSession = await db
         .select()
         .from(agentTaskSessions)
-        .where(and(eq(agentTaskSessions.companyId, agent.companyId), eq(agentTaskSessions.agentId, agent.id)))
+        .where(and(eq(agentTaskSessions.squadId, agent.squadId), eq(agentTaskSessions.agentId, agent.id)))
         .orderBy(desc(agentTaskSessions.updatedAt))
         .limit(1)
         .then((rows) => rows[0] ?? null);
@@ -10038,7 +10038,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       return db
         .select()
         .from(agentTaskSessions)
-        .where(and(eq(agentTaskSessions.companyId, agent.companyId), eq(agentTaskSessions.agentId, agentId)))
+        .where(and(eq(agentTaskSessions.squadId, agent.squadId), eq(agentTaskSessions.agentId, agentId)))
         .orderBy(desc(agentTaskSessions.updatedAt), desc(agentTaskSessions.createdAt));
     },
 
@@ -10048,7 +10048,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       await ensureRuntimeState(agent);
       const taskKey = readNonEmptyString(opts?.taskKey);
       const clearedTaskSessions = await clearTaskSessions(
-        agent.companyId,
+        agent.squadId,
         agent.id,
         taskKey ? { taskKey, adapterType: agent.adapterType } : undefined,
       );
@@ -10107,7 +10107,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     readLog: async (
       runOrLookup: string | {
         id: string;
-        companyId: string;
+        squadId: string;
         logStore: string | null;
         logRef: string | null;
       },

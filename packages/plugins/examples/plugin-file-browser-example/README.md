@@ -28,7 +28,7 @@ This is a repo-local example plugin for development. It should not be assumed to
 
 ## Worker
 
-- **getData `workspaces`** — `ctx.projects.listWorkspaces(projectId, companyId)` (ordered, primary first).
+- **getData `workspaces`** — `ctx.projects.listWorkspaces(projectId, squadId)` (ordered, primary first).
 - **getData `fileList`** — `{ projectId, workspaceId, directoryPath? }` → list directory entries for the workspace root or a subdirectory (Node `fs`).
 - **getData `fileContent`** — `{ projectId, workspaceId, filePath }` → read file content using workspace-relative paths (Node `fs`).
 - **performAction `writeFile`** — `{ projectId, workspaceId, filePath, content }` → write the current editor buffer back to disk.

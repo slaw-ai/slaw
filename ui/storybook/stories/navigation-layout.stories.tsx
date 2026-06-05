@@ -11,13 +11,13 @@ import {
 } from "lucide-react";
 import { BreadcrumbBar } from "@/components/BreadcrumbBar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { CompanySwitcher } from "@/components/CompanySwitcher";
+import { SquadSwitcher } from "@/components/SquadSwitcher";
 import { KeyboardShortcutsCheatsheetContent } from "@/components/KeyboardShortcutsCheatsheet";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { PageTabBar } from "@/components/PageTabBar";
 import { Sidebar } from "@/components/Sidebar";
 import { SidebarAccountMenu } from "@/components/SidebarAccountMenu";
-import { SidebarCompanyMenu } from "@/components/SidebarCompanyMenu";
+import { SidebarSquadMenu } from "@/components/SidebarSquadMenu";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -228,13 +228,13 @@ function NavigationLayoutStories() {
               <div className="slaw-story__label">Navigation and layout</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sidebar, command, tabs, and mobile chrome</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Fixture-backed navigation states for the board shell: company switching, dense work navigation,
+                Fixture-backed navigation states for the board shell: squad switching, dense work navigation,
                 breadcrumbs, command discovery, and mobile entry points.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">fixture backed</Badge>
-              <Badge variant="outline">company scoped</Badge>
+              <Badge variant="outline">squad scoped</Badge>
               <Badge variant="outline">responsive chrome</Badge>
             </div>
           </div>
@@ -247,7 +247,7 @@ function NavigationLayoutStories() {
           </div>
         </Section>
 
-        <Section eyebrow="Menus" title="Account, company, and switcher menus in open state">
+        <Section eyebrow="Menus" title="Account, squad, and switcher menus in open state">
           <div className="grid gap-5 xl:grid-cols-3">
             <div className="relative h-[440px] overflow-hidden border border-border bg-background">
               <div className="absolute bottom-0 left-0 w-72">
@@ -262,11 +262,11 @@ function NavigationLayoutStories() {
             </div>
 
             <div className="h-[260px] overflow-hidden border border-border bg-background p-3">
-              <SidebarCompanyMenu open onOpenChange={() => undefined} />
+              <SidebarSquadMenu open onOpenChange={() => undefined} />
             </div>
 
             <div className="h-[320px] overflow-hidden border border-border bg-background p-4">
-              <CompanySwitcher open onOpenChange={() => undefined} />
+              <SquadSwitcher open onOpenChange={() => undefined} />
             </div>
           </div>
         </Section>
@@ -339,7 +339,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Navigation and layout stories cover the board shell components that orient operators across companies, work surfaces, command search, breadcrumbs, tabs, and mobile navigation.",
+          "Navigation and layout stories cover the board shell components that orient operators across squads, work surfaces, command search, breadcrumbs, tabs, and mobile navigation.",
       },
     },
   },

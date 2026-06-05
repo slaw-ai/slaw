@@ -60,7 +60,7 @@ describe("actorMiddleware authenticated session profile", () => {
       userName: "User One",
       userEmail: "user@example.com",
       source: "session",
-      companyIds: [],
+      squadIds: [],
       memberships: [],
       isInstanceAdmin: false,
     });
@@ -84,7 +84,7 @@ describe("actorMiddleware authenticated session profile", () => {
           },
           returning() {
             return Promise.resolve([{
-              companyId: inserts.at(-1)?.values.companyId,
+              squadId: inserts.at(-1)?.values.squadId,
               membershipRole: inserts.at(-1)?.values.membershipRole,
               status: inserts.at(-1)?.values.status,
             }]);
@@ -112,7 +112,7 @@ describe("actorMiddleware authenticated session profile", () => {
       .set("x-slaw-cloud-user-email", "owner@example.com")
       .set("x-slaw-cloud-user-name", "Stack Owner")
       .set("x-slaw-cloud-stack-id", "stack-alpha")
-      .set("x-slaw-cloud-slaw-company-id", "slaw-stack-alpha")
+      .set("x-slaw-cloud-slaw-squad-id", "slaw-stack-alpha")
       .set("x-slaw-cloud-stack-role", "owner");
 
     expect(res.status).toBe(200);
@@ -125,7 +125,7 @@ describe("actorMiddleware authenticated session profile", () => {
       isInstanceAdmin: true,
       memberships: [expect.objectContaining({ membershipRole: "owner", status: "active" })],
     });
-    expect(res.body.companyIds[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(res.body.squadIds[0]).toMatch(/^[0-9a-f-]{36}$/);
     expect(inserts).toHaveLength(4);
     expect(inserts[0]?.values).toMatchObject({
       id: "global-user-1",

@@ -6,7 +6,7 @@ import {
   AGENT_ICON_NAMES,
   type Agent,
   type AgentRuntimeState,
-  type CompanySecret,
+  type SquadSecret,
   type EnvBinding,
 } from "@slaw/shared";
 import { ActiveAgentsPanel } from "@/components/ActiveAgentsPanel";
@@ -39,7 +39,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { storybookAgents, storybookIssues } from "../fixtures/slawData";
 
-const COMPANY_ID = "company-storybook";
+const SQUAD_ID = "squad-storybook";
 const now = new Date("2026-04-20T12:00:00.000Z");
 const recent = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * 60_000);
 
@@ -226,7 +226,7 @@ const agentManagementAgents: Agent[] = [
 
 const runtimeState: AgentRuntimeState = {
   agentId: "agent-codex",
-  companyId: COMPANY_ID,
+  squadId: SQUAD_ID,
   adapterType: "codex_local",
   sessionId: "session-codex-storybook-management-20260420",
   sessionDisplayId: "codex-storybook-20260420",
@@ -249,10 +249,10 @@ const runtimeState: AgentRuntimeState = {
   updatedAt: recent(2),
 };
 
-const storybookSecrets: CompanySecret[] = [
+const storybookSecrets: SquadSecret[] = [
 	  {
 	    id: "secret-openai",
-	    companyId: COMPANY_ID,
+	    squadId: SQUAD_ID,
 	    key: "openai-api-key",
 	    name: "OPENAI_API_KEY",
 	    provider: "local_encrypted",
@@ -273,7 +273,7 @@ const storybookSecrets: CompanySecret[] = [
   },
 	  {
 	    id: "secret-ops-webhook",
-	    companyId: COMPANY_ID,
+	    squadId: SQUAD_ID,
 	    key: "ops-webhook-token",
 	    name: "OPS_WEBHOOK_TOKEN",
 	    provider: "local_encrypted",
@@ -420,25 +420,25 @@ const liveRuns: LiveRunForIssue[] = [
 function StorybookQueryFixtures({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
-  queryClient.setQueryData(queryKeys.agents.list(COMPANY_ID), agentManagementAgents);
-  queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), storybookSecrets);
+  queryClient.setQueryData(queryKeys.agents.list(SQUAD_ID), agentManagementAgents);
+  queryClient.setQueryData(queryKeys.secrets.list(SQUAD_ID), storybookSecrets);
   queryClient.setQueryData(queryKeys.adapters.all, adapterFixtures);
-  queryClient.setQueryData(queryKeys.issues.list(COMPANY_ID), storybookIssues);
-  queryClient.setQueryData([...queryKeys.issues.list(COMPANY_ID), "with-routine-executions"], storybookIssues);
-  queryClient.setQueryData([...queryKeys.liveRuns(COMPANY_ID), "dashboard"], liveRuns);
+  queryClient.setQueryData(queryKeys.issues.list(SQUAD_ID), storybookIssues);
+  queryClient.setQueryData([...queryKeys.issues.list(SQUAD_ID), "with-routine-executions"], storybookIssues);
+  queryClient.setQueryData([...queryKeys.liveRuns(SQUAD_ID), "dashboard"], liveRuns);
   queryClient.setQueryData(queryKeys.instance.generalSettings, { censorUsernameInLogs: false });
-  queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "codex_local"), [
+  queryClient.setQueryData(queryKeys.agents.adapterModels(SQUAD_ID, "codex_local"), [
     { id: "gpt-5.4", label: "GPT-5.4" },
     { id: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
     { id: "gpt-5.3-codex", label: "GPT-5.3 Codex" },
   ]);
-  queryClient.setQueryData(queryKeys.agents.detectModel(COMPANY_ID, "codex_local"), {
+  queryClient.setQueryData(queryKeys.agents.detectModel(SQUAD_ID, "codex_local"), {
     model: "gpt-5.4",
     provider: "openai",
     source: "config",
     candidates: ["gpt-5.4", "gpt-5.4-mini"],
   });
-  queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "claude_local"), [
+  queryClient.setQueryData(queryKeys.agents.adapterModels(SQUAD_ID, "claude_local"), [
     { id: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
     { id: "claude-opus-4.1", label: "Claude Opus 4.1" },
   ]);
@@ -742,7 +742,7 @@ function AgentManagementStories() {
           </Section>
 
           <Section eyebrow="ActiveAgentsPanel" title="Mixed live, queued, succeeded, and failed agent runs">
-            <ActiveAgentsPanel companyId={COMPANY_ID} />
+            <ActiveAgentsPanel squadId={SQUAD_ID} />
           </Section>
 
           <Section eyebrow="agent-config-primitives" title="Individual text, select, toggle, and JSON field types">

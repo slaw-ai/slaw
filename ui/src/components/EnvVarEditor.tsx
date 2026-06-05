@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { CompanySecret, EnvBinding, SecretVersionSelector } from "@slaw/shared";
+import type { SquadSecret, EnvBinding, SecretVersionSelector } from "@slaw/shared";
 import { AlertCircle, X } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -71,8 +71,8 @@ export function EnvVarEditor({
   onChange,
 }: {
   value: Record<string, EnvBinding>;
-  secrets: CompanySecret[];
-  onCreateSecret: (name: string, value: string) => Promise<CompanySecret>;
+  secrets: SquadSecret[];
+  onCreateSecret: (name: string, value: string) => Promise<SquadSecret>;
   onChange: (env: Record<string, EnvBinding> | undefined) => void;
 }) {
   const [rows, setRows] = useState<Row[]>(() => toRows(value));

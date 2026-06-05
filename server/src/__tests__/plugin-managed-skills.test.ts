@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   activityLog,
-  companies,
-  companySkills,
+  squads,
+  squadSkills,
   createDb,
   pluginManagedResources,
   plugins,
@@ -48,7 +48,7 @@ function manifest(): SlawPluginManifestV1 {
     skills: [{
       skillKey: "wiki-maintainer",
       displayName: "Wiki Maintainer Skill",
-      description: "Use LLM Wiki tools to maintain company knowledge.",
+      description: "Use LLM Wiki tools to maintain squad knowledge.",
       files: [{
         path: "references/wiki-style.md",
         content: "# Wiki style\n\nKeep pages cited and terse.\n",
@@ -75,22 +75,22 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
   afterEach(async () => {
     await db.delete(activityLog);
     await db.delete(pluginManagedResources);
-    await db.delete(companySkills);
+    await db.delete(squadSkills);
     await db.delete(plugins);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
     await tempDb?.cleanup();
   });
 
-  async function seedCompanyAndPlugin(pluginManifest = manifest()) {
-    const companyId = randomUUID();
+  async function seedSquadAndPlugin(pluginManifest = manifest()) {
+    const squadId = randomUUID();
     const pluginId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: issuePrefix(companyId),
+      issuePrefix: issuePrefix(squadId),
     });
     await db.insert(plugins).values({
       id: pluginId,
@@ -106,14 +106,14 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
     const services = buildHostServices(db, pluginId, pluginManifest.id, createEventBusStub(), undefined, {
       manifest: pluginManifest,
     });
-    return { companyId, pluginId, pluginManifest, services };
+    return { squadId, pluginId, pluginManifest, services };
   }
 
-  it("installs and resolves managed company skills by stable resource key", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
+  it("installs and resolves managed squad skills by stable resource key", async () => {
+    const { squadId, services } = await seedSquadAndPlugin();
 
     const created = await services.skills.managedReconcile({
-      companyId,
+      squadId,
       skillKey: "wiki-maintainer",
     });
 
@@ -129,7 +129,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
     });
 
     const resolved = await services.skills.managedGet({
-      companyId,
+      squadId,
       skillKey: "wiki-maintainer",
     });
     expect(resolved.status).toBe("resolved");
@@ -137,7 +137,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
 
     const [binding] = await db.select().from(pluginManagedResources);
     expect(binding).toMatchObject({
-      companyId,
+      squadId,
       resourceKind: "skill",
       resourceKey: "wiki-maintainer",
       resourceId: created.skillId,
@@ -145,38 +145,38 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
   });
 
   it("preserves operator edits during reconcile and restores manifest defaults on reset", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
-    const created = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const { squadId, services } = await seedSquadAndPlugin();
+    const created = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     expect(created.skillId).toBeTruthy();
 
     await db
-      .update(companySkills)
+      .update(squadSkills)
       .set({
         name: "Custom Wiki Skill",
         markdown: "# Custom instructions\n",
         updatedAt: new Date(),
       })
-      .where(eq(companySkills.id, created.skillId!));
+      .where(eq(squadSkills.id, created.skillId!));
 
-    const reconciled = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const reconciled = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     expect(reconciled.status).toBe("resolved");
     expect(reconciled.skill).toMatchObject({
       name: "Custom Wiki Skill",
       markdown: "# Custom instructions\n",
     });
 
-    const reset = await services.skills.managedReset({ companyId, skillKey: "wiki-maintainer" });
+    const reset = await services.skills.managedReset({ squadId, skillKey: "wiki-maintainer" });
     expect(reset.status).toBe("reset");
     expect(reset.skill).toMatchObject({
       name: "Wiki Maintainer Skill",
-      description: "Use LLM Wiki tools to maintain company knowledge.",
+      description: "Use LLM Wiki tools to maintain squad knowledge.",
     });
     expect(reset.skill?.markdown).toContain("key: \"plugin/slaw-managed-skills-test/wiki-maintainer\"");
   });
 
   it("does not rewrite managed skill bindings when defaults are unchanged", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
-    const created = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const { squadId, services } = await seedSquadAndPlugin();
+    const created = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     expect(created.skillId).toBeTruthy();
 
     const [binding] = await db.select().from(pluginManagedResources);
@@ -186,7 +186,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
       .set({ updatedAt: oldUpdatedAt })
       .where(eq(pluginManagedResources.id, binding.id));
 
-    const reconciled = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const reconciled = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     const [bindingAfter] = await db.select().from(pluginManagedResources);
 
     expect(reconciled.status).toBe("resolved");
@@ -194,21 +194,21 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
   });
 
   it("relinks an existing canonical skill without overwriting operator edits", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
-    const created = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const { squadId, services } = await seedSquadAndPlugin();
+    const created = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     expect(created.skillId).toBeTruthy();
 
     await db.delete(pluginManagedResources).where(eq(pluginManagedResources.resourceId, created.skillId!));
     await db
-      .update(companySkills)
+      .update(squadSkills)
       .set({
         name: "Existing Customized Wiki Skill",
         markdown: "# Existing customized instructions\n",
         updatedAt: new Date(),
       })
-      .where(eq(companySkills.id, created.skillId!));
+      .where(eq(squadSkills.id, created.skillId!));
 
-    const relinked = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const relinked = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
 
     expect(relinked.status).toBe("relinked");
     expect(relinked.skillId).toBe(created.skillId);
@@ -220,7 +220,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
 
     const [binding] = await db.select().from(pluginManagedResources);
     expect(binding).toMatchObject({
-      companyId,
+      squadId,
       resourceKind: "skill",
       resourceKey: "wiki-maintainer",
       resourceId: created.skillId,
@@ -228,23 +228,23 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
   });
 
   it("reports drift when installed skill files differ from plugin defaults", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
-    const created = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const { squadId, services } = await seedSquadAndPlugin();
+    const created = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     expect(created.defaultDrift).toBeNull();
 
     await db
-      .update(companySkills)
+      .update(squadSkills)
       .set({
         markdown: "# Custom instructions\n",
         updatedAt: new Date(),
       })
-      .where(eq(companySkills.id, created.skillId!));
+      .where(eq(squadSkills.id, created.skillId!));
 
-    const drifted = await services.skills.managedReconcile({ companyId, skillKey: "wiki-maintainer" });
+    const drifted = await services.skills.managedReconcile({ squadId, skillKey: "wiki-maintainer" });
     expect(drifted.status).toBe("resolved");
     expect(drifted.defaultDrift).toEqual({ changedFiles: ["SKILL.md"] });
 
-    const reset = await services.skills.managedReset({ companyId, skillKey: "wiki-maintainer" });
+    const reset = await services.skills.managedReset({ squadId, skillKey: "wiki-maintainer" });
     expect(reset.defaultDrift).toBeNull();
   });
 
@@ -267,9 +267,9 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
         ].join("\n"),
       },
     ];
-    const { companyId, services } = await seedCompanyAndPlugin(pluginManifest);
+    const { squadId, services } = await seedSquadAndPlugin(pluginManifest);
 
-    const created = await services.skills.managedReconcile({ companyId, skillKey: "markdown-skill" });
+    const created = await services.skills.managedReconcile({ squadId, skillKey: "markdown-skill" });
 
     expect(created.status).toBe("created");
     expect(created.skill).toMatchObject({

@@ -10,7 +10,7 @@ Slaw already treats budgets as a core control-plane responsibility:
 
 Today the system has narrow money-budget behavior:
 
-- companies track `budgetMonthlyCents` and `spentMonthlyCents`
+- squads track `budgetMonthlyCents` and `spentMonthlyCents`
 - agents track `budgetMonthlyCents` and `spentMonthlyCents`
 - `cost_events` ingestion increments those counters
 - when an agent exceeds its monthly budget, the agent is paused
@@ -122,15 +122,15 @@ These should be configurable per policy later, but they are good defaults now.
 
 Budget policies should support:
 
-- `company`
+- `squad`
 - `agent`
 - `project`
 
-This plan focuses on finishing `agent` and `project` first while preserving the existing company budget behavior.
+This plan focuses on finishing `agent` and `project` first while preserving the existing squad budget behavior.
 
 ### Recommended V1.5 Policy Presets
 
-- Company
+- Squad
   - metric: `billed_cents`
   - window: `calendar_month_utc`
 - Agent
@@ -153,7 +153,7 @@ The current codebase is not starting from zero, but the existing shape is too ad
 
 ### What Exists Today
 
-- company and agent monthly cents counters
+- squad and agent monthly cents counters
 - cost ingestion that updates those counters
 - agent hard-stop pause on monthly budget overrun
 
@@ -177,7 +177,7 @@ Create a new table for canonical budget definitions.
 Suggested fields:
 
 - `id`
-- `company_id`
+- `squad_id`
 - `scope_type`
 - `scope_id`
 - `metric`
@@ -194,8 +194,8 @@ Suggested fields:
 
 Notes:
 
-- `scope_type` is one of `company | agent | project`
-- `scope_id` is nullable only for company-level policy if company is implied; otherwise keep it explicit
+- `scope_type` is one of `squad | agent | project`
+- `scope_id` is nullable only for squad-level policy if squad is implied; otherwise keep it explicit
 - `metric` should start with `billed_cents`
 - `window_kind` starts with `calendar_month_utc | lifetime`
 - `amount` is stored in the natural unit of the metric
@@ -207,7 +207,7 @@ Create a durable record of threshold crossings.
 Suggested fields:
 
 - `id`
-- `company_id`
+- `squad_id`
 - `policy_id`
 - `scope_type`
 - `scope_id`
@@ -257,7 +257,7 @@ Slaw must know that a project is budget-paused and enforce it.
 
 ### 4. Compatibility With Existing Budget Columns
 
-Existing company and agent monthly budget columns should remain temporarily for compatibility.
+Existing squad and agent monthly budget columns should remain temporarily for compatibility.
 
 Migration plan:
 
@@ -292,7 +292,7 @@ When a new `cost_event` is written:
 
 1. persist the `cost_event`
 2. identify affected scopes
-   - company
+   - squad
    - agent
    - project
 3. fetch active policies for those scopes
@@ -407,7 +407,7 @@ Later channels:
 
 Add routes for:
 
-- list budget policies for company
+- list budget policies for squad
 - create budget policy
 - update budget policy
 - archive or disable budget policy
@@ -514,7 +514,7 @@ Do not include:
 
 - `subscription_included` cost events with zero billed cents
 - advisory quota rows
-- account-level finance events unless and until company-level financial budgets are added explicitly
+- account-level finance events unless and until squad-level financial budgets are added explicitly
 
 ### Why Not Tokens First
 
@@ -549,7 +549,7 @@ But they should enter only after the money-budget path is stable.
 
 ### Phase 2: Compatibility
 
-- backfill policies from existing company and agent monthly budget columns
+- backfill policies from existing squad and agent monthly budget columns
 - keep legacy columns readable during migration
 
 ### Phase 3: Enforcement
@@ -594,7 +594,7 @@ Required coverage:
 These should be explicitly deferred unless they block implementation:
 
 - Should project budgets also support monthly mode, or is lifetime enough for the first release?
-- Should company-level budgets eventually include `finance_events` such as OpenRouter top-up fees and Bedrock provisioned charges?
+- Should squad-level budgets eventually include `finance_events` such as OpenRouter top-up fees and Bedrock provisioned charges?
 - Should delegated budget editing be limited by org hierarchy in V1, or remain board-only in the UI even if the data model can support delegation later?
 - Do we need "resume once" immediately, or can first approval resolution be "raise budget and resume" plus "keep paused"?
 

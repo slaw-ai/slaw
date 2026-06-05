@@ -404,7 +404,7 @@ export function createPluginWorkerHandle(
   let nextRestartAt: number | null = null;
 
   // Track open stream channels so we can emit synthetic close on crash.
-  // Maps channel → companyId.
+  // Maps channel → squadId.
   const openStreamChannels = new Map<string, string>();
 
   // Shutdown coordination
@@ -510,22 +510,22 @@ export function createPluginWorkerHandle(
   ): PluginInvocationScope | null {
     if (!isRecord(params)) return null;
 
-    const directCompanyId = readNonEmptyString(params.companyId);
-    if (directCompanyId) return { companyId: directCompanyId };
+    const directSquadId = readNonEmptyString(params.squadId);
+    if (directSquadId) return { squadId: directSquadId };
 
     if (method === "performAction" && isRecord(params.actorContext)) {
-      const companyId = readNonEmptyString(params.actorContext.companyId);
-      return companyId ? { companyId } : null;
+      const squadId = readNonEmptyString(params.actorContext.squadId);
+      return squadId ? { squadId } : null;
     }
 
     if (method === "executeTool" && isRecord(params.runContext)) {
-      const companyId = readNonEmptyString(params.runContext.companyId);
-      return companyId ? { companyId } : null;
+      const squadId = readNonEmptyString(params.runContext.squadId);
+      return squadId ? { squadId } : null;
     }
 
     if (method === "onEvent" && isRecord(params.event)) {
-      const companyId = readNonEmptyString(params.event.companyId);
-      return companyId ? { companyId } : null;
+      const squadId = readNonEmptyString(params.event.squadId);
+      return squadId ? { squadId } : null;
     }
 
     return null;
@@ -665,20 +665,20 @@ export function createPluginWorkerHandle(
       notification.method === "streams.close"
     ) {
       const params = (notification.params ?? {}) as Record<string, unknown>;
-      const companyId = String(params.companyId ?? "");
+      const squadId = String(params.squadId ?? "");
       const context = contextForWorkerMessage(notification);
       if (context.invalidInvocationScope) {
         log.warn(
-          { method: notification.method, companyId },
+          { method: notification.method, squadId },
           "dropping plugin stream notification with invalid invocation scope",
         );
         return;
       }
-      const allowedCompanyId = context.invocationScope?.companyId;
-      if (allowedCompanyId && companyId !== allowedCompanyId) {
+      const allowedSquadId = context.invocationScope?.squadId;
+      if (allowedSquadId && squadId !== allowedSquadId) {
         log.warn(
-          { method: notification.method, companyId, allowedCompanyId },
-          "dropping plugin stream notification outside invocation company scope",
+          { method: notification.method, squadId, allowedSquadId },
+          "dropping plugin stream notification outside invocation squad scope",
         );
         return;
       }
@@ -686,7 +686,7 @@ export function createPluginWorkerHandle(
       // Track open channels so we can emit synthetic close on crash
       if (notification.method === "streams.open") {
         const ch = String(params.channel ?? "");
-        if (ch) openStreamChannels.set(ch, companyId);
+        if (ch) openStreamChannels.set(ch, squadId);
       } else if (notification.method === "streams.close") {
         openStreamChannels.delete(String(params.channel ?? ""));
       }
@@ -806,9 +806,9 @@ export function createPluginWorkerHandle(
     // Emit synthetic close for any orphaned stream channels so SSE clients
     // are notified instead of hanging indefinitely.
     if (openStreamChannels.size > 0 && options.onStreamNotification) {
-      for (const [channel, companyId] of openStreamChannels) {
+      for (const [channel, squadId] of openStreamChannels) {
         try {
-          options.onStreamNotification("streams.close", { channel, companyId });
+          options.onStreamNotification("streams.close", { channel, squadId });
         } catch {
           // Best-effort cleanup — don't let it interfere with exit handling
         }

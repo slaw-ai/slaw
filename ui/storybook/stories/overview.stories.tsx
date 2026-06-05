@@ -40,7 +40,7 @@ const storyGroups = [
   {
     title: "Navigation & Layout",
     icon: PanelLeft,
-    stories: "Sidebar, breadcrumbs, command palette, company rail, mobile nav",
+    stories: "Sidebar, breadcrumbs, command palette, squad rail, mobile nav",
     why: "Navigation chrome frames every board interaction and needs mobile parity.",
   },
   {
@@ -95,7 +95,7 @@ const coverageRows = [
   ["Budget controls", "Covered", "Healthy, warning, hard-stop, compact, plain, and editable card variants"],
   ["Execution UX", "Covered", "Run transcript detail, live widget, dashboard card, streaming and settled views"],
   ["Invite UX", "Covered", "Fixture-backed access roles, invite landing, pending, accepted, expired, and error states"],
-  ["Navigation & layout", "Planned", "Sidebar, breadcrumbs, command palette, company rail, mobile nav"],
+  ["Navigation & layout", "Planned", "Sidebar, breadcrumbs, command palette, squad rail, mobile nav"],
   ["Agent management", "Planned", "Agent properties, config forms, icon picker, action buttons, active panel"],
   ["Issue management", "Planned", "Issue lists, filters, properties, documents, run ledger, workspace cards"],
   ["Forms & editors", "Planned", "Markdown editor, JSON schema, env vars, schedule editor, pickers"],

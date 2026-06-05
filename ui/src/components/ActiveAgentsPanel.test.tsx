@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ActiveAgentsPanel } from "./ActiveAgentsPanel";
 
 const mockHeartbeatsApi = vi.hoisted(() => ({
-  liveRunsForCompany: vi.fn(),
+  liveRunsForSquad: vi.fn(),
 }));
 
 const mockIssuesApi = vi.hoisted(() => ({
@@ -95,7 +95,7 @@ function createIssueRun(index: number, issueId: string) {
 function createIssue(id: string, identifier: string, title: string) {
   return {
     id,
-    companyId: "company-1",
+    squadId: "squad-1",
     identifier,
     title,
     description: null,
@@ -122,7 +122,7 @@ describe("ActiveAgentsPanel", () => {
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
-    mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([1, 2, 3, 4, 5].map(createRun));
+    mockHeartbeatsApi.liveRunsForSquad.mockResolvedValue([1, 2, 3, 4, 5].map(createRun));
     mockIssuesApi.get.mockRejectedValue(new Error("Issue not found"));
   });
 
@@ -141,13 +141,13 @@ describe("ActiveAgentsPanel", () => {
     await act(async () => {
       root.render(
         <QueryClientProvider client={queryClient}>
-          <ActiveAgentsPanel companyId="company-1" />
+          <ActiveAgentsPanel squadId="squad-1" />
         </QueryClientProvider>,
       );
     });
     await flushReact();
 
-    expect(mockHeartbeatsApi.liveRunsForCompany).toHaveBeenCalledWith("company-1", {
+    expect(mockHeartbeatsApi.liveRunsForSquad).toHaveBeenCalledWith("squad-1", {
       minCount: 4,
       limit: undefined,
     });
@@ -172,7 +172,7 @@ describe("ActiveAgentsPanel", () => {
       root.render(
         <QueryClientProvider client={queryClient}>
           <ActiveAgentsPanel
-            companyId="company-1"
+            squadId="squad-1"
             minRunCount={50}
             fetchLimit={50}
             cardLimit={50}
@@ -184,7 +184,7 @@ describe("ActiveAgentsPanel", () => {
     });
     await flushReact();
 
-    expect(mockHeartbeatsApi.liveRunsForCompany).toHaveBeenCalledWith("company-1", {
+    expect(mockHeartbeatsApi.liveRunsForSquad).toHaveBeenCalledWith("squad-1", {
       minCount: 50,
       limit: 50,
     });
@@ -196,7 +196,7 @@ describe("ActiveAgentsPanel", () => {
   });
 
   it("loads exact visible run issues so task names render even when the issue list page would miss them", async () => {
-    mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([
+    mockHeartbeatsApi.liveRunsForSquad.mockResolvedValue([
       createIssueRun(1, "65274215-0000-4000-8000-000000000000"),
     ]);
     mockIssuesApi.get.mockResolvedValue(createIssue(
@@ -213,7 +213,7 @@ describe("ActiveAgentsPanel", () => {
     await act(async () => {
       root.render(
         <QueryClientProvider client={queryClient}>
-          <ActiveAgentsPanel companyId="company-1" />
+          <ActiveAgentsPanel squadId="squad-1" />
         </QueryClientProvider>,
       );
     });

@@ -39,7 +39,7 @@ Core fields:
 - cwd (string, optional): default absolute working directory fallback for the agent process.
 - permissionMode (string, optional): defaults to approve-all, meaning ACPX permission requests are auto-approved.
 - nonInteractivePermissions (string, optional): fallback behavior when ACPX cannot ask interactively. Supported values are deny and fail.
-- stateDir (string, optional): ACPX state directory. Defaults to a Slaw-managed company/agent scoped location.
+- stateDir (string, optional): ACPX state directory. Defaults to a Slaw-managed squad/agent scoped location.
 - instructionsFilePath (string, optional): absolute path to a markdown instructions file used by Slaw prompt construction.
 - promptTemplate (string, optional): run prompt template.
 - bootstrapPromptTemplate (string, optional): first-run bootstrap prompt template.

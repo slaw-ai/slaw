@@ -17,7 +17,7 @@ models, and we want to support a spectrum from "zero-config local" to
    doing it.
 3. **Approval gates by default.** Self-registration must require explicit
    approval (by a user or authorized agent) before the new agent can act within
-   a company.
+   a squad.
 
 ---
 
@@ -45,7 +45,7 @@ accepts it back on API requests.
   signature.
 
 **Status:** Partially implemented. The local adapter already passes
-`SLAW_API_URL`, `SLAW_AGENT_ID`, `SLAW_COMPANY_ID`. We need to
+`SLAW_API_URL`, `SLAW_AGENT_ID`, `SLAW_SQUAD_ID`. We need to
 add a `SLAW_API_KEY` (JWT) to the set of injected env vars.
 
 ### Tier 2: CLI-Driven Key Exchange
@@ -75,12 +75,12 @@ agent receives an onboarding URL and negotiates its own registration.
 
 **Approach:**
 
-1. A company admin (user or agent) generates an **invite URL** from Slaw.
+1. A squad admin (user or agent) generates an **invite URL** from Slaw.
 2. The invite URL is delivered to the target agent (via a message, a task
    description, a webhook payload, etc.).
 3. The agent fetches the URL, which returns an **onboarding document**
    containing:
-   - Company identity and context
+   - Squad identity and context
    - The Slaw SKILL.md (or a link to it)
    - What information Slaw needs from the agent (e.g. webhook URL, adapter
      type, capabilities, preferred name/role)
@@ -119,7 +119,7 @@ Response:
 
 ```json
 {
-  "company": {
+  "squad": {
     "id": "...",
     "name": "Acme Corp"
   },
@@ -157,17 +157,17 @@ This goes into a `pending_approval` state until someone approves it.
 
 All self-registration requires approval. This is non-negotiable for security.
 
-- **Default:** A human user in the company must approve.
+- **Default:** A human user in the squad must approve.
 - **Delegated:** A manager-level agent with `approve_agents` permission can
   approve (useful for scaling).
-- **Auto-approve (opt-in):** Companies can configure auto-approval for invite
+- **Auto-approve (opt-in):** Squads can configure auto-approval for invite
   links that were generated with a specific trust level (e.g. "I trust anyone
   with this link"). Even then, the invite link itself is a secret.
 
 On approval, the approver sets:
 
 - `reportsTo` -- who the new agent reports to in the chain of command
-- `role` -- the agent's role within the company
+- `role` -- the agent's role within the squad
 - `budget` -- initial budget allocation
 
 ---
@@ -177,7 +177,7 @@ On approval, the approver sets:
 | Priority | Item                              | Notes                                                                                            |
 | -------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |
 | **P0**   | Local adapter JWT injection       | Unblocks zero-config local auth. Mint a JWT per heartbeat, pass as `SLAW_API_KEY`.          |
-| **P1**   | Invite link + onboarding endpoint | `POST /api/companies/:id/invites`, `GET /api/invite/:token`, `POST /api/invite/:token/register`. |
+| **P1**   | Invite link + onboarding endpoint | `POST /api/squads/:id/invites`, `GET /api/invite/:token`, `POST /api/invite/:token/register`. |
 | **P1**   | Approval flow                     | UI + API for reviewing and approving pending agent registrations.                                |
 | **P2**   | External agent integration        | First real external agent onboarding via invite link.                                            |
 | **P3**   | CLI auth flow                     | `slaw auth login` for developer-managed remote agents.                                      |

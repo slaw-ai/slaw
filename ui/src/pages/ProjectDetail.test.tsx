@@ -20,7 +20,7 @@ const mockIssuesApi = vi.hoisted(() => ({
   update: vi.fn(),
 }));
 const mockAgentsApi = vi.hoisted(() => ({ list: vi.fn() }));
-const mockHeartbeatsApi = vi.hoisted(() => ({ liveRunsForCompany: vi.fn() }));
+const mockHeartbeatsApi = vi.hoisted(() => ({ liveRunsForSquad: vi.fn() }));
 const mockBudgetsApi = vi.hoisted(() => ({ overview: vi.fn(), upsertPolicy: vi.fn() }));
 const mockExecutionWorkspacesApi = vi.hoisted(() => ({ list: vi.fn() }));
 const mockInstanceSettingsApi = vi.hoisted(() => ({ getExperimental: vi.fn() }));
@@ -51,11 +51,11 @@ vi.mock("@/lib/router", () => ({
   useParams: () => ({ projectId: "project-1" }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    companies: [{ id: "company-1", issuePrefix: "PAP" }],
-    selectedCompanyId: "company-1",
-    setSelectedCompanyId: vi.fn(),
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    squads: [{ id: "squad-1", issuePrefix: "PAP" }],
+    selectedSquadId: "squad-1",
+    setSelectedSquadId: vi.fn(),
   }),
 }));
 vi.mock("../context/PanelContext", () => ({ usePanel: () => ({ closePanel: vi.fn() }) }));
@@ -105,7 +105,7 @@ function project(overrides: Partial<Project> = {}): Project {
   const now = new Date("2026-05-01T00:00:00Z");
   return {
     id: "project-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     urlKey: "project-1",
     goalId: null,
     goalIds: [],
@@ -162,7 +162,7 @@ describe("ProjectDetail", () => {
     mockProjectsApi.list.mockResolvedValue([project()]);
     mockIssuesApi.list.mockResolvedValue([]);
     mockAgentsApi.list.mockResolvedValue([]);
-    mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([]);
+    mockHeartbeatsApi.liveRunsForSquad.mockResolvedValue([]);
     mockBudgetsApi.overview.mockResolvedValue({ policies: [] });
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableIsolatedWorkspaces: false });
     mockExecutionWorkspacesApi.list.mockResolvedValue([]);
@@ -204,7 +204,7 @@ describe("ProjectDetail", () => {
 
     expect(container.textContent).toContain("Managed by Missions");
     expect(container.textContent).toContain("Plugin operations");
-    expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+    expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", {
       projectId: "project-1",
       originKindPrefix: "plugin:slaw.missions",
     });

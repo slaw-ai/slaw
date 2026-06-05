@@ -8,8 +8,8 @@ This document summarizes the memory systems referenced in task `PAP-530` and ext
 
 Slaw is not trying to become a single opinionated memory engine. The more useful target is a control-plane memory surface that:
 
-- stays company-scoped
-- lets each company choose a default memory provider
+- stays squad-scoped
+- lets each squad choose a default memory provider
 - lets specific agents override that default
 - keeps provenance back to Slaw runs, issues, comments, and documents
 - records memory-related cost and latency the same way the rest of the control plane records work
@@ -50,7 +50,7 @@ These emphasize local persistence, inspectability, and low operational overhead.
 |---|---|---|---|---|
 | [nuggets](https://github.com/NeoVertex1/nuggets) | local memory engine + messaging gateway | topic-scoped HRR memory with `remember`, `recall`, `forget`, fact promotion into `MEMORY.md` | good example of lightweight local memory and automatic promotion | very specific architecture; not a general multi-tenant service |
 | [mem0](https://github.com/mem0ai/mem0) | hosted + OSS SDK | `add`, `search`, `getAll`, `get`, `update`, `delete`, `deleteAll`; entity partitioning via `user_id`, `agent_id`, `run_id`, `app_id` | closest to a clean provider API with identities and metadata filters | provider owns extraction heavily; Slaw should not assume every backend behaves like mem0 |
-| [AWS Bedrock AgentCore Memory](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory.html) | AWS-managed memory service | explicit short-term and long-term memories, actor/session/event APIs, memory strategies, namespace templates, optional self-managed extraction pipeline | strong example of provider-managed memory with clear scoped ids, retention controls, and standalone API access outside a single agent framework | AWS-hosted and IAM-centric; Slaw would still need its own company/run/comment provenance, cost rollups, and likely a plugin wrapper instead of baking AWS semantics into core |
+| [AWS Bedrock AgentCore Memory](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory.html) | AWS-managed memory service | explicit short-term and long-term memories, actor/session/event APIs, memory strategies, namespace templates, optional self-managed extraction pipeline | strong example of provider-managed memory with clear scoped ids, retention controls, and standalone API access outside a single agent framework | AWS-hosted and IAM-centric; Slaw would still need its own squad/run/comment provenance, cost rollups, and likely a plugin wrapper instead of baking AWS semantics into core |
 | [MemOS](https://github.com/MemTensor/MemOS) | memory OS / framework | unified add-retrieve-edit-delete, memory cubes, multimodal memory, tool memory, async scheduler, feedback/correction | strong source for optional capabilities beyond plain search | much broader than the minimal contract Slaw should standardize first |
 | [supermemory](https://github.com/supermemoryai/supermemory) | hosted memory + context API | `add`, `profile`, `search.memories`, `search.documents`, document upload, settings; automatic profile building and forgetting | strong example of "context bundle" rather than raw search results | heavily productized around its own ontology and hosted flow |
 | [memU](https://github.com/NevaMind-AI/memU) | proactive agent memory framework | file-system metaphor, proactive loop, intent prediction, always-on companion model | good source for when memory should trigger agent behavior, not just retrieval | proactive assistant framing is broader than Slaw's task-centric control plane |
@@ -116,7 +116,7 @@ Slaw needs both direct request/response operations and background maintenance ho
 
 ### Slaw should own these concerns
 
-- binding a provider to a company and optionally overriding it per agent
+- binding a provider to a squad and optionally overriding it per agent
 - mapping Slaw entities into provider scopes
 - provenance back to issue comments, documents, runs, and activity
 - cost / token / latency reporting for memory work
@@ -145,7 +145,7 @@ Slaw does not need to standardize every feature from every provider. It needs:
 Slaw should adopt a two-layer memory model:
 
 1. `Memory binding + control plane layer`
-   Slaw decides which provider key is in effect for a company, agent, or project, and it logs every memory operation with provenance and usage.
+   Slaw decides which provider key is in effect for a squad, agent, or project, and it logs every memory operation with provenance and usage.
 
 2. `Provider adapter layer`
    A built-in or plugin-supplied adapter turns Slaw memory requests into provider-specific calls.

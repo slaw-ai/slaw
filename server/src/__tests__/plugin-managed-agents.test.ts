@@ -9,10 +9,10 @@ import {
   agentConfigRevisions,
   agents,
   approvals,
-  companies,
+  squads,
   createDb,
   pluginEntities,
-  pluginCompanySettings,
+  pluginSquadSettings,
   pluginManagedResources,
   plugins,
 } from "@slaw/db";
@@ -89,25 +89,25 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     await db.delete(activityLog);
     await db.delete(pluginEntities);
     await db.delete(pluginManagedResources);
-    await db.delete(pluginCompanySettings);
+    await db.delete(pluginSquadSettings);
     await db.delete(approvals);
     await db.delete(agents);
     await db.delete(plugins);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
     await tempDb?.cleanup();
   });
 
-  async function seedCompanyAndPlugin(options: { requireApproval?: boolean; manifest?: SlawPluginManifestV1 } = {}) {
-    const companyId = randomUUID();
+  async function seedSquadAndPlugin(options: { requireApproval?: boolean; manifest?: SlawPluginManifestV1 } = {}) {
+    const squadId = randomUUID();
     const pluginId = randomUUID();
     const pluginManifest = options.manifest ?? manifest();
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: issuePrefix(companyId),
+      issuePrefix: issuePrefix(squadId),
       requireBoardApprovalForNewAgents: options.requireApproval ?? false,
     });
     await db.insert(plugins).values({
@@ -124,14 +124,14 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     const services = buildHostServices(db, pluginId, pluginManifest.id, createEventBusStub(), undefined, {
       manifest: pluginManifest,
     });
-    return { companyId, pluginId, pluginManifest, services };
+    return { squadId, pluginId, pluginManifest, services };
   }
 
   it("creates and resolves managed agents by stable resource key", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
+    const { squadId, services } = await seedSquadAndPlugin();
 
     const created = await services.agents.managedReconcile({
-      companyId,
+      squadId,
       agentKey: "wiki-maintainer",
     });
 
@@ -144,7 +144,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     });
 
     const resolved = await services.agents.managedGet({
-      companyId,
+      squadId,
       agentKey: "wiki-maintainer",
     });
     expect(resolved.status).toBe("resolved");
@@ -152,8 +152,8 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
 
     const [binding] = await db.select().from(pluginEntities);
     expect(binding?.entityType).toBe("managed_agent");
-    expect(binding?.scopeKind).toBe("company");
-    expect(binding?.scopeId).toBe(companyId);
+    expect(binding?.scopeKind).toBe("squad");
+    expect(binding?.scopeId).toBe(squadId);
     expect(binding?.data).toMatchObject({
       resourceKind: "agent",
       resourceKey: "wiki-maintainer",
@@ -162,8 +162,8 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   });
 
   it("preserves user edits during reconcile and resets only on explicit reset", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin();
-    const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    const { squadId, services } = await seedSquadAndPlugin();
+    const created = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });
     expect(created.agentId).toBeTruthy();
 
     await db
@@ -175,14 +175,14 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       })
       .where(eq(agents.id, created.agentId!));
 
-    const reconciled = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    const reconciled = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });
     expect(reconciled.status).toBe("resolved");
     expect(reconciled.agent).toMatchObject({
       name: "Knowledge Lead",
       adapterConfig: { command: "custom" },
     });
 
-    const reset = await services.agents.managedReset({ companyId, agentKey: "wiki-maintainer" });
+    const reset = await services.agents.managedReset({ squadId, agentKey: "wiki-maintainer" });
     expect(reset.status).toBe("reset");
     expect(reset.agent).toMatchObject({
       name: "Wiki Maintainer",
@@ -190,7 +190,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     });
   });
 
-  it("creates managed agents with the most-used compatible company adapter", async () => {
+  it("creates managed agents with the most-used compatible squad adapter", async () => {
     const pluginManifest = manifest();
     pluginManifest.agents![0] = {
       ...pluginManifest.agents![0]!,
@@ -198,11 +198,11 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       adapterPreference: ["claude_local", "codex_local"],
       adapterConfig: {},
     };
-    const { companyId, services } = await seedCompanyAndPlugin({ manifest: pluginManifest });
+    const { squadId, services } = await seedSquadAndPlugin({ manifest: pluginManifest });
     await db.insert(agents).values([
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         name: "Codex One",
         role: "engineer",
         status: "idle",
@@ -213,7 +213,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       },
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         name: "Codex Two",
         role: "engineer",
         status: "idle",
@@ -224,7 +224,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       },
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         name: "Claude One",
         role: "engineer",
         status: "idle",
@@ -235,7 +235,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       },
     ]);
 
-    const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    const created = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });
 
     expect(created.status).toBe("created");
     expect(created.agent?.adapterType).toBe("codex_local");
@@ -275,10 +275,10 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
           ].join("\n"),
         },
       };
-      const { companyId, pluginId, services } = await seedCompanyAndPlugin({ manifest: pluginManifest });
+      const { squadId, pluginId, services } = await seedSquadAndPlugin({ manifest: pluginManifest });
       await fs.writeFile(path.join(wikiRoot, "AGENTS.md"), "# Wiki schema\n", "utf8");
-      await db.insert(pluginCompanySettings).values({
-        companyId,
+      await db.insert(pluginSquadSettings).values({
+        squadId,
         pluginId,
         enabled: true,
         settingsJson: {
@@ -293,7 +293,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
         },
       });
 
-      const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+      const created = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });
 
       const instructionsFilePath = created.agent?.adapterConfig.instructionsFilePath;
       expect(typeof instructionsFilePath).toBe("string");
@@ -311,12 +311,12 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     }
   });
 
-  it("repairs a missing binding by relinking a same-company managed agent marker", async () => {
-    const { companyId, pluginId, pluginManifest, services } = await seedCompanyAndPlugin();
+  it("repairs a missing binding by relinking a same-squad managed agent marker", async () => {
+    const { squadId, pluginId, pluginManifest, services } = await seedSquadAndPlugin();
     const agentId = randomUUID();
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "Renamed Wiki Agent",
       role: "engineer",
       status: "idle",
@@ -334,7 +334,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       },
     });
 
-    const relinked = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    const relinked = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });
     expect(relinked.status).toBe("relinked");
     expect(relinked.agentId).toBe(agentId);
 
@@ -343,9 +343,9 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   });
 
   it("respects board approval policy for new managed agents", async () => {
-    const { companyId, services } = await seedCompanyAndPlugin({ requireApproval: true });
+    const { squadId, services } = await seedSquadAndPlugin({ requireApproval: true });
 
-    const created = await services.agents.managedReconcile({ companyId, agentKey: "wiki-maintainer" });
+    const created = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });
 
     expect(created.status).toBe("created");
     expect(created.agent?.status).toBe("pending_approval");

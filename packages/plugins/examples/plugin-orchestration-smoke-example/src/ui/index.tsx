@@ -59,7 +59,7 @@ function SurfaceRows({ data }: { data: SurfaceStatus }) {
 
 export function DashboardWidget({ context }: PluginWidgetProps) {
   const { data, loading, error } = usePluginData<SurfaceStatus>("surface-status", {
-    companyId: context.companyId,
+    squadId: context.squadId,
   });
 
   if (loading) return <div>Loading orchestration smoke status...</div>;
@@ -77,7 +77,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 
 export function IssuePanel({ context }: PluginDetailTabProps) {
   const { data, loading, error, refresh } = usePluginData<SurfaceStatus>("surface-status", {
-    companyId: context.companyId,
+    squadId: context.squadId,
     issueId: context.entityId,
   });
   const initialize = usePluginAction("initialize-smoke");
@@ -93,7 +93,7 @@ export function IssuePanel({ context }: PluginDetailTabProps) {
         <button
           style={buttonStyle}
           onClick={async () => {
-            await initialize({ companyId: context.companyId, issueId: context.entityId });
+            await initialize({ squadId: context.squadId, issueId: context.entityId });
             refresh();
           }}
         >
@@ -118,7 +118,7 @@ export function IssuePanel({ context }: PluginDetailTabProps) {
 
 export function SettingsPage({ context }: PluginSettingsPageProps) {
   const { data, loading, error } = usePluginData<SurfaceStatus>("surface-status", {
-    companyId: context.companyId,
+    squadId: context.squadId,
   });
 
   if (loading) return <div>Loading orchestration smoke settings...</div>;

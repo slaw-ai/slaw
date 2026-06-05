@@ -1,17 +1,17 @@
 import type { AgentAdapterType, JoinRequest, PermissionKey } from "@slaw/shared";
 import { api } from "./client";
 
-export type HumanCompanyRole = "owner" | "admin" | "operator" | "viewer";
+export type HumanSquadRole = "owner" | "admin" | "operator" | "viewer";
 
 type InviteSummary = {
   id: string;
-  companyId: string | null;
-  companyName?: string | null;
-  companyLogoUrl?: string | null;
-  companyBrandColor?: string | null;
-  inviteType: "company_join" | "bootstrap_ceo";
+  squadId: string | null;
+  squadName?: string | null;
+  squadLogoUrl?: string | null;
+  squadBrandColor?: string | null;
+  inviteType: "squad_join" | "bootstrap_squad_lead";
   allowedJoinTypes: "human" | "agent" | "both";
-  humanRole?: HumanCompanyRole | null;
+  humanRole?: HumanSquadRole | null;
   expiresAt: string;
   onboardingPath?: string;
   onboardingUrl?: string;
@@ -79,8 +79,8 @@ type CliAuthChallengeStatus = {
   command: string;
   clientName: string | null;
   requestedAccess: "board" | "instance_admin_required";
-  requestedCompanyId: string | null;
-  requestedCompanyName: string | null;
+  requestedSquadId: string | null;
+  requestedSquadName: string | null;
   approvedAt: string | null;
   cancelledAt: string | null;
   expiresAt: string;
@@ -90,22 +90,22 @@ type CliAuthChallengeStatus = {
   currentUserId: string | null;
 };
 
-type CompanyInviteCreated = {
+type SquadInviteCreated = {
   id: string;
   token: string;
   inviteUrl: string;
   expiresAt: string;
   allowedJoinTypes: "human" | "agent" | "both";
-  humanRole?: HumanCompanyRole | null;
-  companyName?: string | null;
+  humanRole?: HumanSquadRole | null;
+  squadName?: string | null;
   onboardingTextPath?: string;
   onboardingTextUrl?: string;
   inviteMessage?: string | null;
 };
 
-export type CompanyMemberGrant = {
+export type SquadMemberGrant = {
   id: string;
-  companyId: string;
+  squadId: string;
   principalType: "user";
   principalId: string;
   permissionKey: PermissionKey;
@@ -115,55 +115,55 @@ export type CompanyMemberGrant = {
   updatedAt: string;
 };
 
-export type CompanyMember = {
+export type SquadMember = {
   id: string;
-  companyId: string;
+  squadId: string;
   principalType: "user";
   principalId: string;
   status: "pending" | "active" | "suspended" | "archived";
-  membershipRole: HumanCompanyRole | null;
+  membershipRole: HumanSquadRole | null;
   createdAt: string;
   updatedAt: string;
   user: { id: string; email: string | null; name: string | null; image: string | null } | null;
-  grants: CompanyMemberGrant[];
+  grants: SquadMemberGrant[];
   removal?: {
     canArchive: boolean;
     reason: string | null;
   };
 };
 
-export type ArchiveCompanyMemberResponse = {
-  member: CompanyMember;
+export type ArchiveSquadMemberResponse = {
+  member: SquadMember;
   reassignedIssueCount: number;
 };
 
-export type CompanyMembersResponse = {
-  members: CompanyMember[];
+export type SquadMembersResponse = {
+  members: SquadMember[];
   access: {
-    currentUserRole: HumanCompanyRole | null;
+    currentUserRole: HumanSquadRole | null;
     canManageMembers: boolean;
     canInviteUsers: boolean;
     canApproveJoinRequests: boolean;
   };
 };
 
-export type CompanyUserDirectoryEntry = {
+export type SquadUserDirectoryEntry = {
   principalId: string;
   status: "active";
   user: { id: string; email: string | null; name: string | null; image: string | null } | null;
 };
 
-export type CompanyUserDirectoryResponse = {
-  users: CompanyUserDirectoryEntry[];
+export type SquadUserDirectoryResponse = {
+  users: SquadUserDirectoryEntry[];
 };
 
-export type CompanyInviteRecord = {
+export type SquadInviteRecord = {
   id: string;
-  companyId: string | null;
-  companyName: string | null;
-  inviteType: "company_join" | "bootstrap_ceo";
+  squadId: string | null;
+  squadName: string | null;
+  inviteType: "squad_join" | "bootstrap_squad_lead";
   allowedJoinTypes: "human" | "agent" | "both";
-  humanRole: HumanCompanyRole | null;
+  humanRole: HumanSquadRole | null;
   defaultsPayload: Record<string, unknown> | null;
   expiresAt: string;
   invitedByUserId: string | null;
@@ -177,20 +177,20 @@ export type CompanyInviteRecord = {
   relatedJoinRequestId: string | null;
 };
 
-export type CompanyInviteListResponse = {
-  invites: CompanyInviteRecord[];
+export type SquadInviteListResponse = {
+  invites: SquadInviteRecord[];
   nextOffset: number | null;
 };
 
-export type CompanyJoinRequest = JoinRequest & {
+export type SquadJoinRequest = JoinRequest & {
   requesterUser: { id: string; email: string | null; name: string | null; image: string | null } | null;
   approvedByUser: { id: string; email: string | null; name: string | null; image: string | null } | null;
   rejectedByUser: { id: string; email: string | null; name: string | null; image: string | null } | null;
   invite: {
     id: string;
-    inviteType: "company_join" | "bootstrap_ceo";
+    inviteType: "squad_join" | "bootstrap_squad_lead";
     allowedJoinTypes: "human" | "agent" | "both";
-    humanRole: HumanCompanyRole | null;
+    humanRole: HumanSquadRole | null;
     inviteMessage: string | null;
     createdAt: string;
     expiresAt: string;
@@ -206,23 +206,23 @@ export type AdminUserDirectoryEntry = {
   name: string | null;
   image: string | null;
   isInstanceAdmin: boolean;
-  activeCompanyMembershipCount: number;
+  activeSquadMembershipCount: number;
 };
 
-export type UserCompanyAccessEntry = {
+export type UserSquadAccessEntry = {
   id: string;
-  companyId: string;
+  squadId: string;
   principalType: "user";
   principalId: string;
   status: "pending" | "active" | "suspended" | "archived";
-  membershipRole: HumanCompanyRole | "member" | null;
+  membershipRole: HumanSquadRole | "member" | null;
   createdAt: string;
   updatedAt: string;
-  companyName: string | null;
-  companyStatus: "active" | "paused" | "archived" | null;
+  squadName: string | null;
+  squadStatus: "active" | "paused" | "archived" | null;
 };
 
-export type UserCompanyAccessResponse = {
+export type UserSquadAccessResponse = {
   user: {
     id: string;
     email: string | null;
@@ -230,17 +230,17 @@ export type UserCompanyAccessResponse = {
     image: string | null;
     isInstanceAdmin: boolean;
   } | null;
-  companyAccess: UserCompanyAccessEntry[];
+  squadAccess: UserSquadAccessEntry[];
 };
 
 export type CurrentBoardAccess = {
   user: { id: string; email: string | null; name: string | null; image: string | null } | null;
   userId: string;
   isInstanceAdmin: boolean;
-  companyIds: string[];
+  squadIds: string[];
   memberships?: Array<{
-    companyId: string;
-    membershipRole: HumanCompanyRole | "member" | null;
+    squadId: string;
+    membershipRole: HumanSquadRole | "member" | null;
     status: "pending" | "active" | "suspended" | "archived";
   }>;
   source: string;
@@ -261,16 +261,16 @@ function buildInviteListQuery(options: {
 }
 
 export const accessApi = {
-  createCompanyInvite: (
-    companyId: string,
+  createSquadInvite: (
+    squadId: string,
     input: {
       allowedJoinTypes?: "human" | "agent" | "both";
-      humanRole?: HumanCompanyRole | null;
+      humanRole?: HumanSquadRole | null;
       defaultsPayload?: Record<string, unknown> | null;
       agentMessage?: string | null;
     } = {},
   ) =>
-    api.post<CompanyInviteCreated>(`/companies/${companyId}/invites`, input),
+    api.post<SquadInviteCreated>(`/squads/${squadId}/invites`, input),
 
   getInvite: (token: string) => api.get<InviteSummary>(`/invites/${token}`),
   getInviteOnboarding: (token: string) =>
@@ -283,45 +283,45 @@ export const accessApi = {
     ),
 
   listInvites: (
-    companyId: string,
+    squadId: string,
     options: {
       state?: "active" | "revoked" | "accepted" | "expired";
       limit?: number;
       offset?: number;
     } = {},
   ) =>
-    api.get<CompanyInviteListResponse>(
-      `/companies/${companyId}/invites${buildInviteListQuery(options)}`,
+    api.get<SquadInviteListResponse>(
+      `/squads/${squadId}/invites${buildInviteListQuery(options)}`,
     ),
 
   revokeInvite: (inviteId: string) => api.post(`/invites/${inviteId}/revoke`, {}),
 
   listJoinRequests: (
-    companyId: string,
+    squadId: string,
     status: "pending_approval" | "approved" | "rejected" = "pending_approval",
     requestType?: "human" | "agent",
   ) =>
-    api.get<CompanyJoinRequest[]>(
-      `/companies/${companyId}/join-requests?status=${status}${requestType ? `&requestType=${requestType}` : ""}`,
+    api.get<SquadJoinRequest[]>(
+      `/squads/${squadId}/join-requests?status=${status}${requestType ? `&requestType=${requestType}` : ""}`,
     ),
 
-  listMembers: (companyId: string) =>
-    api.get<CompanyMembersResponse>(`/companies/${companyId}/members`),
+  listMembers: (squadId: string) =>
+    api.get<SquadMembersResponse>(`/squads/${squadId}/members`),
 
-  listUserDirectory: (companyId: string) =>
-    api.get<CompanyUserDirectoryResponse>(`/companies/${companyId}/user-directory`),
+  listUserDirectory: (squadId: string) =>
+    api.get<SquadUserDirectoryResponse>(`/squads/${squadId}/user-directory`),
 
   updateMember: (
-    companyId: string,
+    squadId: string,
     memberId: string,
     input: {
-      membershipRole?: HumanCompanyRole | null;
+      membershipRole?: HumanSquadRole | null;
       status?: "pending" | "active" | "suspended";
     },
-  ) => api.patch<CompanyMember>(`/companies/${companyId}/members/${memberId}`, input),
+  ) => api.patch<SquadMember>(`/squads/${squadId}/members/${memberId}`, input),
 
   updateMemberPermissions: (
-    companyId: string,
+    squadId: string,
     memberId: string,
     input: {
       grants: Array<{
@@ -329,23 +329,23 @@ export const accessApi = {
         scope?: Record<string, unknown> | null;
       }>;
     },
-  ) => api.patch<CompanyMember>(`/companies/${companyId}/members/${memberId}/permissions`, input),
+  ) => api.patch<SquadMember>(`/squads/${squadId}/members/${memberId}/permissions`, input),
 
   updateMemberAccess: (
-    companyId: string,
+    squadId: string,
     memberId: string,
     input: {
-      membershipRole?: HumanCompanyRole | null;
+      membershipRole?: HumanSquadRole | null;
       status?: "pending" | "active" | "suspended";
       grants: Array<{
         permissionKey: PermissionKey;
         scope?: Record<string, unknown> | null;
       }>;
     },
-  ) => api.patch<CompanyMember>(`/companies/${companyId}/members/${memberId}/role-and-grants`, input),
+  ) => api.patch<SquadMember>(`/squads/${squadId}/members/${memberId}/role-and-grants`, input),
 
   archiveMember: (
-    companyId: string,
+    squadId: string,
     memberId: string,
     input: {
       reassignment?: {
@@ -353,13 +353,13 @@ export const accessApi = {
         assigneeUserId?: string | null;
       } | null;
     } = {},
-  ) => api.post<ArchiveCompanyMemberResponse>(`/companies/${companyId}/members/${memberId}/archive`, input),
+  ) => api.post<ArchiveSquadMemberResponse>(`/squads/${squadId}/members/${memberId}/archive`, input),
 
-  approveJoinRequest: (companyId: string, requestId: string) =>
-    api.post<JoinRequest>(`/companies/${companyId}/join-requests/${requestId}/approve`, {}),
+  approveJoinRequest: (squadId: string, requestId: string) =>
+    api.post<JoinRequest>(`/squads/${squadId}/join-requests/${requestId}/approve`, {}),
 
-  rejectJoinRequest: (companyId: string, requestId: string) =>
-    api.post<JoinRequest>(`/companies/${companyId}/join-requests/${requestId}/reject`, {}),
+  rejectJoinRequest: (squadId: string, requestId: string) =>
+    api.post<JoinRequest>(`/squads/${squadId}/join-requests/${requestId}/reject`, {}),
 
   claimJoinRequestApiKey: (requestId: string, claimSecret: string) =>
     api.post<{ keyId: string; token: string; agentId: string; createdAt: string }>(
@@ -397,11 +397,11 @@ export const accessApi = {
   demoteInstanceAdmin: (userId: string) =>
     api.post(`/admin/users/${userId}/demote-instance-admin`, {}),
 
-  getUserCompanyAccess: (userId: string) =>
-    api.get<UserCompanyAccessResponse>(`/admin/users/${userId}/company-access`),
+  getUserSquadAccess: (userId: string) =>
+    api.get<UserSquadAccessResponse>(`/admin/users/${userId}/squad-access`),
 
-  setUserCompanyAccess: (userId: string, companyIds: string[]) =>
-    api.put<UserCompanyAccessResponse>(`/admin/users/${userId}/company-access`, { companyIds }),
+  setUserSquadAccess: (userId: string, squadIds: string[]) =>
+    api.put<UserSquadAccessResponse>(`/admin/users/${userId}/squad-access`, { squadIds }),
 
   getCurrentBoardAccess: () =>
     api.get<CurrentBoardAccess>("/cli-auth/me"),

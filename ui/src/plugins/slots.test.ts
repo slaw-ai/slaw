@@ -70,7 +70,7 @@ describe("plugin slot export registration", () => {
     flushSync(() => {
       root.render(createElement(PluginSlotMount, {
         slot,
-        context: { companyId: "company-1", companyPrefix: "PAP" },
+        context: { squadId: "squad-1", squadPrefix: "PAP" },
         missingBehavior: "placeholder",
       }));
     });

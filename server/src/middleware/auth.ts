@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import type { Request, RequestHandler } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@slaw/db";
-import { agentApiKeys, agents, authUsers, companies, companyMemberships, instanceUserRoles } from "@slaw/db";
+import { agentApiKeys, agents, authUsers, squads, squadMemberships, instanceUserRoles } from "@slaw/db";
 import { verifyLocalAgentJwt } from "../agent-auth-jwt.js";
 import type { DeploymentMode } from "@slaw/shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
@@ -67,16 +67,16 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
               .then((rows) => rows[0] ?? null),
             db
               .select({
-                companyId: companyMemberships.companyId,
-                membershipRole: companyMemberships.membershipRole,
-                status: companyMemberships.status,
+                squadId: squadMemberships.squadId,
+                membershipRole: squadMemberships.membershipRole,
+                status: squadMemberships.status,
               })
-              .from(companyMemberships)
+              .from(squadMemberships)
               .where(
                 and(
-                  eq(companyMemberships.principalType, "user"),
-                  eq(companyMemberships.principalId, userId),
-                  eq(companyMemberships.status, "active"),
+                  eq(squadMemberships.principalType, "user"),
+                  eq(squadMemberships.principalId, userId),
+                  eq(squadMemberships.status, "active"),
                 ),
               ),
           ]);
@@ -85,7 +85,7 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
             userId,
             userName: session.user.name ?? null,
             userEmail: session.user.email ?? null,
-            companyIds: memberships.map((row) => row.companyId),
+            squadIds: memberships.map((row) => row.squadId),
             memberships,
             isInstanceAdmin: Boolean(roleRow),
             runId: runIdHeader ?? undefined,
@@ -116,7 +116,7 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
           userId: boardKey.userId,
           userName: access.user?.name ?? null,
           userEmail: access.user?.email ?? null,
-          companyIds: access.companyIds,
+          squadIds: access.squadIds,
           memberships: access.memberships,
           isInstanceAdmin: access.isInstanceAdmin,
           keyId: boardKey.id,
@@ -148,7 +148,7 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
         .where(eq(agents.id, claims.sub))
         .then((rows) => rows[0] ?? null);
 
-      if (!agentRecord || agentRecord.companyId !== claims.company_id) {
+      if (!agentRecord || agentRecord.squadId !== claims.squad_id) {
         next();
         return;
       }
@@ -161,7 +161,7 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
       req.actor = {
         type: "agent",
         agentId: claims.sub,
-        companyId: claims.company_id,
+        squadId: claims.squad_id,
         keyId: undefined,
         runId: runIdHeader || claims.run_id || undefined,
         source: "agent_jwt",
@@ -189,7 +189,7 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
     req.actor = {
       type: "agent",
       agentId: key.agentId,
-      companyId: key.companyId,
+      squadId: key.squadId,
       keyId: key.id,
       runId: runIdHeader || undefined,
       source: "agent_key",
@@ -211,9 +211,9 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
   const stackId = requiredCloudHeader(req, "x-slaw-cloud-stack-id");
   const stackRole = stackMembershipRole(req.header("x-slaw-cloud-stack-role"));
   const userName = req.header("x-slaw-cloud-user-name")?.trim() || userEmail;
-  const slawCompanyId = req.header("x-slaw-cloud-slaw-company-id")?.trim();
-  const companyId = cloudTenantCompanyId(stackId);
-  const companyName = slawCompanyId || `${stackId} Slaw`;
+  const slawSquadId = req.header("x-slaw-cloud-slaw-squad-id")?.trim();
+  const squadId = cloudTenantSquadId(stackId);
+  const squadName = slawSquadId || `${stackId} Slaw`;
   const now = new Date();
 
   await db
@@ -249,24 +249,24 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
     });
 
   await db
-    .insert(companies)
+    .insert(squads)
     .values({
-      id: companyId,
-      name: companyName,
+      id: squadId,
+      name: squadName,
       description: `Provisioned by Slaw Cloud for stack ${stackId}.`,
       status: "active",
       issuePrefix: issuePrefixForCloudStack(stackId),
       updatedAt: now,
     })
     .onConflictDoNothing({
-      target: companies.id,
+      target: squads.id,
     });
 
   const membershipRole = stackRole === "owner" || stackRole === "admin" ? "owner" : stackRole;
   const membership = await db
-    .insert(companyMemberships)
+    .insert(squadMemberships)
     .values({
-      companyId,
+      squadId,
       principalType: "user",
       principalId: userId,
       status: "active",
@@ -275,9 +275,9 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
     })
     .onConflictDoUpdate({
       target: [
-        companyMemberships.companyId,
-        companyMemberships.principalType,
-        companyMemberships.principalId,
+        squadMemberships.squadId,
+        squadMemberships.principalType,
+        squadMemberships.principalId,
       ],
       set: {
         status: "active",
@@ -287,7 +287,7 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
     })
     .returning()
     .then((rows) => rows[0] ?? {
-      companyId,
+      squadId,
       membershipRole,
       status: "active",
     });
@@ -297,9 +297,9 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
     userId,
     userName,
     userEmail,
-    companyIds: [companyId],
+    squadIds: [squadId],
     memberships: [{
-      companyId,
+      squadId,
       membershipRole: membership.membershipRole,
       status: membership.status,
     }],
@@ -329,8 +329,8 @@ function constantTimeStringEqual(left: string, right: string): boolean {
   return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
 }
 
-function cloudTenantCompanyId(stackId: string): string {
-  const bytes = createHash("sha256").update(`slaw-cloud-tenant-company:${stackId}`).digest();
+function cloudTenantSquadId(stackId: string): string {
+  const bytes = createHash("sha256").update(`slaw-cloud-tenant-squad:${stackId}`).digest();
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = bytes.subarray(0, 16).toString("hex");

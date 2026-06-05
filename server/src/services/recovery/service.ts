@@ -12,7 +12,7 @@ import {
   agentWakeupRequests,
   approvals,
   activityLog,
-  companies,
+  squads,
   heartbeatRunEvents,
   heartbeatRunWatchdogDecisions,
   heartbeatRuns,
@@ -371,14 +371,14 @@ function livenessRecoveryLeafIssueId(finding: IssueLivenessFinding) {
 
 function livenessRecoveryLeafFingerprint(finding: IssueLivenessFinding) {
   return buildIssueGraphLivenessLeafKey({
-    companyId: finding.companyId,
+    squadId: finding.squadId,
     state: finding.state,
     leafIssueId: livenessRecoveryLeafIssueId(finding),
   });
 }
 
-function livenessRecoveryLeafKey(companyId: string, state: string, leafIssueId: string) {
-  return buildIssueGraphLivenessLeafKey({ companyId, state, leafIssueId });
+function livenessRecoveryLeafKey(squadId: string, state: string, leafIssueId: string) {
+  return buildIssueGraphLivenessLeafKey({ squadId, state, leafIssueId });
 }
 
 function isUniqueLivenessRecoveryConflict(error: unknown) {
@@ -463,7 +463,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return db.select().from(agents).where(eq(agents.id, agentId)).then((rows) => rows[0] ?? null);
   }
 
-  async function getLatestIssueRun(companyId: string, issueId: string): Promise<LatestIssueRun> {
+  async function getLatestIssueRun(squadId: string, issueId: string): Promise<LatestIssueRun> {
     return db
       .select({
         id: heartbeatRuns.id,
@@ -477,7 +477,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(heartbeatRuns)
       .where(
         and(
-          eq(heartbeatRuns.companyId, companyId),
+          eq(heartbeatRuns.squadId, squadId),
           sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
         ),
       )
@@ -487,7 +487,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
   }
 
   async function summarizeRecentContinuationRetries(
-    companyId: string,
+    squadId: string,
     issueId: string,
     errorCodeToMatch: string | null,
   ) {
@@ -502,7 +502,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(heartbeatRuns)
       .where(
         and(
-          eq(heartbeatRuns.companyId, companyId),
+          eq(heartbeatRuns.squadId, squadId),
           sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
         ),
       )
@@ -534,14 +534,14 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return { consecutive, latestFinishedAt };
   }
 
-  async function hasActiveExecutionPath(companyId: string, issueId: string) {
+  async function hasActiveExecutionPath(squadId: string, issueId: string) {
     const [run, deferredWake] = await Promise.all([
       db
         .select({ id: heartbeatRuns.id })
         .from(heartbeatRuns)
         .where(
           and(
-            eq(heartbeatRuns.companyId, companyId),
+            eq(heartbeatRuns.squadId, squadId),
             inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES]),
             sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
           ),
@@ -553,7 +553,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .from(agentWakeupRequests)
         .where(
           and(
-            eq(agentWakeupRequests.companyId, companyId),
+            eq(agentWakeupRequests.squadId, squadId),
             eq(agentWakeupRequests.status, "deferred_issue_execution"),
             sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}`,
           ),
@@ -565,13 +565,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return Boolean(run || deferredWake);
   }
 
-  async function hasQueuedIssueWake(companyId: string, issueId: string) {
+  async function hasQueuedIssueWake(squadId: string, issueId: string) {
     return db
       .select({ id: agentWakeupRequests.id })
       .from(agentWakeupRequests)
       .where(
         and(
-          eq(agentWakeupRequests.companyId, companyId),
+          eq(agentWakeupRequests.squadId, squadId),
           eq(agentWakeupRequests.status, "queued"),
           sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}`,
         ),
@@ -644,7 +644,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
   }
 
   async function isInvocationBudgetBlocked(issue: typeof issues.$inferSelect, agentId: string) {
-    const budgetBlock = await budgets.getInvocationBlock(issue.companyId, agentId, {
+    const budgetBlock = await budgets.getInvocationBlock(issue.squadId, agentId, {
       issueId: issue.id,
       projectId: issue.projectId,
     });
@@ -655,7 +655,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const candidates = await db
       .select({
         id: issues.id,
-        companyId: issues.companyId,
+        squadId: issues.squadId,
         identifier: issues.identifier,
         status: issues.status,
         createdByAgentId: issues.createdByAgentId,
@@ -673,7 +673,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
             select 1
             from issues blocked_issue
             where blocked_issue.id = ${issueRelations.relatedIssueId}
-              and blocked_issue.company_id = ${issues.companyId}
+              and blocked_issue.squad_id = ${issues.squadId}
               and blocked_issue.status not in ('done', 'cancelled')
           )`,
         ),
@@ -694,7 +694,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         continue;
       }
       const creatorAgent = await getAgent(creatorAgentId);
-      if (!creatorAgent || creatorAgent.companyId !== candidate.companyId || !isAgentInvokable(creatorAgent)) {
+      if (!creatorAgent || creatorAgent.squadId !== candidate.squadId || !isAgentInvokable(creatorAgent)) {
         skipped += 1;
         continue;
       }
@@ -724,7 +724,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       );
 
       await logActivity(db, {
-        companyId: candidate.companyId,
+        squadId: candidate.squadId,
         actorType: "system",
         actorId: "system",
         agentId: null,
@@ -768,16 +768,16 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return { assigned, skipped, issueIds };
   }
 
-  async function getCompanyIssuePrefix(companyId: string) {
+  async function getSquadIssuePrefix(squadId: string) {
     return db
-      .select({ issuePrefix: companies.issuePrefix })
-      .from(companies)
-      .where(eq(companies.id, companyId))
+      .select({ issuePrefix: squads.issuePrefix })
+      .from(squads)
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0]?.issuePrefix ?? "PAP");
   }
 
-  function staleActiveRunOriginFingerprint(companyId: string, runId: string) {
-    return `stale_active_run:${companyId}:${runId}`;
+  function staleActiveRunOriginFingerprint(squadId: string, runId: string) {
+    return `stale_active_run:${squadId}:${runId}`;
   }
 
   function isTerminalIssueStatus(status: string | null | undefined) {
@@ -799,13 +799,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return startedAt ? Math.max(0, now.getTime() - startedAt.getTime()) : null;
   }
 
-  async function latestActiveOutputQuietUntilDecision(companyId: string, runId: string, now = new Date()) {
+  async function latestActiveOutputQuietUntilDecision(squadId: string, runId: string, now = new Date()) {
     const [row] = await db
       .select()
       .from(heartbeatRunWatchdogDecisions)
       .where(
         and(
-          eq(heartbeatRunWatchdogDecisions.companyId, companyId),
+          eq(heartbeatRunWatchdogDecisions.squadId, squadId),
           eq(heartbeatRunWatchdogDecisions.runId, runId),
           inArray(heartbeatRunWatchdogDecisions.decision, ["snooze", "continue"]),
           gt(heartbeatRunWatchdogDecisions.snoozedUntil, now),
@@ -816,7 +816,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return row ?? null;
   }
 
-  async function findOpenStaleRunEvaluation(companyId: string, runId: string) {
+  async function findOpenStaleRunEvaluation(squadId: string, runId: string) {
     const [row] = await db
       .select({
         id: issues.id,
@@ -829,7 +829,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           eq(issues.originKind, STALE_ACTIVE_RUN_EVALUATION_ORIGIN_KIND),
           eq(issues.originId, runId),
           isNull(issues.hiddenAt),
@@ -843,13 +843,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
   async function buildRunOutputSilence(
     run: Pick<
       typeof heartbeatRuns.$inferSelect,
-      "id" | "companyId" | "status" | "lastOutputAt" | "lastOutputSeq" | "lastOutputStream" | "processStartedAt" | "startedAt" | "createdAt"
+      "id" | "squadId" | "status" | "lastOutputAt" | "lastOutputSeq" | "lastOutputStream" | "processStartedAt" | "startedAt" | "createdAt"
     >,
     now = new Date(),
   ): Promise<RunOutputSilenceSummary> {
     const [quietUntilDecision, evaluation] = await Promise.all([
-      latestActiveOutputQuietUntilDecision(run.companyId, run.id, now),
-      findOpenStaleRunEvaluation(run.companyId, run.id),
+      latestActiveOutputQuietUntilDecision(run.squadId, run.id, now),
+      findOpenStaleRunEvaluation(run.squadId, run.id),
     ]);
     const silenceStartedAt = silenceStartedAtForRun(run);
     const silenceAgeMs = run.status === "running" ? silenceAgeMsForRun(run, now) : null;
@@ -910,7 +910,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const [issue] = await db
       .select()
       .from(issues)
-      .where(and(eq(issues.companyId, run.companyId), eq(issues.id, issueId), isNull(issues.hiddenAt)))
+      .where(and(eq(issues.squadId, run.squadId), eq(issues.id, issueId), isNull(issues.hiddenAt)))
       .limit(1);
     return issue ?? null;
   }
@@ -923,7 +923,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     if (!isTerminalIssueStatus(input.sourceIssue.status)) return null;
     const after = input.evidenceAfter ?? input.run.startedAt ?? input.run.createdAt ?? null;
     const activityPredicates = [
-      eq(activityLog.companyId, input.run.companyId),
+      eq(activityLog.squadId, input.run.squadId),
       eq(activityLog.runId, input.run.id),
       eq(activityLog.action, "issue.updated"),
       eq(activityLog.entityType, "issue"),
@@ -974,7 +974,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     },
   ) {
     await db.insert(heartbeatRunEvents).values({
-      companyId: run.companyId,
+      squadId: run.squadId,
       runId: run.id,
       agentId: run.agentId,
       seq: await nextRunEventSeq(run.id),
@@ -1115,7 +1115,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           resultJson,
           updatedAt: input.now,
         })
-        .where(and(eq(heartbeatRuns.id, input.run.id), eq(heartbeatRuns.companyId, input.run.companyId), eq(heartbeatRuns.status, "running")))
+        .where(and(eq(heartbeatRuns.id, input.run.id), eq(heartbeatRuns.squadId, input.run.squadId), eq(heartbeatRuns.status, "running")))
         .returning();
       if (!updatedRun) return null;
 
@@ -1128,7 +1128,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
             error: null,
             updatedAt: input.now,
           })
-          .where(and(eq(agentWakeupRequests.id, input.run.wakeupRequestId), eq(agentWakeupRequests.companyId, input.run.companyId)));
+          .where(and(eq(agentWakeupRequests.id, input.run.wakeupRequestId), eq(agentWakeupRequests.squadId, input.run.squadId)));
       }
 
       await tx
@@ -1142,7 +1142,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .where(
           and(
             eq(issues.id, input.sourceIssue.id),
-            eq(issues.companyId, input.run.companyId),
+            eq(issues.squadId, input.run.squadId),
             eq(issues.executionRunId, input.run.id),
           ),
         );
@@ -1163,10 +1163,10 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       ].join("\n"), { runId: input.run.id });
     }
 
-    const activeRecoveryAction = await recoveryActionsSvc.getActiveForIssue(input.run.companyId, input.sourceIssue.id);
+    const activeRecoveryAction = await recoveryActionsSvc.getActiveForIssue(input.run.squadId, input.sourceIssue.id);
     if (activeRecoveryAction?.kind === "active_run_watchdog") {
       await recoveryActionsSvc.resolveActiveForIssue({
-        companyId: input.run.companyId,
+        squadId: input.run.squadId,
         sourceIssueId: input.sourceIssue.id,
         actionId: activeRecoveryAction.id,
         status: "resolved",
@@ -1178,7 +1178,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const [decision] = await db
       .insert(heartbeatRunWatchdogDecisions)
       .values({
-        companyId: input.run.companyId,
+        squadId: input.run.squadId,
         runId: input.run.id,
         evaluationIssueId: input.existingEvaluation?.id ?? null,
         decision: "dismissed_false_positive",
@@ -1193,7 +1193,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       payload: resultJson.sourceResolvedWatchdogFold,
     });
     await logActivity(db, {
-      companyId: input.run.companyId,
+      squadId: input.run.squadId,
       actorType: "system",
       actorId: "system",
       agentId: input.run.agentId,
@@ -1232,7 +1232,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const roleCandidates = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.companyId, input.run.companyId), inArray(agents.role, ["cto", "ceo"])))
+      .where(and(eq(agents.squadId, input.run.squadId), inArray(agents.role, ["cto", "squad_lead"])))
       .orderBy(sql`case when ${agents.role} = 'cto' then 0 else 1 end`, asc(agents.createdAt));
     candidateIds.push(...roleCandidates.map((agent) => agent.id));
 
@@ -1241,8 +1241,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       if (seen.has(agentId)) continue;
       seen.add(agentId);
       const candidate = await getAgent(agentId);
-      if (!candidate || candidate.companyId !== input.run.companyId) continue;
-      const budgetBlock = await budgets.getInvocationBlock(input.run.companyId, candidate.id, {
+      if (!candidate || candidate.squadId !== input.run.squadId) continue;
+      const budgetBlock = await budgets.getInvocationBlock(input.run.squadId, candidate.id, {
         issueId: input.sourceIssue?.id ?? null,
         projectId: input.sourceIssue?.projectId ?? null,
       });
@@ -1269,14 +1269,14 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           createdAt: heartbeatRunEvents.createdAt,
         })
         .from(heartbeatRunEvents)
-        .where(and(eq(heartbeatRunEvents.companyId, input.run.companyId), eq(heartbeatRunEvents.runId, input.run.id)))
+        .where(and(eq(heartbeatRunEvents.squadId, input.run.squadId), eq(heartbeatRunEvents.runId, input.run.id)))
         .orderBy(desc(heartbeatRunEvents.id))
         .limit(8),
       input.sourceIssue
         ? db
           .select({ id: issues.id, identifier: issues.identifier, title: issues.title, status: issues.status })
           .from(issues)
-          .where(and(eq(issues.companyId, input.run.companyId), eq(issues.parentId, input.sourceIssue.id), isNull(issues.hiddenAt)))
+          .where(and(eq(issues.squadId, input.run.squadId), eq(issues.parentId, input.sourceIssue.id), isNull(issues.hiddenAt)))
           .orderBy(desc(issues.updatedAt))
           .limit(8)
         : Promise.resolve([]),
@@ -1287,7 +1287,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           .innerJoin(issues, eq(issueRelations.issueId, issues.id))
           .where(
             and(
-              eq(issueRelations.companyId, input.run.companyId),
+              eq(issueRelations.squadId, input.run.squadId),
               eq(issueRelations.relatedIssueId, input.sourceIssue.id),
               eq(issueRelations.type, "blocks"),
             ),
@@ -1410,7 +1410,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     run: typeof heartbeatRuns.$inferSelect;
   }) {
     if (!input.sourceIssue || ["done", "cancelled"].includes(input.sourceIssue.status)) return false;
-    const blockerIds = await existingBlockerIssueIds(input.sourceIssue.companyId, input.sourceIssue.id);
+    const blockerIds = await existingBlockerIssueIds(input.sourceIssue.squadId, input.sourceIssue.id);
     if (blockerIds.includes(input.evaluationIssue.id)) return false;
     const nextBlockerIds = [...blockerIds, input.evaluationIssue.id];
     await issuesSvc.update(input.sourceIssue.id, {
@@ -1426,7 +1426,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       "This blocks the source issue on the explicit review task without cancelling the active process.",
     ].join("\n"), { runId: input.run.id });
     await logActivity(db, {
-      companyId: input.sourceIssue.companyId,
+      squadId: input.sourceIssue.squadId,
       actorType: "system",
       actorId: "system",
       agentId: null,
@@ -1448,12 +1448,12 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     now: Date;
   }) {
     const runningAgent = await getAgent(input.run.agentId);
-    if (!runningAgent || runningAgent.companyId !== input.run.companyId) return { kind: "skipped" as const };
+    if (!runningAgent || runningAgent.squadId !== input.run.squadId) return { kind: "skipped" as const };
     const sourceIssue = await resolveStaleRunSourceIssue(input.run);
-    const existing = await findOpenStaleRunEvaluation(input.run.companyId, input.run.id);
+    const existing = await findOpenStaleRunEvaluation(input.run.squadId, input.run.id);
     if (sourceIssue && isRecoveryOriginIssue(sourceIssue)) {
       await logActivity(db, {
-        companyId: input.run.companyId,
+        squadId: input.run.squadId,
         actorType: "system",
         actorId: "system",
         agentId: input.run.agentId,
@@ -1491,7 +1491,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         });
       }
     }
-    const prefix = await getCompanyIssuePrefix(input.run.companyId);
+    const prefix = await getSquadIssuePrefix(input.run.squadId);
     const evidence = await collectStaleRunEvidence({
       run: input.run,
       runningAgent,
@@ -1541,7 +1541,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     });
     let evaluation: Awaited<ReturnType<typeof issuesSvc.create>>;
     try {
-      evaluation = await issuesSvc.create(input.run.companyId, {
+      evaluation = await issuesSvc.create(input.run.squadId, {
         title: `Review silent active run for ${runningAgent.name}`,
         description,
         status: "todo",
@@ -1555,17 +1555,17 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         originKind: STALE_ACTIVE_RUN_EVALUATION_ORIGIN_KIND,
         originId: input.run.id,
         originRunId: input.run.id,
-        originFingerprint: staleActiveRunOriginFingerprint(input.run.companyId, input.run.id),
+        originFingerprint: staleActiveRunOriginFingerprint(input.run.squadId, input.run.id),
       });
     } catch (error) {
       if (!isUniqueStaleRunEvaluationConflict(error)) throw error;
-      const raced = await findOpenStaleRunEvaluation(input.run.companyId, input.run.id);
+      const raced = await findOpenStaleRunEvaluation(input.run.squadId, input.run.id);
       if (!raced) throw error;
       return { kind: "existing" as const, evaluationIssueId: raced.id };
     }
 
     await logActivity(db, {
-      companyId: input.run.companyId,
+      squadId: input.run.squadId,
       actorType: "system",
       actorId: "system",
       agentId: ownerAgentId,
@@ -1613,7 +1613,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return { kind: "created" as const, evaluationIssueId: evaluation.id };
   }
 
-  async function scanSilentActiveRuns(opts?: { now?: Date; companyId?: string }) {
+  async function scanSilentActiveRuns(opts?: { now?: Date; squadId?: string }) {
     const now = opts?.now ?? new Date();
     const suspicionBefore = new Date(now.getTime() - ACTIVE_RUN_OUTPUT_SUSPICION_THRESHOLD_MS);
     const candidates = await db
@@ -1621,7 +1621,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(heartbeatRuns)
       .where(
         and(
-          opts?.companyId ? eq(heartbeatRuns.companyId, opts.companyId) : undefined,
+          opts?.squadId ? eq(heartbeatRuns.squadId, opts.squadId) : undefined,
           eq(heartbeatRuns.status, "running"),
           sql`coalesce(${heartbeatRuns.lastOutputAt}, ${heartbeatRuns.processStartedAt}, ${heartbeatRuns.startedAt}, ${heartbeatRuns.createdAt}) <= ${suspicionBefore.toISOString()}::timestamptz`,
         ),
@@ -1641,7 +1641,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     };
 
     for (const run of candidates) {
-      if (await latestActiveOutputQuietUntilDecision(run.companyId, run.id, now)) {
+      if (await latestActiveOutputQuietUntilDecision(run.squadId, run.id, now)) {
         result.snoozed += 1;
         continue;
       }
@@ -1679,7 +1679,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     let evaluationIssue: {
       id: string;
       assigneeAgentId: string | null;
-      companyId: string;
+      squadId: string;
       originKind: string;
       originId: string | null;
       hiddenAt: Date | null;
@@ -1690,14 +1690,14 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .select({
           id: issues.id,
           assigneeAgentId: issues.assigneeAgentId,
-          companyId: issues.companyId,
+          squadId: issues.squadId,
           originKind: issues.originKind,
           originId: issues.originId,
           hiddenAt: issues.hiddenAt,
           status: issues.status,
         })
         .from(issues)
-        .where(and(eq(issues.id, input.evaluationIssueId), eq(issues.companyId, run.companyId)))
+        .where(and(eq(issues.id, input.evaluationIssueId), eq(issues.squadId, run.squadId)))
         .then((rows) => rows[0] ?? null);
       if (!evaluationIssue) throw notFound("Evaluation issue not found");
     }
@@ -1734,13 +1734,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         : null;
     if (createdByRunId) {
       const [creatorRun] = await db
-        .select({ id: heartbeatRuns.id, companyId: heartbeatRuns.companyId, agentId: heartbeatRuns.agentId })
+        .select({ id: heartbeatRuns.id, squadId: heartbeatRuns.squadId, agentId: heartbeatRuns.agentId })
         .from(heartbeatRuns)
         .where(eq(heartbeatRuns.id, createdByRunId))
         .limit(1);
-      const sameCompany = creatorRun?.companyId === run.companyId;
+      const sameSquad = creatorRun?.squadId === run.squadId;
       const sameAgent = input.actor.type !== "agent" || creatorRun?.agentId === input.actor.agentId;
-      if (!creatorRun || !sameCompany || !sameAgent) {
+      if (!creatorRun || !sameSquad || !sameAgent) {
         throw forbidden("createdByRunId is not valid for this watchdog decision actor");
       }
     }
@@ -1757,7 +1757,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const [row] = await db
       .insert(heartbeatRunWatchdogDecisions)
       .values({
-        companyId: run.companyId,
+        squadId: run.squadId,
         runId: run.id,
         evaluationIssueId: input.evaluationIssueId ?? null,
         decision: input.decision,
@@ -1770,7 +1770,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .returning();
 
     await logActivity(db, {
-      companyId: run.companyId,
+      squadId: run.squadId,
       actorType: input.actor.type === "agent" ? "agent" : "user",
       actorId: input.actor.type === "agent"
         ? input.actor.agentId ?? "agent"
@@ -1794,13 +1794,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return row;
   }
 
-  async function findOpenStrandedIssueRecoveryIssue(companyId: string, sourceIssueId: string) {
+  async function findOpenStrandedIssueRecoveryIssue(squadId: string, sourceIssueId: string) {
     return db
       .select()
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           eq(issues.originKind, STRANDED_ISSUE_RECOVERY_ORIGIN_KIND),
           eq(issues.originId, sourceIssueId),
           isNull(issues.hiddenAt),
@@ -1822,7 +1822,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       ? await db
         .select({ id: issues.id, identifier: issues.identifier })
         .from(issues)
-        .where(and(eq(issues.companyId, issue.companyId), eq(issues.id, sourceIssueId)))
+        .where(and(eq(issues.squadId, issue.squadId), eq(issues.id, sourceIssueId)))
         .then((rows) => rows[0] ?? null)
       : null;
     const sourceLine = sourceIssue
@@ -1854,7 +1854,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const roleCandidates = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.companyId, issue.companyId), inArray(agents.role, ["cto", "ceo"])))
+      .where(and(eq(agents.squadId, issue.squadId), inArray(agents.role, ["cto", "squad_lead"])))
       .orderBy(sql`case when ${agents.role} = 'cto' then 0 else 1 end`, asc(agents.createdAt));
     candidateIds.push(...roleCandidates.map((agent) => agent.id));
     if (issue.assigneeAgentId) candidateIds.push(issue.assigneeAgentId);
@@ -1864,8 +1864,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       if (seen.has(agentId)) continue;
       seen.add(agentId);
       const candidate = await getAgent(agentId);
-      if (!candidate || candidate.companyId !== issue.companyId) continue;
-      const budgetBlock = await budgets.getInvocationBlock(issue.companyId, candidate.id, {
+      if (!candidate || candidate.squadId !== issue.squadId) continue;
+      const budgetBlock = await budgets.getInvocationBlock(issue.squadId, candidate.id, {
         issueId: issue.id,
         projectId: issue.projectId,
       });
@@ -1956,18 +1956,18 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
   }) {
     if (isStrandedIssueRecoveryIssue(input.issue)) return null;
 
-    const existing = await findOpenStrandedIssueRecoveryIssue(input.issue.companyId, input.issue.id);
+    const existing = await findOpenStrandedIssueRecoveryIssue(input.issue.squadId, input.issue.id);
     if (existing) return existing;
 
     const ownerAgentId = await resolveStrandedIssueRecoveryOwnerAgentId(input.issue);
     if (!ownerAgentId) return null;
 
-    const prefix = await getCompanyIssuePrefix(input.issue.companyId);
+    const prefix = await getSquadIssuePrefix(input.issue.squadId);
     const sourceAssignee = input.issue.assigneeAgentId ? await getAgent(input.issue.assigneeAgentId) : null;
     const recoveryCause = input.recoveryCause ?? "stranded_assigned_issue";
     let recovery: Awaited<ReturnType<typeof issuesSvc.create>>;
     try {
-      recovery = await issuesSvc.create(input.issue.companyId, {
+      recovery = await issuesSvc.create(input.issue.squadId, {
         title: recoveryCause === SUCCESSFUL_RUN_MISSING_STATE_REASON
           ? `Recover missing next step ${input.issue.identifier ?? input.issue.title}`
           : `Recover stalled issue ${input.issue.identifier ?? input.issue.title}`,
@@ -1992,7 +1992,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         originRunId: input.latestRun?.id ?? null,
         originFingerprint: [
           STRANDED_ISSUE_RECOVERY_ORIGIN_KIND,
-          input.issue.companyId,
+          input.issue.squadId,
           input.issue.id,
           recoveryCause,
           input.latestRun?.id ?? "no-run",
@@ -2002,7 +2002,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       });
     } catch (error) {
       if (!isUniqueStrandedIssueRecoveryConflict(error)) throw error;
-      const raced = await findOpenStrandedIssueRecoveryIssue(input.issue.companyId, input.issue.id);
+      const raced = await findOpenStrandedIssueRecoveryIssue(input.issue.squadId, input.issue.id);
       if (!raced) throw error;
       return raced;
     }
@@ -2045,7 +2045,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
   }) {
     return [
       "source_scoped_recovery",
-      input.issue.companyId,
+      input.issue.squadId,
       input.issue.id,
       input.recoveryCause,
     ].join(":");
@@ -2088,7 +2088,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const ownerAgentId = await resolveStrandedIssueRecoveryOwnerAgentId(input.issue);
     const now = new Date();
     const action = await recoveryActionsSvc.upsertSourceScoped({
-      companyId: input.issue.companyId,
+      squadId: input.issue.squadId,
       sourceIssueId: input.issue.id,
       kind: strandedRecoveryActionKind(recoveryCause),
       ownerType: ownerAgentId ? "agent" : "board",
@@ -2198,7 +2198,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const updated = await issuesSvc.update(input.issue.id, { status: "blocked" });
     if (!updated) return null;
 
-    const prefix = await getCompanyIssuePrefix(input.issue.companyId);
+    const prefix = await getSquadIssuePrefix(input.issue.squadId);
     await issuesSvc.addComment(
       input.issue.id,
       buildRecoveryIssueInPlaceEscalationComment({
@@ -2211,7 +2211,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     );
 
     await logActivity(db, {
-      companyId: input.issue.companyId,
+      squadId: input.issue.squadId,
       actorType: "system",
       actorId: "system",
       agentId: null,
@@ -2235,13 +2235,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return updated;
   }
 
-  async function existingBlockerIssueIds(companyId: string, issueId: string) {
+  async function existingBlockerIssueIds(squadId: string, issueId: string) {
     return db
       .select({ blockerIssueId: issueRelations.issueId })
       .from(issueRelations)
       .where(
         and(
-          eq(issueRelations.companyId, companyId),
+          eq(issueRelations.squadId, squadId),
           eq(issueRelations.relatedIssueId, issueId),
           eq(issueRelations.type, "blocks"),
         ),
@@ -2249,20 +2249,20 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .then((rows) => rows.map((row) => row.blockerIssueId));
   }
 
-  async function existingUnresolvedBlockerIssueIds(companyId: string, issueId: string) {
+  async function existingUnresolvedBlockerIssueIds(squadId: string, issueId: string) {
     return db
       .select({ blockerIssueId: issueRelations.issueId })
       .from(issueRelations)
       .innerJoin(
         issues,
         and(
-          eq(issues.companyId, issueRelations.companyId),
+          eq(issues.squadId, issueRelations.squadId),
           eq(issues.id, issueRelations.issueId),
         ),
       )
       .where(
         and(
-          eq(issueRelations.companyId, companyId),
+          eq(issueRelations.squadId, squadId),
           eq(issueRelations.relatedIssueId, issueId),
           eq(issueRelations.type, "blocks"),
           notInArray(issues.status, ["done", "cancelled"]),
@@ -2295,7 +2295,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       recoveryCause,
       successfulRunHandoffEvidence: input.successfulRunHandoffEvidence,
     });
-    const blockerIds = await existingUnresolvedBlockerIssueIds(input.issue.companyId, input.issue.id);
+    const blockerIds = await existingUnresolvedBlockerIssueIds(input.issue.squadId, input.issue.id);
     const updated = await issuesSvc.update(input.issue.id, {
       status: "blocked",
       blockedByIssueIds: blockerIds,
@@ -2303,7 +2303,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     });
     if (!updated) return null;
 
-    const prefix = await getCompanyIssuePrefix(input.issue.companyId);
+    const prefix = await getSquadIssuePrefix(input.issue.squadId);
     const recoveryOwner = recoveryAction.ownerAgentId ? await getAgent(recoveryAction.ownerAgentId) : null;
     const sourceAssignee = input.issue.assigneeAgentId ? await getAgent(input.issue.assigneeAgentId) : null;
     let notice: SuccessfulRunHandoffNotice | null = null;
@@ -2372,7 +2372,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     }
 
     await logActivity(db, {
-      companyId: input.issue.companyId,
+      squadId: input.issue.squadId,
       actorType: "system",
       actorId: "system",
       agentId: null,
@@ -2467,22 +2467,22 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       }
 
       const agent = await getAgent(agentId);
-      if (!agent || agent.companyId !== issue.companyId || !isAgentInvokable(agent)) {
+      if (!agent || agent.squadId !== issue.squadId || !isAgentInvokable(agent)) {
         result.skipped += 1;
         continue;
       }
 
-      if (await hasActiveExecutionPath(issue.companyId, issue.id)) {
+      if (await hasActiveExecutionPath(issue.squadId, issue.id)) {
         result.skipped += 1;
         continue;
       }
 
-      if (await isAutomaticRecoverySuppressedByPauseHold(db, issue.companyId, issue.id, treeControlSvc)) {
+      if (await isAutomaticRecoverySuppressedByPauseHold(db, issue.squadId, issue.id, treeControlSvc)) {
         result.skipped += 1;
         continue;
       }
 
-      const latestRun = await getLatestIssueRun(issue.companyId, issue.id);
+      const latestRun = await getLatestIssueRun(issue.squadId, issue.id);
       if (isStrandedIssueRecoveryIssue(issue) && isUnsuccessfulTerminalIssueRun(latestRun)) {
         const updated = await escalateStrandedRecoveryIssueInPlace({
           issue,
@@ -2500,7 +2500,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
 
       if (issue.status === "todo") {
         if (!latestRun) {
-          if (await hasQueuedIssueWake(issue.companyId, issue.id)) {
+          if (await hasQueuedIssueWake(issue.squadId, issue.id)) {
             result.skipped += 1;
             continue;
           }
@@ -2666,7 +2666,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
 
         if (didAutomaticRecoveryFail(latestRun, "issue_continuation_needed")) {
           const { consecutive, latestFinishedAt } = await summarizeRecentContinuationRetries(
-            issue.companyId,
+            issue.squadId,
             issue.id,
             classification.errorCode,
           );
@@ -2739,7 +2739,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const issueRowsPromise = Promise.resolve(db
       .select({
         id: issues.id,
-        companyId: issues.companyId,
+        squadId: issues.squadId,
         identifier: issues.identifier,
         title: issues.title,
         status: issues.status,
@@ -2778,7 +2778,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       issueRowsPromise,
       db
         .select({
-          companyId: issueRelations.companyId,
+          squadId: issueRelations.squadId,
           blockerIssueId: issueRelations.issueId,
           blockedIssueId: issueRelations.relatedIssueId,
         })
@@ -2787,7 +2787,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       db
         .select({
           id: agents.id,
-          companyId: agents.companyId,
+          squadId: agents.squadId,
           name: agents.name,
           role: agents.role,
           title: agents.title,
@@ -2797,7 +2797,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .from(agents),
       db
         .select({
-          companyId: heartbeatRuns.companyId,
+          squadId: heartbeatRuns.squadId,
           agentId: heartbeatRuns.agentId,
           status: heartbeatRuns.status,
           contextSnapshot: heartbeatRuns.contextSnapshot,
@@ -2806,7 +2806,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .where(inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES])),
       db
         .select({
-          companyId: issues.companyId,
+          squadId: issues.squadId,
           agentId: heartbeatRuns.agentId,
           status: heartbeatRuns.status,
           issueId: issues.id,
@@ -2822,7 +2822,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         ),
       db
         .select({
-          companyId: agentWakeupRequests.companyId,
+          squadId: agentWakeupRequests.squadId,
           agentId: agentWakeupRequests.agentId,
           status: agentWakeupRequests.status,
           payload: agentWakeupRequests.payload,
@@ -2831,7 +2831,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .where(inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"])),
       db
         .select({
-          companyId: issueThreadInteractions.companyId,
+          squadId: issueThreadInteractions.squadId,
           issueId: issueThreadInteractions.issueId,
           status: issueThreadInteractions.status,
         })
@@ -2839,7 +2839,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .where(eq(issueThreadInteractions.status, "pending")),
       db
         .select({
-          companyId: issueApprovals.companyId,
+          squadId: issueApprovals.squadId,
           issueId: issueApprovals.issueId,
           status: approvals.status,
         })
@@ -2848,7 +2848,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .where(inArray(approvals.status, ["pending", "revision_requested"])),
       db
         .select({
-          companyId: issues.companyId,
+          squadId: issues.squadId,
           id: issues.id,
           status: issues.status,
           originKind: issues.originKind,
@@ -2871,7 +2871,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           ? []
           : db
             .select({
-              companyId: issueRecoveryActions.companyId,
+              squadId: issueRecoveryActions.squadId,
               issueId: issueRecoveryActions.sourceIssueId,
               status: issueRecoveryActions.status,
             })
@@ -2888,15 +2888,15 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const openRecoveryIssues = recoveryIssueRows.flatMap((row) => {
       if (row.originKind === RECOVERY_ORIGIN_KINDS.issueGraphLivenessEscalation) {
         const parsed = parseIssueGraphLivenessIncidentKey(row.originId);
-        if (!parsed || parsed.companyId !== row.companyId) return [];
+        if (!parsed || parsed.squadId !== row.squadId) return [];
         return [
           {
-            companyId: row.companyId,
+            squadId: row.squadId,
             issueId: parsed.issueId,
             status: row.status,
           },
           {
-            companyId: row.companyId,
+            squadId: row.squadId,
             issueId: parsed.leafIssueId,
             status: row.status,
           },
@@ -2906,7 +2906,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       const issueId = readNonEmptyString(row.originId);
       if (!issueId) return [];
       return [{
-        companyId: row.companyId,
+        squadId: row.squadId,
         issueId,
         status: row.status,
       }];
@@ -2917,18 +2917,18 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       relations: relationRows,
       agents: agentRows,
       activeRuns: activeRunRows.map((row) => ({
-        companyId: row.companyId,
+        squadId: row.squadId,
         agentId: row.agentId,
         status: row.status,
         issueId: issueIdFromRunContext(row.contextSnapshot),
       })).concat(activeIssueRunRows.map((row) => ({
-        companyId: row.companyId,
+        squadId: row.squadId,
         agentId: row.agentId,
         status: row.status,
         issueId: row.issueId,
       }))),
       queuedWakeRequests: wakeRows.map((row) => ({
-        companyId: row.companyId,
+        squadId: row.squadId,
         agentId: row.agentId,
         status: row.status,
         issueId: issueIdFromWakePayload(row.payload),
@@ -2940,13 +2940,13 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     });
   }
 
-  async function findOpenLivenessEscalation(companyId: string, incidentKey: string) {
+  async function findOpenLivenessEscalation(squadId: string, incidentKey: string) {
     return db
       .select()
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           eq(issues.originKind, RECOVERY_ORIGIN_KINDS.issueGraphLivenessEscalation),
           eq(issues.originId, incidentKey),
           isNull(issues.hiddenAt),
@@ -2963,7 +2963,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, finding.companyId),
+          eq(issues.squadId, finding.squadId),
           eq(issues.originKind, RECOVERY_ORIGIN_KINDS.issueGraphLivenessEscalation),
           eq(issues.originFingerprint, livenessRecoveryLeafFingerprint(finding)),
           isNull(issues.hiddenAt),
@@ -2980,7 +2980,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, finding.companyId),
+          eq(issues.squadId, finding.squadId),
           eq(issues.originKind, RECOVERY_ORIGIN_KINDS.issueGraphLivenessEscalation),
           isNull(issues.hiddenAt),
           notInArray(issues.status, ["done", "cancelled"]),
@@ -2998,11 +2998,11 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const sourceIssue = await db
       .select()
       .from(issues)
-      .where(and(eq(issues.companyId, recovery.companyId), eq(issues.id, parsed.issueId)))
+      .where(and(eq(issues.squadId, recovery.squadId), eq(issues.id, parsed.issueId)))
       .then((rows) => rows[0] ?? null);
     if (!sourceIssue) return false;
 
-    const blockerIds = await existingBlockerIssueIds(sourceIssue.companyId, sourceIssue.id);
+    const blockerIds = await existingBlockerIssueIds(sourceIssue.squadId, sourceIssue.id);
     if (!blockerIds.includes(recovery.id)) return false;
     await issuesSvc.update(sourceIssue.id, {
       blockedByIssueIds: blockerIds.filter((blockerId) => blockerId !== recovery.id),
@@ -3010,14 +3010,14 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     return true;
   }
 
-  async function hasActiveRunForIssueId(companyId: string, issueId: string) {
+  async function hasActiveRunForIssueId(squadId: string, issueId: string) {
     const [contextRun, issueRun] = await Promise.all([
       db
         .select({ id: heartbeatRuns.id })
         .from(heartbeatRuns)
         .where(
           and(
-            eq(heartbeatRuns.companyId, companyId),
+            eq(heartbeatRuns.squadId, squadId),
             inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES]),
             sql`(${heartbeatRuns.contextSnapshot}->>'issueId' = ${issueId}
               OR ${heartbeatRuns.contextSnapshot}->>'taskId' = ${issueId})`,
@@ -3031,7 +3031,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         .innerJoin(heartbeatRuns, eq(issues.executionRunId, heartbeatRuns.id))
         .where(
           and(
-            eq(issues.companyId, companyId),
+            eq(issues.squadId, squadId),
             eq(issues.id, issueId),
             inArray(heartbeatRuns.status, [...EXECUTION_PATH_HEARTBEAT_RUN_STATUSES]),
           ),
@@ -3047,7 +3047,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const currentLeafKeys = new Set(
       findings.map((finding) =>
         livenessRecoveryLeafKey(
-          finding.companyId,
+          finding.squadId,
           finding.state,
           livenessRecoveryLeafIssueId(finding),
         ),
@@ -3076,7 +3076,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       if (!parsed) continue;
       if (
         currentLeafKeys.has(
-          livenessRecoveryLeafKey(parsed.companyId, parsed.state, parsed.leafIssueId),
+          livenessRecoveryLeafKey(parsed.squadId, parsed.state, parsed.leafIssueId),
         )
       ) {
         continue;
@@ -3087,10 +3087,10 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           status: issues.status,
         })
         .from(issues)
-        .where(and(eq(issues.companyId, parsed.companyId), eq(issues.id, parsed.issueId)))
+        .where(and(eq(issues.squadId, parsed.squadId), eq(issues.id, parsed.issueId)))
         .then((rows) => rows[0] ?? null);
       if (sourceIssue && !["done", "cancelled"].includes(sourceIssue.status)) {
-        const blockerIds = await existingBlockerIssueIds(parsed.companyId, sourceIssue.id);
+        const blockerIds = await existingBlockerIssueIds(parsed.squadId, sourceIssue.id);
         if (blockerIds.includes(recovery.id)) {
           result.activeSkipped += 1;
           continue;
@@ -3099,7 +3099,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       if (await removeRecoveryBlockerFromSource(recovery)) {
         result.blockerRelationsRemoved += 1;
       }
-      if (await hasActiveRunForIssueId(recovery.companyId, recovery.id)) {
+      if (await hasActiveRunForIssueId(recovery.squadId, recovery.id)) {
         result.activeSkipped += 1;
         continue;
       }
@@ -3141,8 +3141,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     );
   }
 
-  function livenessDependencyIssueKey(companyId: string, issueId: string) {
-    return `${companyId}:${issueId}`;
+  function livenessDependencyIssueKey(squadId: string, issueId: string) {
+    return `${squadId}:${issueId}`;
   }
 
   async function loadLivenessDependencyUpdatedAtByIssue(findings: IssueLivenessFinding[]) {
@@ -3153,11 +3153,11 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     ];
     if (issueIds.length === 0) return new Map<string, Date>();
     const rows = await db
-      .select({ id: issues.id, companyId: issues.companyId, updatedAt: issues.updatedAt })
+      .select({ id: issues.id, squadId: issues.squadId, updatedAt: issues.updatedAt })
       .from(issues)
       .where(inArray(issues.id, issueIds));
     return new Map(rows.map((row) => [
-      livenessDependencyIssueKey(row.companyId, row.id),
+      livenessDependencyIssueKey(row.squadId, row.id),
       row.updatedAt,
     ]));
   }
@@ -3169,7 +3169,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const dependencyIssueIds = [...new Set(finding.dependencyPath.map((entry) => entry.issueId))];
     if (dependencyIssueIds.length === 0) return null;
     const timestamps = dependencyIssueIds.map((issueId) =>
-      updatedAtByIssueKey.get(livenessDependencyIssueKey(finding.companyId, issueId)) ?? null
+      updatedAtByIssueKey.get(livenessDependencyIssueKey(finding.squadId, issueId)) ?? null
     );
     if (timestamps.some((timestamp) => !timestamp)) return null;
     const [firstTimestamp, ...remainingTimestamps] = timestamps as Date[];
@@ -3264,7 +3264,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const budgetBlockedCandidateAgentIds: string[] = [];
 
     for (const candidate of candidates) {
-      const budgetBlock = await budgets.getInvocationBlock(issue.companyId, candidate.agentId, {
+      const budgetBlock = await budgets.getInvocationBlock(issue.squadId, candidate.agentId, {
         issueId: issue.id,
         projectId: issue.projectId,
       });
@@ -3303,7 +3303,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     finding: IssueLivenessFinding;
     runId?: string | null;
   }) {
-    const blockerIds = await existingBlockerIssueIds(input.issue.companyId, input.issue.id);
+    const blockerIds = await existingBlockerIssueIds(input.issue.squadId, input.issue.id);
     const nextBlockerIds = [...new Set([...blockerIds, input.escalationIssueId])];
     const isAlreadyBlockedByEscalation = blockerIds.includes(input.escalationIssueId);
     const isAlreadyBlocked = input.issue.status === "blocked";
@@ -3322,7 +3322,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     if (!updated) return null;
 
     await logActivity(db, {
-      companyId: input.issue.companyId,
+      squadId: input.issue.squadId,
       actorType: "system",
       actorId: "system",
       agentId: null,
@@ -3353,20 +3353,20 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       .from(issues)
       .where(eq(issues.id, input.finding.issueId))
       .then((rows) => rows[0] ?? null);
-    if (!issue || issue.companyId !== input.finding.companyId) return { kind: "skipped" as const };
-    if (await isAutomaticRecoverySuppressedByPauseHold(db, issue.companyId, issue.id, treeControlSvc)) {
+    if (!issue || issue.squadId !== input.finding.squadId) return { kind: "skipped" as const };
+    if (await isAutomaticRecoverySuppressedByPauseHold(db, issue.squadId, issue.id, treeControlSvc)) {
       return { kind: "skipped" as const };
     }
 
     const recoveryIssue = await db
       .select()
       .from(issues)
-      .where(and(eq(issues.id, input.finding.recoveryIssueId), eq(issues.companyId, issue.companyId)))
+      .where(and(eq(issues.id, input.finding.recoveryIssueId), eq(issues.squadId, issue.squadId)))
       .then((rows) => rows[0] ?? null);
     if (!recoveryIssue) return { kind: "skipped" as const };
 
     const existing =
-      await findOpenLivenessEscalation(issue.companyId, input.finding.incidentKey) ??
+      await findOpenLivenessEscalation(issue.squadId, input.finding.incidentKey) ??
       await findOpenLivenessRecoveryIssueForLeaf(input.finding);
     if (existing) {
       await ensureIssueBlockedByEscalation({
@@ -3388,7 +3388,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
 
     let escalation: Awaited<ReturnType<typeof issuesSvc.create>>;
     try {
-      escalation = await issuesSvc.create(issue.companyId, {
+      escalation = await issuesSvc.create(issue.squadId, {
         title: `Unblock liveness incident for ${issue.identifier ?? issue.id}`,
         description: buildLivenessEscalationDescription(input.finding),
         status: "todo",
@@ -3413,7 +3413,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     } catch (error) {
       if (!isUniqueLivenessRecoveryConflict(error)) throw error;
       const raced =
-        await findOpenLivenessEscalation(issue.companyId, input.finding.incidentKey) ??
+        await findOpenLivenessEscalation(issue.squadId, input.finding.incidentKey) ??
         await findOpenLivenessRecoveryIssueForLeaf(input.finding);
       if (!raced) throw error;
       await ensureIssueBlockedByEscalation({
@@ -3439,7 +3439,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     );
 
     await logActivity(db, {
-      companyId: issue.companyId,
+      squadId: issue.squadId,
       actorType: "system",
       actorId: "system",
       agentId: ownerSelection.agentId,

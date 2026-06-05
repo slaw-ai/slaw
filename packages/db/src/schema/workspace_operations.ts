@@ -9,7 +9,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { executionWorkspaces } from "./execution_workspaces.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";
 
@@ -17,7 +17,7 @@ export const workspaceOperations = pgTable(
   "workspace_operations",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     executionWorkspaceId: uuid("execution_workspace_id").references(() => executionWorkspaces.id, {
       onDelete: "set null",
     }),
@@ -43,13 +43,13 @@ export const workspaceOperations = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyRunStartedIdx: index("workspace_operations_company_run_started_idx").on(
-      table.companyId,
+    squadRunStartedIdx: index("workspace_operations_squad_run_started_idx").on(
+      table.squadId,
       table.heartbeatRunId,
       table.startedAt,
     ),
-    companyWorkspaceStartedIdx: index("workspace_operations_company_workspace_started_idx").on(
-      table.companyId,
+    squadWorkspaceStartedIdx: index("workspace_operations_squad_workspace_started_idx").on(
+      table.squadId,
       table.executionWorkspaceId,
       table.startedAt,
     ),

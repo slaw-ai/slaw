@@ -1,6 +1,6 @@
 CREATE TABLE "workspace_operations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"execution_workspace_id" uuid,
 	"heartbeat_run_id" uuid,
 	"phase" text NOT NULL,
@@ -22,8 +22,8 @@ CREATE TABLE "workspace_operations" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "workspace_operations" ADD CONSTRAINT "workspace_operations_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_operations" ADD CONSTRAINT "workspace_operations_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_operations" ADD CONSTRAINT "workspace_operations_execution_workspace_id_execution_workspaces_id_fk" FOREIGN KEY ("execution_workspace_id") REFERENCES "public"."execution_workspaces"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_operations" ADD CONSTRAINT "workspace_operations_heartbeat_run_id_heartbeat_runs_id_fk" FOREIGN KEY ("heartbeat_run_id") REFERENCES "public"."heartbeat_runs"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "workspace_operations_company_run_started_idx" ON "workspace_operations" USING btree ("company_id","heartbeat_run_id","started_at");--> statement-breakpoint
-CREATE INDEX "workspace_operations_company_workspace_started_idx" ON "workspace_operations" USING btree ("company_id","execution_workspace_id","started_at");
+CREATE INDEX "workspace_operations_squad_run_started_idx" ON "workspace_operations" USING btree ("squad_id","heartbeat_run_id","started_at");--> statement-breakpoint
+CREATE INDEX "workspace_operations_squad_workspace_started_idx" ON "workspace_operations" USING btree ("squad_id","execution_workspace_id","started_at");

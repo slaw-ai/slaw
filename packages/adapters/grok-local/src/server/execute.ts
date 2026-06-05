@@ -400,9 +400,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
     const templateData = {
       agentId: agent.id,
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       runId,
-      company: { id: agent.companyId },
+      squad: { id: agent.squadId },
       agent,
       run: { id: runId, source: "on_demand" },
       context,

@@ -17,8 +17,8 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({ selectedCompanyId: "company-1" }),
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({ selectedSquadId: "squad-1" }),
 }));
 
 vi.mock("@/lib/router", () => ({
@@ -33,7 +33,7 @@ vi.mock("@/lib/router", () => ({
 function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): ExecutionWorkspace {
   return {
     id: "workspace-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: "project-workspace-1",
     sourceIssueId: null,
@@ -73,7 +73,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
     identifier: "PAPA-81",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: "project-workspace-1",
     goalId: null,

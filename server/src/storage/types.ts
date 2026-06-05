@@ -41,7 +41,7 @@ export interface StorageProvider {
 }
 
 export interface PutFileInput {
-  companyId: string;
+  squadId: string;
   namespace: string;
   originalFilename: string | null;
   contentType: string;
@@ -60,7 +60,7 @@ export interface PutFileResult {
 export interface StorageService {
   provider: StorageProviderId;
   putFile(input: PutFileInput): Promise<PutFileResult>;
-  getObject(companyId: string, objectKey: string, options?: Pick<GetObjectInput, "range">): Promise<GetObjectResult>;
-  headObject(companyId: string, objectKey: string): Promise<HeadObjectResult>;
-  deleteObject(companyId: string, objectKey: string): Promise<void>;
+  getObject(squadId: string, objectKey: string, options?: Pick<GetObjectInput, "range">): Promise<GetObjectResult>;
+  headObject(squadId: string, objectKey: string): Promise<HeadObjectResult>;
+  deleteObject(squadId: string, objectKey: string): Promise<void>;
 }

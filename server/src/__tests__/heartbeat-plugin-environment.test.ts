@@ -5,7 +5,7 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   agents,
-  companies,
+  squads,
   createDb,
   environments,
   executionWorkspaces,
@@ -76,7 +76,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
   });
 
   it("acquires plugin environment leases through the heartbeat execution path", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
     const environmentId = randomUUID();
@@ -103,17 +103,17 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       }),
     } as unknown as PluginWorkerManager;
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       status: "active",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     await db.insert(projects).values({
       id: projectId,
-      companyId,
+      squadId,
       name: "Plugin Environment Heartbeat",
       status: "active",
       createdAt: new Date(),
@@ -121,7 +121,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     });
     await db.insert(projectWorkspaces).values({
       id: workspaceId,
-      companyId,
+      squadId,
       projectId,
       name: "Primary",
       cwd: workspaceRoot,
@@ -160,7 +160,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     } as any);
     await db.insert(environments).values({
       id: environmentId,
-      companyId,
+      squadId,
       name: "Plugin Sandbox",
       driver: "plugin",
       status: "active",
@@ -176,7 +176,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     });
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
@@ -204,7 +204,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
 
     expect(workerManager.call).toHaveBeenCalledWith(pluginId, "environmentAcquireLease", {
       driverKey: "sandbox",
-      companyId,
+      squadId,
       environmentId,
       issueId: null,
       config: { template: "base" },
@@ -214,7 +214,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     await vi.waitFor(() => {
       expect(workerManager.call).toHaveBeenCalledWith(pluginId, "environmentReleaseLease", {
         driverKey: "sandbox",
-        companyId,
+        squadId,
         environmentId,
         issueId: null,
         config: { template: "base" },
@@ -231,7 +231,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
   }, 15_000);
 
   it("ignores stale non-reused workspace environment config in favor of the issue selection", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
     const oldEnvironmentId = randomUUID();
@@ -265,17 +265,17 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       enableEnvironments: true,
       enableIsolatedWorkspaces: true,
     });
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Acme",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       status: "active",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     await db.insert(projects).values({
       id: projectId,
-      companyId,
+      squadId,
       name: "Plugin Environment Issue",
       status: "active",
       createdAt: new Date(),
@@ -283,7 +283,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     });
     await db.insert(projectWorkspaces).values({
       id: workspaceId,
-      companyId,
+      squadId,
       projectId,
       name: "Primary",
       cwd: workspaceRoot,
@@ -323,7 +323,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     await db.insert(environments).values([
       {
         id: oldEnvironmentId,
-        companyId,
+        squadId,
         name: "QA SSH",
         driver: "plugin",
         status: "active",
@@ -339,7 +339,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       },
       {
         id: newEnvironmentId,
-        companyId,
+        squadId,
         name: "QA E2B",
         driver: "plugin",
         status: "active",
@@ -356,7 +356,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     ]);
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
@@ -370,7 +370,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     });
     await db.insert(executionWorkspaces).values({
       id: staleExecutionWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       projectWorkspaceId: workspaceId,
       mode: "shared_workspace",
@@ -390,7 +390,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     });
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       projectId,
       projectWorkspaceId: workspaceId,
       title: "Environment matrix: e2b / codex_local",
@@ -421,7 +421,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
 
     expect(workerManager.call).toHaveBeenCalledWith(pluginId, "environmentAcquireLease", {
       driverKey: "sandbox",
-      companyId,
+      squadId,
       environmentId: newEnvironmentId,
       issueId,
       config: { template: "new" },

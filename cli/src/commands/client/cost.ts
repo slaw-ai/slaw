@@ -8,15 +8,15 @@ import {
   type BaseClientOptions,
 } from "./common.js";
 
-interface CompanyOptions extends BaseClientOptions {
-  companyId?: string;
+interface SquadOptions extends BaseClientOptions {
+  squadId?: string;
 }
 
-interface JsonPayloadOptions extends CompanyOptions {
+interface JsonPayloadOptions extends SquadOptions {
   payloadJson: string;
 }
 
-interface IncidentOptions extends CompanyOptions {
+interface IncidentOptions extends SquadOptions {
   payloadJson?: string;
 }
 
@@ -33,7 +33,7 @@ export function registerCostCommands(program: Command): void {
     ["window-spend", "costs/window-spend"],
     ["quota-windows", "costs/quota-windows"],
   ] as const) {
-    addCompanyGet(cost, name, `Get ${name} cost data`, path);
+    addSquadGet(cost, name, `Get ${name} cost data`, path);
   }
 
   addCommonClientOptions(
@@ -52,35 +52,35 @@ export function registerCostCommands(program: Command): void {
       }),
   );
 
-  addCompanyPostJson(cost, "event:create", "Record a cost event", "cost-events");
+  addSquadPostJson(cost, "event:create", "Record a cost event", "cost-events");
 
   const finance = program.command("finance").description("Finance event and summary operations");
-  addCompanyPostJson(finance, "event:create", "Record a finance event", "finance-events");
-  addCompanyGet(finance, "events", "List finance events", "costs/finance-events");
-  addCompanyGet(finance, "summary", "Get finance summary", "costs/finance-summary");
-  addCompanyGet(finance, "by-biller", "Get finance summary by biller", "costs/finance-by-biller");
-  addCompanyGet(finance, "by-kind", "Get finance summary by kind", "costs/finance-by-kind");
+  addSquadPostJson(finance, "event:create", "Record a finance event", "finance-events");
+  addSquadGet(finance, "events", "List finance events", "costs/finance-events");
+  addSquadGet(finance, "summary", "Get finance summary", "costs/finance-summary");
+  addSquadGet(finance, "by-biller", "Get finance summary by biller", "costs/finance-by-biller");
+  addSquadGet(finance, "by-kind", "Get finance summary by kind", "costs/finance-by-kind");
 
   const budget = program.command("budget").description("Budget policy and incident operations");
-  addCompanyGet(budget, "overview", "Get budget overview", "budgets/overview");
-  addCompanyPostJson(budget, "policy:upsert", "Create or update a budget policy", "budgets/policies");
+  addSquadGet(budget, "overview", "Get budget overview", "budgets/overview");
+  addSquadPostJson(budget, "policy:upsert", "Create or update a budget policy", "budgets/policies");
 
   addCommonClientOptions(
     budget
-      .command("company:update")
-      .description("Update company budget")
-      .option("-C, --company-id <id>", "Company ID")
+      .command("squad:update")
+      .description("Update squad budget")
+      .option("-C, --squad-id <id>", "Squad ID")
       .requiredOption("--payload-json <json>", "UpdateBudget JSON payload")
       .action(async (opts: JsonPayloadOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.patch(apiPath`/api/companies/${ctx.companyId}/budgets`, parseJson(opts.payloadJson));
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.patch(apiPath`/api/squads/${ctx.squadId}/budgets`, parseJson(opts.payloadJson));
           printOutput(result, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -105,13 +105,13 @@ export function registerCostCommands(program: Command): void {
       .command("incident:resolve")
       .description("Resolve a budget incident")
       .argument("<incidentId>", "Budget incident ID")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .option("--payload-json <json>", "ResolveBudgetIncident JSON payload", "{}")
       .action(async (incidentId: string, opts: IncidentOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const result = await ctx.api.post(
-            apiPath`/api/companies/${ctx.companyId}/budget-incidents/${incidentId}/resolve`,
+            apiPath`/api/squads/${ctx.squadId}/budget-incidents/${incidentId}/resolve`,
             parseJson(opts.payloadJson ?? "{}"),
           );
           printOutput(result, { json: ctx.json });
@@ -119,46 +119,46 @@ export function registerCostCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
-function addCompanyGet(parent: Command, name: string, description: string, path: string): void {
+function addSquadGet(parent: Command, name: string, description: string, path: string): void {
   addCommonClientOptions(
     parent
       .command(name)
       .description(description)
-      .option("-C, --company-id <id>", "Company ID")
-      .action(async (opts: CompanyOptions) => {
+      .option("-C, --squad-id <id>", "Squad ID")
+      .action(async (opts: SquadOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.get(`${apiPath`/api/companies/${ctx.companyId}`}/${path}`);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.get(`${apiPath`/api/squads/${ctx.squadId}`}/${path}`);
           printOutput(result, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
-function addCompanyPostJson(parent: Command, name: string, description: string, path: string): void {
+function addSquadPostJson(parent: Command, name: string, description: string, path: string): void {
   addCommonClientOptions(
     parent
       .command(name)
       .description(description)
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .requiredOption("--payload-json <json>", "JSON payload")
       .action(async (opts: JsonPayloadOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.post(`${apiPath`/api/companies/${ctx.companyId}`}/${path}`, parseJson(opts.payloadJson));
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.post(`${apiPath`/api/squads/${ctx.squadId}`}/${path}`, parseJson(opts.payloadJson));
           printOutput(result, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 

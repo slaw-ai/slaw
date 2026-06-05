@@ -11,11 +11,11 @@ Uploads a generated file from the current workspace to the current Slaw
 issue, then creates an attachment-backed artifact work product by default.
 
 Required environment for live uploads:
-  SLAW_API_URL, SLAW_API_KEY, SLAW_COMPANY_ID, SLAW_TASK_ID, SLAW_RUN_ID
+  SLAW_API_URL, SLAW_API_KEY, SLAW_SQUAD_ID, SLAW_TASK_ID, SLAW_RUN_ID
 
 Options:
   --issue-id ID          Issue id to attach to (default: SLAW_TASK_ID)
-  --company-id ID        Company id (default: SLAW_COMPANY_ID)
+  --squad-id ID        Squad id (default: SLAW_SQUAD_ID)
   --title TEXT           Work product title (default: file basename)
   --summary TEXT         Work product summary
   --content-type TYPE    Override detected upload content type
@@ -154,7 +154,7 @@ upload_file() {
 
 file_path=""
 issue_id="${SLAW_TASK_ID:-}"
-company_id="${SLAW_COMPANY_ID:-}"
+squad_id="${SLAW_SQUAD_ID:-}"
 title=""
 summary=""
 content_type=""
@@ -170,8 +170,8 @@ while [[ $# -gt 0 ]]; do
       issue_id="${2:-}"
       shift 2
       ;;
-    --company-id)
-      company_id="${2:-}"
+    --squad-id)
+      squad_id="${2:-}"
       shift 2
       ;;
     --title)
@@ -260,14 +260,14 @@ if [[ "$dry_run" == "1" ]]; then
   jq -n \
     --arg file "$file_path" \
     --arg issueId "$issue_id" \
-    --arg companyId "$company_id" \
+    --arg squadId "$squad_id" \
     --arg title "$title" \
     --arg summary "$summary" \
     --arg contentType "$content_type" \
     --arg status "$status" \
     --argjson createWorkProduct "$create_work_product_json" \
     --argjson isPrimary "$is_primary_json" \
-    '{file: $file, issueId: $issueId, companyId: $companyId, title: $title, summary: $summary, contentType: $contentType, status: $status, createWorkProduct: $createWorkProduct, isPrimary: $isPrimary}'
+    '{file: $file, issueId: $issueId, squadId: $squadId, title: $title, summary: $summary, contentType: $contentType, status: $status, createWorkProduct: $createWorkProduct, isPrimary: $isPrimary}'
   exit 0
 fi
 
@@ -276,15 +276,15 @@ if [[ -z "${SLAW_API_URL:-}" || -z "${SLAW_API_KEY:-}" || -z "${SLAW_RUN_ID:-}" 
   exit 1
 fi
 
-if [[ -z "$issue_id" || -z "$company_id" ]]; then
-  printf 'Missing issue or company id. Pass --issue-id/--company-id or set SLAW_TASK_ID/SLAW_COMPANY_ID.\n' >&2
+if [[ -z "$issue_id" || -z "$squad_id" ]]; then
+  printf 'Missing issue or squad id. Pass --issue-id/--squad-id or set SLAW_TASK_ID/SLAW_SQUAD_ID.\n' >&2
   exit 1
 fi
 
 api_base="${SLAW_API_URL%/}/api"
 attachment="$(
   upload_file \
-    "$api_base/companies/$company_id/issues/$issue_id/attachments" \
+    "$api_base/squads/$squad_id/issues/$issue_id/attachments" \
     "$file_path" \
     "$content_type"
 )"

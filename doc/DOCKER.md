@@ -124,7 +124,7 @@ on the setup screen. This browser claim is disabled for `authenticated/public`;
 public deployments should run the high-entropy CLI invite fallback instead:
 
 ```sh
-pnpm slaw auth bootstrap-ceo
+pnpm slaw auth bootstrap-squad-lead
 ```
 
 Granular overrides remain available if needed (`SLAW_AUTH_PUBLIC_BASE_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS`, `SLAW_ALLOWED_HOSTNAMES`).
@@ -253,7 +253,7 @@ Notes:
 - Smoke script defaults to `authenticated/private` mode so `HOST=0.0.0.0` can be exposed to the host.
 - Smoke script defaults host port to `3131` to avoid conflicts with local Slaw on `3100`.
 - Smoke script also defaults `SLAW_PUBLIC_URL` to `http://localhost:<HOST_PORT>` so bootstrap invite URLs and auth callbacks use the reachable host port instead of the container's internal `3100`.
-- In authenticated mode, the smoke script defaults `SMOKE_AUTO_BOOTSTRAP=true` and drives the real bootstrap path automatically: it signs up a real user, runs `slaw auth bootstrap-ceo` inside the container to mint a real bootstrap invite, accepts that invite over HTTP, and verifies board session access.
+- In authenticated mode, the smoke script defaults `SMOKE_AUTO_BOOTSTRAP=true` and drives the real bootstrap path automatically: it signs up a real user, runs `slaw auth bootstrap-squad-lead` inside the container to mint a real bootstrap invite, accepts that invite over HTTP, and verifies board session access.
 - Run the script in the foreground to watch the onboarding flow; stop with `Ctrl+C` after validation.
 - Set `SMOKE_DETACH=true` to leave the container running for automation and optionally write shell-ready metadata to `SMOKE_METADATA_FILE`.
 - The image definition is in `docker/Dockerfile.onboard-smoke`.

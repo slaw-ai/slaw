@@ -45,7 +45,7 @@ Concretely:
 
 ## Constraints
 
-- Keep it instance-installed, not company-installed.
+- Keep it instance-installed, not squad-installed.
 - Treat this as a trusted/local example plugin.
 - Do not rely on cloud-safe runtime assumptions.
 - Avoid destructive defaults.
@@ -80,7 +80,7 @@ These are the concrete `ctx` clients currently exposed by the SDK:
 - `ctx.state`
 - `ctx.entities`
 - `ctx.projects`
-- `ctx.companies`
+- `ctx.squads`
 - `ctx.issues`
 - `ctx.agents`
 - `ctx.goals`
@@ -172,7 +172,7 @@ Recommended page sections:
   - watch event log
   - stream demo output
 - `Slaw Domain APIs`
-  - companies
+  - squads
   - projects/workspaces
   - issues
   - goals
@@ -313,14 +313,14 @@ Demos:
 
 Demo:
 
-- button to write a plugin activity log entry against current company/entity
+- button to write a plugin activity log entry against current squad/entity
 
 ### `ctx.state`
 
 Demos:
 
 - instance-scoped state
-- company-scoped state
+- squad-scoped state
 - project-scoped state
 - issue-scoped state
 - delete/reset controls
@@ -344,17 +344,17 @@ Demos:
 - resolve primary workspace
 - resolve workspace for issue
 
-### `ctx.companies`
+### `ctx.squads`
 
 Demo:
 
-- list companies and show current selected company
+- list squads and show current selected squad
 
 ### `ctx.issues`
 
 Demos:
 
-- list issues in current company
+- list issues in current squad
 - create issue
 - update issue status/title
 - list comments
@@ -553,7 +553,7 @@ Recommended config fields:
 - `showCommentAnnotation`
 - `showCommentContextMenuItem`
 - `showToolbarLauncher`
-- `defaultDemoCompanyId` optional
+- `defaultDemoSquadId` optional
 - `secretRefExample`
 - `httpDemoUrl`
 - `processAllowedCommands`
@@ -593,7 +593,7 @@ Default posture:
 - config
 - state
 - entities
-- companies/projects/issues/goals
+- squads/projects/issues/goals
 - data/actions
 - metrics/logger/activity
 

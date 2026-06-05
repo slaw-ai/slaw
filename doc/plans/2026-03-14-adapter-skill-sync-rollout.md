@@ -5,8 +5,8 @@ Date: 2026-03-14
 Audience: Product and engineering
 Related:
 - `doc/plans/2026-03-14-skills-ui-product-plan.md`
-- `doc/plans/2026-03-13-company-import-export-v2.md`
-- `docs/companies/companies-spec.md`
+- `doc/plans/2026-03-13-squad-import-export-v2.md`
+- `docs/squads/squads-spec.md`
 
 ## 1. Purpose
 
@@ -107,7 +107,7 @@ Current adapter:
 
 Expected UX:
 
-- company skill library still works
+- squad skill library still works
 - agent attachment UI still works at the desired-state level
 - actual adapter state is `unsupported`
 - sync button is disabled or replaced with explanatory text
@@ -127,7 +127,7 @@ Current state:
 Requirements to finish:
 
 - keep runtime-mounted snapshots separate from persistent install snapshots
-- ensure imported company skills can be attached and mounted without manual path work
+- ensure imported squad skills can be attached and mounted without manual path work
 - keep `CODEX_HOME/skills` mutation scoped to heartbeat execution, not `skills/sync`
 
 Success criteria:
@@ -304,7 +304,7 @@ These should be optional metadata additions to the snapshot, not required new ad
 
 ## 7. UI Plan
 
-The company-level skill library can stay adapter-neutral.
+The squad-level skill library can stay adapter-neutral.
 
 The agent-level Skills tab must become adapter-aware by copy and status:
 

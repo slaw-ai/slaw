@@ -75,7 +75,7 @@ export type PlannedCommentSkip = {
 
 export type IssueDocumentRow = {
   id: IssueDocumentLinkRow["id"];
-  companyId: IssueDocumentLinkRow["companyId"];
+  squadId: IssueDocumentLinkRow["squadId"];
   issueId: IssueDocumentLinkRow["issueId"];
   documentId: IssueDocumentLinkRow["documentId"];
   key: IssueDocumentLinkRow["key"];
@@ -96,7 +96,7 @@ export type IssueDocumentRow = {
 
 export type DocumentRevisionRow = {
   id: DocumentRevisionTableRow["id"];
-  companyId: DocumentRevisionTableRow["companyId"];
+  squadId: DocumentRevisionTableRow["squadId"];
   documentId: DocumentRevisionTableRow["documentId"];
   revisionNumber: DocumentRevisionTableRow["revisionNumber"];
   body: DocumentRevisionTableRow["body"];
@@ -108,7 +108,7 @@ export type DocumentRevisionRow = {
 
 export type IssueAttachmentRow = {
   id: IssueAttachmentTableRow["id"];
-  companyId: IssueAttachmentTableRow["companyId"];
+  squadId: IssueAttachmentTableRow["squadId"];
   issueId: IssueAttachmentTableRow["issueId"];
   issueCommentId: IssueAttachmentTableRow["issueCommentId"];
   assetId: IssueAttachmentTableRow["assetId"];
@@ -181,8 +181,8 @@ export type PlannedProjectImport = {
 };
 
 export type WorktreeMergePlan = {
-  companyId: string;
-  companyName: string;
+  squadId: string;
+  squadName: string;
   issuePrefix: string;
   previewIssueCounterStart: number;
   scopes: WorktreeMergeScope[];
@@ -338,8 +338,8 @@ export function parseWorktreeMergeScopes(rawValue: string | undefined): Worktree
 }
 
 export function buildWorktreeMergePlan(input: {
-  companyId: string;
-  companyName: string;
+  squadId: string;
+  squadName: string;
   issuePrefix: string;
   previewIssueCounterStart: number;
   scopes: WorktreeMergeScope[];
@@ -748,8 +748,8 @@ export function buildWorktreeMergePlan(input: {
   };
 
   return {
-    companyId: input.companyId,
-    companyName: input.companyName,
+    squadId: input.squadId,
+    squadName: input.squadName,
     issuePrefix: input.issuePrefix,
     previewIssueCounterStart: input.previewIssueCounterStart,
     scopes: input.scopes,

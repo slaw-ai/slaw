@@ -10,7 +10,7 @@ const mockIssueService = vi.hoisted(() => ({
   createAttachment: vi.fn(),
   getAttachmentById: vi.fn(),
 }));
-const mockCompanyService = vi.hoisted(() => ({
+const mockSquadService = vi.hoisted(() => ({
   getById: vi.fn(),
 }));
 const mockWorkProductService = vi.hoisted(() => ({
@@ -47,7 +47,7 @@ function registerRouteMocks() {
     agentService: () => ({
       getById: vi.fn(),
     }),
-    companyService: () => mockCompanyService,
+    squadService: () => mockSquadService,
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => ({}),
@@ -71,7 +71,7 @@ function registerRouteMocks() {
           feedbackDataSharingPreference: "prompt",
         },
       })),
-      listCompanyIds: vi.fn(async () => ["company-1"]),
+      listSquadIds: vi.fn(async () => ["squad-1"]),
     }),
     issueApprovalService: () => ({}),
     issueReferenceService: () => ({
@@ -109,7 +109,7 @@ function registerRouteMocks() {
 type TestStorageService = StorageService & {
   __calls: {
     putFile?: {
-      companyId: string;
+      squadId: string;
       namespace: string;
       originalFilename?: string;
       contentType: string;
@@ -134,7 +134,7 @@ function createStorageService(body = Buffer.from("test")): TestStorageService {
       originalFilename: input.originalFilename,
       };
     },
-    getObject: vi.fn(async (_companyId, _objectKey, options) => {
+    getObject: vi.fn(async (_squadId, _objectKey, options) => {
       const range = options?.range;
       const streamBody = range ? body.subarray(range.start, range.end + 1) : body;
       return {
@@ -147,7 +147,7 @@ function createStorageService(body = Buffer.from("test")): TestStorageService {
   };
 }
 
-async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
+async function createApp(storage: StorageService, options?: { squadIds?: string[]; source?: string }) {
   const [{ errorHandler }, { issueRoutes }] = await Promise.all([
     vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
     vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
@@ -158,7 +158,7 @@ async function createApp(storage: StorageService, options?: { companyIds?: strin
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: options?.companyIds ?? ["company-1"],
+      squadIds: options?.squadIds ?? ["squad-1"],
       source: options?.source ?? "local_implicit",
       isInstanceAdmin: false,
     };
@@ -173,7 +173,7 @@ function makeAttachment(contentType: string, originalFilename: string) {
   const now = new Date("2026-01-01T00:00:00.000Z");
   return {
     id: "attachment-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "11111111-1111-4111-8111-111111111111",
     issueCommentId: null,
     assetId: "asset-1",
@@ -225,8 +225,8 @@ describe("issue attachment routes", () => {
     registerRouteMocks();
     vi.clearAllMocks();
     mockLogActivity.mockResolvedValue(undefined);
-    mockCompanyService.getById.mockResolvedValue({
-      id: "company-1",
+    mockSquadService.getById.mockResolvedValue({
+      id: "squad-1",
       attachmentMaxBytes: 1024 * 1024 * 1024,
     });
     mockWorkProductService.createForIssue.mockReset();
@@ -238,20 +238,20 @@ describe("issue attachment routes", () => {
     const storage = createStorageService();
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
     });
     mockIssueService.createAttachment.mockResolvedValue(makeAttachment("application/zip", "bundle.zip"));
 
     const app = await createApp(storage);
     const res = await request(app)
-      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .post("/api/squads/squad-1/issues/11111111-1111-4111-8111-111111111111/attachments")
       .attach("file", Buffer.from("zip"), { filename: "bundle.zip", contentType: "application/zip" });
 
     expect([200, 201]).toContain(res.status);
     const putFileCall = storage.__calls.putFile;
     expect(putFileCall).toMatchObject({
-      companyId: "company-1",
+      squadId: "squad-1",
       namespace: "issues/11111111-1111-4111-8111-111111111111",
       originalFilename: "bundle.zip",
       contentType: "application/zip",
@@ -271,14 +271,14 @@ describe("issue attachment routes", () => {
     const storage = createStorageService();
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
     });
     mockIssueService.createAttachment.mockResolvedValue(makeAttachment("video/mp4", "clip.mp4"));
 
     const app = await createApp(storage);
     const res = await request(app)
-      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .post("/api/squads/squad-1/issues/11111111-1111-4111-8111-111111111111/attachments")
       .attach("file", Buffer.from("mp4"), { filename: "clip.mp4", contentType: "video/mp4" });
 
     expect(res.status).toBe(201);
@@ -298,13 +298,13 @@ describe("issue attachment routes", () => {
     const storage = createStorageService();
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
     });
 
     const app = await createApp(storage);
     const res = await request(app)
-      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .post("/api/squads/squad-1/issues/11111111-1111-4111-8111-111111111111/attachments")
       .attach("file", Buffer.from("exe"), { filename: "payload.exe", contentType: "application/x-msdownload" });
 
     expect(res.status).toBe(422);
@@ -313,18 +313,18 @@ describe("issue attachment routes", () => {
     expect(mockIssueService.createAttachment).not.toHaveBeenCalled();
   });
 
-  it("enforces the process-level issue attachment limit even when the company limit allows more", async () => {
+  it("enforces the process-level issue attachment limit even when the squad limit allows more", async () => {
     const storage = createStorageService();
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
     });
     mockIssueService.createAttachment.mockResolvedValue(makeAttachment("application/octet-stream", "large.bin"));
 
     const app = await createApp(storage);
     const res = await request(app)
-      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .post("/api/squads/squad-1/issues/11111111-1111-4111-8111-111111111111/attachments")
       .attach("file", Buffer.alloc(10 * 1024 * 1024 + 1), {
         filename: "large.bin",
         contentType: "application/octet-stream",
@@ -335,21 +335,21 @@ describe("issue attachment routes", () => {
     expect(storage.__calls.putFile).toBeUndefined();
   });
 
-  it("enforces the configured per-company issue attachment limit", async () => {
+  it("enforces the configured per-squad issue attachment limit", async () => {
     const storage = createStorageService();
-    mockCompanyService.getById.mockResolvedValue({
-      id: "company-1",
+    mockSquadService.getById.mockResolvedValue({
+      id: "squad-1",
       attachmentMaxBytes: 4,
     });
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
     });
 
     const app = await createApp(storage);
     const res = await request(app)
-      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .post("/api/squads/squad-1/issues/11111111-1111-4111-8111-111111111111/attachments")
       .attach("file", Buffer.from("large"), { filename: "large.txt", contentType: "text/plain" });
 
     expect(res.status).toBe(422);
@@ -406,7 +406,7 @@ describe("issue attachment routes", () => {
     expect(res.headers["content-disposition"]).toBe('inline; filename="clip.mp4"');
     expect(Buffer.from(res.body).toString("utf8")).toBe("bcd");
     expect(storage.getObject).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "issues/issue-1/clip.mp4",
       { range: { start: 1, end: 3 } },
     );
@@ -456,11 +456,11 @@ describe("issue attachment routes", () => {
     expect(storage.getObject).not.toHaveBeenCalled();
   });
 
-  it("rejects cross-company attachment content reads", async () => {
+  it("rejects cross-squad attachment content reads", async () => {
     const storage = createStorageService();
     mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("video/mp4", "clip.mp4"));
 
-    const app = await createApp(storage, { companyIds: ["company-2"], source: "session" });
+    const app = await createApp(storage, { squadIds: ["squad-2"], source: "session" });
     const res = await request(app).get("/api/attachments/attachment-1/content");
 
     expect(res.status).toBe(403);
@@ -471,7 +471,7 @@ describe("issue attachment routes", () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
       projectId: null,
     };
@@ -485,7 +485,7 @@ describe("issue attachment routes", () => {
     mockWorkProductService.createForIssue.mockResolvedValue({
       id: "work-product-1",
       issueId: issue.id,
-      companyId: issue.companyId,
+      squadId: issue.squadId,
       type: "artifact",
       provider: "slaw",
       title: "Clip",
@@ -513,7 +513,7 @@ describe("issue attachment routes", () => {
     expect(res.status).toBe(201);
     expect(mockWorkProductService.createForIssue).toHaveBeenCalledWith(
       issue.id,
-      issue.companyId,
+      issue.squadId,
       expect.objectContaining({
         type: "artifact",
         provider: "slaw",
@@ -534,7 +534,7 @@ describe("issue attachment routes", () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
       projectId: null,
     };
@@ -566,14 +566,14 @@ describe("issue attachment routes", () => {
     const storage = createStorageService();
     const issue = {
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
       projectId: null,
     };
     mockWorkProductService.getById.mockResolvedValue({
       id: "work-product-1",
       issueId: issue.id,
-      companyId: issue.companyId,
+      squadId: issue.squadId,
       type: "artifact",
       provider: "slaw",
       title: "Clip",
@@ -589,7 +589,7 @@ describe("issue attachment routes", () => {
     mockWorkProductService.update.mockResolvedValue({
       id: "work-product-1",
       issueId: issue.id,
-      companyId: issue.companyId,
+      squadId: issue.squadId,
       type: "artifact",
       provider: "slaw",
       title: "Clip",

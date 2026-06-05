@@ -47,14 +47,14 @@ afterEach(() => {
 });
 
 describe("plugin host navigation", () => {
-  it("resolves plugin page routes into the active company prefix", () => {
+  it("resolves plugin page routes into the active squad prefix", () => {
     expect(resolveHostNavigationHref("/wiki", "PAP")).toBe("/PAP/wiki");
     expect(resolveHostNavigationHref("/wiki?tab=browse#page", "pap")).toBe(
       "/PAP/wiki?tab=browse#page",
     );
   });
 
-  it("does not double-prefix active company paths or global host paths", () => {
+  it("does not double-prefix active squad paths or global host paths", () => {
     expect(resolveHostNavigationHref("/PAP/wiki", "PAP")).toBe("/PAP/wiki");
     expect(resolveHostNavigationHref("/pap/wiki", "PAP")).toBe("/pap/wiki");
     expect(resolveHostNavigationHref("/instance/settings/plugins", "PAP")).toBe(
@@ -84,8 +84,8 @@ describe("useHostNavigation mobile drawer behavior", () => {
     return {
       pluginId: "test-plugin",
       hostContext: {
-        companyId: "co",
-        companyPrefix: "PAP",
+        squadId: "co",
+        squadPrefix: "PAP",
         projectId: null,
         entityId: null,
         entityType: null,

@@ -7,7 +7,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { issues } from "./issues.js";
 import { projectWorkspaces } from "./project_workspaces.js";
 import { projects } from "./projects.js";
@@ -16,7 +16,7 @@ export const executionWorkspaces = pgTable(
   "execution_workspaces",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
     projectWorkspaceId: uuid("project_workspace_id").references(() => projectWorkspaces.id, { onDelete: "set null" }),
     sourceIssueId: uuid("source_issue_id").references((): AnyPgColumn => issues.id, { onDelete: "set null" }),
@@ -42,26 +42,26 @@ export const executionWorkspaces = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyProjectStatusIdx: index("execution_workspaces_company_project_status_idx").on(
-      table.companyId,
+    squadProjectStatusIdx: index("execution_workspaces_squad_project_status_idx").on(
+      table.squadId,
       table.projectId,
       table.status,
     ),
-    companyProjectWorkspaceStatusIdx: index("execution_workspaces_company_project_workspace_status_idx").on(
-      table.companyId,
+    squadProjectWorkspaceStatusIdx: index("execution_workspaces_squad_project_workspace_status_idx").on(
+      table.squadId,
       table.projectWorkspaceId,
       table.status,
     ),
-    companySourceIssueIdx: index("execution_workspaces_company_source_issue_idx").on(
-      table.companyId,
+    squadSourceIssueIdx: index("execution_workspaces_squad_source_issue_idx").on(
+      table.squadId,
       table.sourceIssueId,
     ),
-    companyLastUsedIdx: index("execution_workspaces_company_last_used_idx").on(
-      table.companyId,
+    squadLastUsedIdx: index("execution_workspaces_squad_last_used_idx").on(
+      table.squadId,
       table.lastUsedAt,
     ),
-    companyBranchIdx: index("execution_workspaces_company_branch_idx").on(
-      table.companyId,
+    squadBranchIdx: index("execution_workspaces_squad_branch_idx").on(
+      table.squadId,
       table.branchName,
     ),
   }),

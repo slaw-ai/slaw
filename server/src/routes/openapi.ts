@@ -31,10 +31,10 @@ import {
   updateProjectSchema,
   createProjectWorkspaceSchema,
   updateProjectWorkspaceSchema,
-  // Company
-  createCompanySchema,
-  updateCompanySchema,
-  updateCompanyBrandingSchema,
+  // Squad
+  createSquadSchema,
+  updateSquadSchema,
+  updateSquadBrandingSchema,
   // Routine
   createRoutineSchema,
   updateRoutineSchema,
@@ -70,11 +70,11 @@ import {
   createEnvironmentSchema,
   updateEnvironmentSchema,
   probeEnvironmentConfigSchema,
-  // Company skills
-  companySkillCreateSchema,
-  companySkillFileUpdateSchema,
-  companySkillImportSchema,
-  companySkillProjectScanRequestSchema,
+  // Squad skills
+  squadSkillCreateSchema,
+  squadSkillFileUpdateSchema,
+  squadSkillImportSchema,
+  squadSkillProjectScanRequestSchema,
   // Issue tree
   createIssueTreeHoldSchema,
   previewIssueTreeControlSchema,
@@ -87,21 +87,21 @@ import {
   respondIssueThreadInteractionSchema,
   // Auth / profile
   updateCurrentUserProfileSchema,
-  // Company portability (legacy routes)
-  companyPortabilityExportSchema,
-  companyPortabilityPreviewSchema,
-  companyPortabilityImportSchema,
+  // Squad portability (legacy routes)
+  squadPortabilityExportSchema,
+  squadPortabilityPreviewSchema,
+  squadPortabilityImportSchema,
   // Access / membership
   acceptInviteSchema,
-  createCompanyInviteSchema,
+  createSquadInviteSchema,
   claimJoinRequestApiKeySchema,
   createCliAuthChallengeSchema,
   resolveCliAuthChallengeSchema,
-  updateCompanyMemberSchema,
-  updateCompanyMemberWithPermissionsSchema,
-  archiveCompanyMemberSchema,
+  updateSquadMemberSchema,
+  updateSquadMemberWithPermissionsSchema,
+  archiveSquadMemberSchema,
   updateMemberPermissionsSchema,
-  updateUserCompanyAccessSchema,
+  updateUserSquadAccessSchema,
   // Instance settings
   patchInstanceGeneralSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
@@ -453,68 +453,68 @@ const BOARD_ONLY_PREFIXES = [
 ];
 
 const BOARD_ONLY_OPERATIONS = new Set([
-  "GET /api/companies",
-  "POST /api/companies",
-  "GET /api/companies/stats",
-  "GET /api/companies/issues",
+  "GET /api/squads",
+  "POST /api/squads",
+  "GET /api/squads/stats",
+  "GET /api/squads/issues",
   "POST /api/board-claim/{token}/claim",
   "GET /api/cli-auth/me",
-  "POST /api/companies/{companyId}/invites",
-  "GET /api/companies/{companyId}/invites",
-  "GET /api/companies/{companyId}/join-requests",
-  "POST /api/companies/{companyId}/join-requests/{requestId}/approve",
-  "POST /api/companies/{companyId}/join-requests/{requestId}/reject",
-  "GET /api/companies/{companyId}/members",
-  "PATCH /api/companies/{companyId}/members/{memberId}",
-  "PATCH /api/companies/{companyId}/members/{memberId}/role-and-grants",
-  "POST /api/companies/{companyId}/members/{memberId}/archive",
-  "PATCH /api/companies/{companyId}/members/{memberId}/permissions",
-  "GET /api/companies/{companyId}/user-directory",
+  "POST /api/squads/{squadId}/invites",
+  "GET /api/squads/{squadId}/invites",
+  "GET /api/squads/{squadId}/join-requests",
+  "POST /api/squads/{squadId}/join-requests/{requestId}/approve",
+  "POST /api/squads/{squadId}/join-requests/{requestId}/reject",
+  "GET /api/squads/{squadId}/members",
+  "PATCH /api/squads/{squadId}/members/{memberId}",
+  "PATCH /api/squads/{squadId}/members/{memberId}/role-and-grants",
+  "POST /api/squads/{squadId}/members/{memberId}/archive",
+  "PATCH /api/squads/{squadId}/members/{memberId}/permissions",
+  "GET /api/squads/{squadId}/user-directory",
   "POST /api/issues/{id}/interactions/{interactionId}/accept",
   "POST /api/issues/{id}/interactions/{interactionId}/reject",
   "POST /api/issues/{id}/interactions/{interactionId}/respond",
 ]);
 
 const INSTANCE_ADMIN_OPERATIONS = new Set([
-  "POST /api/companies",
+  "POST /api/squads",
   "POST /api/plugins/install",
   "POST /api/instance/database-backups",
   "POST /api/admin/users/{userId}/promote-instance-admin",
   "POST /api/admin/users/{userId}/demote-instance-admin",
-  "PUT /api/admin/users/{userId}/company-access",
+  "PUT /api/admin/users/{userId}/squad-access",
 ]);
 
 const CREATED_OPERATIONS = new Set([
   "POST /api/adapters/install",
-  "POST /api/companies/{companyId}/agent-hires",
-  "POST /api/companies/{companyId}/agents",
+  "POST /api/squads/{squadId}/agent-hires",
+  "POST /api/squads/{squadId}/agents",
   "POST /api/agents/{id}/keys",
-  "POST /api/companies/{companyId}/approvals",
+  "POST /api/squads/{squadId}/approvals",
   "POST /api/approvals/{id}/comments",
-  "POST /api/companies/{companyId}/assets/images",
-  "POST /api/companies/{companyId}/logo",
+  "POST /api/squads/{squadId}/assets/images",
+  "POST /api/squads/{squadId}/logo",
   "POST /api/cli-auth/challenges",
-  "POST /api/companies",
-  "POST /api/companies/{companyId}/invites",
-  "POST /api/companies/{companyId}/cost-events",
-  "POST /api/companies/{companyId}/finance-events",
-  "POST /api/companies/{companyId}/environments",
-  "POST /api/companies/{companyId}/goals",
-  "POST /api/companies/{companyId}/labels",
+  "POST /api/squads",
+  "POST /api/squads/{squadId}/invites",
+  "POST /api/squads/{squadId}/cost-events",
+  "POST /api/squads/{squadId}/finance-events",
+  "POST /api/squads/{squadId}/environments",
+  "POST /api/squads/{squadId}/goals",
+  "POST /api/squads/{squadId}/labels",
   "POST /api/issues/{id}/work-products",
   "POST /api/issues/{id}/approvals",
-  "POST /api/companies/{companyId}/issues",
+  "POST /api/squads/{squadId}/issues",
   "POST /api/issues/{id}/children",
   "POST /api/issues/{id}/interactions",
   "POST /api/issues/{id}/comments",
-  "POST /api/companies/{companyId}/issues/{issueId}/attachments",
-  "POST /api/companies/{companyId}/projects",
+  "POST /api/squads/{squadId}/issues/{issueId}/attachments",
+  "POST /api/squads/{squadId}/projects",
   "POST /api/projects/{id}/workspaces",
-  "POST /api/companies/{companyId}/routines",
+  "POST /api/squads/{squadId}/routines",
   "POST /api/routines/{id}/triggers",
-  "POST /api/companies/{companyId}/secrets",
-  "POST /api/companies/{companyId}/skills",
-  "POST /api/companies/{companyId}/skills/import",
+  "POST /api/squads/{squadId}/secrets",
+  "POST /api/squads/{squadId}/skills",
+  "POST /api/squads/{squadId}/skills/import",
   "POST /api/join-requests/{requestId}/claim-api-key",
   "POST /api/admin/users/{userId}/promote-instance-admin",
   "POST /api/plugins/install",
@@ -655,126 +655,126 @@ registry.registerPath({
   responses: { 200: r.ok() },
 });
 
-// ─── Companies ───────────────────────────────────────────────────────────────
+// ─── Squads ───────────────────────────────────────────────────────────────
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies",
-  tags: ["companies"],
-  summary: "List companies",
+  path: "/api/squads",
+  tags: ["squads"],
+  summary: "List squads",
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies",
-  tags: ["companies"],
-  summary: "Create a company",
-  request: { body: jsonBody(createCompanySchema) },
+  path: "/api/squads",
+  tags: ["squads"],
+  summary: "Create a squad",
+  request: { body: jsonBody(createSquadSchema) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/stats",
-  tags: ["companies"],
-  summary: "Company stats",
+  path: "/api/squads/stats",
+  tags: ["squads"],
+  summary: "Squad stats",
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}",
-  tags: ["companies"],
-  summary: "Get a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}",
+  tags: ["squads"],
+  summary: "Get a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}",
-  tags: ["companies"],
-  summary: "Update a company",
+  path: "/api/squads/{squadId}",
+  tags: ["squads"],
+  summary: "Update a squad",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(updateCompanySchema.partial()),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(updateSquadSchema.partial()),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}/branding",
-  tags: ["companies"],
-  summary: "Update company branding",
+  path: "/api/squads/{squadId}/branding",
+  tags: ["squads"],
+  summary: "Update squad branding",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(updateCompanyBrandingSchema),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(updateSquadBrandingSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/archive",
-  tags: ["companies"],
-  summary: "Archive a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}/archive",
+  tags: ["squads"],
+  summary: "Archive a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "delete",
-  path: "/api/companies/{companyId}",
-  tags: ["companies"],
-  summary: "Delete a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}",
+  tags: ["squads"],
+  summary: "Delete a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/feedback-traces",
-  tags: ["companies"],
-  summary: "List company feedback traces",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}/feedback-traces",
+  tags: ["squads"],
+  summary: "List squad feedback traces",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/exports",
-  tags: ["companies"],
-  summary: "Export company data",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}/exports",
+  tags: ["squads"],
+  summary: "Export squad data",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/exports/preview",
-  tags: ["companies"],
-  summary: "Preview company export",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}/exports/preview",
+  tags: ["squads"],
+  summary: "Preview squad export",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/imports/preview",
-  tags: ["companies"],
-  summary: "Preview company import",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}/imports/preview",
+  tags: ["squads"],
+  summary: "Preview squad import",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/imports/apply",
-  tags: ["companies"],
-  summary: "Apply company import",
-  request: { params: z.object({ companyId: z.string() }) },
+  path: "/api/squads/{squadId}/imports/apply",
+  tags: ["squads"],
+  summary: "Apply squad import",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
@@ -782,20 +782,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/agents",
+  path: "/api/squads/{squadId}/agents",
   tags: ["agents"],
-  summary: "List agents in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List agents in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/agents",
+  path: "/api/squads/{squadId}/agents",
   tags: ["agents"],
   summary: "Create an agent",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createAgentSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -803,11 +803,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/agent-hires",
+  path: "/api/squads/{squadId}/agent-hires",
   tags: ["agents"],
   summary: "Hire an agent",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createAgentHireSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -815,19 +815,19 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/agent-configurations",
+  path: "/api/squads/{squadId}/agent-configurations",
   tags: ["agents"],
-  summary: "List agent configurations for a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List agent configurations for a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/org",
+  path: "/api/squads/{squadId}/org",
   tags: ["agents"],
   summary: "Get org chart data",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -1128,29 +1128,29 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/adapters/{type}/models",
+  path: "/api/squads/{squadId}/adapters/{type}/models",
   tags: ["adapters"],
   summary: "List models for an adapter type",
-  request: { params: z.object({ companyId: z.string(), type: z.string() }) },
+  request: { params: z.object({ squadId: z.string(), type: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/adapters/{type}/detect-model",
+  path: "/api/squads/{squadId}/adapters/{type}/detect-model",
   tags: ["adapters"],
   summary: "Detect active model for an adapter",
-  request: { params: z.object({ companyId: z.string(), type: z.string() }) },
+  request: { params: z.object({ squadId: z.string(), type: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/adapters/{type}/test-environment",
+  path: "/api/squads/{squadId}/adapters/{type}/test-environment",
   tags: ["adapters"],
-  summary: "Validate adapter environment access for a company",
+  summary: "Validate adapter environment access for a squad",
   request: {
-    params: z.object({ companyId: z.string(), type: z.string() }),
+    params: z.object({ squadId: z.string(), type: z.string() }),
     body: jsonBody(testAdapterEnvironmentSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1160,20 +1160,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/issues",
+  path: "/api/squads/{squadId}/issues",
   tags: ["issues"],
-  summary: "List issues in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List issues in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/issues",
+  path: "/api/squads/{squadId}/issues",
   tags: ["issues"],
   summary: "Create an issue",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createIssueSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1496,20 +1496,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/labels",
+  path: "/api/squads/{squadId}/labels",
   tags: ["issues"],
-  summary: "List labels in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List labels in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/labels",
+  path: "/api/squads/{squadId}/labels",
   tags: ["issues"],
   summary: "Create a label",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createIssueLabelSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1528,20 +1528,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/projects",
+  path: "/api/squads/{squadId}/projects",
   tags: ["projects"],
-  summary: "List projects in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List projects in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/projects",
+  path: "/api/squads/{squadId}/projects",
   tags: ["projects"],
   summary: "Create a project",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createProjectSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1623,20 +1623,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/routines",
+  path: "/api/squads/{squadId}/routines",
   tags: ["routines"],
-  summary: "List routines in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List routines in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/routines",
+  path: "/api/squads/{squadId}/routines",
   tags: ["routines"],
   summary: "Create a routine",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createRoutineSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1742,20 +1742,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/goals",
+  path: "/api/squads/{squadId}/goals",
   tags: ["goals"],
-  summary: "List goals in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List goals in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/goals",
+  path: "/api/squads/{squadId}/goals",
   tags: ["goals"],
   summary: "Create a goal",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createGoalSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1795,29 +1795,29 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/secret-providers",
+  path: "/api/squads/{squadId}/secret-providers",
   tags: ["secrets"],
   summary: "List secret providers",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/secrets",
+  path: "/api/squads/{squadId}/secrets",
   tags: ["secrets"],
-  summary: "List secrets in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List secrets in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/secrets",
+  path: "/api/squads/{squadId}/secrets",
   tags: ["secrets"],
   summary: "Create a secret",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createSecretSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1860,20 +1860,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/approvals",
+  path: "/api/squads/{squadId}/approvals",
   tags: ["approvals"],
-  summary: "List approvals in a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List approvals in a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/approvals",
+  path: "/api/squads/{squadId}/approvals",
   tags: ["approvals"],
   summary: "Create an approval",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createApprovalSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1977,21 +1977,21 @@ const costSummaryPaths = [
 for (const segment of costSummaryPaths) {
   registry.registerPath({
     method: "get",
-    path: `/api/companies/{companyId}/costs/${segment}`,
+    path: `/api/squads/{squadId}/costs/${segment}`,
     tags: ["costs"],
     summary: `Cost report: ${segment}`,
-    request: { params: z.object({ companyId: z.string() }) },
+    request: { params: z.object({ squadId: z.string() }) },
     responses: { 200: r.ok(), 401: r.unauthorized },
   });
 }
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/cost-events",
+  path: "/api/squads/{squadId}/cost-events",
   tags: ["costs"],
   summary: "Record a cost event",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createCostEventSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -1999,11 +1999,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/finance-events",
+  path: "/api/squads/{squadId}/finance-events",
   tags: ["costs"],
   summary: "Record a finance event",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createFinanceEventSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -2011,11 +2011,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/budgets/policies",
+  path: "/api/squads/{squadId}/budgets/policies",
   tags: ["costs"],
   summary: "Create or update a budget policy",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(upsertBudgetPolicySchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
@@ -2023,11 +2023,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/budget-incidents/{incidentId}/resolve",
+  path: "/api/squads/{squadId}/budget-incidents/{incidentId}/resolve",
   tags: ["costs"],
   summary: "Resolve a budget incident",
   request: {
-    params: z.object({ companyId: z.string(), incidentId: z.string() }),
+    params: z.object({ squadId: z.string(), incidentId: z.string() }),
     body: jsonBody(resolveBudgetIncidentSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
@@ -2035,20 +2035,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/budgets/overview",
+  path: "/api/squads/{squadId}/budgets/overview",
   tags: ["costs"],
   summary: "Get budget overview",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}/budgets",
+  path: "/api/squads/{squadId}/budgets",
   tags: ["costs"],
-  summary: "Update company budget",
+  summary: "Update squad budget",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(updateBudgetSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -2070,20 +2070,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/activity",
+  path: "/api/squads/{squadId}/activity",
   tags: ["activity"],
-  summary: "List company activity",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List squad activity",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/activity",
+  path: "/api/squads/{squadId}/activity",
   tags: ["activity"],
   summary: "Create an activity entry",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(z.object({
       actorType: z.enum(["agent", "user", "system", "plugin"]).optional(),
       actorId: z.string().min(1),
@@ -2128,10 +2128,10 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/dashboard",
+  path: "/api/squads/{squadId}/dashboard",
   tags: ["dashboard"],
   summary: "Get dashboard data",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2139,10 +2139,10 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/sidebar-badges",
+  path: "/api/squads/{squadId}/sidebar-badges",
   tags: ["sidebar"],
   summary: "Get sidebar badge counts",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2165,20 +2165,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/sidebar-preferences/me",
+  path: "/api/squads/{squadId}/sidebar-preferences/me",
   tags: ["sidebar"],
-  summary: "Get sidebar preferences for company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "Get sidebar preferences for squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "put",
-  path: "/api/companies/{companyId}/sidebar-preferences/me",
+  path: "/api/squads/{squadId}/sidebar-preferences/me",
   tags: ["sidebar"],
-  summary: "Update sidebar preferences for company",
+  summary: "Update sidebar preferences for squad",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(upsertSidebarOrderPreferenceSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -2188,20 +2188,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/inbox-dismissals",
+  path: "/api/squads/{squadId}/inbox-dismissals",
   tags: ["inbox"],
   summary: "List inbox dismissals",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/inbox-dismissals",
+  path: "/api/squads/{squadId}/inbox-dismissals",
   tags: ["inbox"],
   summary: "Create an inbox dismissal",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(z.object({
       itemKey: z.string().trim().min(1).regex(/^(approval|join|run):.+$/, "Unsupported inbox item key"),
     })),
@@ -2249,49 +2249,49 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/invites",
+  path: "/api/squads/{squadId}/invites",
   tags: ["access"],
-  summary: "List company invites",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List squad invites",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/invites",
+  path: "/api/squads/{squadId}/invites",
   tags: ["access"],
-  summary: "Create a company invite",
+  summary: "Create a squad invite",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(createCompanyInviteSchema),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(createSquadInviteSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/join-requests",
+  path: "/api/squads/{squadId}/join-requests",
   tags: ["access"],
-  summary: "List company join requests",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List squad join requests",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/join-requests/{requestId}/approve",
+  path: "/api/squads/{squadId}/join-requests/{requestId}/approve",
   tags: ["access"],
-  summary: "Approve a company join request",
-  request: { params: z.object({ companyId: z.string(), requestId: z.string() }) },
+  summary: "Approve a squad join request",
+  request: { params: z.object({ squadId: z.string(), requestId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/join-requests/{requestId}/reject",
+  path: "/api/squads/{squadId}/join-requests/{requestId}/reject",
   tags: ["access"],
-  summary: "Reject a company join request",
-  request: { params: z.object({ companyId: z.string(), requestId: z.string() }) },
+  summary: "Reject a squad join request",
+  request: { params: z.object({ squadId: z.string(), requestId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
@@ -2327,56 +2327,56 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/members",
+  path: "/api/squads/{squadId}/members",
   tags: ["access"],
-  summary: "List company members",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List squad members",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}/members/{memberId}",
+  path: "/api/squads/{squadId}/members/{memberId}",
   tags: ["access"],
-  summary: "Update a company member status or role",
+  summary: "Update a squad member status or role",
   request: {
-    params: z.object({ companyId: z.string(), memberId: z.string() }),
-    body: jsonBody(updateCompanyMemberSchema),
+    params: z.object({ squadId: z.string(), memberId: z.string() }),
+    body: jsonBody(updateSquadMemberSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}/members/{memberId}/role-and-grants",
+  path: "/api/squads/{squadId}/members/{memberId}/role-and-grants",
   tags: ["access"],
-  summary: "Update a company member role and explicit grants",
+  summary: "Update a squad member role and explicit grants",
   request: {
-    params: z.object({ companyId: z.string(), memberId: z.string() }),
-    body: jsonBody(updateCompanyMemberWithPermissionsSchema),
+    params: z.object({ squadId: z.string(), memberId: z.string() }),
+    body: jsonBody(updateSquadMemberWithPermissionsSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/members/{memberId}/archive",
+  path: "/api/squads/{squadId}/members/{memberId}/archive",
   tags: ["access"],
-  summary: "Archive a company member",
+  summary: "Archive a squad member",
   request: {
-    params: z.object({ companyId: z.string(), memberId: z.string() }),
-    body: jsonBody(archiveCompanyMemberSchema),
+    params: z.object({ squadId: z.string(), memberId: z.string() }),
+    body: jsonBody(archiveSquadMemberSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}/members/{memberId}/permissions",
+  path: "/api/squads/{squadId}/members/{memberId}/permissions",
   tags: ["access"],
-  summary: "Update explicit company member permissions",
+  summary: "Update explicit squad member permissions",
   request: {
-    params: z.object({ companyId: z.string(), memberId: z.string() }),
+    params: z.object({ squadId: z.string(), memberId: z.string() }),
     body: jsonBody(updateMemberPermissionsSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 404: r.notFound },
@@ -2384,10 +2384,10 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/user-directory",
+  path: "/api/squads/{squadId}/user-directory",
   tags: ["access"],
-  summary: "Get company user directory",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "Get squad user directory",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2514,10 +2514,10 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/users/{userSlug}/profile",
+  path: "/api/squads/{squadId}/users/{userSlug}/profile",
   tags: ["auth"],
-  summary: "Get a user profile within a company",
-  request: { params: z.object({ companyId: z.string(), userSlug: z.string() }) },
+  summary: "Get a user profile within a squad",
+  request: { params: z.object({ squadId: z.string(), userSlug: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
@@ -2525,19 +2525,19 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/heartbeat-runs",
+  path: "/api/squads/{squadId}/heartbeat-runs",
   tags: ["runs"],
-  summary: "List heartbeat runs for a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List heartbeat runs for a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/live-runs",
+  path: "/api/squads/{squadId}/live-runs",
   tags: ["runs"],
-  summary: "List live runs for a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List live runs for a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2803,10 +2803,10 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/issues/{issueId}/attachments",
+  path: "/api/squads/{squadId}/issues/{issueId}/attachments",
   tags: ["assets"],
   summary: "Upload an attachment to an issue",
-  request: { params: z.object({ companyId: z.string(), issueId: z.string() }) },
+  request: { params: z.object({ squadId: z.string(), issueId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2832,19 +2832,19 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/assets/images",
+  path: "/api/squads/{squadId}/assets/images",
   tags: ["assets"],
   summary: "Upload an image asset",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/logo",
+  path: "/api/squads/{squadId}/logo",
   tags: ["assets"],
-  summary: "Upload company logo",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "Upload squad logo",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2857,107 +2857,107 @@ registry.registerPath({
   responses: { 200: { description: "File content" }, 401: r.unauthorized, 404: r.notFound },
 });
 
-// ─── Company skills ───────────────────────────────────────────────────────────
+// ─── Squad skills ───────────────────────────────────────────────────────────
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/skills",
+  path: "/api/squads/{squadId}/skills",
   tags: ["skills"],
-  summary: "List skills for a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List skills for a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/skills/{skillId}",
+  path: "/api/squads/{squadId}/skills/{skillId}",
   tags: ["skills"],
-  summary: "Get a company skill",
-  request: { params: z.object({ companyId: z.string(), skillId: z.string() }) },
+  summary: "Get a squad skill",
+  request: { params: z.object({ squadId: z.string(), skillId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/skills/{skillId}/update-status",
+  path: "/api/squads/{squadId}/skills/{skillId}/update-status",
   tags: ["skills"],
   summary: "Get skill update status",
-  request: { params: z.object({ companyId: z.string(), skillId: z.string() }) },
+  request: { params: z.object({ squadId: z.string(), skillId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/skills/{skillId}/files",
+  path: "/api/squads/{squadId}/skills/{skillId}/files",
   tags: ["skills"],
   summary: "List skill files",
-  request: { params: z.object({ companyId: z.string(), skillId: z.string() }) },
+  request: { params: z.object({ squadId: z.string(), skillId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/skills",
+  path: "/api/squads/{squadId}/skills",
   tags: ["skills"],
-  summary: "Create a company skill",
+  summary: "Create a squad skill",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(companySkillCreateSchema),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(squadSkillCreateSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/api/companies/{companyId}/skills/{skillId}/files",
+  path: "/api/squads/{squadId}/skills/{skillId}/files",
   tags: ["skills"],
   summary: "Update a skill file",
   request: {
-    params: z.object({ companyId: z.string(), skillId: z.string() }),
-    body: jsonBody(companySkillFileUpdateSchema),
+    params: z.object({ squadId: z.string(), skillId: z.string() }),
+    body: jsonBody(squadSkillFileUpdateSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/skills/import",
+  path: "/api/squads/{squadId}/skills/import",
   tags: ["skills"],
   summary: "Import a skill",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(companySkillImportSchema),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(squadSkillImportSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/skills/scan-projects",
+  path: "/api/squads/{squadId}/skills/scan-projects",
   tags: ["skills"],
   summary: "Scan project for skills",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(companySkillProjectScanRequestSchema),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(squadSkillProjectScanRequestSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/skills/{skillId}/install-update",
+  path: "/api/squads/{squadId}/skills/{skillId}/install-update",
   tags: ["skills"],
   summary: "Install a skill update",
-  request: { params: z.object({ companyId: z.string(), skillId: z.string() }) },
+  request: { params: z.object({ squadId: z.string(), skillId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "delete",
-  path: "/api/companies/{companyId}/skills/{skillId}",
+  path: "/api/squads/{squadId}/skills/{skillId}",
   tags: ["skills"],
-  summary: "Delete a company skill",
-  request: { params: z.object({ companyId: z.string(), skillId: z.string() }) },
+  summary: "Delete a squad skill",
+  request: { params: z.object({ squadId: z.string(), skillId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -2965,10 +2965,10 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/execution-workspaces",
+  path: "/api/squads/{squadId}/execution-workspaces",
   tags: ["execution-workspaces"],
-  summary: "List execution workspaces for a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List execution workspaces for a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -3039,29 +3039,29 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/environments",
+  path: "/api/squads/{squadId}/environments",
   tags: ["environments"],
-  summary: "List environments for a company",
-  request: { params: z.object({ companyId: z.string() }) },
+  summary: "List environments for a squad",
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/environments/capabilities",
+  path: "/api/squads/{squadId}/environments/capabilities",
   tags: ["environments"],
   summary: "Get environment capabilities",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/environments",
+  path: "/api/squads/{squadId}/environments",
   tags: ["environments"],
   summary: "Create an environment",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(createEnvironmentSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -3126,11 +3126,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/environments/probe-config",
+  path: "/api/squads/{squadId}/environments/probe-config",
   tags: ["environments"],
   summary: "Probe environment config",
   request: {
-    params: z.object({ companyId: z.string() }),
+    params: z.object({ squadId: z.string() }),
     body: jsonBody(probeEnvironmentConfigSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
@@ -3267,7 +3267,7 @@ registry.registerPath({
       runContext: z.object({
         agentId: z.string(),
         runId: z.string(),
-        companyId: z.string(),
+        squadId: z.string(),
         projectId: z.string(),
       }),
     })),
@@ -3442,7 +3442,7 @@ registry.registerPath({
     params: z.object({ pluginId: z.string() }),
     body: jsonBody(z.object({
       key: z.string(),
-      companyId: z.string().optional(),
+      squadId: z.string().optional(),
       params: z.record(z.unknown()).optional(),
     })),
   },
@@ -3458,7 +3458,7 @@ registry.registerPath({
     params: z.object({ pluginId: z.string() }),
     body: jsonBody(z.object({
       key: z.string(),
-      companyId: z.string().optional(),
+      squadId: z.string().optional(),
       params: z.record(z.unknown()).optional(),
     })),
   },
@@ -3473,7 +3473,7 @@ registry.registerPath({
   request: {
     params: z.object({ pluginId: z.string(), key: z.string() }),
     body: jsonBody(z.object({
-      companyId: z.string().optional(),
+      squadId: z.string().optional(),
       params: z.record(z.unknown()).optional(),
     })),
   },
@@ -3488,7 +3488,7 @@ registry.registerPath({
   request: {
     params: z.object({ pluginId: z.string(), key: z.string() }),
     body: jsonBody(z.object({
-      companyId: z.string().optional(),
+      squadId: z.string().optional(),
       params: z.record(z.unknown()).optional(),
     })),
   },
@@ -3538,7 +3538,7 @@ registry.registerPath({
   method: "get",
   path: "/api/issues",
   tags: ["issues"],
-  summary: "Legacy — returns error directing to /api/companies/{companyId}/issues",
+  summary: "Legacy — returns error directing to /api/squads/{squadId}/issues",
   responses: { 400: r.badRequest },
 });
 
@@ -3555,59 +3555,59 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/org.svg",
-  tags: ["companies"],
+  path: "/api/squads/{squadId}/org.svg",
+  tags: ["squads"],
   summary: "Get org chart as SVG",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: { description: "SVG image" }, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/{companyId}/org.png",
-  tags: ["companies"],
+  path: "/api/squads/{squadId}/org.png",
+  tags: ["squads"],
   summary: "Get org chart as PNG",
-  request: { params: z.object({ companyId: z.string() }) },
+  request: { params: z.object({ squadId: z.string() }) },
   responses: { 200: { description: "PNG image" }, 401: r.unauthorized },
 });
 
-// ─── Company portability (legacy routes) ─────────────────────────────────────
+// ─── Squad portability (legacy routes) ─────────────────────────────────────
 
 registry.registerPath({
   method: "get",
-  path: "/api/companies/issues",
-  tags: ["companies"],
+  path: "/api/squads/issues",
+  tags: ["squads"],
   summary: "Legacy — returns error directing to correct issues path",
   responses: { 400: r.badRequest },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/{companyId}/export",
-  tags: ["companies"],
-  summary: "Export a company (legacy singular form)",
+  path: "/api/squads/{squadId}/export",
+  tags: ["squads"],
+  summary: "Export a squad (legacy singular form)",
   request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(companyPortabilityExportSchema),
+    params: z.object({ squadId: z.string() }),
+    body: jsonBody(squadPortabilityExportSchema),
   },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/import/preview",
-  tags: ["companies"],
-  summary: "Preview a company import (legacy route)",
-  request: { body: jsonBody(companyPortabilityPreviewSchema) },
+  path: "/api/squads/import/preview",
+  tags: ["squads"],
+  summary: "Preview a squad import (legacy route)",
+  request: { body: jsonBody(squadPortabilityPreviewSchema) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/companies/import",
-  tags: ["companies"],
-  summary: "Apply a company import (legacy route)",
-  request: { body: jsonBody(companyPortabilityImportSchema) },
+  path: "/api/squads/import",
+  tags: ["squads"],
+  summary: "Apply a squad import (legacy route)",
+  request: { body: jsonBody(squadPortabilityImportSchema) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
@@ -3646,7 +3646,7 @@ registry.registerPath({
   method: "get",
   path: "/api/invites/{token}/logo",
   tags: ["access"],
-  summary: "Get company logo for an invite",
+  summary: "Get squad logo for an invite",
   request: { params: z.object({ token: z.string() }) },
   responses: { 200: { description: "Image file" }, 404: r.notFound },
 });
@@ -3700,21 +3700,21 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/users/{userId}/company-access",
+  path: "/api/admin/users/{userId}/squad-access",
   tags: ["admin"],
-  summary: "Get company access for a user (admin)",
+  summary: "Get squad access for a user (admin)",
   request: { params: z.object({ userId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
 });
 
 registry.registerPath({
   method: "put",
-  path: "/api/admin/users/{userId}/company-access",
+  path: "/api/admin/users/{userId}/squad-access",
   tags: ["admin"],
-  summary: "Set company access for a user (admin)",
+  summary: "Set squad access for a user (admin)",
   request: {
     params: z.object({ userId: z.string() }),
-    body: jsonBody(updateUserCompanyAccessSchema),
+    body: jsonBody(updateUserSquadAccessSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
 });

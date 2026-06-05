@@ -9,9 +9,9 @@ Use it for every path: exact template, adjacent template, or generic fallback.
 ## A. Identity and framing
 
 - [ ] `name`, `role`, and `title` are set and consistent with each other
-- [ ] `AGENTS.md` names the agent, the role, and the company in the first sentence
+- [ ] `AGENTS.md` names the agent, the role, and the squad in the first sentence
 - [ ] The first paragraph points at the Slaw skill as the source of truth for the heartbeat procedure
-- [ ] The reporting line (`reportsTo`) resolves to a real in-company agent id
+- [ ] The reporting line (`reportsTo`) resolves to a real in-squad agent id
 - [ ] The `AGENTS.md` states the same reporting line in prose
 
 ## B. Role clarity
@@ -28,7 +28,7 @@ Use it for every path: exact template, adjacent template, or generic fallback.
 - [ ] `AGENTS.md` covers how to mark work `blocked` with owner + action
 - [ ] `AGENTS.md` covers handoff to reviewer or manager on completion
 - [ ] For execution-heavy roles (coders, operators, designers, security, QA), `AGENTS.md` includes the Slaw execution contract verbatim:
-  > Start actionable work in the same heartbeat; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action. Use child issues for long or parallel delegated work instead of polling. Mark blocked work with owner and action. Respect budget, pause/cancel, approval gates, and company boundaries.
+  > Start actionable work in the same heartbeat; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action. Use child issues for long or parallel delegated work instead of polling. Mark blocked work with owner and action. Respect budget, pause/cancel, approval gates, and squad boundaries.
 
 ## D. Domain lenses and judgment
 
@@ -55,10 +55,10 @@ Use it for every path: exact template, adjacent template, or generic fallback.
 
 - [ ] `icon` is set to one of `/llms/agent-icons.txt` and fits the role
 - [ ] `sourceIssueId` (or `sourceIssueIds`) is set when the hire was triggered by an issue
-- [ ] `desiredSkills` lists only skills that already exist in the company library, or will be installed first via the company-skills workflow
+- [ ] `desiredSkills` lists only skills that already exist in the squad library, or will be installed first via the squad-skills workflow
 - [ ] Adapter config matches this Slaw instance (cwd, model, credentials) per `/llms/agent-configuration/<adapter>.txt`
 - [ ] Local managed-bundle adapters send custom instructions through top-level `instructionsBundle.files["AGENTS.md"]` and do not set `adapterConfig.promptTemplate` or `bootstrapPromptTemplate`
-- [ ] Placeholders like `{{companyName}}`, `{{managerTitle}}`, `{{issuePrefix}}`, and any URL stubs are replaced with real values
+- [ ] Placeholders like `{{squadName}}`, `{{managerTitle}}`, `{{issuePrefix}}`, and any URL stubs are replaced with real values
 
 ## H. Safety and permissions (least privilege)
 
@@ -92,4 +92,4 @@ Use it for every path: exact template, adjacent template, or generic fallback.
 - **Timer-heartbeat-by-default.** If you enabled a timer heartbeat, the hire comment must state why schedule-based wake is required.
 - **No confidential path for sensitive work.** Roles that may receive private advisories or incident details need a private workflow, not normal issue comments.
 - **Missing governance fields.** A hire without `sourceIssueId`, `icon`, or a resolvable reporting line is hard to audit later.
-- **Unreplaced placeholders.** `{{companyName}}`, `{{managerTitle}}`, and URL stubs in a submitted draft are the most common rejected-hire defect — grep the draft for `{{` before submitting.
+- **Unreplaced placeholders.** `{{squadName}}`, `{{managerTitle}}`, and URL stubs in a submitted draft are the most common rejected-hire defect — grep the draft for `{{` before submitting.

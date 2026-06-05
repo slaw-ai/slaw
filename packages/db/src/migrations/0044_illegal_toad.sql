@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "cli_auth_challenges" (
 	"command" text NOT NULL,
 	"client_name" text,
 	"requested_access" text DEFAULT 'board' NOT NULL,
-	"requested_company_id" uuid,
+	"requested_squad_id" uuid,
 	"pending_key_hash" text NOT NULL,
 	"pending_key_name" text NOT NULL,
 	"approved_by_user_id" text,
@@ -34,8 +34,8 @@ DO $$ BEGIN
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cli_auth_challenges_requested_company_id_companies_id_fk') THEN
-  ALTER TABLE "cli_auth_challenges" ADD CONSTRAINT "cli_auth_challenges_requested_company_id_companies_id_fk" FOREIGN KEY ("requested_company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cli_auth_challenges_requested_squad_id_squads_id_fk') THEN
+  ALTER TABLE "cli_auth_challenges" ADD CONSTRAINT "cli_auth_challenges_requested_squad_id_squads_id_fk" FOREIGN KEY ("requested_squad_id") REFERENCES "public"."squads"("id") ON DELETE set null ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
@@ -53,4 +53,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS "board_api_keys_key_hash_idx" ON "board_api_ke
 CREATE INDEX IF NOT EXISTS "board_api_keys_user_idx" ON "board_api_keys" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "cli_auth_challenges_secret_hash_idx" ON "cli_auth_challenges" USING btree ("secret_hash");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "cli_auth_challenges_approved_by_idx" ON "cli_auth_challenges" USING btree ("approved_by_user_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "cli_auth_challenges_requested_company_idx" ON "cli_auth_challenges" USING btree ("requested_company_id");
+CREATE INDEX IF NOT EXISTS "cli_auth_challenges_requested_squad_idx" ON "cli_auth_challenges" USING btree ("requested_squad_id");

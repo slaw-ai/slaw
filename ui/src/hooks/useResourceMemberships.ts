@@ -61,25 +61,25 @@ export function resourceMembershipState(
   return state === "left" ? "left" : "joined";
 }
 
-export function useResourceMemberships(companyId: string | null | undefined) {
+export function useResourceMemberships(squadId: string | null | undefined) {
   return useQuery({
-    queryKey: queryKeys.resourceMemberships.mine(companyId ?? "__none__"),
-    queryFn: () => resourceMembershipsApi.listMine(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.resourceMemberships.mine(squadId ?? "__none__"),
+    queryFn: () => resourceMembershipsApi.listMine(squadId!),
+    enabled: !!squadId,
   });
 }
 
-export function useResourceMembershipMutation(companyId: string | null | undefined) {
+export function useResourceMembershipMutation(squadId: string | null | undefined) {
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
-  const queryKey = queryKeys.resourceMemberships.mine(companyId ?? "__none__");
+  const queryKey = queryKeys.resourceMemberships.mine(squadId ?? "__none__");
 
   return useMutation({
     mutationFn: (variables: MutationVariables) => {
-      if (!companyId) throw new Error("Select a company first.");
+      if (!squadId) throw new Error("Select a squad first.");
       return variables.resourceType === "project"
-        ? resourceMembershipsApi.updateProject(companyId, variables.resourceId, { state: variables.state })
-        : resourceMembershipsApi.updateAgent(companyId, variables.resourceId, { state: variables.state });
+        ? resourceMembershipsApi.updateProject(squadId, variables.resourceId, { state: variables.state })
+        : resourceMembershipsApi.updateAgent(squadId, variables.resourceId, { state: variables.state });
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey });

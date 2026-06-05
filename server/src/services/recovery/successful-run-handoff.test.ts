@@ -15,7 +15,7 @@ import {
 
 const run = {
   id: "run-1",
-  companyId: "company-1",
+  squadId: "squad-1",
   agentId: "agent-1",
   status: "succeeded",
   contextSnapshot: { issueId: "issue-1" },
@@ -23,7 +23,7 @@ const run = {
 
 const issue = {
   id: "issue-1",
-  companyId: "company-1",
+  squadId: "squad-1",
   identifier: "PAP-1",
   title: "Finish backend handoff",
   status: "in_progress",
@@ -34,7 +34,7 @@ const issue = {
 
 const agent = {
   id: "agent-1",
-  companyId: "company-1",
+  squadId: "squad-1",
   status: "idle",
 } as any;
 

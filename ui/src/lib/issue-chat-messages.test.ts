@@ -17,7 +17,7 @@ import type { LiveRunForIssue } from "../api/heartbeats";
 function createAgent(id: string, name: string): Agent {
   return {
     id,
-    companyId: "company-1",
+    squadId: "squad-1",
     name,
     role: "engineer",
     title: null,
@@ -45,7 +45,7 @@ function createComment(overrides: Partial<IssueChatComment> = {}): IssueChatComm
   const authorAgentId = overrides.authorAgentId ?? null;
   return {
     id: "comment-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     authorAgentId: null,
     authorUserId: "user-1",
@@ -64,7 +64,7 @@ function createInteraction(
 ): SuggestTasksInteraction {
   return {
     id: "interaction-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     kind: "suggest_tasks",
     title: "Suggested follow-up work",
@@ -97,7 +97,7 @@ function createRequestConfirmation(
 ): RequestConfirmationInteraction {
   return {
     id: "confirmation-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     kind: "request_confirmation",
     title: "Approve the plan",
@@ -303,7 +303,7 @@ describe("buildAssistantPartsFromTranscript", () => {
 });
 
 describe("buildIssueChatMessages", () => {
-  it("uses the company user label for current-user comments instead of collapsing to You", () => {
+  it("uses the squad user label for current-user comments instead of collapsing to You", () => {
     const messages = buildIssueChatMessages({
       comments: [createComment({ authorUserId: "user-1" })],
       timelineEvents: [],
@@ -454,7 +454,7 @@ describe("buildIssueChatMessages", () => {
         ],
       ]),
       hasOutputForRun: (runId) => runId === "run-live-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       projectId: "project-1",
       agentMap,
       currentUserId: "user-1",

@@ -661,7 +661,7 @@ export function MarkdownBody({
               : parsed.kind === "routine"
                 ? `/routines/${parsed.routineId}`
                 : parsed.kind === "user"
-                  ? "/company/settings/access"
+                  ? "/squad/settings/access"
                   : `/agents/${parsed.agentId}`;
         return (
           <a

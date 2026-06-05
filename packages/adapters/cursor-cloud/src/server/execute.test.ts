@@ -84,7 +84,7 @@ function createContext(
   const meta: Record<string, unknown>[] = [];
   const agent = overrides.agent ?? {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Cursor Cloud Agent",
     adapterType: "cursor_cloud",
     adapterConfig: {},

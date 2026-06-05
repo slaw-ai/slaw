@@ -49,11 +49,11 @@ describe("slaw skill utils", () => {
 
     expect(skillBody).toContain("Generated Artifacts and Work Products");
     expect(skillBody).toContain("references/artifacts.md");
-    expect(skillBody).not.toContain("/api/companies/$SLAW_COMPANY_ID/issues/$SLAW_TASK_ID/attachments");
+    expect(skillBody).not.toContain("/api/squads/$SLAW_SQUAD_ID/issues/$SLAW_TASK_ID/attachments");
     expect(referenceBody).toContain("Generated Artifacts and Work Products");
     expect(referenceBody).toContain("scripts/slaw-upload-artifact.sh");
     expect(referenceBody).toContain("POST");
-    expect(referenceBody).toContain("/api/companies/$SLAW_COMPANY_ID/issues/$SLAW_TASK_ID/attachments");
+    expect(referenceBody).toContain("/api/squads/$SLAW_SQUAD_ID/issues/$SLAW_TASK_ID/attachments");
     expect(referenceBody).toContain("/api/issues/$SLAW_TASK_ID/work-products");
     await expect(
       fs.access(path.resolve("skills/slaw/scripts/slaw-upload-artifact.sh")),

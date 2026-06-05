@@ -16,13 +16,13 @@ type HumanUser = {
   password: string;
 };
 
-type CompanySummary = {
+type SquadSummary = {
   id: string;
   name: string;
   issuePrefix?: string | null;
 };
 
-type CompanyMember = {
+type SquadMember = {
   id: string;
   membershipRole: "owner" | "admin" | "operator" | "viewer";
   status: "pending" | "active" | "suspended";
@@ -37,7 +37,7 @@ type SessionJsonResponse<T> = {
 };
 
 const runId = Date.now();
-const companyName = `MU-Auth-${runId}`;
+const squadName = `MU-Auth-${runId}`;
 const ownerUser: HumanUser = {
   name: "Owner User",
   email: `owner-${runId}@slaw.local`,
@@ -110,24 +110,24 @@ async function acceptBootstrapInvite(page: Page, inviteUrl: string) {
   await page.getByRole("link", { name: "Open board" }).click();
 }
 
-async function createCompanyForSession(page: Page, nextCompanyName: string) {
-  const createRes = await sessionJsonRequest<CompanySummary>(page, `${BASE}/api/companies`, {
+async function createSquadForSession(page: Page, nextSquadName: string) {
+  const createRes = await sessionJsonRequest<SquadSummary>(page, `${BASE}/api/squads`, {
     method: "POST",
-    data: { name: nextCompanyName },
+    data: { name: nextSquadName },
   });
   expect(createRes.ok).toBe(true);
   expect(createRes.json).toBeTruthy();
   return createRes.json!;
 }
 
-async function createAuthenticatedInvite(page: Page, companyPrefix: string) {
-  await page.goto(`${BASE}/${companyPrefix}/company/settings`);
-  await expect(page.getByTestId("company-settings-invites-section")).toBeVisible({
+async function createAuthenticatedInvite(page: Page, squadPrefix: string) {
+  await page.goto(`${BASE}/${squadPrefix}/squad/settings`);
+  await expect(page.getByTestId("squad-settings-invites-section")).toBeVisible({
     timeout: 20_000,
   });
-  await page.getByTestId("company-settings-human-invite-role").selectOption("operator");
-  await page.getByTestId("company-settings-create-human-invite").click();
-  const inviteField = page.getByTestId("company-settings-human-invite-url");
+  await page.getByTestId("squad-settings-human-invite-role").selectOption("operator");
+  await page.getByTestId("squad-settings-create-human-invite").click();
+  const inviteField = page.getByTestId("squad-settings-human-invite-url");
   await expect(inviteField).toBeVisible({ timeout: 20_000 });
   return (await inviteField.inputValue()).trim();
 }
@@ -147,9 +147,9 @@ async function signUpFromInvite(page: Page, inviteUrl: string, user: HumanUser) 
 }
 
 async function acceptHumanInvite(page: Page) {
-  await expect(page.getByRole("button", { name: "Join company" })).toBeEnabled();
-  await page.getByRole("button", { name: "Join company" }).click();
-  await expect(page.getByRole("heading", { name: "You joined the company" })).toBeVisible({
+  await expect(page.getByRole("button", { name: "Join squad" })).toBeEnabled();
+  await page.getByRole("button", { name: "Join squad" }).click();
+  await expect(page.getByRole("heading", { name: "You joined the squad" })).toBeVisible({
     timeout: 20_000,
   });
   await page.getByRole("link", { name: "Open board" }).click();
@@ -195,14 +195,14 @@ async function sessionJsonRequest<T>(
   ) as Promise<SessionJsonResponse<T>>;
 }
 
-async function waitForMember(page: Page, companyId: string, email: string) {
-  let member: CompanyMember | null = null;
+async function waitForMember(page: Page, squadId: string, email: string) {
+  let member: SquadMember | null = null;
   await expect
     .poll(
       async () => {
-        const membersRes = await sessionJsonRequest<{ members: CompanyMember[] }>(
+        const membersRes = await sessionJsonRequest<{ members: SquadMember[] }>(
           page,
-          `${BASE}/api/companies/${companyId}/members`
+          `${BASE}/api/squads/${squadId}/members`
         );
         expect(membersRes.ok).toBe(true);
         const body = membersRes.json;
@@ -225,16 +225,16 @@ async function waitForMember(page: Page, companyId: string, email: string) {
 
 async function waitForMemberRole(
   page: Page,
-  companyId: string,
+  squadId: string,
   memberId: string,
-  membershipRole: CompanyMember["membershipRole"]
+  membershipRole: SquadMember["membershipRole"]
 ) {
   await expect
     .poll(
       async () => {
-        const membersRes = await sessionJsonRequest<{ members: CompanyMember[] }>(
+        const membersRes = await sessionJsonRequest<{ members: SquadMember[] }>(
           page,
-          `${BASE}/api/companies/${companyId}/members`
+          `${BASE}/api/squads/${squadId}/members`
         );
         expect(membersRes.ok).toBe(true);
         const body = membersRes.json;
@@ -276,13 +276,13 @@ test.describe("Multi-user: authenticated mode", () => {
     await signUp(page, ownerUser);
     await acceptBootstrapInvite(page, createBootstrapInvite());
 
-    const company = await createCompanyForSession(page, companyName);
-    const companyPrefix = company.issuePrefix ?? company.id;
-    await page.goto(`${BASE}/${companyPrefix}/dashboard`);
+    const squad = await createSquadForSession(page, squadName);
+    const squadPrefix = squad.issuePrefix ?? squad.id;
+    await page.goto(`${BASE}/${squadPrefix}/dashboard`);
     await expect(page.getByTestId("layout-account-menu-trigger")).toContainText(ownerUser.name);
     await page.getByTestId("layout-account-menu-trigger").click();
     await expect(page.getByText(ownerUser.email)).toBeVisible();
-    const inviteUrl = await createAuthenticatedInvite(page, companyPrefix);
+    const inviteUrl = await createAuthenticatedInvite(page, squadPrefix);
 
     const invited = await newPage(browser);
     try {
@@ -290,26 +290,26 @@ test.describe("Multi-user: authenticated mode", () => {
       await acceptHumanInvite(invited.page);
       await expect(invited.page).not.toHaveURL(/\/auth/, { timeout: 10_000 });
 
-      const joinedMember = await waitForMember(page, company.id, invitedUser.email);
+      const joinedMember = await waitForMember(page, squad.id, invitedUser.email);
 
-      await page.goto(`${BASE}/${companyPrefix}/company/settings`);
-      const roleSelect = page.getByTestId(`company-settings-member-role-${joinedMember.id}`);
+      await page.goto(`${BASE}/${squadPrefix}/squad/settings`);
+      const roleSelect = page.getByTestId(`squad-settings-member-role-${joinedMember.id}`);
       await expect(roleSelect).toBeVisible({ timeout: 20_000 });
       await roleSelect.selectOption("viewer");
       await expect(roleSelect).toHaveValue("viewer");
-      await waitForMemberRole(page, company.id, joinedMember.id, "viewer");
+      await waitForMemberRole(page, squad.id, joinedMember.id, "viewer");
 
-      await invited.page.goto(`${BASE}/${companyPrefix}/company/settings`);
+      await invited.page.goto(`${BASE}/${squadPrefix}/squad/settings`);
       await expect(
-        invited.page.getByText("Your current company role cannot create human invites.")
+        invited.page.getByText("Your current squad role cannot create human invites.")
       ).toBeVisible({ timeout: 20_000 });
       await expect(
-        invited.page.getByTestId("company-settings-create-human-invite")
+        invited.page.getByTestId("squad-settings-create-human-invite")
       ).toHaveCount(0);
 
       const forbiddenInviteRes = await sessionJsonRequest(
         invited.page,
-        `${BASE}/api/companies/${company.id}/invites`,
+        `${BASE}/api/squads/${squad.id}/invites`,
         {
           method: "POST",
           data: {

@@ -36,7 +36,7 @@ async function createTempRepo() {
 function createWorkspace(cwd: string | null, overrides: Partial<PluginExecutionWorkspaceMetadata> = {}): PluginExecutionWorkspaceMetadata {
   return {
     id: randomUUID(),
-    companyId: randomUUID(),
+    squadId: randomUUID(),
     projectId: randomUUID(),
     projectWorkspaceId: null,
     path: cwd,

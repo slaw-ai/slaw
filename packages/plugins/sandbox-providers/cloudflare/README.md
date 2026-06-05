@@ -12,7 +12,7 @@ From a Slaw instance, install:
 @slaw/plugin-cloudflare-sandbox
 ```
 
-Configure Cloudflare from `Company Settings -> Environments`, not from the plugin's instance settings page.
+Configure Cloudflare from `Squad Settings -> Environments`, not from the plugin's instance settings page.
 
 ## Configuration
 
@@ -29,7 +29,7 @@ Important validation rules:
 - non-local `bridgeBaseUrl` values must be `https://`
 - `sessionId` is required when `sessionStrategy` is `named`
 
-Pasted auth tokens are stored by Slaw as company secrets because the manifest marks `bridgeAuthToken` as a `secret-ref` field.
+Pasted auth tokens are stored by Slaw as squad secrets because the manifest marks `bridgeAuthToken` as a `secret-ref` field.
 
 ## Bridge template
 

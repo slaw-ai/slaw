@@ -300,8 +300,8 @@ test('scanSensitivePaths: flags changes to MarkdownBody (XSS via urlTransform)',
   assert.ok(scanSensitivePaths(files).length > 0);
 });
 
-test('scanSensitivePaths: flags changes to company-skills route (malicious skill exfil)', () => {
-  const files = [{ filename: 'server/src/routes/company-skills.ts', status: 'modified' }];
+test('scanSensitivePaths: flags changes to squad-skills route (malicious skill exfil)', () => {
+  const files = [{ filename: 'server/src/routes/squad-skills.ts', status: 'modified' }];
   assert.ok(scanSensitivePaths(files).length > 0);
 });
 

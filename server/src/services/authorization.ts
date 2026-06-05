@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@slaw/db";
 import {
   agents,
-  companyMemberships,
+  squadMemberships,
   instanceUserRoles,
   issues,
   principalPermissionGrants,
@@ -14,11 +14,11 @@ export type AuthorizationActor =
   {
     type: "board" | "agent" | "none";
     userId?: string | null;
-    companyIds?: string[];
-    memberships?: Array<{ companyId: string; membershipRole?: string | null; status?: string }>;
+    squadIds?: string[];
+    memberships?: Array<{ squadId: string; membershipRole?: string | null; status?: string }>;
     isInstanceAdmin?: boolean;
     agentId?: string | null;
-    companyId?: string | null;
+    squadId?: string | null;
     source?:
       | "local_implicit"
       | "session"
@@ -36,11 +36,11 @@ export type AuthorizationAction =
   | "issue:mutate";
 
 export type AuthorizationResource =
-  | { type: "company"; companyId: string }
-  | { type: "agent"; companyId: string; agentId?: string | null }
+  | { type: "squad"; squadId: string }
+  | { type: "agent"; squadId: string; agentId?: string | null }
   | {
       type: "issue";
-      companyId: string;
+      squadId: string;
       issueId?: string | null;
       projectId?: string | null;
       parentIssueId?: string | null;
@@ -59,11 +59,11 @@ export type AuthorizationDecision = {
     | "allow_explicit_grant"
     | "allow_legacy_agent_creator"
     | "allow_self"
-    | "allow_company_agent"
-    | "allow_simple_company_member"
+    | "allow_squad_agent"
+    | "allow_simple_squad_member"
     | "allow_manager_chain"
     | "deny_unauthenticated"
-    | "deny_company_boundary"
+    | "deny_squad_boundary"
     | "deny_missing_membership"
     | "deny_missing_grant"
     | "deny_policy_restricted"
@@ -81,8 +81,8 @@ type PrincipalGrantDecision = AuthorizationDecision & {
   grant?: NonNullable<AuthorizationDecision["grant"]>;
 };
 
-function companyIdForResource(resource: AuthorizationResource) {
-  return resource.companyId;
+function squadIdForResource(resource: AuthorizationResource) {
+  return resource.squadId;
 }
 
 function permissionForAction(action: AuthorizationAction): PermissionKey | null {
@@ -92,7 +92,7 @@ function permissionForAction(action: AuthorizationAction): PermissionKey | null 
 }
 
 function canCreateAgentsLegacy(agent: { role: string; permissions: Record<string, unknown> | null | undefined }) {
-  if (agent.role === "ceo") return true;
+  if (agent.role === "squad_lead") return true;
   if (!agent.permissions || typeof agent.permissions !== "object") return false;
   return Boolean(agent.permissions.canCreateAgents);
 }
@@ -187,7 +187,7 @@ function evaluateAuthorizationPolicyForAssignment(
   }
 
   const assignmentMode = readString(assignmentPolicy?.mode);
-  if (assignmentMode && assignmentMode !== "company_default" && assignmentMode !== "protected") {
+  if (assignmentMode && assignmentMode !== "squad_default" && assignmentMode !== "protected") {
     return {
       kind: "unknown",
       explanation: `${label} has an unsupported assignment policy mode.`,
@@ -210,7 +210,7 @@ function evaluateAuthorizationPolicyForAssignment(
   ) {
     return {
       kind: "restricted",
-      explanation: `${label} is private and cannot use simple company-wide task assignment.`,
+      explanation: `${label} is private and cannot use simple squad-wide task assignment.`,
     };
   }
 
@@ -241,17 +241,17 @@ function agentIsInSubtree(
   return false;
 }
 
-async function loadCompanyAgentHierarchy(db: Db, companyId: string) {
+async function loadSquadAgentHierarchy(db: Db, squadId: string) {
   const rows = await db
     .select({ id: agents.id, reportsTo: agents.reportsTo })
     .from(agents)
-    .where(eq(agents.companyId, companyId));
+    .where(eq(agents.squadId, squadId));
   return new Map(rows.map((agent) => [agent.id, agent]));
 }
 
-async function isAgentInSubtree(db: Db, companyId: string, rootAgentId: string, targetAgentId: string) {
+async function isAgentInSubtree(db: Db, squadId: string, rootAgentId: string, targetAgentId: string) {
   return agentIsInSubtree(
-    await loadCompanyAgentHierarchy(db, companyId),
+    await loadSquadAgentHierarchy(db, squadId),
     rootAgentId,
     targetAgentId,
   );
@@ -259,7 +259,7 @@ async function isAgentInSubtree(db: Db, companyId: string, rootAgentId: string, 
 
 async function scopeAllows(
   db: Db,
-  companyId: string,
+  squadId: string,
   grantScope: Record<string, unknown> | null,
   requestedScope: Record<string, unknown> | null | undefined,
   options: { requireStructuredScope?: boolean } = {},
@@ -318,7 +318,7 @@ async function scopeAllows(
   if (subtreeRootAgentIds.length > 0) {
     constrained = true;
     if (!targetAssigneeAgentId) return false;
-    const agentsById = await loadCompanyAgentHierarchy(db, companyId);
+    const agentsById = await loadSquadAgentHierarchy(db, squadId);
     let matchesSubtree = false;
     for (const rootAgentId of subtreeRootAgentIds) {
       if (agentIsInSubtree(agentsById, rootAgentId, targetAssigneeAgentId)) {
@@ -358,26 +358,26 @@ export function authorizationService(db: Db) {
   }
 
   async function getActiveMembership(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
   ) {
     return db
       .select()
-      .from(companyMemberships)
+      .from(squadMemberships)
       .where(
         and(
-          eq(companyMemberships.companyId, companyId),
-          eq(companyMemberships.principalType, principalType),
-          eq(companyMemberships.principalId, principalId),
-          eq(companyMemberships.status, "active"),
+          eq(squadMemberships.squadId, squadId),
+          eq(squadMemberships.principalType, principalType),
+          eq(squadMemberships.principalId, principalId),
+          eq(squadMemberships.status, "active"),
         ),
       )
       .then((rows) => rows[0] ?? null);
   }
 
   async function findGrant(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
     permissionKey: PermissionKey,
@@ -387,7 +387,7 @@ export function authorizationService(db: Db) {
       .from(principalPermissionGrants)
       .where(
         and(
-          eq(principalPermissionGrants.companyId, companyId),
+          eq(principalPermissionGrants.squadId, squadId),
           eq(principalPermissionGrants.principalType, principalType),
           eq(principalPermissionGrants.principalId, principalId),
           eq(principalPermissionGrants.permissionKey, permissionKey),
@@ -397,23 +397,23 @@ export function authorizationService(db: Db) {
   }
 
   async function decidePrincipalGrant(input: {
-    companyId: string;
+    squadId: string;
     principalType: PrincipalType;
     principalId: string;
     action: AuthorizationAction;
     permissionKey: PermissionKey;
     scope?: Record<string, unknown> | null;
   }): Promise<PrincipalGrantDecision> {
-    const membership = await getActiveMembership(input.companyId, input.principalType, input.principalId);
+    const membership = await getActiveMembership(input.squadId, input.principalType, input.principalId);
     if (!membership) {
       return deny({
         action: input.action,
         reason: "deny_missing_membership",
-        explanation: `${input.principalType} principal ${input.principalId} is not an active member of company ${input.companyId}.`,
+        explanation: `${input.principalType} principal ${input.principalId} is not an active member of squad ${input.squadId}.`,
       });
     }
 
-    const grant = await findGrant(input.companyId, input.principalType, input.principalId, input.permissionKey);
+    const grant = await findGrant(input.squadId, input.principalType, input.principalId, input.permissionKey);
     if (!grant) {
       return deny({
         action: input.action,
@@ -423,7 +423,7 @@ export function authorizationService(db: Db) {
     }
 
     if (
-      !(await scopeAllows(db, input.companyId, grant.scope, input.scope, {
+      !(await scopeAllows(db, input.squadId, grant.scope, input.scope, {
         requireStructuredScope: input.permissionKey === "tasks:assign_scope",
       }))
     ) {
@@ -457,7 +457,7 @@ export function authorizationService(db: Db) {
     return db
       .select({
         id: agents.id,
-        companyId: agents.companyId,
+        squadId: agents.squadId,
         role: agents.role,
         status: agents.status,
         reportsTo: agents.reportsTo,
@@ -468,36 +468,36 @@ export function authorizationService(db: Db) {
       .then((rows) => rows[0] ?? null);
   }
 
-  async function loadProjectAuthorizationPolicy(companyId: string, projectId: string) {
+  async function loadProjectAuthorizationPolicy(squadId: string, projectId: string) {
     const row = await db
       .select({ executionWorkspacePolicy: projects.executionWorkspacePolicy })
       .from(projects)
-      .where(and(eq(projects.id, projectId), eq(projects.companyId, companyId)))
+      .where(and(eq(projects.id, projectId), eq(projects.squadId, squadId)))
       .then((rows) => rows[0] ?? null);
     return readPolicyObject(row?.executionWorkspacePolicy, "authorizationPolicy");
   }
 
-  async function loadIssueAuthorizationPolicy(companyId: string, issueId: string) {
+  async function loadIssueAuthorizationPolicy(squadId: string, issueId: string) {
     const row = await db
       .select({ executionPolicy: issues.executionPolicy })
       .from(issues)
-      .where(and(eq(issues.id, issueId), eq(issues.companyId, companyId)))
+      .where(and(eq(issues.id, issueId), eq(issues.squadId, squadId)))
       .then((rows) => rows[0] ?? null);
     return readPolicyObject(row?.executionPolicy, "authorizationPolicy");
   }
 
-  async function assignmentTargetIsInCompany(resource: AuthorizationResource) {
+  async function assignmentTargetIsInSquad(resource: AuthorizationResource) {
     if (resource.type !== "issue") return true;
     if (resource.assigneeAgentId) {
       const target = await loadAgent(resource.assigneeAgentId);
       return Boolean(
         target &&
-        target.companyId === resource.companyId &&
+        target.squadId === resource.squadId &&
         isSimpleAssignableAgentStatus(target.status),
       );
     }
     if (resource.assigneeUserId) {
-      return Boolean(await getActiveMembership(resource.companyId, "user", resource.assigneeUserId));
+      return Boolean(await getActiveMembership(resource.squadId, "user", resource.assigneeUserId));
     }
     return true;
   }
@@ -518,21 +518,21 @@ export function authorizationService(db: Db) {
     }
     if (resource.projectId) {
       checks.push(
-        loadProjectAuthorizationPolicy(resource.companyId, resource.projectId).then((policy) =>
+        loadProjectAuthorizationPolicy(resource.squadId, resource.projectId).then((policy) =>
           evaluateAuthorizationPolicyForAssignment(policy, "Target project"),
         ),
       );
     }
     if (resource.issueId) {
       checks.push(
-        loadIssueAuthorizationPolicy(resource.companyId, resource.issueId).then((policy) =>
+        loadIssueAuthorizationPolicy(resource.squadId, resource.issueId).then((policy) =>
           evaluateAuthorizationPolicyForAssignment(policy, "Target issue"),
         ),
       );
     }
     if (resource.parentIssueId && resource.parentIssueId !== resource.issueId) {
       checks.push(
-        loadIssueAuthorizationPolicy(resource.companyId, resource.parentIssueId).then((policy) =>
+        loadIssueAuthorizationPolicy(resource.squadId, resource.parentIssueId).then((policy) =>
           evaluateAuthorizationPolicyForAssignment(policy, "Parent issue"),
         ),
       );
@@ -548,8 +548,8 @@ export function authorizationService(db: Db) {
     );
   }
 
-  async function isManagerOf(companyId: string, managerAgentId: string, assigneeAgentId: string) {
-    return isAgentInSubtree(db, companyId, managerAgentId, assigneeAgentId);
+  async function isManagerOf(squadId: string, managerAgentId: string, assigneeAgentId: string) {
+    return isAgentInSubtree(db, squadId, managerAgentId, assigneeAgentId);
   }
 
   async function decide(input: {
@@ -559,14 +559,14 @@ export function authorizationService(db: Db) {
     scope?: Record<string, unknown> | null;
   }): Promise<AuthorizationDecision> {
     const permissionKey = permissionForAction(input.action);
-    const companyId = companyIdForResource(input.resource);
+    const squadId = squadIdForResource(input.resource);
 
     async function decideWithTaskAssignmentGrants(
       principalType: PrincipalType,
       principalId: string,
     ): Promise<AuthorizationDecision> {
       const broadDecision = await decidePrincipalGrant({
-        companyId,
+        squadId,
         principalType,
         principalId,
         action: input.action,
@@ -575,7 +575,7 @@ export function authorizationService(db: Db) {
       });
       if (broadDecision.allowed || broadDecision.reason === "deny_missing_membership") return broadDecision;
       const scopedDecision = await decidePrincipalGrant({
-        companyId,
+        squadId,
         principalType,
         principalId,
         action: input.action,
@@ -604,7 +604,7 @@ export function authorizationService(db: Db) {
         explanation:
           policyEffect.kind === "restricted"
             ? policyEffect.explanation
-            : "Restrictive authorization policy blocks simple company-wide task assignment.",
+            : "Restrictive authorization policy blocks simple squad-wide task assignment.",
       });
     }
 
@@ -640,23 +640,23 @@ export function authorizationService(db: Db) {
         });
       }
       if (input.action === "tasks:assign") {
-        if (!(await assignmentTargetIsInCompany(input.resource))) {
+        if (!(await assignmentTargetIsInSquad(input.resource))) {
           return deny({
             action: input.action,
-            reason: "deny_company_boundary",
-            explanation: "Task assignment target agent is not active in the target company.",
+            reason: "deny_squad_boundary",
+            explanation: "Task assignment target agent is not active in the target squad.",
           });
         }
         const policyEffect = await assignmentPolicyEffect(input.resource);
         taskAssignmentPolicyEffect = policyEffect;
         const policyDeny = await denyForAssignmentPolicyIfNeeded(policyEffect);
         if (policyDeny) return policyDeny;
-        const membership = await getActiveMembership(companyId, "user", input.actor.userId);
+        const membership = await getActiveMembership(squadId, "user", input.actor.userId);
         if (policyEffect.kind === "none" && membership && membership.membershipRole !== "viewer") {
           return allow({
             action: input.action,
-            reason: "allow_simple_company_member",
-            explanation: "Allowed by simple mode company-wide task assignment default.",
+            reason: "allow_simple_squad_member",
+            explanation: "Allowed by simple mode squad-wide task assignment default.",
           });
         }
       }
@@ -675,7 +675,7 @@ export function authorizationService(db: Db) {
         return grantDecision;
       }
       return decidePrincipalGrant({
-        companyId,
+        squadId,
         principalType: "user",
         principalId: input.actor.userId,
         action: input.action,
@@ -692,20 +692,20 @@ export function authorizationService(db: Db) {
         explanation: "Agent authentication required.",
       });
     }
-    if (input.actor.companyId !== companyId) {
+    if (input.actor.squadId !== squadId) {
       return deny({
         action: input.action,
-        reason: "deny_company_boundary",
-        explanation: "Agent key cannot access another company.",
+        reason: "deny_squad_boundary",
+        explanation: "Agent key cannot access another squad.",
       });
     }
 
     const actorAgent = await loadAgent(actorAgentId);
-    if (!actorAgent || actorAgent.companyId !== companyId) {
+    if (!actorAgent || actorAgent.squadId !== squadId) {
       return deny({
         action: input.action,
-        reason: "deny_company_boundary",
-        explanation: "Actor agent was not found in the target company.",
+        reason: "deny_squad_boundary",
+        explanation: "Actor agent was not found in the target squad.",
       });
     }
 
@@ -717,11 +717,11 @@ export function authorizationService(db: Db) {
           explanation: "Actor agent is not active for simple mode task assignment.",
         });
       }
-      if (!(await assignmentTargetIsInCompany(input.resource))) {
+      if (!(await assignmentTargetIsInSquad(input.resource))) {
         return deny({
           action: input.action,
-          reason: "deny_company_boundary",
-          explanation: "Task assignment target agent is not active in the target company.",
+          reason: "deny_squad_boundary",
+          explanation: "Task assignment target agent is not active in the target squad.",
         });
       }
       const policyEffect = await assignmentPolicyEffect(input.resource);
@@ -734,8 +734,8 @@ export function authorizationService(db: Db) {
       }
       return allow({
         action: input.action,
-        reason: "allow_simple_company_member",
-        explanation: "Allowed by simple mode company-wide task assignment default.",
+        reason: "allow_simple_squad_member",
+        explanation: "Allowed by simple mode squad-wide task assignment default.",
       });
     }
 
@@ -751,7 +751,7 @@ export function authorizationService(db: Db) {
       if (!resource?.assigneeAgentId) {
         return allow({
           action: input.action,
-          reason: "allow_company_agent",
+          reason: "allow_squad_agent",
           explanation: "Allowed because the issue has no agent assignee.",
         });
       }
@@ -770,7 +770,7 @@ export function authorizationService(db: Db) {
 
     if (permissionKey) {
       const grantDecision = await decidePrincipalGrant({
-        companyId,
+        squadId,
         principalType: "agent",
         principalId: actorAgentId,
         action: input.action,
@@ -798,7 +798,7 @@ export function authorizationService(db: Db) {
       input.action === "tasks:manage_active_checkouts" &&
       input.resource.type === "issue" &&
       input.resource.assigneeAgentId &&
-      await isManagerOf(companyId, actorAgentId, input.resource.assigneeAgentId)
+      await isManagerOf(squadId, actorAgentId, input.resource.assigneeAgentId)
     ) {
       return allow({
         action: input.action,

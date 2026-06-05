@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { History as HistoryIcon, RotateCcw, Search } from "lucide-react";
 import type {
-  CompanySecret,
+  SquadSecret,
   EnvBinding,
   EnvSecretRefBinding,
   Routine,
@@ -38,7 +38,7 @@ import { MarkdownBody } from "./MarkdownBody";
 
 type AgentLookup = Map<string, { id: string; name: string }>;
 type ProjectLookup = Map<string, { id: string; name: string }>;
-type SecretLookup = Map<string, CompanySecret>;
+type SecretLookup = Map<string, SquadSecret>;
 
 type DirtyFieldDescriptor = {
   key: string;
@@ -53,7 +53,7 @@ type Props = {
   onSaveEdits: () => void;
   agents: AgentLookup;
   projects: ProjectLookup;
-  secrets?: CompanySecret[];
+  secrets?: SquadSecret[];
   onRestoreSecretMaterials: (response: RestoreRoutineRevisionResponse) => void;
   onRestored?: (response: RestoreRoutineRevisionResponse) => void;
 };
@@ -144,9 +144,9 @@ export function RoutineHistoryTab({
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routine.id) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.runs(routine.id) }),
         queryClient.invalidateQueries({
-          queryKey: queryKeys.routines.activity(routine.companyId, routine.id),
+          queryKey: queryKeys.routines.activity(routine.squadId, routine.id),
         }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(routine.companyId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(routine.squadId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.revisions(routine.id) }),
       ]);
     },

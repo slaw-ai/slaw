@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "أنشئ شركتك الأولى",
       "description": "ابدأ بإنشاء شركة.",
-      "newCompany": "شركة جديدة"
+      "newSquad": "شركة جديدة"
     }
   }
 }

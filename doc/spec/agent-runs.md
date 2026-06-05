@@ -43,7 +43,7 @@ The following intentions are explicitly preserved in this spec:
 4. Centralize wakeup decisions and queueing in one service.
 5. Provide realtime run/task/agent updates to the browser.
 6. Support deployment-specific full-log storage without bloating Postgres.
-7. Preserve company scoping and existing governance invariants.
+7. Preserve squad scoping and existing governance invariants.
 
 ### 3.2 Non-Goals (for this subsystem phase)
 
@@ -100,7 +100,7 @@ The subsystem introduces six cooperating components:
 
 6. `Realtime Event Hub`
    - Publishes run/agent/task updates over websocket.
-   - Supports selective subscription by company.
+   - Supports selective subscription by squad.
 
 Control flow (happy path):
 
@@ -129,7 +129,7 @@ interface TokenUsage {
 
 interface AdapterInvokeInput {
   protocolVersion: "agent-run/v1";
-  companyId: string;
+  squadId: string;
   agentId: string;
   runId: string;
   wakeupSource: "timer" | "assignment" | "on_demand" | "automation";
@@ -202,7 +202,7 @@ interface RunLogHandle {
 }
 
 interface RunLogStore {
-  begin(input: { companyId: string; agentId: string; runId: string }): Promise<RunLogHandle>;
+  begin(input: { squadId: string; agentId: string; runId: string }): Promise<RunLogHandle>;
   append(
     handle: RunLogHandle,
     event: { stream: "stdout" | "stderr" | "system"; chunk: string; ts: string },
@@ -344,7 +344,7 @@ All sources call one internal service:
 
 ```ts
 enqueueWakeup({
-  companyId,
+  squadId,
   agentId,
   source,
   triggerDetail, // optional: manual|ping|callback|system
@@ -404,7 +404,7 @@ Defaults:
 
 ## 9. Persistence Model
 
-All tables remain company-scoped.
+All tables remain squad-scoped.
 
 ## 9.0 Changes to `agents`
 
@@ -424,7 +424,7 @@ This separation keeps adapter config runtime-agnostic while allowing the heartbe
 One row per agent for aggregate runtime counters and legacy compatibility.
 
 - `agent_id` uuid pk fk `agents.id`
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `adapter_type` text not null
 - `session_id` text null
 - `state_json` jsonb not null default `{}`
@@ -441,10 +441,10 @@ Invariant: exactly one runtime state row per agent.
 
 ## 9.1.1 New table: `agent_task_sessions`
 
-One row per `(company_id, agent_id, adapter_type, task_key)` for resumable session state.
+One row per `(squad_id, agent_id, adapter_type, task_key)` for resumable session state.
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `agent_id` uuid fk not null
 - `adapter_type` text not null
 - `task_key` text not null
@@ -455,14 +455,14 @@ One row per `(company_id, agent_id, adapter_type, task_key)` for resumable sessi
 - `created_at` timestamptz not null
 - `updated_at` timestamptz not null
 
-Invariant: unique `(company_id, agent_id, adapter_type, task_key)`.
+Invariant: unique `(squad_id, agent_id, adapter_type, task_key)`.
 
 ## 9.2 New table: `agent_wakeup_requests`
 
 Queue + audit for wakeups.
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `agent_id` uuid fk not null
 - `source` text not null (`timer|assignment|on_demand|automation`)
 - `trigger_detail` text null (`manual|ping|callback|system`)
@@ -484,7 +484,7 @@ Queue + audit for wakeups.
 Append-only per-run lightweight event timeline (no full raw log chunks).
 
 - `id` bigserial pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `run_id` uuid fk `heartbeat_runs.id` not null
 - `agent_id` uuid fk `agents.id` not null
 - `seq` int not null
@@ -551,8 +551,8 @@ Rules:
 
 ## 10.2 Initial variable catalog
 
-- `company.id`
-- `company.name`
+- `squad.id`
+- `squad.name`
 - `agent.id`
 - `agent.name`
 - `agent.role`
@@ -588,17 +588,17 @@ Rules:
 
 ## 11.1 Transport
 
-Primary transport: websocket channel per company.
+Primary transport: websocket channel per squad.
 
-- Endpoint: `GET /api/companies/:companyId/events/ws`
-- Auth: board session or agent API key (company-bound)
+- Endpoint: `GET /api/squads/:squadId/events/ws`
+- Auth: board session or agent API key (squad-bound)
 
 ## 11.2 Event envelope
 
 ```json
 {
   "eventId": "uuid-or-monotonic-id",
-  "companyId": "uuid",
+  "squadId": "uuid",
   "type": "heartbeat.run.status",
   "entityType": "heartbeat_run",
   "entityId": "uuid",
@@ -682,7 +682,7 @@ On server startup:
    - fetch persisted lightweight timeline
 7. `GET /heartbeat-runs/:runId/log`
    - reads full log stream via `RunLogStore` (or redirects/presigned URL for object store)
-8. `GET /api/companies/:companyId/events/ws`
+8. `GET /api/squads/:squadId/events/ws`
    - websocket stream
 
 ## 13.2 Mutation logging
@@ -721,7 +721,7 @@ All wakeup/run state mutations must create `activity_log` entries:
 
 ## Phase 4: Realtime push
 
-1. Implement company websocket hub.
+1. Implement squad websocket hub.
 2. Publish run/agent/issue events.
 3. Update UI pages to subscribe and invalidate/update relevant data.
 
@@ -746,7 +746,7 @@ All wakeup/run state mutations must create `activity_log` entries:
 5. Pause/terminate interrupts running local process and prevents new wakeups.
 6. Browser receives live websocket updates for run status/logs and task/agent changes.
 7. Failed runs expose rich CLI diagnostics in UI with excerpts immediately available and full log retrievable via `RunLogStore`.
-8. All actions remain company-scoped and auditable.
+8. All actions remain squad-scoped and auditable.
 
 ## 16. Open Questions
 

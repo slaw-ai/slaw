@@ -1,5 +1,5 @@
 import { index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { environments } from "./environments.js";
 import { executionWorkspaces } from "./execution_workspaces.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";
@@ -9,7 +9,7 @@ export const environmentLeases = pgTable(
   "environment_leases",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+    squadId: uuid("squad_id").notNull().references(() => squads.id, { onDelete: "cascade" }),
     environmentId: uuid("environment_id").notNull().references(() => environments.id, { onDelete: "cascade" }),
     executionWorkspaceId: uuid("execution_workspace_id").references(() => executionWorkspaces.id, { onDelete: "set null" }),
     issueId: uuid("issue_id").references(() => issues.id, { onDelete: "set null" }),
@@ -29,18 +29,18 @@ export const environmentLeases = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyEnvironmentStatusIdx: index("environment_leases_company_environment_status_idx").on(
-      table.companyId,
+    squadEnvironmentStatusIdx: index("environment_leases_squad_environment_status_idx").on(
+      table.squadId,
       table.environmentId,
       table.status,
     ),
-    companyExecutionWorkspaceIdx: index("environment_leases_company_execution_workspace_idx").on(
-      table.companyId,
+    squadExecutionWorkspaceIdx: index("environment_leases_squad_execution_workspace_idx").on(
+      table.squadId,
       table.executionWorkspaceId,
     ),
-    companyIssueIdx: index("environment_leases_company_issue_idx").on(table.companyId, table.issueId),
+    squadIssueIdx: index("environment_leases_squad_issue_idx").on(table.squadId, table.issueId),
     heartbeatRunIdx: index("environment_leases_heartbeat_run_idx").on(table.heartbeatRunId),
-    companyLastUsedIdx: index("environment_leases_company_last_used_idx").on(table.companyId, table.lastUsedAt),
+    squadLastUsedIdx: index("environment_leases_squad_last_used_idx").on(table.squadId, table.lastUsedAt),
     providerLeaseIdx: index("environment_leases_provider_lease_idx").on(table.providerLeaseId),
   }),
 );

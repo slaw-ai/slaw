@@ -27,7 +27,7 @@ import type {
   IssueSurfaceVisibility,
 } from "../constants.js";
 import type { Agent } from "./agent.js";
-import type { CompanySkill } from "./company-skill.js";
+import type { SquadSkill } from "./squad-skill.js";
 import type { Project } from "./project.js";
 import type { Routine, RoutineTrigger, RoutineVariable } from "./routine.js";
 
@@ -144,7 +144,7 @@ export interface PluginEnvironmentDriverDeclaration {
 
 /**
  * Declares a normal Slaw agent that a plugin can provision and later
- * resolve by stable key within each company.
+ * resolve by stable key within each squad.
  */
 export interface PluginManagedAgentDeclaration {
   /** Stable identifier for this managed agent, unique within the plugin. */
@@ -163,7 +163,7 @@ export interface PluginManagedAgentDeclaration {
   adapterType?: AgentAdapterType | string;
   /**
    * Optional ordered list of compatible adapter types. When present, the host
-   * prefers the most-used compatible adapter already configured in the company,
+   * prefers the most-used compatible adapter already configured in the squad,
    * falling back to `adapterType`.
    */
   adapterPreference?: Array<AgentAdapterType | string>;
@@ -187,7 +187,7 @@ export interface PluginManagedAgentDeclaration {
 }
 
 /**
- * Declares a company-scoped local folder a trusted plugin wants the operator
+ * Declares a squad-scoped local folder a trusted plugin wants the operator
  * to configure. The host treats this as a generic filesystem root: plugin
  * code may request required relative folders/files, then use SDK helpers for
  * path-safe reads and atomic writes under that root.
@@ -209,7 +209,7 @@ export interface PluginLocalFolderDeclaration {
 
 /**
  * Declares a normal Slaw project that a plugin can provision and later
- * resolve by stable key within each company.
+ * resolve by stable key within each squad.
  */
 export interface PluginManagedProjectDeclaration {
   /** Stable identifier for this managed project, unique within the plugin. */
@@ -234,7 +234,7 @@ export interface PluginManagedSkillFileDeclaration {
 }
 
 /**
- * Declares a company skill that a plugin can install into each company's
+ * Declares a squad skill that a plugin can install into each squad's
  * skills library and later resolve by stable key.
  */
 export interface PluginManagedSkillDeclaration {
@@ -271,7 +271,7 @@ export interface PluginManagedRoutineDeclaration {
   assigneeRef?: PluginManagedResourceRef | null;
   /** Stable managed project reference for routine-created issues. */
   projectRef?: PluginManagedResourceRef | null;
-  /** Optional goal id to set on the routine in this company. */
+  /** Optional goal id to set on the routine in this squad. */
   goalId?: string | null;
   /** Suggested starting status. Defaults to `paused` when no assignee is resolved, otherwise `active`. */
   status?: RoutineStatus;
@@ -297,7 +297,7 @@ export interface PluginManagedAgentResolution {
   pluginKey: string;
   resourceKind: "agent";
   resourceKey: string;
-  companyId: string;
+  squadId: string;
   agentId: string | null;
   agent: Agent | null;
   status: "missing" | "resolved" | "created" | "relinked" | "reset";
@@ -312,7 +312,7 @@ export interface PluginManagedProjectResolution {
   pluginKey: string;
   resourceKind: "project";
   resourceKey: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   project: Project | null;
   status: "missing" | "resolved" | "created" | "relinked" | "reset";
@@ -322,7 +322,7 @@ export interface PluginManagedRoutineResolution {
   pluginKey: string;
   resourceKind: "routine";
   resourceKey: string;
-  companyId: string;
+  squadId: string;
   routineId: string | null;
   routine: Routine | null;
   status: "missing" | "missing_refs" | "resolved" | "created" | "relinked" | "reset";
@@ -333,9 +333,9 @@ export interface PluginManagedSkillResolution {
   pluginKey: string;
   resourceKind: "skill";
   resourceKey: string;
-  companyId: string;
+  squadId: string;
   skillId: string | null;
-  skill: CompanySkill | null;
+  skill: SquadSkill | null;
   status: "missing" | "resolved" | "created" | "relinked" | "reset";
   defaultDrift?: {
     changedFiles: string[];
@@ -362,11 +362,11 @@ export interface PluginUiSlotDeclaration {
    */
   entityTypes?: PluginUiSlotEntityType[];
   /**
-   * Optional company-scoped route segment for page, routeSidebar, and
-   * companySettingsPage slots.
-   * Example: `kitchensink` becomes `/:companyPrefix/kitchensink`.
-   * For companySettingsPage, `permissions` becomes
-   * `/:companyPrefix/company/settings/permissions`.
+   * Optional squad-scoped route segment for page, routeSidebar, and
+   * squadSettingsPage slots.
+   * Example: `kitchensink` becomes `/:squadPrefix/kitchensink`.
+   * For squadSettingsPage, `permissions` becomes
+   * `/:squadPrefix/squad/settings/permissions`.
    */
   routePath?: string;
   /**
@@ -476,7 +476,7 @@ export interface PluginDatabaseDeclaration {
   coreReadTables?: PluginDatabaseCoreReadTable[];
 }
 
-export type PluginApiRouteCompanyResolution =
+export type PluginApiRouteSquadResolution =
   | { from: "body"; key: string }
   | { from: "query"; key: string }
   | { from: "issue"; param: string };
@@ -494,8 +494,8 @@ export interface PluginApiRouteDeclaration {
   capability: "api.routes.register";
   /** Optional checkout policy enforced by the host before worker dispatch. */
   checkoutPolicy?: PluginApiRouteCheckoutPolicy;
-  /** How the host resolves company access for this route. */
-  companyResolution?: PluginApiRouteCompanyResolution;
+  /** How the host resolves squad access for this route. */
+  squadResolution?: PluginApiRouteSquadResolution;
 }
 
 // ---------------------------------------------------------------------------
@@ -554,13 +554,13 @@ export interface SlawPluginManifestV1 {
   apiRoutes?: PluginApiRouteDeclaration[];
   /** Environment drivers this plugin contributes. Requires `environment.drivers.register` capability. */
   environmentDrivers?: PluginEnvironmentDriverDeclaration[];
-  /** Suggested company-scoped agents this plugin can provision and resolve by stable key. */
+  /** Suggested squad-scoped agents this plugin can provision and resolve by stable key. */
   agents?: PluginManagedAgentDeclaration[];
-  /** Suggested company-scoped projects this plugin can provision and resolve by stable key. */
+  /** Suggested squad-scoped projects this plugin can provision and resolve by stable key. */
   projects?: PluginManagedProjectDeclaration[];
-  /** Suggested company-scoped routines this plugin can provision and resolve by stable key. */
+  /** Suggested squad-scoped routines this plugin can provision and resolve by stable key. */
   routines?: PluginManagedRoutineDeclaration[];
-  /** Suggested company skills this plugin can install and resolve by stable key. */
+  /** Suggested squad skills this plugin can install and resolve by stable key. */
   skills?: PluginManagedSkillDeclaration[];
   /** Trusted local folders this plugin can configure and access by stable key. */
   localFolders?: PluginLocalFolderDeclaration[];
@@ -698,13 +698,13 @@ export interface PluginConfig {
 }
 
 /**
- * Company-scoped plugin settings row. This is intentionally generic; plugin
+ * Squad-scoped plugin settings row. This is intentionally generic; plugin
  * features such as local folders live inside `settingsJson` under namespaced
  * keys instead of requiring feature-specific database columns.
  */
-export interface PluginCompanySettings {
+export interface PluginSquadSettings {
   id: string;
-  companyId: string;
+  squadId: string;
   pluginId: string;
   enabled: boolean;
   settingsJson: Record<string, unknown>;

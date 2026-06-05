@@ -36,7 +36,7 @@ function readEnum<T extends string>(value: string | null, allowed: readonly T[],
 function toEnvironment(row: EnvironmentRow): Environment {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     name: row.name,
     description: row.description ?? null,
     driver: readEnum(row.driver, ENVIRONMENT_DRIVERS, "environment driver") ?? "local",
@@ -51,7 +51,7 @@ function toEnvironment(row: EnvironmentRow): Environment {
 function toEnvironmentLease(row: EnvironmentLeaseRow): EnvironmentLease {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     environmentId: row.environmentId,
     executionWorkspaceId: row.executionWorkspaceId ?? null,
     issueId: row.issueId ?? null,
@@ -79,13 +79,13 @@ function toEnvironmentLease(row: EnvironmentLeaseRow): EnvironmentLease {
 export function environmentService(db: Db) {
   return {
     list: async (
-      companyId: string,
+      squadId: string,
       filters: {
         status?: string;
         driver?: string;
       } = {},
     ): Promise<Environment[]> => {
-      const conditions = [eq(environments.companyId, companyId)];
+      const conditions = [eq(environments.squadId, squadId)];
       if (filters.status) conditions.push(eq(environments.status, filters.status));
       if (filters.driver) conditions.push(eq(environments.driver, filters.driver));
       const rows = await db
@@ -110,12 +110,12 @@ export function environmentService(db: Db) {
       return row ? toEnvironmentLease(row) : null;
     },
 
-    ensureLocalEnvironment: async (companyId: string): Promise<Environment> => {
+    ensureLocalEnvironment: async (squadId: string): Promise<Environment> => {
       const now = new Date();
       const row = await db
         .insert(environments)
         .values({
-          companyId,
+          squadId,
           name: DEFAULT_LOCAL_ENVIRONMENT_NAME,
           description: DEFAULT_LOCAL_ENVIRONMENT_DESCRIPTION,
           driver: "local",
@@ -123,13 +123,13 @@ export function environmentService(db: Db) {
           config: {},
           metadata: {
             managedBySlaw: true,
-            defaultForCompany: true,
+            defaultForSquad: true,
           },
           createdAt: now,
           updatedAt: now,
         })
         .onConflictDoNothing({
-          target: [environments.companyId, environments.driver],
+          target: [environments.squadId, environments.driver],
           where: sql`${environments.driver} = 'local'`,
         })
         .returning()
@@ -139,7 +139,7 @@ export function environmentService(db: Db) {
       const existing = await db
         .select()
         .from(environments)
-        .where(and(eq(environments.companyId, companyId), eq(environments.driver, "local")))
+        .where(and(eq(environments.squadId, squadId), eq(environments.driver, "local")))
         .then((rows) => rows[0] ?? null);
       if (!existing) {
         throw new Error("Failed to ensure local environment");
@@ -147,12 +147,12 @@ export function environmentService(db: Db) {
       return toEnvironment(existing);
     },
 
-    create: async (companyId: string, input: CreateEnvironment): Promise<Environment> => {
+    create: async (squadId: string, input: CreateEnvironment): Promise<Environment> => {
       const now = new Date();
       const row = await db
         .insert(environments)
         .values({
-          companyId,
+          squadId,
           name: input.name,
           description: input.description ?? null,
           driver: input.driver,
@@ -216,7 +216,7 @@ export function environmentService(db: Db) {
     },
 
     acquireLease: async (input: {
-      companyId: string;
+      squadId: string;
       environmentId: string;
       executionWorkspaceId?: string | null;
       issueId?: string | null;
@@ -231,7 +231,7 @@ export function environmentService(db: Db) {
       const row = await db
         .insert(environmentLeases)
         .values({
-          companyId: input.companyId,
+          squadId: input.squadId,
           environmentId: input.environmentId,
           executionWorkspaceId: input.executionWorkspaceId ?? null,
           issueId: input.issueId ?? null,

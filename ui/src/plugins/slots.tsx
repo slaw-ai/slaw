@@ -47,8 +47,8 @@ import {
 } from "./bridge";
 
 export type PluginSlotContext = {
-  companyId?: string | null;
-  companyPrefix?: string | null;
+  squadId?: string | null;
+  squadPrefix?: string | null;
   projectId?: string | null;
   entityId?: string | null;
   entityType?: PluginUiSlotEntityType | null;
@@ -109,7 +109,7 @@ export type RegisteredPluginComponent =
 type SlotFilters = {
   slotTypes: PluginUiSlotType[];
   entityType?: PluginUiSlotEntityType | null;
-  companyId?: string | null;
+  squadId?: string | null;
   enabled?: boolean;
 };
 
@@ -776,8 +776,8 @@ function slotContextToHostContext(
   userId: string | null,
 ): PluginHostContext {
   return {
-    companyId: pluginSlotContext.companyId ?? null,
-    companyPrefix: pluginSlotContext.companyPrefix ?? null,
+    squadId: pluginSlotContext.squadId ?? null,
+    squadPrefix: pluginSlotContext.squadPrefix ?? null,
     projectId: pluginSlotContext.projectId ?? (pluginSlotContext.entityType === "project" ? pluginSlotContext.entityId ?? null : null),
     entityId: pluginSlotContext.entityId ?? null,
     entityType: pluginSlotContext.entityType ?? null,
@@ -898,7 +898,7 @@ export function PluginSlotOutlet({
   const { slots, errorMessage } = usePluginSlots({
     slotTypes,
     entityType,
-    companyId: context.companyId,
+    squadId: context.squadId,
   });
 
   if (errorMessage) {

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@slaw/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-05-31T18:06:11.126Z",
+  "generatedAt": "2026-06-05T07:31:36.544Z",
   "skills": [
     {
       "id": "slaw:bundled:docs:doc-maintenance",
@@ -32,81 +32,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4478,
-          "sha256": "fb0353386c5e5e5e13bcbb3233f044e3dccecf371f429d6328f26c26d7cb6169"
+          "sizeBytes": 4471,
+          "sha256": "e117279265cb5c9e5d01d30a74ea5287399e41631f84d46c591073eca9fd6179"
         }
       ],
-      "contentHash": "sha256:2e02299210fd17c1fe1867b4ee8c144a11b6fe1fe481f83b8268cfbaaf10f9aa"
-    },
-    {
-      "id": "slaw:bundled:slaw-operations:issue-triage",
-      "key": "slaw/bundled/slaw-operations/issue-triage",
-      "kind": "bundled",
-      "category": "slaw-operations",
-      "slug": "issue-triage",
-      "name": "issue-triage",
-      "description": "Triage Slaw inbox issues that are stale, blocked, in-review, or assigned-but-not-progressing, and decide a single next action per issue (resume, reassign, unblock, escalate, or close).",
-      "path": "catalog/bundled/slaw-operations/issue-triage",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "manager",
-        "ceo",
-        "engineer"
-      ],
-      "requires": [],
-      "tags": [
-        "slaw",
-        "triage",
-        "inbox",
-        "workflow"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 4042,
-          "sha256": "df5bdc8bf5e017b7ba5f70a4b5323fad51d0c323278f386580f26cf43ad09160"
-        }
-      ],
-      "contentHash": "sha256:88dc13560371fb364963782cb4f6eeb4090fcde92ee3774479428ed6b90e11c1"
-    },
-    {
-      "id": "slaw:bundled:slaw-operations:task-planning",
-      "key": "slaw/bundled/slaw-operations/task-planning",
-      "kind": "bundled",
-      "category": "slaw-operations",
-      "slug": "task-planning",
-      "name": "task-planning",
-      "description": "Turn a Slaw issue or request into a structured implementation plan with child task graph, blockers, owners, and acceptance criteria, then save it as the issue `plan` document.",
-      "path": "catalog/bundled/slaw-operations/task-planning",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "manager",
-        "engineer",
-        "product"
-      ],
-      "requires": [],
-      "tags": [
-        "slaw",
-        "planning",
-        "issues",
-        "delegation"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 4649,
-          "sha256": "2ff61e12dfaa4cf8cc548529fd176f55f1b1f5292ff9dd3eb2cb331417ab5e4e"
-        }
-      ],
-      "contentHash": "sha256:4fb46a4bcefad4fd46fae48c433ee497112509a8e19fb8a7745ead44d219b498"
+      "contentHash": "sha256:502ad9dbe22a7bdadf438fa81630812eada5b5fd1f728927e7c22749639a5352"
     },
     {
       "id": "slaw:bundled:product:wireframe",
@@ -138,8 +68,8 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 11887,
-          "sha256": "a910d038d8cdd13615b82f44a2195b781ebccf01c49f9c58babd43b0701fe644"
+          "sizeBytes": 11880,
+          "sha256": "41b0a3f1fcbd04fdcd41729e60e5dd81f4abcfe580dbca29c97af1d1a7a5fcbd"
         },
         {
           "path": "assets/site-template.html",
@@ -178,7 +108,7 @@
           "sha256": "017260d2216859d57e5fa869e0efc6b88c7ed4d8a8a4f5af04fe89a3ef2445bd"
         }
       ],
-      "contentHash": "sha256:0bd9a9fdc656d529e3f97c00cd504dcf72d3a4fecb8b0504ca2fe3e00d63287f"
+      "contentHash": "sha256:e5f363d2e723ee2a843bdcff2c03d041564b4f06232aa7b07230b149de4d7347"
     },
     {
       "id": "slaw:bundled:quality:qa-acceptance",
@@ -209,11 +139,81 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 3861,
-          "sha256": "c631b437ab26d104af6cdb963d8f679a9341439041b3cb3ec8835f4ff551b378"
+          "sizeBytes": 3854,
+          "sha256": "8dd1dcfa931f6961405349cc98087256bfde7ad5d8579c5c91a70b15e8a3eca7"
         }
       ],
-      "contentHash": "sha256:32372dacaf62e93454b9855968c4eec96456ba78b509f450b3dfaa48e31ef356"
+      "contentHash": "sha256:058a786f51c17bc741cf35f955db452cdb658c06f7c8cb3d11ec10cbbe818d80"
+    },
+    {
+      "id": "slaw:bundled:slaw-operations:issue-triage",
+      "key": "slaw/bundled/slaw-operations/issue-triage",
+      "kind": "bundled",
+      "category": "slaw-operations",
+      "slug": "issue-triage",
+      "name": "issue-triage",
+      "description": "Triage Slaw inbox issues that are stale, blocked, in-review, or assigned-but-not-progressing, and decide a single next action per issue (resume, reassign, unblock, escalate, or close).",
+      "path": "catalog/bundled/slaw-operations/issue-triage",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "manager",
+        "squad_lead",
+        "engineer"
+      ],
+      "requires": [],
+      "tags": [
+        "slaw",
+        "triage",
+        "inbox",
+        "workflow"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 4027,
+          "sha256": "b1a26b9956a681c9835ff5d2e1ffe6ff1c14acca959e74e19507c9bc604cfb8a"
+        }
+      ],
+      "contentHash": "sha256:d3e6a5ebcfae6dc44e21eac800dc6c1df13c0c0d5e90c11fe6a3f9fbb39a9f4f"
+    },
+    {
+      "id": "slaw:bundled:slaw-operations:task-planning",
+      "key": "slaw/bundled/slaw-operations/task-planning",
+      "kind": "bundled",
+      "category": "slaw-operations",
+      "slug": "task-planning",
+      "name": "task-planning",
+      "description": "Turn a Slaw issue or request into a structured implementation plan with child task graph, blockers, owners, and acceptance criteria, then save it as the issue `plan` document.",
+      "path": "catalog/bundled/slaw-operations/task-planning",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "manager",
+        "engineer",
+        "product"
+      ],
+      "requires": [],
+      "tags": [
+        "slaw",
+        "planning",
+        "issues",
+        "delegation"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 4612,
+          "sha256": "68428c9a889e250fe70f8c77f672b7436a5f323fd4d910c3d4cd470615541ca5"
+        }
+      ],
+      "contentHash": "sha256:3b955a9131287f29da030b97cbe9c07c57d1eed1da4a0ebb1ae7aabf48224be2"
     },
     {
       "id": "slaw:bundled:software-development:github-pr-workflow",
@@ -242,11 +242,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 3970,
-          "sha256": "f498ec4ebb1779dea37adeb1db8a8b22316282798e35ee02e2fc5ff627d7e261"
+          "sizeBytes": 3963,
+          "sha256": "e4219be8a79dc9c315384a6c49b6d1875207c33f843383767b1386c5c61bceee"
         }
       ],
-      "contentHash": "sha256:90f278c89aa0711be150c1cd2456ca25620d02f36995b113ca9837d756a37f6c"
+      "contentHash": "sha256:2d99263250e8ba97ed07bae1317f65cf976adab1b0da0e7443b651ee8c9c0b96"
     },
     {
       "id": "slaw:optional:browser:agent-browser",
@@ -277,11 +277,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 5133,
-          "sha256": "362f7b9d02297782bc6f0c093f495b8a0304a75bcf4b42e5c280a42b1f757b7d"
+          "sizeBytes": 5126,
+          "sha256": "9d8bd51f4e4b4949cb88b11f35c4e0512617afc24011a7678cdf98859da6d3a9"
         }
       ],
-      "contentHash": "sha256:eabb2c9f7b5e1a27ebb1e05a711d61433a266478154cd671a685e99e67aadea2"
+      "contentHash": "sha256:a2c869ca2e627119f50df0bdca306df410e152285d46258b1b34643c5196f328"
     },
     {
       "id": "slaw:optional:content:release-announcement",
@@ -312,11 +312,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4416,
-          "sha256": "062810ac34e9edc89efa701fec2eee60f16949d1944cc2cae49803cb91e8cbf4"
+          "sizeBytes": 4409,
+          "sha256": "397f3a25e402b9f6d0eca229b2feb17d2025f835d033844f6088d68326f61b23"
         }
       ],
-      "contentHash": "sha256:f22a9ed696e6614c6db2757a149f48b3295e81f78c27d065d9cb164cf4f8a9bd"
+      "contentHash": "sha256:e053626eaf20d5f9fa42be46688f303c11f58c6666d639a62d8741a9bf592fec"
     },
     {
       "id": "slaw:optional:product:design-critique",
@@ -347,11 +347,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4851,
-          "sha256": "022e619baf6cc25725946279cb8052d22af090dd6cd6dc8c20f17867f71a5d8e"
+          "sizeBytes": 4844,
+          "sha256": "4bfda2971cdb94f499e553f2a0fa86ee740fa9efc815a355e7f7c524f1059c0a"
         }
       ],
-      "contentHash": "sha256:429f94df398a0697042b5bbe4755b1ff1a230aa5f41d99118ad37493ac65d21c"
+      "contentHash": "sha256:42e50251907e108036f29cf28a7c030622c598884eb6a57ce93cc43ac2f19b1c"
     }
   ]
 }

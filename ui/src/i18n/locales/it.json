@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "Crea la tua prima azienda",
       "description": "Inizia creando un'azienda.",
-      "newCompany": "Nuova azienda"
+      "newSquad": "Nuova azienda"
     }
   }
 }

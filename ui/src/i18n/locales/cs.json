@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "Vytvořte svou první společnost",
       "description": "Začněte vytvořením společnosti.",
-      "newCompany": "Nová společnost"
+      "newSquad": "Nová společnost"
     }
   }
 }

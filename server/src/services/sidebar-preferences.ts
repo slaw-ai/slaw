@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@slaw/db";
 import {
-  companyUserSidebarPreferences,
+  squadUserSidebarPreferences,
   userSidebarPreferences,
 } from "@slaw/db";
 import type { SidebarOrderPreference } from "@slaw/shared";
@@ -30,61 +30,61 @@ function toPreference(orderedIds: unknown, updatedAt: Date | null): SidebarOrder
 
 export function sidebarPreferenceService(db: Db) {
   return {
-    async getCompanyOrder(userId: string): Promise<SidebarOrderPreference> {
+    async getSquadOrder(userId: string): Promise<SidebarOrderPreference> {
       const row = await db.query.userSidebarPreferences.findFirst({
         where: eq(userSidebarPreferences.userId, userId),
       });
-      return toPreference(row?.companyOrder ?? [], row?.updatedAt ?? null);
+      return toPreference(row?.squadOrder ?? [], row?.updatedAt ?? null);
     },
 
-    async upsertCompanyOrder(userId: string, orderedIds: string[]): Promise<SidebarOrderPreference> {
+    async upsertSquadOrder(userId: string, orderedIds: string[]): Promise<SidebarOrderPreference> {
       const now = new Date();
       const normalized = normalizeOrderedIds(orderedIds);
       const [row] = await db
         .insert(userSidebarPreferences)
         .values({
           userId,
-          companyOrder: normalized,
+          squadOrder: normalized,
           updatedAt: now,
         })
         .onConflictDoUpdate({
           target: [userSidebarPreferences.userId],
           set: {
-            companyOrder: normalized,
+            squadOrder: normalized,
             updatedAt: now,
           },
         })
         .returning();
-      return toPreference(row?.companyOrder ?? normalized, row?.updatedAt ?? now);
+      return toPreference(row?.squadOrder ?? normalized, row?.updatedAt ?? now);
     },
 
-    async getProjectOrder(companyId: string, userId: string): Promise<SidebarOrderPreference> {
-      const row = await db.query.companyUserSidebarPreferences.findFirst({
+    async getProjectOrder(squadId: string, userId: string): Promise<SidebarOrderPreference> {
+      const row = await db.query.squadUserSidebarPreferences.findFirst({
         where: and(
-          eq(companyUserSidebarPreferences.companyId, companyId),
-          eq(companyUserSidebarPreferences.userId, userId),
+          eq(squadUserSidebarPreferences.squadId, squadId),
+          eq(squadUserSidebarPreferences.userId, userId),
         ),
       });
       return toPreference(row?.projectOrder ?? [], row?.updatedAt ?? null);
     },
 
     async upsertProjectOrder(
-      companyId: string,
+      squadId: string,
       userId: string,
       orderedIds: string[],
     ): Promise<SidebarOrderPreference> {
       const now = new Date();
       const normalized = normalizeOrderedIds(orderedIds);
       const [row] = await db
-        .insert(companyUserSidebarPreferences)
+        .insert(squadUserSidebarPreferences)
         .values({
-          companyId,
+          squadId,
           userId,
           projectOrder: normalized,
           updatedAt: now,
         })
         .onConflictDoUpdate({
-          target: [companyUserSidebarPreferences.companyId, companyUserSidebarPreferences.userId],
+          target: [squadUserSidebarPreferences.squadId, squadUserSidebarPreferences.userId],
           set: {
             projectOrder: normalized,
             updatedAt: now,

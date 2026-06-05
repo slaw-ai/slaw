@@ -4,11 +4,11 @@ import { createRequire } from "node:module";
 import type { Duplex } from "node:stream";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@slaw/db";
-import { agentApiKeys, companyMemberships, instanceUserRoles } from "@slaw/db";
+import { agentApiKeys, squadMemberships, instanceUserRoles } from "@slaw/db";
 import type { DeploymentMode } from "@slaw/shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "../middleware/logger.js";
-import { subscribeCompanyLiveEvents } from "../services/live-events.js";
+import { subscribeSquadLiveEvents } from "../services/live-events.js";
 
 interface WsSocket {
   readyState: number;
@@ -41,7 +41,7 @@ const { WebSocket, WebSocketServer } = require("ws") as {
 };
 
 interface UpgradeContext {
-  companyId: string;
+  squadId: string;
   actorType: "board" | "agent";
   actorId: string;
 }
@@ -60,8 +60,8 @@ function rejectUpgrade(socket: Duplex, statusLine: string, message: string) {
   socket.destroy();
 }
 
-function parseCompanyId(pathname: string) {
-  const match = pathname.match(/^\/api\/companies\/([^/]+)\/events\/ws$/);
+function parseSquadId(pathname: string) {
+  const match = pathname.match(/^\/api\/squads\/([^/]+)\/events\/ws$/);
   if (!match) return null;
 
   try {
@@ -95,7 +95,7 @@ function headersFromIncomingMessage(req: IncomingMessage): Headers {
 async function authorizeUpgrade(
   db: Db,
   req: IncomingMessage,
-  companyId: string,
+  squadId: string,
   url: URL,
   opts: {
     deploymentMode: DeploymentMode;
@@ -110,7 +110,7 @@ async function authorizeUpgrade(
   if (!token) {
     if (opts.deploymentMode === "local_trusted") {
       return {
-        companyId,
+        squadId,
         actorType: "board",
         actorId: "board",
       };
@@ -131,22 +131,22 @@ async function authorizeUpgrade(
         .where(and(eq(instanceUserRoles.userId, userId), eq(instanceUserRoles.role, "instance_admin")))
         .then((rows) => rows[0] ?? null),
       db
-        .select({ companyId: companyMemberships.companyId })
-        .from(companyMemberships)
+        .select({ squadId: squadMemberships.squadId })
+        .from(squadMemberships)
         .where(
           and(
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, userId),
-            eq(companyMemberships.status, "active"),
+            eq(squadMemberships.principalType, "user"),
+            eq(squadMemberships.principalId, userId),
+            eq(squadMemberships.status, "active"),
           ),
         ),
     ]);
 
-    const hasCompanyMembership = memberships.some((row) => row.companyId === companyId);
-    if (!roleRow && !hasCompanyMembership) return null;
+    const hasSquadMembership = memberships.some((row) => row.squadId === squadId);
+    if (!roleRow && !hasSquadMembership) return null;
 
     return {
-      companyId,
+      squadId,
       actorType: "board",
       actorId: userId,
     };
@@ -159,7 +159,7 @@ async function authorizeUpgrade(
     .where(and(eq(agentApiKeys.keyHash, tokenHash), isNull(agentApiKeys.revokedAt)))
     .then((rows) => rows[0] ?? null);
 
-  if (!key || key.companyId !== companyId) {
+  if (!key || key.squadId !== squadId) {
     return null;
   }
 
@@ -169,7 +169,7 @@ async function authorizeUpgrade(
     .where(eq(agentApiKeys.id, key.id));
 
   return {
-    companyId,
+    squadId,
     actorType: "agent",
     actorId: key.agentId,
   };
@@ -205,7 +205,7 @@ export function setupLiveEventsWebSocketServer(
       return;
     }
 
-    const unsubscribe = subscribeCompanyLiveEvents(context.companyId, (event) => {
+    const unsubscribe = subscribeSquadLiveEvents(context.squadId, (event) => {
       if (socket.readyState !== WebSocket.OPEN) return;
       socket.send(JSON.stringify(event));
     });
@@ -225,7 +225,7 @@ export function setupLiveEventsWebSocketServer(
     });
 
     socket.on("error", (err: Error) => {
-      logger.warn({ err, companyId: context.companyId }, "live websocket client error");
+      logger.warn({ err, squadId: context.squadId }, "live websocket client error");
     });
   });
 
@@ -240,13 +240,13 @@ export function setupLiveEventsWebSocketServer(
     }
 
     const url = new URL(req.url, "http://localhost");
-    const companyId = parseCompanyId(url.pathname);
-    if (!companyId) {
+    const squadId = parseSquadId(url.pathname);
+    if (!squadId) {
       socket.destroy();
       return;
     }
 
-    void authorizeUpgrade(db, req, companyId, url, {
+    void authorizeUpgrade(db, req, squadId, url, {
       deploymentMode: opts.deploymentMode,
       resolveSessionFromHeaders: opts.resolveSessionFromHeaders,
     })

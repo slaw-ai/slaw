@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
-      "title": "Create your first company",
-      "description": "Get started by creating a company.",
-      "newCompany": "New Company"
+    "noSquads": {
+      "title": "Create your first squad",
+      "description": "Get started by creating a squad.",
+      "newSquad": "New Squad"
     }
   }
 }

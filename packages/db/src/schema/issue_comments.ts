@@ -1,6 +1,6 @@
 import type { IssueCommentAuthorType, IssueCommentMetadata, IssueCommentPresentation } from "@slaw/shared";
 import { pgTable, uuid, text, timestamp, index, jsonb } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { issues } from "./issues.js";
 import { agents } from "./agents.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";
@@ -9,7 +9,7 @@ export const issueComments = pgTable(
   "issue_comments",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     issueId: uuid("issue_id").notNull().references(() => issues.id),
     authorAgentId: uuid("author_agent_id").references(() => agents.id),
     authorUserId: text("author_user_id"),
@@ -23,14 +23,14 @@ export const issueComments = pgTable(
   },
   (table) => ({
     issueIdx: index("issue_comments_issue_idx").on(table.issueId),
-    companyIdx: index("issue_comments_company_idx").on(table.companyId),
-    companyIssueCreatedAtIdx: index("issue_comments_company_issue_created_at_idx").on(
-      table.companyId,
+    squadIdx: index("issue_comments_squad_idx").on(table.squadId),
+    squadIssueCreatedAtIdx: index("issue_comments_squad_issue_created_at_idx").on(
+      table.squadId,
       table.issueId,
       table.createdAt,
     ),
-    companyAuthorIssueCreatedAtIdx: index("issue_comments_company_author_issue_created_at_idx").on(
-      table.companyId,
+    squadAuthorIssueCreatedAtIdx: index("issue_comments_squad_author_issue_created_at_idx").on(
+      table.squadId,
       table.authorUserId,
       table.issueId,
       table.createdAt,

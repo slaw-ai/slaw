@@ -37,8 +37,8 @@ interface ChallengeStatusResponse {
   command: string;
   clientName: string | null;
   requestedAccess: RequestedAccess;
-  requestedCompanyId: string | null;
-  requestedCompanyName: string | null;
+  requestedSquadId: string | null;
+  requestedSquadName: string | null;
   approvedAt: string | null;
   cancelledAt: string | null;
   expiresAt: string;
@@ -193,7 +193,7 @@ export function openUrl(url: string): boolean {
 export async function loginBoardCli(params: {
   apiBase: string;
   requestedAccess: RequestedAccess;
-  requestedCompanyId?: string | null;
+  requestedSquadId?: string | null;
   clientName?: string | null;
   command?: string;
   storePath?: string;
@@ -209,7 +209,7 @@ export async function loginBoardCli(params: {
       command,
       clientName: params.clientName?.trim() || "slaw cli",
       requestedAccess: params.requestedAccess,
-      requestedCompanyId: params.requestedCompanyId?.trim() || null,
+      requestedSquadId: params.requestedSquadId?.trim() || null,
     }),
   });
 

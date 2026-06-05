@@ -172,7 +172,7 @@ Work:
 
 - surface the tracked process metadata in run details or debug endpoints
 - add a control-plane cleanup action or CLI utility for stale local run processes owned by Slaw
-- scope cleanup by run/agent/company instead of broad browser-name matching
+- scope cleanup by run/agent/squad instead of broad browser-name matching
 
 This should replace ad hoc scripts as the general-purpose escape hatch.
 

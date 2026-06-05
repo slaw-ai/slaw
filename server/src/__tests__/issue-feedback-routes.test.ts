@@ -43,7 +43,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
       feedbackDataSharingPreference: "prompt",
     },
   })),
-  listCompanyIds: vi.fn(async () => ["company-1"]),
+  listSquadIds: vi.fn(async () => ["squad-1"]),
 }));
 const mockRoutineService = vi.hoisted(() => ({
   syncRunStatusForIssue: vi.fn(async () => undefined),
@@ -82,8 +82,8 @@ function registerModuleMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => mockAgentService,
@@ -170,7 +170,7 @@ describe("issue feedback trace routes", () => {
         feedbackDataSharingPreference: "prompt",
       },
     });
-    mockInstanceSettingsService.listCompanyIds.mockResolvedValue(["company-1"]);
+    mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);
     mockRoutineService.syncRunStatusForIssue.mockResolvedValue(undefined);
     mockLogActivity.mockResolvedValue(undefined);
   });
@@ -179,7 +179,7 @@ describe("issue feedback trace routes", () => {
     const targetId = "11111111-1111-4111-8111-111111111111";
     mockIssueService.getById.mockResolvedValue({
       id: "issue-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-1",
     });
     mockFeedbackService.saveIssueVote.mockResolvedValue({
@@ -199,7 +199,7 @@ describe("issue feedback trace routes", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: true,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app)
@@ -213,7 +213,7 @@ describe("issue feedback trace routes", () => {
 
     expect([200, 201]).toContain(res.status);
     expect(mockFeedbackExportService.flushPendingFeedbackTraces).toHaveBeenCalledWith({
-      companyId: "company-1",
+      squadId: "squad-1",
       traceId: "trace-1",
       limit: 1,
     });
@@ -223,7 +223,7 @@ describe("issue feedback trace routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
@@ -233,17 +233,17 @@ describe("issue feedback trace routes", () => {
     expect(mockFeedbackService.getFeedbackTraceById).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when a board user lacks access to the trace company", async () => {
+  it("returns 404 when a board user lacks access to the trace squad", async () => {
     mockFeedbackService.getFeedbackTraceById.mockResolvedValue({
       id: "trace-1",
-      companyId: "company-2",
+      squadId: "squad-2",
     });
     const app = await createApp({
       type: "board",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app).get("/api/feedback-traces/trace-1");
@@ -251,10 +251,10 @@ describe("issue feedback trace routes", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 404 for bundle fetches when a board user lacks access to the trace company", async () => {
+  it("returns 404 for bundle fetches when a board user lacks access to the trace squad", async () => {
     mockFeedbackService.getFeedbackTraceBundle.mockResolvedValue({
       id: "trace-1",
-      companyId: "company-2",
+      squadId: "squad-2",
       issueId: "issue-1",
       files: [],
     });
@@ -263,7 +263,7 @@ describe("issue feedback trace routes", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app).get("/api/feedback-traces/trace-1/bundle");

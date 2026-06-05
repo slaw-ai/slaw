@@ -53,7 +53,7 @@ function makeIssue(
   const { id, ...rest } = overrides;
   return {
     id,
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,

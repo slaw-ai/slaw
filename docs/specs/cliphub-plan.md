@@ -1,18 +1,18 @@
 # ClipHub: Marketplace for Slaw Team Configurations
 
-> Supersession note: this marketplace plan predates the markdown-first company package direction. For the current package-format and import/export rollout plan, see `doc/plans/2026-03-13-company-import-export-v2.md` and `docs/companies/companies-spec.md`.
+> Supersession note: this marketplace plan predates the markdown-first squad package direction. For the current package-format and import/export rollout plan, see `doc/plans/2026-03-13-squad-import-export-v2.md` and `docs/squads/squads-spec.md`.
 
-> The "app store" for whole-company AI teams — pre-built Slaw configurations, agent blueprints, skills, and governance templates that ship real work from day one.
+> The "app store" for whole-squad AI teams — pre-built Slaw configurations, agent blueprints, skills, and governance templates that ship real work from day one.
 
 ## 1. Vision & Positioning
 
-**ClipHub** sells **entire team configurations** — org charts, agent roles, inter-agent workflows, governance rules, and project templates — for Slaw-managed companies.
+**ClipHub** sells **entire team configurations** — org charts, agent roles, inter-agent workflows, governance rules, and project templates — for Slaw-managed squads.
 
 | Dimension | ClipHub |
 |---|---|
 | Unit of sale | Team blueprint (multi-agent org) |
-| Buyer | Founder / team lead spinning up an AI company |
-| Install target | Slaw company (agents, projects, governance) |
+| Buyer | Founder / team lead spinning up an AI squad |
+| Install target | Slaw squad (agents, projects, governance) |
 | Value prop | "Skip org design — get a shipping team in minutes" |
 | Price range | $0–$499 per blueprint (+ individual add-ons) |
 
@@ -22,7 +22,7 @@
 
 ### 2.1 Team Blueprints (primary product)
 
-A complete Slaw company configuration:
+A complete Slaw squad configuration:
 
 - **Org chart**: Agents with roles, titles, reporting chains, capabilities
 - **Agent configs**: Adapter type, model, prompt templates, instructions paths
@@ -31,10 +31,10 @@ A complete Slaw company configuration:
 - **Skills & instructions**: AGENTS.md / skill files bundled per agent
 
 **Examples:**
-- "SaaS Startup Team" — CEO, CTO, Engineer, CMO, Designer ($199)
+- "SaaS Startup Team" — Squad Lead, CTO, Engineer, CMO, Designer ($199)
 - "Content Agency" — Editor-in-Chief, 3 Writers, SEO Analyst, Social Manager ($149)
 - "Dev Shop" — CTO, 2 Engineers, QA, DevOps ($99)
-- "Solo Founder + Crew" — CEO agent + 3 ICs across eng/marketing/ops ($79)
+- "Solo Founder + Crew" — Squad Lead agent + 3 ICs across eng/marketing/ops ($79)
 
 ### 2.2 Agent Blueprints (individual agents within a team context)
 
@@ -73,7 +73,7 @@ Pre-built approval flows and policies:
 - Billing code structures
 
 **Examples:**
-- "Startup Governance" — lightweight, CEO approves > $50 (Free)
+- "Startup Governance" — lightweight, Squad Lead approves > $50 (Free)
 - "Enterprise Governance" — multi-tier approval, audit trail ($49)
 
 ---
@@ -148,8 +148,8 @@ interface TeamBlueprint {
   // Projects
   projects: ProjectTemplate[];
 
-  // Company-level config
-  companyDefaults: {
+  // Squad-level config
+  squadDefaults: {
     name: string;
     defaultModel: string;
     defaultAdapter: string;
@@ -218,10 +218,10 @@ interface Purchase {
   id: string;
   listingId: string;
   buyerUserId: string;
-  buyerCompanyId: string | null;    // Target Slaw company
+  buyerSquadId: string | null;    // Target Slaw squad
   pricePaidCents: number;
   paymentIntentId: string | null;   // Stripe
-  installedAt: string | null;       // When deployed to company
+  installedAt: string | null;       // When deployed to squad
   status: 'pending' | 'completed' | 'refunded';
   createdAt: string;
 }
@@ -286,7 +286,7 @@ interface Review {
 | `PATCH` | `/api/listings/:id` | Update listing |
 | `DELETE` | `/api/listings/:id` | Archive listing |
 | `POST` | `/api/listings/:id/purchase` | Purchase listing (Stripe checkout) |
-| `POST` | `/api/listings/:id/install` | Install to Slaw company |
+| `POST` | `/api/listings/:id/install` | Install to Slaw squad |
 | `GET` | `/api/listings/:id/reviews` | Get reviews |
 | `POST` | `/api/listings/:id/reviews` | Submit review |
 | `GET` | `/api/creators/:slug` | Creator profile |
@@ -305,8 +305,8 @@ interface Review {
 Homepage → Browse marketplace → Filter by type/category
   → Click listing → Read details, reviews, preview org chart
   → Click "Buy" → Stripe checkout (or free install)
-  → Post-purchase: "Install to Company" button
-  → Select target Slaw company (or create new)
+  → Post-purchase: "Install to Squad" button
+  → Select target Slaw squad (or create new)
   → ClipHub API calls Slaw API to:
       1. Create agents with configs from blueprint
       2. Set up reporting chains
@@ -334,7 +334,7 @@ Sign up as creator → Connect Stripe
 ### 5.3 Creator: Export from Slaw → Publish
 
 ```
-Running Slaw company → "Export as Blueprint" (CLI or UI)
+Running Slaw squad → "Export as Blueprint" (CLI or UI)
   → Slaw exports:
       - Agent configs (sanitized — no secrets)
       - Org chart / reporting chains
@@ -362,8 +362,8 @@ Running Slaw company → "Export as Blueprint" (CLI or UI)
 |---|---|
 | Product card | Org chart mini-preview + agent count badge |
 | Detail page | Interactive org chart + per-agent breakdown |
-| Install flow | One-click deploy to Slaw company |
-| Social proof | "X companies running this blueprint" |
+| Install flow | One-click deploy to Slaw squad |
+| Social proof | "X squads running this blueprint" |
 | Preview | Live demo sandbox (stretch goal) |
 
 ### 6.3 Listing Card Design
@@ -371,7 +371,7 @@ Running Slaw company → "Export as Blueprint" (CLI or UI)
 ```
 ┌─────────────────────────────────────┐
 │  [Org Chart Mini-Preview]           │
-│  ┌─CEO─┐                            │
+│  ┌─Squad Lead─┐                            │
 │  ├─CTO─┤                            │
 │  └─ENG──┘                           │
 │                                     │
@@ -404,12 +404,12 @@ Running Slaw company → "Export as Blueprint" (CLI or UI)
 
 ### 7.1 Install API Flow
 
-When a buyer clicks "Install to Company":
+When a buyer clicks "Install to Squad":
 
 ```
 POST /api/listings/:id/install
 {
-  "targetCompanyId": "uuid",         // Existing Slaw company
+  "targetSquadId": "uuid",         // Existing Slaw squad
   "overrides": {                      // Optional customization
     "agentModel": "claude-sonnet-4-6", // Override default model
     "budgetScale": 0.5,               // Scale budgets
@@ -421,9 +421,9 @@ POST /api/listings/:id/install
 The install handler:
 
 1. Validates buyer owns the purchase
-2. Validates target company access
+2. Validates target squad access
 3. For each agent in blueprint:
-   - `POST /api/companies/:id/agents` (if `slaw-create-agent` supports it, or via approval flow)
+   - `POST /api/squads/:id/agents` (if `slaw-create-agent` supports it, or via approval flow)
    - Sets adapter config, prompt template, instructions path
 4. Sets reporting chains
 5. Creates projects and workspaces
@@ -481,7 +481,7 @@ blueprint/
 ├── org-chart.json         # Agent hierarchy
 ├── governance.json        # Approval rules, budgets
 ├── agents/
-│   ├── ceo/
+│   ├── squad_lead/
 │   │   ├── prompt.md      # Prompt template
 │   │   ├── AGENTS.md      # Instructions
 │   │   └── skills/        # Skill files
@@ -508,7 +508,7 @@ blueprint/
 - [ ] Listing detail page with org chart visualization
 - [ ] Creator registration and listing creation wizard
 - [ ] Free installs only (no payments yet)
-- [ ] Install flow: blueprint → Slaw company
+- [ ] Install flow: blueprint → Slaw squad
 
 ### Phase 2: Payments & Social
 - [ ] Stripe Connect integration

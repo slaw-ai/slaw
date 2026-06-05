@@ -18,7 +18,7 @@ describe("resolveCommandContext", () => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env.SLAW_API_URL;
     delete process.env.SLAW_API_KEY;
-    delete process.env.SLAW_COMPANY_ID;
+    delete process.env.SLAW_SQUAD_ID;
     delete process.env.SLAW_AUTH_STORE;
     delete process.env.SLAW_SERVER_PORT;
   });
@@ -37,7 +37,7 @@ describe("resolveCommandContext", () => {
         profiles: {
           ops: {
             apiBase: "http://127.0.0.1:9999",
-            companyId: "company-profile",
+            squadId: "squad-profile",
             apiKeyEnvVarName: "AGENT_KEY",
           },
         },
@@ -46,9 +46,9 @@ describe("resolveCommandContext", () => {
     );
     process.env.AGENT_KEY = "key-from-env";
 
-    const resolved = resolveCommandContext({ context: contextPath }, { requireCompany: true });
+    const resolved = resolveCommandContext({ context: contextPath }, { requireSquad: true });
     expect(resolved.api.apiBase).toBe("http://127.0.0.1:9999");
-    expect(resolved.companyId).toBe("company-profile");
+    expect(resolved.squadId).toBe("squad-profile");
     expect(resolved.api.apiKey).toBe("key-from-env");
   });
 
@@ -61,7 +61,7 @@ describe("resolveCommandContext", () => {
         profiles: {
           default: {
             apiBase: "http://profile:3100",
-            companyId: "company-profile",
+            squadId: "squad-profile",
           },
         },
       },
@@ -73,17 +73,17 @@ describe("resolveCommandContext", () => {
         context: contextPath,
         apiBase: "http://override:3200",
         apiKey: "direct-token",
-        companyId: "company-override",
+        squadId: "squad-override",
       },
-      { requireCompany: true },
+      { requireSquad: true },
     );
 
     expect(resolved.api.apiBase).toBe("http://override:3200");
-    expect(resolved.companyId).toBe("company-override");
+    expect(resolved.squadId).toBe("squad-override");
     expect(resolved.api.apiKey).toBe("direct-token");
   });
 
-  it("throws when company is required but unresolved", () => {
+  it("throws when squad is required but unresolved", () => {
     const contextPath = createTempPath("context.json");
     writeContext(
       {
@@ -95,8 +95,8 @@ describe("resolveCommandContext", () => {
     );
 
     expect(() =>
-      resolveCommandContext({ context: contextPath, apiBase: "http://localhost:3100" }, { requireCompany: true }),
-    ).toThrow(/Company ID is required/);
+      resolveCommandContext({ context: contextPath, apiBase: "http://localhost:3100" }, { requireSquad: true }),
+    ).toThrow(/Squad ID is required/);
   });
 
   it("resolves api base by explicit, env, profile, then config/default precedence", () => {

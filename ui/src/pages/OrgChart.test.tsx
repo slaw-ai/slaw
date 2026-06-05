@@ -15,8 +15,8 @@ vi.mock("@/lib/router", () => ({
   useNavigate: () => navigateMock,
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({ selectedCompanyId: "company-1" }),
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({ selectedSquadId: "squad-1" }),
 }));
 
 vi.mock("../context/BreadcrumbContext", () => ({
@@ -40,8 +40,8 @@ vi.mock("../components/AgentIconPicker", () => ({
 const orgTree = [
   {
     id: "agent-1",
-    name: "CEO",
-    role: "ceo",
+    name: "Squad Lead",
+    role: "squad_lead",
     status: "active",
     reports: [
       {
@@ -58,9 +58,9 @@ const orgTree = [
 const agents = [
   {
     id: "agent-1",
-    companyId: "company-1",
-    name: "CEO",
-    role: "ceo",
+    squadId: "squad-1",
+    name: "Squad Lead",
+    role: "squad_lead",
     title: null,
     status: "active",
     reportsTo: null,
@@ -75,14 +75,14 @@ const agents = [
     metadata: null,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
     updatedAt: new Date("2026-04-01T00:00:00.000Z"),
-    urlKey: "ceo",
+    urlKey: "squad_lead",
     pauseReason: null,
     pausedAt: null,
     permissions: null,
   },
   {
     id: "agent-2",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Engineer",
     role: "engineer",
     title: null,
@@ -243,7 +243,7 @@ describe("OrgChart mobile gestures", () => {
       card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
     });
 
-    expect(navigateMock).toHaveBeenCalledWith("/agents/ceo");
+    expect(navigateMock).toHaveBeenCalledWith("/agents/squad_lead");
   });
   it("pinch-zooms toward the touch center", async () => {
     const { viewport, layer } = await renderOrgChart();

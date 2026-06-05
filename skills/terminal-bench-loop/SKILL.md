@@ -38,7 +38,7 @@ Also use when the user hands you an existing top-level loop issue and asks for t
 - The assignment is to build or change `slaw-bench` itself (Harbor adapter, wrapper, telemetry). Use normal engineering flow on that repo.
 - The assignment is to submit a benchmark result for ranking. This skill produces smoke/non-comparable runs by design — escalate full-suite or comparable runs to BenchmarkQualityManager.
 - The assignment is a normal Slaw product bug not surfaced by a Terminal-Bench loop. Use normal investigation.
-- You have not been granted permission to install or assign company skills, and the asker actually wants library mutation. Hand that step to an authorized skill-library owner.
+- You have not been granted permission to install or assign squad skills, and the asker actually wants library mutation. Hand that step to an authorized skill-library owner.
 
 ## Three invariants you must preserve
 
@@ -114,7 +114,7 @@ Apply the `/diagnose-why-work-stopped` pattern to the iteration's run, scoped to
 
 - Walk the Slaw issue tree the smoke produced under the Slaw App worktree, node by node, and find the exact `(issue, status)` combination that stopped progress. Quote evidence: run ids, comment timestamps, status transitions.
 - Classify every non-progressing issue in that subtree as **truly needs human/board intervention**, **agent-actionable but not currently routed**, or **already covered**.
-- State whether the failure is task/model, Slaw product, harness/setup, verifier/infrastructure, security, or unclear. Be explicit when evidence is inferred (e.g. cross-company API boundary blocks direct reads).
+- State whether the failure is task/model, Slaw product, harness/setup, verifier/infrastructure, security, or unclear. Be explicit when evidence is inferred (e.g. cross-squad API boundary blocks direct reads).
 - If the failure is a Slaw product gap, frame the fix as a **general product rule** stated as a contract, and check it against the three invariants above. If the rule would have blocked a recent productive run, narrow it.
 
 Record the diagnosis on the iteration child as a `diagnosis` document. Do not propose code yet.
@@ -200,7 +200,7 @@ If a loop issue does not fit one of these on exit, the heartbeat is not done. Fi
 - **Silent iteration N+1.** If the iteration budget is reached, never start another iteration without an explicit budget extension recorded on the loop issue.
 - **Comparable-run drift.** This skill produces smoke runs only. If the asker wants a comparable benchmark submission, hand off to BenchmarkQualityManager and BenchmarkForensics — do not relabel a smoke as comparable.
 - **Recursive recovery.** Stranded-work recovery that recovers its own recovery issues is the canonical infinite loop. If a diagnosis surfaces it inside the smoke's subtree, refuse to deepen and route to `/diagnose-why-work-stopped` for a product-rule fix.
-- **Skill-library mutation.** This skill never installs, edits, or assigns company skills as part of a loop iteration. Library changes go to an authorized skill-library owner via a separate issue.
+- **Skill-library mutation.** This skill never installs, edits, or assigns squad skills as part of a loop iteration. Library changes go to an authorized skill-library owner via a separate issue.
 - **Hiding the chain.** Do not silently delete or hide failed iteration children, retracted proposals, or rejected confirmations. The audit trail is the loop's evidence.
 
 ## Verification checklist (before exiting a heartbeat that touched the loop)
@@ -214,7 +214,7 @@ If a loop issue does not fit one of these on exit, the heartbeat is not done. Fi
 - [ ] No implementation child exists for an unapproved fix proposal; if one was proposed, a `request_confirmation` is open against the latest plan revision.
 - [ ] Every loop and iteration issue rests in a terminal, explicitly-live, explicitly-waiting, or named-blocker state.
 - [ ] The stop reason — if the loop stopped this heartbeat — is one of pass, board rejection, budget exhausted, or named real blocker.
-- [ ] No company-skill library mutation happened in this heartbeat.
+- [ ] No squad-skill library mutation happened in this heartbeat.
 
 ## Deterministic smoke
 
@@ -224,7 +224,7 @@ Run this smoke after installing or changing the skill, before treating it as ope
 pnpm smoke:terminal-bench-loop-skill
 ```
 
-The command uses the current Slaw API token and company from `SLAW_API_URL`, `SLAW_API_KEY`, and `SLAW_COMPANY_ID`. When `SLAW_TASK_ID` is set, it attaches the smoke issues under that source issue and inherits its project/goal context. By default it cancels the short-lived smoke issues after verification; pass `-- --keep` to leave the verified `blocked` loop parent, `in_review` iteration child, and pending confirmation available for manual inspection.
+The command uses the current Slaw API token and squad from `SLAW_API_URL`, `SLAW_API_KEY`, and `SLAW_SQUAD_ID`. When `SLAW_TASK_ID` is set, it attaches the smoke issues under that source issue and inherits its project/goal context. By default it cancels the short-lived smoke issues after verification; pass `-- --keep` to leave the verified `blocked` loop parent, `in_review` iteration child, and pending confirmation available for manual inspection.
 
 The smoke is deterministic and intentionally non-comparable. It does not start Terminal-Bench, Harbor, an agent model, or a provider runtime. It verifies only the control-plane shape:
 

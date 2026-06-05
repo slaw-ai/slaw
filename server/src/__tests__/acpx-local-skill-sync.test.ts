@@ -11,7 +11,7 @@ describe("acpx local skill sync", () => {
   it("reports ACPX Claude skills as supported runtime-mounted state", async () => {
     const snapshot = await listAcpxSkills({
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "acpx_local",
       config: {
         agent: "claude",
@@ -34,7 +34,7 @@ describe("acpx local skill sync", () => {
   it("reports ACPX Codex skills with Codex home runtime detail", async () => {
     const snapshot = await syncAcpxSkills({
       agentId: "agent-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "acpx_local",
       config: {
         agent: "codex",
@@ -56,7 +56,7 @@ describe("acpx local skill sync", () => {
   it("keeps ACPX custom skill selection tracked but unsupported", async () => {
     const snapshot = await listAcpxSkills({
       agentId: "agent-3",
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "acpx_local",
       config: {
         agent: "custom",

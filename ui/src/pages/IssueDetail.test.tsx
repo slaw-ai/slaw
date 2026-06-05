@@ -138,17 +138,17 @@ vi.mock("@/lib/router", () => ({
   useParams: () => ({ issueId: "PAP-1" }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    companies: [{ id: "company-1", name: "Slaw", issuePrefix: "PAP", status: "active" }],
-    selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", name: "Slaw", issuePrefix: "PAP", status: "active" },
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    squads: [{ id: "squad-1", name: "Slaw", issuePrefix: "PAP", status: "active" }],
+    selectedSquadId: "squad-1",
+    selectedSquad: { id: "squad-1", name: "Slaw", issuePrefix: "PAP", status: "active" },
     selectionSource: "manual",
     loading: false,
     error: null,
-    setSelectedCompanyId: vi.fn(),
-    reloadCompanies: vi.fn(),
-    createCompany: vi.fn(),
+    setSelectedSquadId: vi.fn(),
+    reloadSquads: vi.fn(),
+    createSquad: vi.fn(),
   }),
 }));
 
@@ -377,7 +377,7 @@ function createDeferred<T>() {
 function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: "goal-1",
@@ -426,7 +426,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
 function createAgent(overrides: Partial<Agent> = {}): Agent {
   return {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "CodexCoder",
     urlKey: "codexcoder",
     role: "engineer",
@@ -455,7 +455,7 @@ function createPauseHold(overrides: Partial<IssueTreeHold> = {}): IssueTreeHold 
   const now = new Date("2026-04-21T00:00:00.000Z");
   return {
     id: "hold-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     rootIssueId: "issue-1",
     mode: "pause",
     status: "active",
@@ -477,7 +477,7 @@ function createPauseHold(overrides: Partial<IssueTreeHold> = {}): IssueTreeHold 
     members: [
       {
         id: "hold-member-root",
-        companyId: "company-1",
+        squadId: "squad-1",
         holdId: "hold-1",
         issueId: "issue-1",
         parentIssueId: null,
@@ -495,7 +495,7 @@ function createPauseHold(overrides: Partial<IssueTreeHold> = {}): IssueTreeHold 
       },
       {
         id: "hold-member-child",
-        companyId: "company-1",
+        squadId: "squad-1",
         holdId: "hold-1",
         issueId: "child-1",
         parentIssueId: "issue-1",
@@ -518,7 +518,7 @@ function createPauseHold(overrides: Partial<IssueTreeHold> = {}): IssueTreeHold 
 
 function createResumePreview(): IssueTreeControlPreview {
   return {
-    companyId: "company-1",
+    squadId: "squad-1",
     rootIssueId: "issue-1",
     mode: "resume",
     generatedAt: new Date("2026-04-21T00:00:00.000Z"),
@@ -573,7 +573,7 @@ function createResumePreview(): IssueTreeControlPreview {
 
 function createPausePreview(): IssueTreeControlPreview {
   return {
-    companyId: "company-1",
+    squadId: "squad-1",
     rootIssueId: "issue-1",
     mode: "pause",
     generatedAt: new Date("2026-04-21T00:00:00.000Z"),
@@ -659,7 +659,7 @@ function createPausePreview(): IssueTreeControlPreview {
 
 function createRestorePreview(): IssueTreeControlPreview {
   return {
-    companyId: "company-1",
+    squadId: "squad-1",
     rootIssueId: "issue-1",
     mode: "restore",
     generatedAt: new Date("2026-04-21T00:00:00.000Z"),
@@ -746,7 +746,7 @@ function createCancelPreview(issueCount = 8): IssueTreeControlPreview {
   }));
 
   return {
-    companyId: "company-1",
+    squadId: "squad-1",
     rootIssueId: "issue-1",
     mode: "cancel",
     generatedAt: new Date("2026-04-21T00:00:00.000Z"),
@@ -822,7 +822,7 @@ describe("IssueDetail", () => {
     mockHeartbeatsApi.activeRunForIssue.mockResolvedValue(null);
     mockAgentsApi.list.mockResolvedValue([]);
     mockAccessApi.getCurrentBoardAccess.mockResolvedValue({
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       isInstanceAdmin: true,
       source: "session",
       keyId: null,
@@ -905,7 +905,7 @@ describe("IssueDetail", () => {
     mockIssuesApi.listAcceptedPlanDecompositions.mockResolvedValue([
       {
         id: "decomp-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         sourceIssueId: "issue-1",
         acceptedPlanRevisionId: "plan-rev-1",
         acceptedPlanRevisionNumber: 2,
@@ -981,7 +981,7 @@ describe("IssueDetail", () => {
     });
 
     mockIssuesApi.get.mockResolvedValue(issue);
-    mockIssuesApi.list.mockImplementation((_companyId, filters?: { descendantOf?: string; parentId?: string }) => {
+    mockIssuesApi.list.mockImplementation((_squadId, filters?: { descendantOf?: string; parentId?: string }) => {
       if (filters?.parentId === "parent-1") return Promise.resolve([next, previous, issue]);
       return Promise.resolve([]);
     });
@@ -996,7 +996,7 @@ describe("IssueDetail", () => {
     await flushReact();
     await flushReact();
 
-    expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+    expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", {
       parentId: "parent-1",
       includeBlockedBy: true,
     });
@@ -1037,7 +1037,7 @@ describe("IssueDetail", () => {
     });
 
     mockIssuesApi.get.mockResolvedValue(parent);
-    mockIssuesApi.list.mockImplementation((_companyId, filters?: { descendantOf?: string; parentId?: string }) => {
+    mockIssuesApi.list.mockImplementation((_squadId, filters?: { descendantOf?: string; parentId?: string }) => {
       if (filters?.descendantOf === "issue-parent") return Promise.resolve([secondChild, firstChild]);
       return Promise.resolve([]);
     });
@@ -1052,7 +1052,7 @@ describe("IssueDetail", () => {
     await flushReact();
     await flushReact();
 
-    expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+    expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", {
       descendantOf: "issue-parent",
       includeBlockedBy: true,
     });
@@ -1125,7 +1125,7 @@ describe("IssueDetail", () => {
     };
 
     mockIssuesApi.get.mockResolvedValue(createIssue());
-    mockIssuesApi.list.mockImplementation((_companyId, filters?: { descendantOf?: string }) =>
+    mockIssuesApi.list.mockImplementation((_squadId, filters?: { descendantOf?: string }) =>
       Promise.resolve(filters?.descendantOf === "issue-1" ? [childIssue] : []),
     );
     mockIssuesApi.getTreeControlState.mockImplementation(() =>
@@ -1213,7 +1213,7 @@ describe("IssueDetail", () => {
     });
 
     mockIssuesApi.get.mockResolvedValue(createIssue());
-    mockIssuesApi.list.mockImplementation((_companyId, filters?: { descendantOf?: string }) =>
+    mockIssuesApi.list.mockImplementation((_squadId, filters?: { descendantOf?: string }) =>
       Promise.resolve(filters?.descendantOf === "issue-1" ? [childIssue] : []),
     );
     mockIssuesApi.previewTreeControl.mockResolvedValue(pausePreview);
@@ -1524,7 +1524,7 @@ describe("IssueDetail", () => {
     });
 
     mockIssuesApi.get.mockResolvedValue(createIssue());
-    mockIssuesApi.list.mockImplementation((_companyId, filters?: { descendantOf?: string }) =>
+    mockIssuesApi.list.mockImplementation((_squadId, filters?: { descendantOf?: string }) =>
       Promise.resolve(filters?.descendantOf === "issue-1" ? [childIssue] : []),
     );
     mockIssuesApi.listTreeHolds.mockImplementation((_issueId, filters?: { mode?: string }) =>
@@ -1599,7 +1599,7 @@ describe("IssueDetail", () => {
     });
 
     mockIssuesApi.get.mockResolvedValue(createIssue());
-    mockIssuesApi.list.mockImplementation((_companyId, filters?: { descendantOf?: string }) =>
+    mockIssuesApi.list.mockImplementation((_squadId, filters?: { descendantOf?: string }) =>
       Promise.resolve(filters?.descendantOf === "issue-1" ? [childIssue] : []),
     );
     mockIssuesApi.previewTreeControl.mockResolvedValue(createCancelPreview(24));
@@ -1672,10 +1672,10 @@ describe("IssueDetail", () => {
 });
 
 describe("canBoardResolveRecoveryAction", () => {
-  it("falls back to companyIds when memberships are not populated", () => {
+  it("falls back to squadIds when memberships are not populated", () => {
     expect(
-      canBoardResolveRecoveryAction("company-1", {
-        companyIds: ["company-1"],
+      canBoardResolveRecoveryAction("squad-1", {
+        squadIds: ["squad-1"],
         memberships: [],
         isInstanceAdmin: false,
         source: "session",
@@ -1688,11 +1688,11 @@ describe("canBoardResolveRecoveryAction", () => {
 
   it("uses populated memberships as the authoritative board access source", () => {
     expect(
-      canBoardResolveRecoveryAction("company-1", {
-        companyIds: ["company-1"],
+      canBoardResolveRecoveryAction("squad-1", {
+        squadIds: ["squad-1"],
         memberships: [
           {
-            companyId: "company-1",
+            squadId: "squad-1",
             membershipRole: "viewer",
             status: "active",
           },

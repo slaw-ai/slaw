@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, isNotNull, isNull, lt, lte, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Db } from "@slaw/db";
-import { activityLog, agents, companies, costEvents, heartbeatRuns, issues, projects } from "@slaw/db";
+import { activityLog, agents, squads, costEvents, heartbeatRuns, issues, projects } from "@slaw/db";
 import { notFound, unprocessable } from "../errors.js";
 import { budgetService, type BudgetServiceHooks } from "./budgets.js";
 
@@ -28,11 +28,11 @@ function currentUtcMonthWindow(now = new Date()) {
 
 async function getMonthlySpendTotal(
   db: Db,
-  scope: { companyId: string; agentId?: string | null },
+  scope: { squadId: string; agentId?: string | null },
 ) {
   const { start, end } = currentUtcMonthWindow();
   const conditions = [
-    eq(costEvents.companyId, scope.companyId),
+    eq(costEvents.squadId, scope.squadId),
     gte(costEvents.occurredAt, start),
     lt(costEvents.occurredAt, end),
   ];
@@ -51,7 +51,7 @@ async function getMonthlySpendTotal(
 export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
   const budgets = budgetService(db, budgetHooks);
   return {
-    createEvent: async (companyId: string, data: Omit<typeof costEvents.$inferInsert, "companyId">) => {
+    createEvent: async (squadId: string, data: Omit<typeof costEvents.$inferInsert, "squadId">) => {
       const agent = await db
         .select()
         .from(agents)
@@ -59,15 +59,15 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .then((rows) => rows[0] ?? null);
 
       if (!agent) throw notFound("Agent not found");
-      if (agent.companyId !== companyId) {
-        throw unprocessable("Agent does not belong to company");
+      if (agent.squadId !== squadId) {
+        throw unprocessable("Agent does not belong to squad");
       }
 
       const event = await db
         .insert(costEvents)
         .values({
           ...data,
-          companyId,
+          squadId,
           biller: data.biller ?? data.provider,
           billingType: data.billingType ?? "unknown",
           cachedInputTokens: data.cachedInputTokens ?? 0,
@@ -75,9 +75,9 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .returning()
         .then((rows) => rows[0]);
 
-      const [agentMonthSpend, companyMonthSpend] = await Promise.all([
-        getMonthlySpendTotal(db, { companyId, agentId: event.agentId }),
-        getMonthlySpendTotal(db, { companyId }),
+      const [agentMonthSpend, squadMonthSpend] = await Promise.all([
+        getMonthlySpendTotal(db, { squadId, agentId: event.agentId }),
+        getMonthlySpendTotal(db, { squadId }),
       ]);
 
       await db
@@ -89,28 +89,28 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .where(eq(agents.id, event.agentId));
 
       await db
-        .update(companies)
+        .update(squads)
         .set({
-          spentMonthlyCents: companyMonthSpend,
+          spentMonthlyCents: squadMonthSpend,
           updatedAt: new Date(),
         })
-        .where(eq(companies.id, companyId));
+        .where(eq(squads.id, squadId));
 
       await budgets.evaluateCostEvent(event);
 
       return event;
     },
 
-    summary: async (companyId: string, range?: CostDateRange) => {
-      const company = await db
+    summary: async (squadId: string, range?: CostDateRange) => {
+      const squad = await db
         .select()
-        .from(companies)
-        .where(eq(companies.id, companyId))
+        .from(squads)
+        .where(eq(squads.id, squadId))
         .then((rows) => rows[0] ?? null);
 
-      if (!company) throw notFound("Company not found");
+      if (!squad) throw notFound("Squad not found");
 
-      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.companyId, companyId)];
+      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.squadId, squadId)];
       if (range?.from) conditions.push(gte(costEvents.occurredAt, range.from));
       if (range?.to) conditions.push(lte(costEvents.occurredAt, range.to));
 
@@ -123,20 +123,20 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
 
       const spendCents = Number(total);
       const utilization =
-        company.budgetMonthlyCents > 0
-          ? (spendCents / company.budgetMonthlyCents) * 100
+        squad.budgetMonthlyCents > 0
+          ? (spendCents / squad.budgetMonthlyCents) * 100
           : 0;
 
       return {
-        companyId,
+        squadId,
         spendCents,
-        budgetCents: company.budgetMonthlyCents,
+        budgetCents: squad.budgetMonthlyCents,
         utilizationPercent: Number(utilization.toFixed(2)),
       };
     },
 
     issueTreeSummary: async (
-      companyId: string,
+      squadId: string,
       issueId: string,
       options: { excludeRoot?: boolean } = {},
     ) => {
@@ -150,14 +150,14 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         ? sql`
             SELECT ${issues.id}
             FROM ${issues}
-            WHERE ${issues.companyId} = ${companyId}
+            WHERE ${issues.squadId} = ${squadId}
               AND ${issues.parentId} = ${issueId}
               AND ${issues.hiddenAt} IS NULL
           `
         : sql`
             SELECT ${issues.id}
             FROM ${issues}
-            WHERE ${issues.companyId} = ${companyId}
+            WHERE ${issues.squadId} = ${squadId}
               AND ${issues.id} = ${issueId}
               AND ${issues.hiddenAt} IS NULL
           `;
@@ -166,14 +166,14 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         ? sql`
             SELECT (${issues.id})::text AS id
             FROM ${issues}
-            WHERE ${issues.companyId} = ${companyId}
+            WHERE ${issues.squadId} = ${squadId}
               AND ${issues.parentId} = ${issueId}
               AND ${issues.hiddenAt} IS NULL
           `
         : sql`
             SELECT (${issues.id})::text AS id
             FROM ${issues}
-            WHERE ${issues.companyId} = ${companyId}
+            WHERE ${issues.squadId} = ${squadId}
               AND ${issues.id} = ${issueId}
               AND ${issues.hiddenAt} IS NULL
           `;
@@ -186,7 +186,7 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
             SELECT ${childIssues.id}
             FROM ${issues} ${childIssues}
             JOIN issue_tree ON ${childIssues.parentId} = issue_tree.id
-            WHERE ${childIssues.companyId} = ${companyId}
+            WHERE ${childIssues.squadId} = ${squadId}
               AND ${childIssues.hiddenAt} IS NULL
           )
           SELECT id FROM issue_tree
@@ -200,14 +200,14 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
           SELECT (${childIssues.id})::text
           FROM ${issues} ${childIssues}
           JOIN issue_tree ON (${childIssues.parentId})::text = issue_tree.id
-          WHERE ${childIssues.companyId} = ${companyId}
+          WHERE ${childIssues.squadId} = ${squadId}
             AND ${childIssues.hiddenAt} IS NULL
         )
         SELECT
           count(distinct ${heartbeatRuns.id})::int AS "runCount",
           coalesce(sum(extract(epoch from (coalesce(${heartbeatRuns.finishedAt}, now()) - ${heartbeatRuns.startedAt})) * 1000), 0)::double precision AS "runtimeMs"
         FROM ${heartbeatRuns}
-        WHERE ${heartbeatRuns.companyId} = ${companyId}
+        WHERE ${heartbeatRuns.squadId} = ${squadId}
           AND ${heartbeatRuns.startedAt} IS NOT NULL
           AND (
             ${heartbeatRuns.contextSnapshot} ->> 'issueId' IN (SELECT id FROM issue_tree)
@@ -215,7 +215,7 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
               SELECT 1
               FROM ${activityLog}
               JOIN issue_tree ON ${activityLog.entityId} = issue_tree.id
-              WHERE ${activityLog.companyId} = ${companyId}
+              WHERE ${activityLog.squadId} = ${squadId}
                 AND ${activityLog.entityType} = 'issue'
                 AND ${activityLog.runId} = ${heartbeatRuns.id}
             )
@@ -238,13 +238,13 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
           .leftJoin(
             costEvents,
             and(
-              eq(costEvents.companyId, companyId),
+              eq(costEvents.squadId, squadId),
               eq(costEvents.issueId, issues.id),
             ),
           )
           .where(
             and(
-              eq(issues.companyId, companyId),
+              eq(issues.squadId, squadId),
               isNull(issues.hiddenAt),
               issueTreeCondition,
             ),
@@ -270,8 +270,8 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
       };
     },
 
-    byAgent: async (companyId: string, range?: CostDateRange) => {
-      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.companyId, companyId)];
+    byAgent: async (squadId: string, range?: CostDateRange) => {
+      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.squadId, squadId)];
       if (range?.from) conditions.push(gte(costEvents.occurredAt, range.from));
       if (range?.to) conditions.push(lte(costEvents.occurredAt, range.to));
 
@@ -302,8 +302,8 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .orderBy(desc(sumAsNumber(costEvents.costCents)));
     },
 
-    byProvider: async (companyId: string, range?: CostDateRange) => {
-      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.companyId, companyId)];
+    byProvider: async (squadId: string, range?: CostDateRange) => {
+      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.squadId, squadId)];
       if (range?.from) conditions.push(gte(costEvents.occurredAt, range.from));
       if (range?.to) conditions.push(lte(costEvents.occurredAt, range.to));
 
@@ -334,8 +334,8 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .orderBy(desc(sumAsNumber(costEvents.costCents)));
     },
 
-    byBiller: async (companyId: string, range?: CostDateRange) => {
-      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.companyId, companyId)];
+    byBiller: async (squadId: string, range?: CostDateRange) => {
+      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.squadId, squadId)];
       if (range?.from) conditions.push(gte(costEvents.occurredAt, range.from));
       if (range?.to) conditions.push(lte(costEvents.occurredAt, range.to));
 
@@ -370,7 +370,7 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
      * last 5 hours, last 24 hours, last 7 days.
      * purely internal consumption data, no external rate-limit sources.
      */
-    windowSpend: async (companyId: string) => {
+    windowSpend: async (squadId: string) => {
       const windows = [
         { label: "5h", hours: 5 },
         { label: "24h", hours: 24 },
@@ -392,7 +392,7 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
             .from(costEvents)
             .where(
               and(
-                eq(costEvents.companyId, companyId),
+                eq(costEvents.squadId, squadId),
                 gte(costEvents.occurredAt, since),
               ),
             )
@@ -415,13 +415,13 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
       return results.flat();
     },
 
-    byAgentModel: async (companyId: string, range?: CostDateRange) => {
-      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.companyId, companyId)];
+    byAgentModel: async (squadId: string, range?: CostDateRange) => {
+      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.squadId, squadId)];
       if (range?.from) conditions.push(gte(costEvents.occurredAt, range.from));
       if (range?.to) conditions.push(lte(costEvents.occurredAt, range.to));
 
       // single query: group by agent + provider + model.
-      // the (companyId, agentId, occurredAt) composite index covers this well.
+      // the (squadId, agentId, occurredAt) composite index covers this well.
       // order by provider + model for stable db-level ordering; cost-desc sort
       // within each agent's sub-rows is done client-side in the ui memo.
       return db
@@ -451,7 +451,7 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .orderBy(costEvents.provider, costEvents.biller, costEvents.billingType, costEvents.model);
     },
 
-    byProject: async (companyId: string, range?: CostDateRange) => {
+    byProject: async (squadId: string, range?: CostDateRange) => {
       const issueIdAsText = sql<string>`${issues.id}::text`;
       const runProjectLinks = db
         .selectDistinctOn([activityLog.runId, issues.projectId], {
@@ -468,8 +468,8 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         )
         .where(
           and(
-            eq(activityLog.companyId, companyId),
-            eq(issues.companyId, companyId),
+            eq(activityLog.squadId, squadId),
+            eq(issues.squadId, squadId),
             isNotNull(activityLog.runId),
             isNotNull(issues.projectId),
           ),
@@ -478,7 +478,7 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
         .as("run_project_links");
 
       const effectiveProjectId = sql<string | null>`coalesce(${costEvents.projectId}, ${runProjectLinks.projectId})`;
-      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.companyId, companyId)];
+      const conditions: ReturnType<typeof eq>[] = [eq(costEvents.squadId, squadId)];
       if (range?.from) conditions.push(gte(costEvents.occurredAt, range.from));
       if (range?.to) conditions.push(lte(costEvents.occurredAt, range.to));
 

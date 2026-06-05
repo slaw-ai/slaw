@@ -188,7 +188,7 @@ Existing object. No fundamental change in role.
 ### Proposed fields
 
 - `id`
-- `companyId`
+- `squadId`
 - `name`
 - `description`
 - `status`
@@ -221,7 +221,7 @@ It also lets cloud-hosted Slaw deployments point at codebases and remotes withou
 ### Proposed fields
 
 - `id`
-- `companyId`
+- `squadId`
 - `projectId`
 - `name`
 - `sourceType`
@@ -374,7 +374,7 @@ Without an explicit `execution workspace` record, Slaw has nowhere stable to att
 ### Proposed fields
 
 - `id`
-- `companyId`
+- `squadId`
 - `projectId`
 - `projectWorkspaceId`
 - `sourceIssueId`
@@ -472,7 +472,7 @@ without turning issues into a raw dump of adapter details.
 ### Proposed fields
 
 - `id`
-- `companyId`
+- `squadId`
 - `projectId`
 - `issueId`
 - `executionWorkspaceId`
@@ -534,13 +534,13 @@ Do not add `Workspaces` as a top-level sidebar item in V1.
 
 ### Motivation
 
-That would make the whole product feel infra-heavy, even for companies that do not use code automation.
+That would make the whole product feel infra-heavy, even for squads that do not use code automation.
 
 ### Global nav remains
 
 - Dashboard
 - Inbox
-- Companies
+- Squads
 - Agents
 - Goals
 - Projects

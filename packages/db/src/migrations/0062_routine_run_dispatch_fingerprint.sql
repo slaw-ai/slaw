@@ -1,7 +1,7 @@
 ALTER TABLE "routine_runs" ADD COLUMN IF NOT EXISTS "dispatch_fingerprint" text;--> statement-breakpoint
 ALTER TABLE "issues" ADD COLUMN IF NOT EXISTS "origin_fingerprint" text DEFAULT 'default' NOT NULL;--> statement-breakpoint
 DROP INDEX IF EXISTS "issues_open_routine_execution_uq";--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "issues_open_routine_execution_uq" ON "issues" USING btree ("company_id","origin_kind","origin_id","origin_fingerprint") WHERE "issues"."origin_kind" = 'routine_execution'
+CREATE UNIQUE INDEX IF NOT EXISTS "issues_open_routine_execution_uq" ON "issues" USING btree ("squad_id","origin_kind","origin_id","origin_fingerprint") WHERE "issues"."origin_kind" = 'routine_execution'
           and "issues"."origin_id" is not null
           and "issues"."hidden_at" is null
           and "issues"."execution_run_id" is not null

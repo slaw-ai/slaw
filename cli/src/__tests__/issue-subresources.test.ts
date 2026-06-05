@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { registerIssueCommands } from "../commands/client/issue.js";
 
-const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
+const SQUAD_ID = "22222222-2222-4222-8222-222222222222";
 const ISSUE_ID = "44444444-4444-4444-8444-444444444444";
 const COMMENT_ID = "55555555-5555-4555-8555-555555555555";
 const APPROVAL_ID = "66666666-6666-4666-8666-666666666666";
@@ -176,11 +176,11 @@ describe("issue subresource commands", () => {
       await run(["issue", "tree-hold:get", ISSUE_ID, HOLD_ID]);
       await run(["issue", "tree-hold:release", ISSUE_ID, HOLD_ID]);
       await run(["issue", "attachments", ISSUE_ID]);
-      await run(["issue", "attachment:upload", ISSUE_ID, "--company-id", COMPANY_ID, "--file", filePath]);
+      await run(["issue", "attachment:upload", ISSUE_ID, "--squad-id", SQUAD_ID, "--file", filePath]);
       await run(["issue", "attachment:download", ATTACHMENT_ID]);
       await run(["issue", "attachment:delete", ATTACHMENT_ID]);
-      await run(["issue", "label:list", "--company-id", COMPANY_ID]);
-      await run(["issue", "label:create", "--company-id", COMPANY_ID, "--name", "bug", "--color", "#ff0000"]);
+      await run(["issue", "label:list", "--squad-id", SQUAD_ID]);
+      await run(["issue", "label:create", "--squad-id", SQUAD_ID, "--name", "bug", "--color", "#ff0000"]);
       await run(["issue", "label:delete", LABEL_ID]);
       await run(["issue", "feedback:votes", ISSUE_ID]);
       await run([
@@ -206,11 +206,11 @@ describe("issue subresource commands", () => {
       ["GET", `http://localhost:3100/api/issues/${ISSUE_ID}/tree-holds/${HOLD_ID}`],
       ["POST", `http://localhost:3100/api/issues/${ISSUE_ID}/tree-holds/${HOLD_ID}/release`],
       ["GET", `http://localhost:3100/api/issues/${ISSUE_ID}/attachments`],
-      ["POST", `http://localhost:3100/api/companies/${COMPANY_ID}/issues/${ISSUE_ID}/attachments`],
+      ["POST", `http://localhost:3100/api/squads/${SQUAD_ID}/issues/${ISSUE_ID}/attachments`],
       ["GET", `http://localhost:3100/api/attachments/${ATTACHMENT_ID}/content`],
       ["DELETE", `http://localhost:3100/api/attachments/${ATTACHMENT_ID}`],
-      ["GET", `http://localhost:3100/api/companies/${COMPANY_ID}/labels`],
-      ["POST", `http://localhost:3100/api/companies/${COMPANY_ID}/labels`],
+      ["GET", `http://localhost:3100/api/squads/${SQUAD_ID}/labels`],
+      ["POST", `http://localhost:3100/api/squads/${SQUAD_ID}/labels`],
       ["DELETE", `http://localhost:3100/api/labels/${LABEL_ID}`],
       ["GET", `http://localhost:3100/api/issues/${ISSUE_ID}/feedback-votes`],
       ["POST", `http://localhost:3100/api/issues/${ISSUE_ID}/feedback-votes`],

@@ -125,7 +125,7 @@ async function createRuntimeSkill(root: string, input: {
   body?: string;
 }) {
   const runtimeName = input.runtimeName ?? "slaw-test-skill";
-  const key = input.key ?? `company/${runtimeName}`;
+  const key = input.key ?? `squad/${runtimeName}`;
   const source = path.join(root, "skills", runtimeName);
   await fs.mkdir(source, { recursive: true });
   await fs.writeFile(path.join(source, "SKILL.md"), input.body ?? "---\nrequired: false\n---\nUse the test skill.\n", "utf8");
@@ -149,7 +149,7 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
     runId: "run-1",
     agent: {
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       name: "ACPX Coder",
       adapterType: "acpx_local",
       adapterConfig: {},

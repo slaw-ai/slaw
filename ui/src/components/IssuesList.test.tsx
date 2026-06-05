@@ -9,8 +9,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssuesList } from "./IssuesList";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const companyState = vi.hoisted(() => ({
-  selectedCompanyId: "company-1",
+const squadState = vi.hoisted(() => ({
+  selectedSquadId: "squad-1",
 }));
 
 const dialogState = vi.hoisted(() => ({
@@ -42,8 +42,8 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
   getExperimental: vi.fn(),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => companyState,
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => squadState,
 }));
 
 vi.mock("../context/DialogContext", () => ({
@@ -152,7 +152,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
     identifier: "PAP-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,
@@ -322,7 +322,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", {
         q: "server",
         projectId: undefined,
         limit: 200,
@@ -356,7 +356,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", {
         q: "server",
         projectId: undefined,
         parentId: "parent-1",
@@ -412,7 +412,7 @@ describe("IssuesList", () => {
 
   it("uses workspace group defaults when creating an issue from a grouped section", async () => {
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ groupBy: "workspace", sortField: "updated", sortDir: "desc" }),
     );
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableIsolatedWorkspaces: true });
@@ -928,7 +928,7 @@ describe("IssuesList", () => {
     );
 
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ statuses: ["done"] }),
     );
     mockIssuesApi.list.mockResolvedValue(serverIssues);
@@ -956,7 +956,7 @@ describe("IssuesList", () => {
 
   it("loads board issues with a separate result limit for each status column", async () => {
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),
     );
 
@@ -976,7 +976,7 @@ describe("IssuesList", () => {
       status: "done",
     });
 
-    mockIssuesApi.list.mockImplementation((_companyId, filters) => {
+    mockIssuesApi.list.mockImplementation((_squadId, filters) => {
       if (filters?.status === "backlog") return Promise.resolve([backlogIssue]);
       if (filters?.status === "done") return Promise.resolve([doneIssue]);
       return Promise.resolve([]);
@@ -995,12 +995,12 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", expect.objectContaining({
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", expect.objectContaining({
         status: "backlog",
         limit: 200,
         includeRoutineExecutions: true,
       }));
-      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", expect.objectContaining({
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", expect.objectContaining({
         status: "done",
         limit: 200,
         includeRoutineExecutions: true,
@@ -1023,7 +1023,7 @@ describe("IssuesList", () => {
 
   it("uses compact cards and collapsed cold lanes for high-volume boards", async () => {
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),
     );
 
@@ -1036,7 +1036,7 @@ describe("IssuesList", () => {
       }),
     );
 
-    mockIssuesApi.list.mockImplementation((_companyId, filters) => {
+    mockIssuesApi.list.mockImplementation((_squadId, filters) => {
       if (filters?.status === "backlog") return Promise.resolve(backlogIssues);
       return Promise.resolve([]);
     });
@@ -1068,7 +1068,7 @@ describe("IssuesList", () => {
 
   it("lets board users choose the per-column page size", async () => {
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),
     );
 
@@ -1118,7 +1118,7 @@ describe("IssuesList", () => {
       }));
     });
 
-    expect(localStorage.getItem("slaw:test-issues:company-1")).toContain("\"boardColumnPageSize\":25");
+    expect(localStorage.getItem("slaw:test-issues:squad-1")).toContain("\"boardColumnPageSize\":25");
 
     act(() => {
       root.unmount();
@@ -1127,7 +1127,7 @@ describe("IssuesList", () => {
 
   it("shows a refinement hint when a board column hits its server cap", async () => {
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),
     );
 
@@ -1140,7 +1140,7 @@ describe("IssuesList", () => {
       }),
     );
 
-    mockIssuesApi.list.mockImplementation((_companyId, filters) => {
+    mockIssuesApi.list.mockImplementation((_squadId, filters) => {
       if (filters?.status === "backlog") return Promise.resolve(cappedBacklogIssues);
       return Promise.resolve([]);
     });
@@ -1373,7 +1373,7 @@ describe("IssuesList", () => {
   });
 
   it("uses context-scoped persisted column visibility", async () => {
-    localStorage.setItem("slaw:test-issues:company-1:issue-columns", JSON.stringify(["id", "assignee"]));
+    localStorage.setItem("slaw:test-issues:squad-1:issue-columns", JSON.stringify(["id", "assignee"]));
 
     const assignedIssue = createIssue({
       id: "issue-assigned",
@@ -1408,8 +1408,8 @@ describe("IssuesList", () => {
     });
   });
 
-  it("shows human assignee names from company member profiles", async () => {
-    localStorage.setItem("slaw:test-issues:company-1:issue-columns", JSON.stringify(["id", "assignee"]));
+  it("shows human assignee names from squad member profiles", async () => {
+    localStorage.setItem("slaw:test-issues:squad-1:issue-columns", JSON.stringify(["id", "assignee"]));
     mockAccessApi.listUserDirectory.mockResolvedValue({
       users: [
         {
@@ -1454,7 +1454,7 @@ describe("IssuesList", () => {
 
   it("preserves stored grouping across refresh when initial assignees are applied", async () => {
     localStorage.setItem(
-      "slaw:test-issues:company-1",
+      "slaw:test-issues:squad-1",
       JSON.stringify({ groupBy: "status", sortField: "updated", sortDir: "desc" }),
     );
 
@@ -1486,7 +1486,7 @@ describe("IssuesList", () => {
   });
 
   it("filters the list to a single workspace when a workspace name is clicked", async () => {
-    localStorage.setItem("slaw:test-issues:company-1:issue-columns", JSON.stringify(["id", "workspace"]));
+    localStorage.setItem("slaw:test-issues:squad-1:issue-columns", JSON.stringify(["id", "workspace"]));
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableIsolatedWorkspaces: true });
     mockExecutionWorkspacesApi.listSummaries.mockResolvedValue([
       {
@@ -1742,7 +1742,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(mockExecutionWorkspacesApi.listSummaries).toHaveBeenCalledWith("company-1");
+      expect(mockExecutionWorkspacesApi.listSummaries).toHaveBeenCalledWith("squad-1");
       expect(mockExecutionWorkspacesApi.list).not.toHaveBeenCalled();
     });
 

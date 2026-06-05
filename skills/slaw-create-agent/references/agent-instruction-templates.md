@@ -42,7 +42,7 @@ If you are hiring a role that is not in this index, do not force a fit. Use the 
 
 1. Open the matching reference in `references/agents/`.
 2. Copy that template into the new agent's instruction bundle (usually `AGENTS.md`). For hire requests using local managed-bundle adapters, send the adapted template as top-level `instructionsBundle.files["AGENTS.md"]`. Do not put new-agent instructions in `adapterConfig.promptTemplate`.
-3. Replace placeholders like `{{companyName}}`, `{{managerTitle}}`, `{{issuePrefix}}`, and URLs.
+3. Replace placeholders like `{{squadName}}`, `{{managerTitle}}`, `{{issuePrefix}}`, and URLs.
 4. Remove tools or workflows the target adapter cannot use.
 5. Keep the Slaw heartbeat requirement and the task-comment requirement.
 6. Add role-specific skills or reference files only when they are actually installed or bundled.
@@ -62,7 +62,7 @@ Use this when the requested role is close to an existing template but not the sa
 
 ## How to apply the generic fallback
 
-Use this when no template is close. Open `references/baseline-role-guide.md` and follow its section outline. That guide is structured so a CEO or hiring agent can produce a usable `AGENTS.md` without asking the board for prompt-writing help. After drafting, run the pre-submit checklist.
+Use this when no template is close. Open `references/baseline-role-guide.md` and follow its section outline. That guide is structured so a Squad Lead or hiring agent can produce a usable `AGENTS.md` without asking the board for prompt-writing help. After drafting, run the pre-submit checklist.
 
 ## Lens-based role drafting (worked examples)
 

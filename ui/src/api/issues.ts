@@ -36,7 +36,7 @@ export type ResolveRecoveryActionResponse = {
 
 export const issuesApi = {
   list: (
-    companyId: string,
+    squadId: string,
     filters?: {
       attention?: "blocked";
       status?: string;
@@ -92,10 +92,10 @@ export const issuesApi = {
     if (filters?.sortField) params.set("sortField", filters.sortField);
     if (filters?.sortDir) params.set("sortDir", filters.sortDir);
     const qs = params.toString();
-    return api.get<Issue[]>(`/companies/${companyId}/issues${qs ? `?${qs}` : ""}`);
+    return api.get<Issue[]>(`/squads/${squadId}/issues${qs ? `?${qs}` : ""}`);
   },
   count: (
-    companyId: string,
+    squadId: string,
     filters: {
       attention: "blocked";
       status?: string;
@@ -114,11 +114,11 @@ export const issuesApi = {
     if (filters.projectId) params.set("projectId", filters.projectId);
     if (filters.labelId) params.set("labelId", filters.labelId);
     if (filters.q) params.set("q", filters.q);
-    return api.get<{ count: number }>(`/companies/${companyId}/issues/count?${params.toString()}`);
+    return api.get<{ count: number }>(`/squads/${squadId}/issues/count?${params.toString()}`);
   },
-  listLabels: (companyId: string) => api.get<IssueLabel[]>(`/companies/${companyId}/labels`),
-  createLabel: (companyId: string, data: { name: string; color: string }) =>
-    api.post<IssueLabel>(`/companies/${companyId}/labels`, data),
+  listLabels: (squadId: string) => api.get<IssueLabel[]>(`/squads/${squadId}/labels`),
+  createLabel: (squadId: string, data: { name: string; color: string }) =>
+    api.post<IssueLabel>(`/squads/${squadId}/labels`, data),
   deleteLabel: (id: string) => api.delete<IssueLabel>(`/labels/${id}`),
   get: (id: string) => api.get<Issue>(`/issues/${id}`),
   markRead: (id: string) => api.post<{ id: string; lastReadAt: Date }>(`/issues/${id}/read`, {}),
@@ -127,8 +127,8 @@ export const issuesApi = {
     api.post<{ id: string; archivedAt: Date }>(`/issues/${id}/inbox-archive`, {}),
   unarchiveFromInbox: (id: string) =>
     api.delete<{ id: string; archivedAt: Date } | { ok: true }>(`/issues/${id}/inbox-archive`),
-  create: (companyId: string, data: Record<string, unknown>) =>
-    api.post<Issue>(`/companies/${companyId}/issues`, data),
+  create: (squadId: string, data: Record<string, unknown>) =>
+    api.post<Issue>(`/squads/${squadId}/issues`, data),
   update: (id: string, data: Record<string, unknown>) =>
     api.patch<IssueUpdateResponse>(`/issues/${id}`, data),
   resolveRecoveryAction: (
@@ -278,7 +278,7 @@ export const issuesApi = {
     api.delete<{ ok: true }>(`/issues/${id}/documents/${encodeURIComponent(key)}`),
   listAttachments: (id: string) => api.get<IssueAttachment[]>(`/issues/${id}/attachments`),
   uploadAttachment: (
-    companyId: string,
+    squadId: string,
     issueId: string,
     file: File,
     issueCommentId?: string | null,
@@ -288,7 +288,7 @@ export const issuesApi = {
     if (issueCommentId) {
       form.append("issueCommentId", issueCommentId);
     }
-    return api.postForm<IssueAttachment>(`/companies/${companyId}/issues/${issueId}/attachments`, form);
+    return api.postForm<IssueAttachment>(`/squads/${squadId}/issues/${issueId}/attachments`, form);
   },
   deleteAttachment: (id: string) => api.delete<{ ok: true }>(`/attachments/${id}`),
   listApprovals: (id: string) => api.get<Approval[]>(`/issues/${id}/approvals`),

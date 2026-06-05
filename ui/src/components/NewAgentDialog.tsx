@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@/lib/router";
 import { useDialog } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { accessApi } from "../api/access";
 import { agentsApi } from "../api/agents";
 import { adaptersApi } from "../api/adapters";
@@ -42,7 +42,7 @@ function isAgentAdapterType(type: string): boolean {
 
 export function NewAgentDialog() {
   const { newAgentOpen, closeNewAgent, openNewIssue } = useDialog();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { pushToast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -74,15 +74,15 @@ export function NewAgentDialog() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch existing agents for the "Ask CEO" flow
+  // Fetch existing agents for the "Ask Squad Lead" flow
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && newAgentOpen,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && newAgentOpen,
   });
 
-  const ceoAgent = (agents ?? []).find((a) => a.role === "ceo");
-  const inviteHistoryQueryKey = queryKeys.access.invites(selectedCompanyId ?? "", "all", 5);
+  const ceoAgent = (agents ?? []).find((a) => a.role === "squad_lead");
+  const inviteHistoryQueryKey = queryKeys.access.invites(selectedSquadId ?? "", "all", 5);
 
   // Build the adapter grid from the UI registry merged with display metadata.
   // This automatically includes external/plugin adapters.
@@ -158,7 +158,7 @@ export function NewAgentDialog() {
 
   const createAgentInviteMutation = useMutation({
     mutationFn: () =>
-      accessApi.createCompanyInvite(selectedCompanyId!, {
+      accessApi.createSquadInvite(selectedSquadId!, {
         allowedJoinTypes: "agent",
         humanRole: null,
         agentMessage: agentMessage.trim() || null,
@@ -262,7 +262,7 @@ export function NewAgentDialog() {
 
               <Button className="w-full" size="lg" onClick={handleAskCeo}>
                 <Bot className="h-4 w-4 mr-2" />
-                Ask the CEO to create a new agent
+                Ask the Squad Lead to create a new agent
               </Button>
 
               <div className="grid gap-2">
@@ -354,13 +354,13 @@ export function NewAgentDialog() {
               </label>
 
               <div className="rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
-                Agent invites create a join request first. A company admin still approves the request before the agent can claim its API key.
+                Agent invites create a join request first. A squad admin still approves the request before the agent can claim its API key.
               </div>
 
               <div>
                 <Button
                   onClick={() => createAgentInviteMutation.mutate()}
-                  disabled={!selectedCompanyId || createAgentInviteMutation.isPending}
+                  disabled={!selectedSquadId || createAgentInviteMutation.isPending}
                 >
                   {createAgentInviteMutation.isPending ? "Generating…" : "Generate onboarding prompt"}
                 </Button>
@@ -387,7 +387,7 @@ export function NewAgentDialog() {
                     ) : null}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Send this prompt to the external agent that should join this company.
+                    Send this prompt to the external agent that should join this squad.
                   </p>
                 </div>
               </div>

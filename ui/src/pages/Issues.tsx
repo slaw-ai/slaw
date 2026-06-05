@@ -5,7 +5,7 @@ import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
 import { heartbeatsApi } from "../api/heartbeats";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
 import { queryKeys } from "../lib/queryKeys";
@@ -56,7 +56,7 @@ export function buildIssuesSearchUrl(currentHref: string, search: string): strin
 }
 
 export function Issues() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -85,21 +85,21 @@ export function Issues() {
   }, []);
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(selectedCompanyId!),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.liveRuns(selectedSquadId!),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(selectedSquadId!),
+    enabled: !!selectedSquadId,
     refetchInterval: 5000,
   });
 
@@ -130,7 +130,7 @@ export function Issues() {
     fetchNextPage,
   } = useInfiniteQuery({
     queryKey: [
-      ...queryKeys.issues.list(selectedCompanyId!),
+      ...queryKeys.issues.list(selectedSquadId!),
       "participant-agent",
       participantAgentId ?? "__all__",
       "workspace",
@@ -139,7 +139,7 @@ export function Issues() {
       "infinite",
       issuePageSize,
     ],
-    queryFn: ({ pageParam }) => issuesApi.list(selectedCompanyId!, {
+    queryFn: ({ pageParam }) => issuesApi.list(selectedSquadId!, {
       participantAgentId,
       workspaceId: workspaceIdFilter,
       includeRoutineExecutions: true,
@@ -151,7 +151,7 @@ export function Issues() {
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
       getNextIssuesPageOffset(lastPage.length, lastPageParam, issuePageSize),
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedSquadId,
     placeholderData: (previousData) => previousData,
   });
 
@@ -170,12 +170,12 @@ export function Issues() {
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       issuesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedSquadId!) });
     },
   });
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={CircleDot} message="Select a company to view issues." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={CircleDot} message="Select a squad to view issues." />;
   }
 
   return (

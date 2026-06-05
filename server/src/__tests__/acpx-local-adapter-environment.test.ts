@@ -25,7 +25,7 @@ describe("acpx_local environment credential diagnostics", () => {
 
   it("emits an info-level Claude credential hint when ANTHROPIC_API_KEY is present", async () => {
     const result = await testEnvironment({
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "acpx_local",
       config: {
         agent: "claude",
@@ -50,7 +50,7 @@ describe("acpx_local environment credential diagnostics", () => {
       await fs.mkdir(claudeConfigDir, { recursive: true });
 
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "acpx_local",
         config: {
           agent: "claude",
@@ -79,7 +79,7 @@ describe("acpx_local environment credential diagnostics", () => {
       await fs.writeFile(path.join(codexHome, "auth.json"), JSON.stringify({ accessToken: "token" }), "utf8");
 
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "acpx_local",
         config: {
           agent: "codex",
@@ -107,7 +107,7 @@ describe("acpx_local environment credential diagnostics", () => {
       await fs.mkdir(codexHome, { recursive: true });
 
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "acpx_local",
         config: {
           agent: "codex",

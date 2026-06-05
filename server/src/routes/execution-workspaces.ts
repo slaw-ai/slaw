@@ -23,7 +23,7 @@ import {
   startRuntimeServicesForWorkspaceControl,
   stopRuntimeServicesForExecutionWorkspace,
 } from "../services/workspace-runtime.js";
-import { assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertSquadAccess, getActorInfo } from "./authz.js";
 import {
   assertNoAgentHostWorkspaceCommandMutation,
   collectExecutionWorkspaceCommandPaths,
@@ -38,9 +38,9 @@ export function executionWorkspaceRoutes(db: Db) {
   const svc = executionWorkspaceService(db);
   const workspaceOperationsSvc = workspaceOperationService(db);
 
-  router.get("/companies/:companyId/execution-workspaces", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+  router.get("/squads/:squadId/execution-workspaces", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     const filters = {
       projectId: req.query.projectId as string | undefined,
       projectWorkspaceId: req.query.projectWorkspaceId as string | undefined,
@@ -49,8 +49,8 @@ export function executionWorkspaceRoutes(db: Db) {
       reuseEligible: req.query.reuseEligible === "true",
     };
     const workspaces = req.query.summary === "true"
-      ? await svc.listSummaries(companyId, filters)
-      : await svc.list(companyId, filters);
+      ? await svc.listSummaries(squadId, filters)
+      : await svc.list(squadId, filters);
     res.json(workspaces);
   });
 
@@ -61,7 +61,7 @@ export function executionWorkspaceRoutes(db: Db) {
       res.status(404).json({ error: "Execution workspace not found" });
       return;
     }
-    assertCompanyAccess(req, workspace.companyId);
+    assertSquadAccess(req, workspace.squadId);
     res.json(workspace);
   });
 
@@ -72,7 +72,7 @@ export function executionWorkspaceRoutes(db: Db) {
       res.status(404).json({ error: "Execution workspace not found" });
       return;
     }
-    assertCompanyAccess(req, workspace.companyId);
+    assertSquadAccess(req, workspace.squadId);
     const readiness = await svc.getCloseReadiness(id);
     if (!readiness) {
       res.status(404).json({ error: "Execution workspace not found" });
@@ -88,7 +88,7 @@ export function executionWorkspaceRoutes(db: Db) {
       res.status(404).json({ error: "Execution workspace not found" });
       return;
     }
-    assertCompanyAccess(req, workspace.companyId);
+    assertSquadAccess(req, workspace.squadId);
     const operations = await workspaceOperationsSvc.listForExecutionWorkspace(id);
     res.json(operations);
   });
@@ -106,10 +106,10 @@ export function executionWorkspaceRoutes(db: Db) {
       res.status(404).json({ error: "Execution workspace not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
 
     await assertCanManageExecutionWorkspaceRuntimeServices(db, req, {
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       executionWorkspaceId: existing.id,
       sourceIssueId: existing.sourceIssueId,
     });
@@ -134,7 +134,7 @@ export function executionWorkspaceRoutes(db: Db) {
           .where(
             and(
               eq(projectWorkspaces.id, existing.projectWorkspaceId),
-              eq(projectWorkspaces.companyId, existing.companyId),
+              eq(projectWorkspaces.squadId, existing.squadId),
             ),
           )
           .then((rows) => rows[0] ?? null)
@@ -151,7 +151,7 @@ export function executionWorkspaceRoutes(db: Db) {
           .where(
             and(
               eq(projects.id, existing.projectId),
-              eq(projects.companyId, existing.companyId),
+              eq(projects.squadId, existing.squadId),
             ),
           )
           .then((rows) => parseProjectExecutionWorkspacePolicy(rows[0]?.executionWorkspacePolicy))
@@ -209,7 +209,7 @@ export function executionWorkspaceRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     const recorder = workspaceOperationsSvc.createRecorder({
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       executionWorkspaceId: existing.id,
     });
     let runtimeServiceCount = existing.runtimeServices?.length ?? 0;
@@ -269,7 +269,7 @@ export function executionWorkspaceRoutes(db: Db) {
             agent: {
               id: actor.agentId ?? null,
               name: actor.actorType === "user" ? "Board" : "Agent",
-              companyId: existing.companyId,
+              squadId: existing.squadId,
             },
             recorder,
           });
@@ -286,7 +286,7 @@ export function executionWorkspaceRoutes(db: Db) {
             actor: {
               id: actor.agentId ?? null,
               name: actor.actorType === "user" ? "Board" : "Agent",
-              companyId: existing.companyId,
+              squadId: existing.squadId,
             },
             issue: existing.sourceIssueId
               ? {
@@ -338,7 +338,7 @@ export function executionWorkspaceRoutes(db: Db) {
             actor: {
               id: actor.agentId ?? null,
               name: actor.actorType === "user" ? "Board" : "Agent",
-              companyId: existing.companyId,
+              squadId: existing.squadId,
             },
             issue: existing.sourceIssueId
               ? {
@@ -412,7 +412,7 @@ export function executionWorkspaceRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -446,7 +446,7 @@ export function executionWorkspaceRoutes(db: Db) {
       res.status(404).json({ error: "Execution workspace not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     assertNoAgentHostWorkspaceCommandMutation(
       req,
       collectExecutionWorkspaceCommandPaths({
@@ -518,7 +518,7 @@ export function executionWorkspaceRoutes(db: Db) {
           })
           .where(
             and(
-              eq(issues.companyId, existing.companyId),
+              eq(issues.squadId, existing.squadId),
               eq(issues.executionWorkspaceId, existing.id),
             ),
           );
@@ -540,7 +540,7 @@ export function executionWorkspaceRoutes(db: Db) {
             .where(
                 and(
                   eq(projectWorkspaces.id, existing.projectWorkspaceId),
-                  eq(projectWorkspaces.companyId, existing.companyId),
+                  eq(projectWorkspaces.squadId, existing.squadId),
                 ),
               )
               .then((rows) => rows[0] ?? null)
@@ -551,7 +551,7 @@ export function executionWorkspaceRoutes(db: Db) {
                 executionWorkspacePolicy: projects.executionWorkspacePolicy,
               })
               .from(projects)
-              .where(and(eq(projects.id, existing.projectId), eq(projects.companyId, existing.companyId)))
+              .where(and(eq(projects.id, existing.projectId), eq(projects.squadId, existing.squadId)))
               .then((rows) => parseProjectExecutionWorkspacePolicy(rows[0]?.executionWorkspacePolicy))
           : null;
         const cleanupResult = await cleanupExecutionWorkspaceArtifacts({
@@ -560,7 +560,7 @@ export function executionWorkspaceRoutes(db: Db) {
           teardownCommand: configForCleanup?.teardownCommand ?? projectPolicy?.workspaceStrategy?.teardownCommand ?? null,
           cleanupCommand: configForCleanup?.cleanupCommand ?? null,
           recorder: workspaceOperationsSvc.createRecorder({
-            companyId: existing.companyId,
+            squadId: existing.squadId,
             executionWorkspaceId: existing.id,
           }),
         });
@@ -598,7 +598,7 @@ export function executionWorkspaceRoutes(db: Db) {
     }
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,

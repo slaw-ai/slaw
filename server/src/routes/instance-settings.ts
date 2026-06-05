@@ -39,11 +39,11 @@ export function instanceSettingsRoutes(db: Db) {
       assertCanManageInstanceSettings(req);
       const updated = await svc.updateGeneral(req.body);
       const actor = getActorInfo(req);
-      const companyIds = await svc.listCompanyIds();
+      const squadIds = await svc.listSquadIds();
       await Promise.all(
-        companyIds.map((companyId) =>
+        squadIds.map((squadId) =>
           logActivity(db, {
-            companyId,
+            squadId,
             actorType: actor.actorType,
             actorId: actor.actorId,
             agentId: actor.agentId,
@@ -76,11 +76,11 @@ export function instanceSettingsRoutes(db: Db) {
       assertCanManageInstanceSettings(req);
       const updated = await svc.updateExperimental(req.body);
       const actor = getActorInfo(req);
-      const companyIds = await svc.listCompanyIds();
+      const squadIds = await svc.listSquadIds();
       await Promise.all(
-        companyIds.map((companyId) =>
+        squadIds.map((squadId) =>
           logActivity(db, {
-            companyId,
+            squadId,
             actorType: actor.actorType,
             actorId: actor.actorId,
             agentId: actor.agentId,
@@ -121,11 +121,11 @@ export function instanceSettingsRoutes(db: Db) {
         force: true,
         lookbackHours: req.body.lookbackHours,
       });
-      const companyIds = await svc.listCompanyIds();
+      const squadIds = await svc.listSquadIds();
       await Promise.all(
-        companyIds.map((companyId) =>
+        squadIds.map((squadId) =>
           logActivity(db, {
-            companyId,
+            squadId,
             actorType: actor.actorType,
             actorId: actor.actorId,
             agentId: actor.agentId,

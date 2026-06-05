@@ -38,9 +38,9 @@ export type EnvBinding = string | EnvPlainBinding | EnvSecretRefBinding;
 
 export type AgentEnvConfig = Record<string, EnvBinding>;
 
-export interface CompanySecret {
+export interface SquadSecret {
   id: string;
-  companyId: string;
+  squadId: string;
   key: string;
   name: string;
   provider: SecretProvider;
@@ -110,9 +110,9 @@ export interface SecretProviderConfigHealthDetails {
   guidance?: string[];
 }
 
-export interface CompanySecretProviderConfig {
+export interface SquadSecretProviderConfig {
   id: string;
-  companyId: string;
+  squadId: string;
   provider: SecretProvider;
   displayName: string;
   status: SecretProviderConfigStatus;
@@ -175,7 +175,7 @@ export interface SecretProviderConfigDiscoveryPreviewResult {
   warnings: string[];
 }
 
-export interface CompanySecretVersion {
+export interface SquadSecretVersion {
   id: string;
   secretId: string;
   version: number;
@@ -187,9 +187,9 @@ export interface CompanySecretVersion {
   revokedAt: Date | null;
 }
 
-export interface CompanySecretBinding {
+export interface SquadSecretBinding {
   id: string;
-  companyId: string;
+  squadId: string;
   secretId: string;
   targetType: SecretBindingTargetType;
   targetId: string;
@@ -201,7 +201,7 @@ export interface CompanySecretBinding {
   updatedAt: Date;
 }
 
-export interface CompanySecretBindingTarget {
+export interface SquadSecretBindingTarget {
   type: SecretBindingTargetType;
   id: string;
   label: string;
@@ -209,13 +209,13 @@ export interface CompanySecretBindingTarget {
   status: string | null;
 }
 
-export interface CompanySecretUsageBinding extends CompanySecretBinding {
-  target: CompanySecretBindingTarget;
+export interface SquadSecretUsageBinding extends SquadSecretBinding {
+  target: SquadSecretBindingTarget;
 }
 
 export interface SecretAccessEvent {
   id: string;
-  companyId: string;
+  squadId: string;
   secretId: string;
   version: number | null;
   provider: SecretProvider;

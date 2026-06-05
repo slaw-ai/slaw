@@ -67,7 +67,7 @@ const ROLE_ICONS: Record<string, {
   iconPath: string;
   iconColor: string;
 }> = {
-  ceo: {
+  squad_lead: {
     bg: "#fef3c7", roleLabel: "Chief Executive", accentColor: "#f0883e", iconColor: "#92400e",
     iconPath: "M8 1l2.2 4.5L15 6.2l-3.5 3.4.8 4.9L8 12.2 3.7 14.5l.8-4.9L1 6.2l4.8-.7z",
     // 👑 Crown
@@ -138,7 +138,7 @@ const ROLE_ICONS: Record<string, {
 function guessRoleTag(node: OrgNode): string {
   const name = node.name.toLowerCase();
   const role = node.role.toLowerCase();
-  if (name === "ceo" || role.includes("chief executive")) return "ceo";
+  if (name === "squad_lead" || role.includes("chief executive")) return "squad_lead";
   if (name === "cto" || role.includes("chief technology") || role.includes("technology")) return "cto";
   if (name === "cmo" || role.includes("chief marketing") || role.includes("marketing")) return "cmo";
   if (name === "cfo" || role.includes("chief financial")) return "cfo";
@@ -213,7 +213,7 @@ const THEMES: Record<OrgChartStyle, StyleTheme> = {
     cardAccent: null,
   },
 
-  // 03 — Circuit (Linear/Raycast — indigo traces, amethyst CEO)
+  // 03 — Circuit (Linear/Raycast — indigo traces, amethyst Squad Lead)
   circuit: {
     bgColor: "#0c0c0e",
     cardBg: "rgba(99,102,241,0.04)",
@@ -231,7 +231,7 @@ const THEMES: Record<OrgChartStyle, StyleTheme> = {
     renderCard: (ln: LayoutNode, theme: StyleTheme) => {
       const { tag, roleLabel, emojiSvg } = getRoleInfo(ln.node);
       const cx = ln.x + ln.width / 2;
-      const isCeo = tag === "ceo";
+      const isCeo = tag === "squad_lead";
       const borderColor = isCeo ? "rgba(168,85,247,0.35)" : theme.cardBorder;
       const bgColor = isCeo ? "rgba(168,85,247,0.06)" : theme.cardBg;
 
@@ -292,7 +292,7 @@ const THEMES: Record<OrgChartStyle, StyleTheme> = {
 
       // Schematic uses monospace role labels
       const schemaRoles: Record<string, string> = {
-        ceo: "chief_executive", cto: "chief_technology", cmo: "chief_marketing",
+        squad_lead: "chief_executive", cto: "chief_technology", cmo: "chief_marketing",
         cfo: "chief_financial", coo: "chief_operating", engineer: "engineer",
         quality: "quality_assurance", design: "designer", finance: "finance",
         operations: "operations", default: "agent",
@@ -570,8 +570,8 @@ const TARGET_W = 1280;
 const TARGET_H = 640;
 
 export interface OrgChartOverlay {
-  /** Company name displayed top-left */
-  companyName?: string;
+  /** Squad name displayed top-left */
+  squadName?: string;
   /** Summary stats displayed bottom-right, e.g. "Agents: 5, Skills: 8" */
   stats?: string;
 }
@@ -738,8 +738,8 @@ export function renderOrgChartSvg(orgTree: OrgNode[], style: OrgChartStyle = "wa
   const logoY = LOGO_PADDING;
 
   // Optional overlay elements
-  const overlayNameSvg = overlay?.companyName
-    ? `<text x="${LOGO_PADDING}" y="${LOGO_PADDING + 16}" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="22" font-weight="700" fill="${theme.nameColor}">${svgEscape(overlay.companyName)}</text>`
+  const overlayNameSvg = overlay?.squadName
+    ? `<text x="${LOGO_PADDING}" y="${LOGO_PADDING + 16}" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="22" font-weight="700" fill="${theme.nameColor}">${svgEscape(overlay.squadName)}</text>`
     : "";
   const overlayStatsSvg = overlay?.stats
     ? `<text x="${TARGET_W - LOGO_PADDING}" y="${TARGET_H - LOGO_PADDING}" text-anchor="end" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="500" fill="${theme.roleColor}">${svgEscape(overlay.stats)}</text>`

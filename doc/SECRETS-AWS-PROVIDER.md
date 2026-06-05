@@ -7,13 +7,13 @@ Operational contract for the hosted `aws_secrets_manager` secret provider used b
 - Hosted provider for Slaw-managed secrets when Slaw Cloud runs on AWS.
 - Source of truth for secret values is AWS Secrets Manager, not Postgres.
 - Slaw stores only metadata needed for ownership, bindings, version selection, audit, and runtime resolution.
-- AWS provider bootstrap credentials are deployment/runtime credentials, not Slaw-managed company secrets.
+- AWS provider bootstrap credentials are deployment/runtime credentials, not Slaw-managed squad secrets.
 - Remote import for existing AWS secrets is metadata-only. Preview/import uses
   AWS inventory metadata and creates Slaw external references; it does not
   copy plaintext into Slaw.
-- Per-company AWS provider vaults (named instances of `aws_secrets_manager`
+- Per-squad AWS provider vaults (named instances of `aws_secrets_manager`
   with their own region, namespace, prefix, KMS key id, and tags) are managed
-  in the board UI under `Company Settings → Secrets → Provider vaults`. See
+  in the board UI under `Squad Settings → Secrets → Provider vaults`. See
   [Provider Vaults](../docs/deploy/secrets.md#provider-vaults) for the operator
   model and [Provider Vaults API](../docs/api/secrets.md#provider-vaults) for
   the routes. The bootstrap trust model in this document still applies — vault
@@ -22,7 +22,7 @@ Operational contract for the hosted `aws_secrets_manager` secret provider used b
 ## Bootstrap Trust Model
 
 The AWS provider has a chicken-and-egg boundary: Slaw cannot use
-`company_secrets` to unlock the AWS provider that stores those secrets. The
+`squad_secrets` to unlock the AWS provider that stores those secrets. The
 initial AWS trust must exist before the Slaw server starts.
 
 Allowed bootstrap locations:
@@ -37,12 +37,12 @@ Allowed bootstrap locations:
 
 Do not ask operators to paste AWS root credentials or long-lived IAM user access
 keys into the Slaw board UI. Do not store those bootstrap keys in
-`company_secrets`.
+`squad_secrets`.
 
 ## Slaw Cloud Bootstrap
 
 Slaw Cloud must provision the AWS backing resources before any board user
-can create AWS-backed company secrets:
+can create AWS-backed squad secrets:
 
 1. Create or select the deployment KMS key.
 2. Create the Slaw server runtime role for the deployment.
@@ -55,7 +55,7 @@ can create AWS-backed company secrets:
    deployment id, KMS setting, and AWS SDK credential source.
 
 Once this is in place, the board UI can create Slaw-managed AWS secrets and
-Slaw will write them under the deployment/company namespace.
+Slaw will write them under the deployment/squad namespace.
 
 ## Self-Hosted And Local Bootstrap
 
@@ -82,7 +82,7 @@ pnpm dev
 Temporary `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` environment credentials
 are acceptable only as a local break-glass or short-lived test source. They
 should not be written to Slaw config, committed to `.env` files, stored in
-`company_secrets`, or used as the default Slaw Cloud bootstrap path.
+`squad_secrets`, or used as the default Slaw Cloud bootstrap path.
 
 ## Deployment Config
 
@@ -108,7 +108,7 @@ SLAW_SECRETS_AWS_DELETE_RECOVERY_DAYS=30
 Naming convention for Slaw-managed secrets:
 
 ```text
-slaw/{deploymentId}/{companyId}/{secretKey}
+slaw/{deploymentId}/{squadId}/{secretKey}
 ```
 
 Tag set for Slaw-managed secrets:
@@ -116,7 +116,7 @@ Tag set for Slaw-managed secrets:
 - `slaw:managed-by=slaw`
 - `slaw:provider-owner=<owner tag>`
 - `slaw:deployment-id=<deployment id>`
-- `slaw:company-id=<company id>`
+- `slaw:squad-id=<squad id>`
 - `slaw:secret-key=<secret key>`
 - `slaw:environment=<environment tag>`
 
@@ -126,7 +126,7 @@ Launch posture:
 
 - One Slaw app role per deployment.
 - One deployment-scoped KMS key per deployment at launch.
-- Future per-company KMS keys remain compatible because Slaw stores provider refs and version metadata separately from values.
+- Future per-squad KMS keys remain compatible because Slaw stores provider refs and version metadata separately from values.
 
 Minimum IAM boundary:
 
@@ -234,7 +234,7 @@ Safe scoping guidance:
 
 Slaw also blocks importing refs under its own managed namespace as
 external references. Use the Slaw-managed flow for
-`slaw/{deploymentId}/{companyId}/{secretKey}` resources.
+`slaw/{deploymentId}/{squadId}/{secretKey}` resources.
 
 ## Existing AWS Secrets
 
@@ -242,10 +242,10 @@ V1 keeps existing AWS Secrets Manager entries as **linked external references**,
 Slaw-managed resources.
 
 Use the Slaw-managed flow when Slaw should create and rotate the value. The AWS
-secret name is derived from deployment and company scope:
+secret name is derived from deployment and squad scope:
 
 ```text
-slaw/{deploymentId}/{companyId}/{secretKey}
+slaw/{deploymentId}/{squadId}/{secretKey}
 ```
 
 Use the external-reference flow when the secret already exists at an operator-owned path such
@@ -266,7 +266,7 @@ confirmation UX, scope validation, expected Slaw tags, and security/cloud-ops re
 ## Data Custody
 
 - Slaw stores `externalRef`, `providerVersionRef`, provider id, fingerprint hash, status, and binding metadata.
-- Slaw does not store AWS secret plaintext in `company_secret_versions.material`.
+- Slaw does not store AWS secret plaintext in `squad_secret_versions.material`.
 - Runtime resolution fetches the value from AWS only when a bound consumer needs it.
 
 ## Rotation Runbook
@@ -275,7 +275,7 @@ Manual Slaw-managed rotation:
 
 1. Write the new value through the Slaw secret rotate flow.
 2. Slaw creates a new AWS secret version with `PutSecretValue`.
-3. Slaw records the new `providerVersionRef` in `company_secret_versions`.
+3. Slaw records the new `providerVersionRef` in `squad_secret_versions`.
 4. Re-run or restart affected workloads that consume `latest`, or pin consumers to a specific Slaw version before rollout when you need staged release safety.
 
 Guidance:
@@ -334,7 +334,7 @@ Remote import-specific actions:
 
 Potential incidents:
 
-- Cross-company access caused by IAM scoping drift.
+- Cross-squad access caused by IAM scoping drift.
 - KMS policy drift causing decrypt failures or over-broad access.
 - Suspected secret exposure in logs, transcripts, or downstream agent output.
 
@@ -361,8 +361,8 @@ Prerequisites:
 
 Suggested smoke:
 
-1. Create a test secret through the Slaw board or API under a throwaway company.
-2. Confirm the resulting AWS secret name matches `slaw/{deploymentId}/{companyId}/{secretKey}`.
+1. Create a test secret through the Slaw board or API under a throwaway squad.
+2. Confirm the resulting AWS secret name matches `slaw/{deploymentId}/{squadId}/{secretKey}`.
 3. Rotate the secret once and confirm a new `providerVersionRef` appears in Slaw metadata.
 4. Resolve the secret through a bound runtime path, not by adding a general-purpose reveal endpoint.
 5. Delete the throwaway secret and confirm AWS schedules deletion with the configured recovery window.

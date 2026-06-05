@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue } from "@slaw/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CompanyJoinRequest } from "../api/access";
+import type { SquadJoinRequest } from "../api/access";
 
 const routerMock = vi.hoisted(() => ({
   location: { pathname: "/", search: "", hash: "" },
@@ -25,7 +25,7 @@ const apiMocks = vi.hoisted(() => ({
   issueLabels: vi.fn(),
   agentsList: vi.fn(),
   heartbeatRunsList: vi.fn(),
-  liveRunsForCompany: vi.fn(),
+  liveRunsForSquad: vi.fn(),
   experimentalSettings: vi.fn(),
   projectsList: vi.fn(),
 }));
@@ -76,7 +76,7 @@ vi.mock("../api/agents", () => ({
 vi.mock("../api/heartbeats", () => ({
   heartbeatsApi: {
     list: apiMocks.heartbeatRunsList,
-    liveRunsForCompany: apiMocks.liveRunsForCompany,
+    liveRunsForSquad: apiMocks.liveRunsForSquad,
   },
 }));
 
@@ -88,8 +88,8 @@ vi.mock("../api/projects", () => ({
   projectsApi: { list: apiMocks.projectsList },
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({ selectedCompanyId: "company-1" }),
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({ selectedSquadId: "squad-1" }),
 }));
 
 vi.mock("../context/BreadcrumbContext", () => ({
@@ -147,7 +147,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
     identifier: "PAP-904",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,
@@ -189,12 +189,12 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
 }
 
 function createJoinRequest(
-  overrides: Partial<CompanyJoinRequest> = {},
-): CompanyJoinRequest {
+  overrides: Partial<SquadJoinRequest> = {},
+): SquadJoinRequest {
   return {
     id: "join-1",
     inviteId: "invite-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     requestType: "human",
     status: "pending_approval",
     requestIp: "127.0.0.1",
@@ -248,7 +248,7 @@ function resetInboxApiMocks() {
   apiMocks.issueLabels.mockResolvedValue([]);
   apiMocks.agentsList.mockResolvedValue([]);
   apiMocks.heartbeatRunsList.mockResolvedValue([]);
-  apiMocks.liveRunsForCompany.mockResolvedValue([]);
+  apiMocks.liveRunsForSquad.mockResolvedValue([]);
   apiMocks.experimentalSettings.mockResolvedValue({ enableIsolatedWorkspaces: false });
   apiMocks.projectsList.mockResolvedValue([]);
 }
@@ -317,7 +317,13 @@ describe("Inbox toolbar", () => {
       await Promise.resolve();
     });
 
-    const rows = container.querySelectorAll("[data-inbox-item]");
+    let rows = container.querySelectorAll("[data-inbox-item]");
+    for (let attempt = 0; attempt < 10 && rows.length < 2; attempt += 1) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      });
+      rows = container.querySelectorAll("[data-inbox-item]");
+    }
     expect(rows.length).toBeGreaterThanOrEqual(2);
 
     const linkOf = (row: Element): HTMLAnchorElement | null =>
@@ -365,7 +371,7 @@ describe("FailedRunInboxRow", () => {
     const root = createRoot(container);
     const run = {
       id: "run-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       agentId: "agent-1",
       invocationSource: "assignment",
       triggerDetail: null,

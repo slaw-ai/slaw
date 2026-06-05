@@ -6,12 +6,12 @@ import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function JoinRequestQueue() {
-  const { selectedCompany, selectedCompanyId } = useCompany();
+  const { selectedSquad, selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
@@ -20,43 +20,43 @@ export function JoinRequestQueue() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
+      { label: selectedSquad?.name ?? "Squad", href: "/dashboard" },
       { label: "Inbox", href: "/inbox" },
       { label: "Join Requests" },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs]);
+  }, [selectedSquad?.name, setBreadcrumbs]);
 
   const requestsQuery = useQuery({
-    queryKey: queryKeys.access.joinRequests(selectedCompanyId ?? "", `${status}:${requestType}`),
+    queryKey: queryKeys.access.joinRequests(selectedSquadId ?? "", `${status}:${requestType}`),
     queryFn: () =>
       accessApi.listJoinRequests(
-        selectedCompanyId!,
+        selectedSquadId!,
         status,
         requestType === "all" ? undefined : requestType,
       ),
-    enabled: !!selectedCompanyId,
+    enabled: !!selectedSquadId,
   });
 
   const approveMutation = useMutation({
-    mutationFn: (requestId: string) => accessApi.approveJoinRequest(selectedCompanyId!, requestId),
+    mutationFn: (requestId: string) => accessApi.approveJoinRequest(selectedSquadId!, requestId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!, `${status}:${requestType}`) });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.companyMembers(selectedCompanyId!) });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedSquadId!, `${status}:${requestType}`) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.squadMembers(selectedSquadId!) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!) });
       pushToast({ title: "Join request approved", tone: "success" });
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (requestId: string) => accessApi.rejectJoinRequest(selectedCompanyId!, requestId),
+    mutationFn: (requestId: string) => accessApi.rejectJoinRequest(selectedSquadId!, requestId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedCompanyId!, `${status}:${requestType}`) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(selectedSquadId!, `${status}:${requestType}`) });
       pushToast({ title: "Join request rejected", tone: "success" });
     },
   });
 
-  if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select a company to review join requests.</div>;
+  if (!selectedSquadId) {
+    return <div className="text-sm text-muted-foreground">Select a squad to review join requests.</div>;
   }
 
   if (requestsQuery.isLoading) {
@@ -66,7 +66,7 @@ export function JoinRequestQueue() {
   if (requestsQuery.error) {
     const message =
       requestsQuery.error instanceof ApiError && requestsQuery.error.status === 403
-        ? "You do not have permission to review join requests for this company."
+        ? "You do not have permission to review join requests for this squad."
         : requestsQuery.error instanceof Error
           ? requestsQuery.error.message
           : "Failed to load join requests.";

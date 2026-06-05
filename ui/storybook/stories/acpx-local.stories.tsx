@@ -6,7 +6,7 @@ import { parseAcpxStdoutLine } from "@slaw/adapter-acpx-local/ui";
 import type {
   Agent,
   AgentSkillSnapshot,
-  CompanySkillListItem,
+  SquadSkillListItem,
 } from "@slaw/shared";
 import { SchemaConfigFields } from "@/adapters/schema-config-fields";
 import type { TranscriptEntry } from "@/adapters";
@@ -64,7 +64,7 @@ const acpxLocalConfigSchema: AdapterConfigSchema = {
       key: "stateDir",
       label: "State directory",
       type: "text",
-      hint: "Optional ACPX session state directory. Defaults to Slaw-managed company/agent scoped storage.",
+      hint: "Optional ACPX session state directory. Defaults to Slaw-managed squad/agent scoped storage.",
     },
     {
       key: "fastMode",
@@ -422,12 +422,12 @@ function AcpxLocalTranscriptStory() {
   );
 }
 
-const SKILLS_COMPANY_ID = "company-storybook";
+const SKILLS_SQUAD_ID = "squad-storybook";
 
-const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
+const acpxSkillsSquadLibrary: SquadSkillListItem[] = [
   {
     id: "skill-slaw",
-    companyId: SKILLS_COMPANY_ID,
+    squadId: SKILLS_SQUAD_ID,
     key: "slaw",
     slug: "slaw",
     name: "Slaw",
@@ -454,7 +454,7 @@ const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
   },
   {
     id: "skill-design-guide",
-    companyId: SKILLS_COMPANY_ID,
+    squadId: SKILLS_SQUAD_ID,
     key: "design-guide",
     slug: "design-guide",
     name: "Design guide",
@@ -481,7 +481,7 @@ const acpxSkillsCompanyLibrary: CompanySkillListItem[] = [
   },
   {
     id: "skill-mobile-qa",
-    companyId: SKILLS_COMPANY_ID,
+    squadId: SKILLS_SQUAD_ID,
     key: "mobile-app-qa",
     slug: "mobile-app-qa",
     name: "Mobile app QA",
@@ -519,7 +519,7 @@ function buildAcpxAgent({
 }): Agent {
   return {
     id: agentId,
-    companyId: SKILLS_COMPANY_ID,
+    squadId: SKILLS_SQUAD_ID,
     name: `ACPX ${acpAgent === "custom" ? "Custom" : acpAgent === "codex" ? "Codex" : "Claude"}`,
     urlKey: `acpx-${acpAgent}`,
     role: "engineer",
@@ -580,7 +580,7 @@ function buildAcpxClaudeSnapshot(): AgentSkillSnapshot {
         managed: true,
         required: false,
         state: "configured",
-        origin: "company_managed",
+        origin: "squad_managed",
         originLabel: "Managed by Slaw",
         readOnly: false,
         sourcePath: "skills/design-guide",
@@ -594,7 +594,7 @@ function buildAcpxClaudeSnapshot(): AgentSkillSnapshot {
         managed: true,
         required: false,
         state: "available",
-        origin: "company_managed",
+        origin: "squad_managed",
         originLabel: "Managed by Slaw",
         readOnly: false,
         sourcePath: "skills/mobile-app-qa",
@@ -635,7 +635,7 @@ function buildAcpxCodexSnapshot(): AgentSkillSnapshot {
         managed: true,
         required: false,
         state: "available",
-        origin: "company_managed",
+        origin: "squad_managed",
         originLabel: "Managed by Slaw",
         readOnly: false,
         sourcePath: "skills/design-guide",
@@ -649,7 +649,7 @@ function buildAcpxCodexSnapshot(): AgentSkillSnapshot {
         managed: true,
         required: false,
         state: "available",
-        origin: "company_managed",
+        origin: "squad_managed",
         originLabel: "Managed by Slaw",
         readOnly: false,
         sourcePath: "skills/mobile-app-qa",
@@ -692,7 +692,7 @@ function buildAcpxCustomSnapshot(): AgentSkillSnapshot {
         managed: true,
         required: false,
         state: "configured",
-        origin: "company_managed",
+        origin: "squad_managed",
         originLabel: "Managed by Slaw",
         readOnly: false,
         sourcePath: "skills/design-guide",
@@ -707,7 +707,7 @@ function buildAcpxCustomSnapshot(): AgentSkillSnapshot {
         managed: true,
         required: false,
         state: "available",
-        origin: "company_managed",
+        origin: "squad_managed",
         originLabel: "Managed by Slaw",
         readOnly: false,
         sourcePath: "skills/mobile-app-qa",
@@ -754,12 +754,12 @@ function AcpxSkillsState({
 }: {
   agent: Agent;
   snapshot: AgentSkillSnapshot;
-  library: CompanySkillListItem[];
+  library: SquadSkillListItem[];
 }) {
   const queryClient = useQueryClient();
-  queryClient.setQueryData(queryKeys.companySkills.list(SKILLS_COMPANY_ID), library);
+  queryClient.setQueryData(queryKeys.squadSkills.list(SKILLS_SQUAD_ID), library);
   queryClient.setQueryData(queryKeys.agents.skills(agent.id), snapshot);
-  return <AgentSkillsTab agent={agent} companyId={SKILLS_COMPANY_ID} />;
+  return <AgentSkillsTab agent={agent} squadId={SKILLS_SQUAD_ID} />;
 }
 
 function AcpxClaudeSkillsStory() {
@@ -773,7 +773,7 @@ function AcpxClaudeSkillsStory() {
       title="ACPX Claude — Skills tab"
       subtitle="Runtime-synced state. Selected skills are mounted into the next ACPX Claude session via the Slaw skills directory."
     >
-      <AcpxSkillsState agent={agent} snapshot={buildAcpxClaudeSnapshot()} library={acpxSkillsCompanyLibrary} />
+      <AcpxSkillsState agent={agent} snapshot={buildAcpxClaudeSnapshot()} library={acpxSkillsSquadLibrary} />
     </StoryFrame>
   );
 }
@@ -789,7 +789,7 @@ function AcpxCodexSkillsStory() {
       title="ACPX Codex — Skills tab"
       subtitle="Runtime-synced state. Selected skills are linked into the effective CODEX_HOME/skills/ directory for the next ACPX Codex session."
     >
-      <AcpxSkillsState agent={agent} snapshot={buildAcpxCodexSnapshot()} library={acpxSkillsCompanyLibrary} />
+      <AcpxSkillsState agent={agent} snapshot={buildAcpxCodexSnapshot()} library={acpxSkillsSquadLibrary} />
     </StoryFrame>
   );
 }
@@ -805,7 +805,7 @@ function AcpxCustomSkillsStory() {
       title="ACPX custom — Skills tab"
       subtitle="Unsupported runtime sync. Desired skills are tracked in Slaw only until a custom ACP command declares a skill integration contract."
     >
-      <AcpxSkillsState agent={agent} snapshot={buildAcpxCustomSnapshot()} library={acpxSkillsCompanyLibrary} />
+      <AcpxSkillsState agent={agent} snapshot={buildAcpxCustomSnapshot()} library={acpxSkillsSquadLibrary} />
     </StoryFrame>
   );
 }
@@ -821,7 +821,7 @@ function AcpxClaudeSkillsLoadingStory() {
       title="ACPX Claude — Skills tab (loading)"
       subtitle="Initial render before /api/agents/{id}/skills resolves. Uses the shared list skeleton."
     >
-      <AgentSkillsTab agent={agent} companyId={SKILLS_COMPANY_ID} />
+      <AgentSkillsTab agent={agent} squadId={SKILLS_SQUAD_ID} />
     </StoryFrame>
   );
 }
@@ -842,8 +842,8 @@ function AcpxClaudeSkillsEmptyLibraryStory() {
   };
   return (
     <StoryFrame
-      title="ACPX Claude — Skills tab (empty company library)"
-      subtitle="Runtime supports skills, but the company library has no skills imported yet. Operator is prompted to import skills first."
+      title="ACPX Claude — Skills tab (empty squad library)"
+      subtitle="Runtime supports skills, but the squad library has no skills imported yet. Operator is prompted to import skills first."
     >
       <AcpxSkillsState agent={agent} snapshot={emptySnapshot} library={[]} />
     </StoryFrame>
@@ -890,6 +890,6 @@ export const SkillsTabLoading: StoryObj = {
 };
 
 export const SkillsTabEmptyLibrary: StoryObj = {
-  name: "Skills tab — empty company library",
+  name: "Skills tab — empty squad library",
   render: () => <AcpxClaudeSkillsEmptyLibraryStory />,
 };

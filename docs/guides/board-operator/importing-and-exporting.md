@@ -1,19 +1,19 @@
 ---
-title: Importing & Exporting Companies
-summary: Export companies to portable packages and import them from local paths or GitHub
+title: Importing & Exporting Squads
+summary: Export squads to portable packages and import them from local paths or GitHub
 ---
 
-Slaw companies can be exported to portable markdown packages and imported from local directories or GitHub repositories. This lets you share company configurations, duplicate setups, and version-control your agent teams.
+Slaw squads can be exported to portable markdown packages and imported from local directories or GitHub repositories. This lets you share squad configurations, duplicate setups, and version-control your agent teams.
 
 ## Package Format
 
-Exported packages follow the [Agent Companies specification](/companies/companies-spec) and use a markdown-first structure:
+Exported packages follow the [Agent Squads specification](/squads/squads-spec) and use a markdown-first structure:
 
 ```text
-my-company/
-├── COMPANY.md          # Company metadata
+my-squad/
+├── SQUAD.md          # Squad metadata
 ├── agents/
-│   ├── ceo/AGENT.md    # Agent instructions + frontmatter
+│   ├── squad_lead/AGENT.md    # Agent instructions + frontmatter
 │   └── cto/AGENT.md
 ├── projects/
 │   └── main/PROJECT.md
@@ -24,17 +24,17 @@ my-company/
 └── .slaw.yaml     # Adapter config, env inputs, routines
 ```
 
-- **COMPANY.md** defines company name, description, and metadata.
+- **SQUAD.md** defines squad name, description, and metadata.
 - **AGENT.md** files contain agent identity, role, and instructions.
 - **SKILL.md** files are compatible with the Agent Skills ecosystem.
 - **.slaw.yaml** holds Slaw-specific config (adapter types, env inputs, budgets) as an optional sidecar.
 
-## Exporting a Company
+## Exporting a Squad
 
-Export a company into a portable folder:
+Export a squad into a portable folder:
 
 ```sh
-slaw company export <company-id> --out ./my-export
+slaw squad export <squad-id> --out ./my-export
 ```
 
 ### Options
@@ -42,7 +42,7 @@ slaw company export <company-id> --out ./my-export
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--out <path>` | Output directory (required) | — |
-| `--include <values>` | Comma-separated set: `company`, `agents`, `projects`, `issues`, `tasks`, `skills` | `company,agents` |
+| `--include <values>` | Comma-separated set: `squad`, `agents`, `projects`, `issues`, `tasks`, `skills` | `squad,agents` |
 | `--skills <values>` | Export only specific skill slugs | all |
 | `--projects <values>` | Export only specific project shortnames or IDs | all |
 | `--issues <values>` | Export specific issue identifiers or IDs | none |
@@ -52,19 +52,19 @@ slaw company export <company-id> --out ./my-export
 ### Examples
 
 ```sh
-# Export company with agents and projects
-slaw company export abc123 --out ./backup --include company,agents,projects
+# Export squad with agents and projects
+slaw squad export abc123 --out ./backup --include squad,agents,projects
 
 # Export everything including tasks and skills
-slaw company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
+slaw squad export abc123 --out ./full-export --include squad,agents,projects,tasks,skills
 
 # Export only specific skills
-slaw company export abc123 --out ./skills-only --include skills --skills review,deploy
+slaw squad export abc123 --out ./skills-only --include skills --skills review,deploy
 ```
 
 ### What Gets Exported
 
-- Company name, description, and metadata
+- Squad name, description, and metadata
 - Agent names, roles, reporting structure, and instructions
 - Project definitions and workspace config
 - Task/issue descriptions (when included)
@@ -73,33 +73,33 @@ slaw company export abc123 --out ./skills-only --include skills --skills review,
 
 Secret values, machine-local paths, and database IDs are **never** exported.
 
-## Importing a Company
+## Importing a Squad
 
 Import from a local directory, GitHub URL, or GitHub shorthand:
 
 ```sh
 # From a local folder
-slaw company import ./my-export
+slaw squad import ./my-export
 
 # From a GitHub URL
-slaw company import https://github.com/org/repo
+slaw squad import https://github.com/org/repo
 
 # From a GitHub subfolder
-slaw company import https://github.com/org/repo/tree/main/companies/acme
+slaw squad import https://github.com/org/repo/tree/main/squads/acme
 
 # From GitHub shorthand
-slaw company import org/repo
-slaw company import org/repo/companies/acme
+slaw squad import org/repo
+slaw squad import org/repo/squads/acme
 ```
 
 ### Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--target <mode>` | `new` (create a new company) or `existing` (merge into existing) | inferred from context |
-| `--company-id <id>` | Target company ID for `--target existing` | current context |
-| `--new-company-name <name>` | Override company name for `--target new` | from package |
-| `--include <values>` | Comma-separated set: `company`, `agents`, `projects`, `issues`, `tasks`, `skills` | auto-detected |
+| `--target <mode>` | `new` (create a new squad) or `existing` (merge into existing) | inferred from context |
+| `--squad-id <id>` | Target squad ID for `--target existing` | current context |
+| `--new-squad-name <name>` | Override squad name for `--target new` | from package |
+| `--include <values>` | Comma-separated set: `squad`, `agents`, `projects`, `issues`, `tasks`, `skills` | auto-detected |
 | `--agents <list>` | Comma-separated agent slugs to import, or `all` | `all` |
 | `--collision <mode>` | How to handle name conflicts: `rename`, `skip`, or `replace` | `rename` |
 | `--ref <value>` | Git ref for GitHub imports (branch, tag, or commit) | default branch |
@@ -109,18 +109,18 @@ slaw company import org/repo/companies/acme
 
 ### Target Modes
 
-- **`new`** — Creates a fresh company from the package. Good for duplicating a company template.
-- **`existing`** — Merges the package into an existing company. Use `--company-id` to specify the target.
+- **`new`** — Creates a fresh squad from the package. Good for duplicating a squad template.
+- **`existing`** — Merges the package into an existing squad. Use `--squad-id` to specify the target.
 
-If `--target` is not specified, Slaw infers it: if a `--company-id` is provided (or one exists in context), it defaults to `existing`; otherwise `new`.
+If `--target` is not specified, Slaw infers it: if a `--squad-id` is provided (or one exists in context), it defaults to `existing`; otherwise `new`.
 
 ### Collision Strategies
 
-When importing into an existing company, agent or project names may conflict with existing ones:
+When importing into an existing squad, agent or project names may conflict with existing ones:
 
-- **`rename`** (default) — Appends a suffix to avoid conflicts (e.g., `ceo` becomes `ceo-2`).
+- **`rename`** (default) — Appends a suffix to avoid conflicts (e.g., `squad_lead` becomes `squad_lead-2`).
 - **`skip`** — Skips entities that already exist.
-- **`replace`** — Overwrites existing entities. Only available for non-safe imports (not available through the CEO API).
+- **`replace`** — Overwrites existing entities. Only available for non-safe imports (not available through the Squad Lead API).
 
 ### Interactive Selection
 
@@ -131,7 +131,7 @@ When running interactively (no `--yes` or `--json` flags), the import command sh
 Always preview first with `--dry-run`:
 
 ```sh
-slaw company import org/repo --target existing --company-id abc123 --dry-run
+slaw squad import org/repo --target existing --squad-id abc123 --dry-run
 ```
 
 The preview shows:
@@ -144,20 +144,20 @@ Imported agents always land with timer heartbeats disabled. Assignment/on-demand
 
 ### Common Workflows
 
-**Clone a company template from GitHub:**
+**Clone a squad template from GitHub:**
 
 ```sh
-slaw company import org/company-templates/engineering-team \
+slaw squad import org/squad-templates/engineering-team \
   --target new \
-  --new-company-name "My Engineering Team"
+  --new-squad-name "My Engineering Team"
 ```
 
-**Add agents from a package into your existing company:**
+**Add agents from a package into your existing squad:**
 
 ```sh
-slaw company import ./shared-agents \
+slaw squad import ./shared-agents \
   --target existing \
-  --company-id abc123 \
+  --squad-id abc123 \
   --include agents \
   --collision rename
 ```
@@ -165,13 +165,13 @@ slaw company import ./shared-agents \
 **Import a specific branch or tag:**
 
 ```sh
-slaw company import org/repo --ref v2.0.0 --dry-run
+slaw squad import org/repo --ref v2.0.0 --dry-run
 ```
 
 **Non-interactive import (CI/scripts):**
 
 ```sh
-slaw company import ./package \
+slaw squad import ./package \
   --target new \
   --yes \
   --json
@@ -183,21 +183,21 @@ The CLI commands use these API endpoints under the hood:
 
 | Action | Endpoint |
 |--------|----------|
-| Export company | `POST /api/companies/{companyId}/export` |
-| Preview import (existing company) | `POST /api/companies/{companyId}/imports/preview` |
-| Apply import (existing company) | `POST /api/companies/{companyId}/imports/apply` |
-| Preview import (new company) | `POST /api/companies/import/preview` |
-| Apply import (new company) | `POST /api/companies/import` |
+| Export squad | `POST /api/squads/{squadId}/export` |
+| Preview import (existing squad) | `POST /api/squads/{squadId}/imports/preview` |
+| Apply import (existing squad) | `POST /api/squads/{squadId}/imports/apply` |
+| Preview import (new squad) | `POST /api/squads/import/preview` |
+| Apply import (new squad) | `POST /api/squads/import` |
 
-CEO agents can also use the safe import routes (`/imports/preview` and `/imports/apply`) which enforce non-destructive rules: `replace` is rejected, collisions resolve with `rename` or `skip`, and issues are always created as new.
+Squad Lead agents can also use the safe import routes (`/imports/preview` and `/imports/apply`) which enforce non-destructive rules: `replace` is rejected, collisions resolve with `rename` or `skip`, and issues are always created as new.
 
 ## GitHub Sources
 
 Slaw supports several GitHub URL formats:
 
 - Full URL: `https://github.com/org/repo`
-- Subfolder URL: `https://github.com/org/repo/tree/main/path/to/company`
+- Subfolder URL: `https://github.com/org/repo/tree/main/path/to/squad`
 - Shorthand: `org/repo`
-- Shorthand with path: `org/repo/path/to/company`
+- Shorthand with path: `org/repo/path/to/squad`
 
 Use `--ref` to pin to a specific branch, tag, or commit hash when importing from GitHub.

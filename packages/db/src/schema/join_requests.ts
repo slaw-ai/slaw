@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { invites } from "./invites.js";
 import { agents } from "./agents.js";
 
@@ -9,7 +9,7 @@ export const joinRequests = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     inviteId: uuid("invite_id").notNull().references(() => invites.id),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     requestType: text("request_type").notNull(),
     status: text("status").notNull().default("pending_approval"),
     requestIp: text("request_ip").notNull(),
@@ -32,17 +32,17 @@ export const joinRequests = pgTable(
   },
   (table) => ({
     inviteUniqueIdx: uniqueIndex("join_requests_invite_unique_idx").on(table.inviteId),
-    companyStatusTypeCreatedIdx: index("join_requests_company_status_type_created_idx").on(
-      table.companyId,
+    squadStatusTypeCreatedIdx: index("join_requests_squad_status_type_created_idx").on(
+      table.squadId,
       table.status,
       table.requestType,
       table.createdAt,
     ),
     pendingHumanUserUniqueIdx: uniqueIndex("join_requests_pending_human_user_uq")
-      .on(table.companyId, table.requestingUserId)
+      .on(table.squadId, table.requestingUserId)
       .where(sql`${table.requestType} = 'human' AND ${table.status} = 'pending_approval' AND ${table.requestingUserId} IS NOT NULL`),
     pendingHumanEmailUniqueIdx: uniqueIndex("join_requests_pending_human_email_uq")
-      .on(table.companyId, sql`lower(${table.requestEmailSnapshot})`)
+      .on(table.squadId, sql`lower(${table.requestEmailSnapshot})`)
       .where(sql`${table.requestType} = 'human' AND ${table.status} = 'pending_approval' AND ${table.requestEmailSnapshot} IS NOT NULL`),
   }),
 );

@@ -235,7 +235,7 @@ export function agentService(db: Db) {
     });
   }
 
-  async function getMonthlySpendByAgentIds(companyId: string, agentIds: string[]) {
+  async function getMonthlySpendByAgentIds(squadId: string, agentIds: string[]) {
     if (agentIds.length === 0) return new Map<string, number>();
     const { start, end } = currentUtcMonthWindow();
     const rows = await db
@@ -246,7 +246,7 @@ export function agentService(db: Db) {
       .from(costEvents)
       .where(
         and(
-          eq(costEvents.companyId, companyId),
+          eq(costEvents.squadId, squadId),
           inArray(costEvents.agentId, agentIds),
           gte(costEvents.occurredAt, start),
           lt(costEvents.occurredAt, end),
@@ -256,11 +256,11 @@ export function agentService(db: Db) {
     return new Map(rows.map((row) => [row.agentId, Number(row.spentMonthlyCents ?? 0)]));
   }
 
-  async function hydrateAgentSpend<T extends { id: string; companyId: string; spentMonthlyCents: number }>(rows: T[]) {
+  async function hydrateAgentSpend<T extends { id: string; squadId: string; spentMonthlyCents: number }>(rows: T[]) {
     const agentIds = rows.map((row) => row.id);
-    const companyId = rows[0]?.companyId;
-    if (!companyId || agentIds.length === 0) return rows;
-    const spendByAgentId = await getMonthlySpendByAgentIds(companyId, agentIds);
+    const squadId = rows[0]?.squadId;
+    if (!squadId || agentIds.length === 0) return rows;
+    const spendByAgentId = await getMonthlySpendByAgentIds(squadId, agentIds);
     return rows.map((row) => ({
       ...row,
       spentMonthlyCents: spendByAgentId.get(row.id) ?? 0,
@@ -278,11 +278,11 @@ export function agentService(db: Db) {
     return normalizeAgentRow(hydrated);
   }
 
-  async function ensureManager(companyId: string, managerId: string) {
+  async function ensureManager(squadId: string, managerId: string) {
     const manager = await getById(managerId);
     if (!manager) throw notFound("Manager not found");
-    if (manager.companyId !== companyId) {
-      throw unprocessable("Manager must belong to same company");
+    if (manager.squadId !== squadId) {
+      throw unprocessable("Manager must belong to same squad");
     }
     return manager;
   }
@@ -299,8 +299,8 @@ export function agentService(db: Db) {
     }
   }
 
-  async function assertCompanyShortnameAvailable(
-    companyId: string,
+  async function assertSquadShortnameAvailable(
+    squadId: string,
     candidateName: string,
     options?: AgentShortnameCollisionOptions,
   ) {
@@ -314,12 +314,12 @@ export function agentService(db: Db) {
         status: agents.status,
       })
       .from(agents)
-      .where(eq(agents.companyId, companyId));
+      .where(eq(agents.squadId, squadId));
 
     const hasCollision = hasAgentShortnameCollision(candidateName, existingAgents, options);
     if (hasCollision) {
       throw conflict(
-        `Agent shortname '${candidateShortname}' is already in use in this company`,
+        `Agent shortname '${candidateShortname}' is already in use in this squad`,
       );
     }
   }
@@ -346,7 +346,7 @@ export function agentService(db: Db) {
 
     if (data.reportsTo !== undefined) {
       if (data.reportsTo) {
-        await ensureManager(existing.companyId, data.reportsTo);
+        await ensureManager(existing.squadId, data.reportsTo);
       }
       await assertNoCycle(id, data.reportsTo);
     }
@@ -355,7 +355,7 @@ export function agentService(db: Db) {
       const previousShortname = normalizeAgentUrlKey(existing.name);
       const nextShortname = normalizeAgentUrlKey(data.name);
       if (previousShortname !== nextShortname) {
-        await assertCompanyShortnameAvailable(existing.companyId, data.name, { excludeAgentId: id });
+        await assertSquadShortnameAvailable(existing.squadId, data.name, { excludeAgentId: id });
       }
     }
 
@@ -381,7 +381,7 @@ export function agentService(db: Db) {
       const changedKeys = diffConfigSnapshot(beforeConfig, afterConfig);
       if (changedKeys.length > 0) {
         await db.insert(agentConfigRevisions).values({
-          companyId: normalizedUpdated.companyId,
+          squadId: normalizedUpdated.squadId,
           agentId: normalizedUpdated.id,
           createdByAgentId: options?.recordRevision?.createdByAgentId ?? null,
           createdByUserId: options?.recordRevision?.createdByUserId ?? null,
@@ -398,8 +398,8 @@ export function agentService(db: Db) {
   }
 
   return {
-    list: async (companyId: string, options?: { includeTerminated?: boolean }) => {
-      const conditions = [eq(agents.companyId, companyId)];
+    list: async (squadId: string, options?: { includeTerminated?: boolean }) => {
+      const conditions = [eq(agents.squadId, squadId)];
       if (!options?.includeTerminated) {
         conditions.push(ne(agents.status, "terminated"));
       }
@@ -410,15 +410,15 @@ export function agentService(db: Db) {
 
     getById,
 
-    create: async (companyId: string, data: Omit<typeof agents.$inferInsert, "companyId">) => {
+    create: async (squadId: string, data: Omit<typeof agents.$inferInsert, "squadId">) => {
       if (data.reportsTo) {
-        await ensureManager(companyId, data.reportsTo);
+        await ensureManager(squadId, data.reportsTo);
       }
 
       const existingAgents = await db
         .select({ id: agents.id, name: agents.name, status: agents.status })
         .from(agents)
-        .where(eq(agents.companyId, companyId));
+        .where(eq(agents.squadId, squadId));
       const uniqueName = deduplicateAgentName(data.name, existingAgents);
 
       const role = data.role ?? "general";
@@ -426,7 +426,7 @@ export function agentService(db: Db) {
       const runtimeConfig = normalizeRuntimeConfigForNewAgent(data.runtimeConfig);
       const created = await db
         .insert(agents)
-        .values({ ...data, name: uniqueName, companyId, role, permissions: normalizedPermissions, runtimeConfig })
+        .values({ ...data, name: uniqueName, squadId, role, permissions: normalizedPermissions, runtimeConfig })
         .returning()
         .then((rows) => rows[0]);
 
@@ -620,7 +620,7 @@ export function agentService(db: Db) {
         .insert(agentApiKeys)
         .values({
           agentId: id,
-          companyId: existing.companyId,
+          squadId: existing.squadId,
           name,
           keyHash,
         })
@@ -651,7 +651,7 @@ export function agentService(db: Db) {
         .select({
           id: agentApiKeys.id,
           agentId: agentApiKeys.agentId,
-          companyId: agentApiKeys.companyId,
+          squadId: agentApiKeys.squadId,
           name: agentApiKeys.name,
           createdAt: agentApiKeys.createdAt,
           revokedAt: agentApiKeys.revokedAt,
@@ -669,11 +669,11 @@ export function agentService(db: Db) {
       return rows[0] ?? null;
     },
 
-    orgForCompany: async (companyId: string) => {
+    orgForSquad: async (squadId: string) => {
       const rows = await db
         .select()
         .from(agents)
-        .where(and(eq(agents.companyId, companyId), ne(agents.status, "terminated")));
+        .where(and(eq(agents.squadId, squadId), ne(agents.status, "terminated")));
       const normalizedRows = rows.map(normalizeAgentRow);
       const byManager = new Map<string | null, typeof normalizedRows>();
       for (const row of normalizedRows) {
@@ -715,7 +715,7 @@ export function agentService(db: Db) {
         .from(heartbeatRuns)
         .where(and(eq(heartbeatRuns.agentId, agentId), inArray(heartbeatRuns.status, ["queued", "running"]))),
 
-    resolveByReference: async (companyId: string, reference: string) => {
+    resolveByReference: async (squadId: string, reference: string) => {
       const raw = reference.trim();
       if (raw.length === 0) {
         return { agent: null, ambiguous: false } as const;
@@ -723,7 +723,7 @@ export function agentService(db: Db) {
 
       if (isUuidLike(raw)) {
         const byId = await getById(raw);
-        if (!byId || byId.companyId !== companyId) {
+        if (!byId || byId.squadId !== squadId) {
           return { agent: null, ambiguous: false } as const;
         }
         return { agent: byId, ambiguous: false } as const;
@@ -734,7 +734,7 @@ export function agentService(db: Db) {
         return { agent: null, ambiguous: false } as const;
       }
 
-      const rows = await db.select().from(agents).where(eq(agents.companyId, companyId));
+      const rows = await db.select().from(agents).where(eq(agents.squadId, squadId));
       const matches = rows
         .map(normalizeAgentRow)
         .filter((agent) => agent.urlKey === urlKey && agent.status !== "terminated");

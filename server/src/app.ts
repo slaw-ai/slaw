@@ -10,8 +10,8 @@ import { actorMiddleware } from "./middleware/auth.js";
 import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import { privateHostnameGuard, resolvePrivateHostnameAllowSet } from "./middleware/private-hostname-guard.js";
 import { healthRoutes } from "./routes/health.js";
-import { companyRoutes } from "./routes/companies.js";
-import { companySkillRoutes } from "./routes/company-skills.js";
+import { squadRoutes } from "./routes/squads.js";
+import { squadSkillRoutes } from "./routes/squad-skills.js";
 import { agentRoutes } from "./routes/agents.js";
 import { projectRoutes } from "./routes/projects.js";
 import { issueRoutes } from "./routes/issues.js";
@@ -63,7 +63,7 @@ import { createHostClientHandlers } from "@slaw/plugin-sdk";
 import type { BetterAuthSessionResult } from "./auth/better-auth.js";
 import { createCachedViteHtmlRenderer } from "./vite-html-renderer.js";
 import { DEFAULT_JSON_BODY_LIMIT, PORTABLE_JSON_BODY_LIMIT } from "./http/body-limits.js";
-import { COMPANY_IMPORT_API_PATH } from "./routes/company-import-paths.js";
+import { SQUAD_IMPORT_API_PATH } from "./routes/squad-import-paths.js";
 
 type UiMode = "none" | "static" | "vite-dev";
 const FEEDBACK_EXPORT_FLUSH_INTERVAL_MS = 5_000;
@@ -130,7 +130,7 @@ export async function createApp(
     storageService: StorageService;
     feedbackExportService?: {
       flushPendingFeedbackTraces(input?: {
-        companyId?: string;
+        squadId?: string;
         traceId?: string;
         limit?: number;
         now?: Date;
@@ -142,7 +142,7 @@ export async function createApp(
     allowedHostnames: string[];
     bindHost: string;
     authReady: boolean;
-    companyDeletionEnabled: boolean;
+    squadDeletionEnabled: boolean;
     instanceId?: string;
     hostVersion?: string;
     localPluginDir?: string;
@@ -157,7 +157,7 @@ export async function createApp(
     (req as unknown as { rawBody: Buffer }).rawBody = buf;
   };
 
-  app.use(COMPANY_IMPORT_API_PATH, express.json({
+  app.use(SQUAD_IMPORT_API_PATH, express.json({
     limit: PORTABLE_JSON_BODY_LIMIT,
     verify: captureRawBody,
   }));
@@ -205,13 +205,13 @@ export async function createApp(
       deploymentMode: opts.deploymentMode,
       deploymentExposure: opts.deploymentExposure,
       authReady: opts.authReady,
-      companyDeletionEnabled: opts.companyDeletionEnabled,
+      squadDeletionEnabled: opts.squadDeletionEnabled,
     }),
   );
   api.use(openApiRoutes());
-  api.use("/companies", companyRoutes(db, opts.storageService));
+  api.use("/squads", squadRoutes(db, opts.storageService));
   api.use(llmRoutes(db));
-  api.use(companySkillRoutes(db));
+  api.use(squadSkillRoutes(db));
   api.use(agentRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(assetRoutes(db, opts.storageService));
   api.use(projectRoutes(db));

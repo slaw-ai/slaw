@@ -169,7 +169,7 @@ Current table exists and should evolve in place.
 
 - retain current indexes
 - add `(project_id, source_type)`
-- add `(company_id, shared_workspace_key)` non-unique for future support
+- add `(squad_id, shared_workspace_key)` non-unique for future support
 
 ## 2. Add `execution_workspaces`
 
@@ -178,7 +178,7 @@ Create a new durable table.
 ### Columns
 
 - `id uuid pk`
-- `company_id uuid not null`
+- `squad_id uuid not null`
 - `project_id uuid not null`
 - `project_workspace_id uuid null`
 - `source_issue_id uuid null`
@@ -208,7 +208,7 @@ Create a new durable table.
 
 ### Foreign keys
 
-- `company_id -> companies.id`
+- `squad_id -> squads.id`
 - `project_id -> projects.id`
 - `project_workspace_id -> project_workspaces.id on delete set null`
 - `source_issue_id -> issues.id on delete set null`
@@ -216,11 +216,11 @@ Create a new durable table.
 
 ### Indexes
 
-- `(company_id, project_id, status)`
-- `(company_id, project_workspace_id, status)`
-- `(company_id, source_issue_id)`
-- `(company_id, last_used_at desc)`
-- `(company_id, branch_name)` non-unique
+- `(squad_id, project_id, status)`
+- `(squad_id, project_workspace_id, status)`
+- `(squad_id, source_issue_id)`
+- `(squad_id, last_used_at desc)`
+- `(squad_id, branch_name)` non-unique
 
 ## 3. Extend `issues`
 
@@ -245,8 +245,8 @@ Add explicit workspace linkage.
 
 ### Invariants
 
-- if `project_workspace_id` is set, it must belong to the issue's project and company
-- if `execution_workspace_id` is set, it must belong to the issue's company
+- if `project_workspace_id` is set, it must belong to the issue's project and squad
+- if `execution_workspace_id` is set, it must belong to the issue's squad
 - if `execution_workspace_id` is set, the referenced workspace's `project_id` must match the issue's `project_id`
 
 ## 4. Add `issue_work_products`
@@ -256,7 +256,7 @@ Create a new durable table for outputs.
 ### Columns
 
 - `id uuid pk`
-- `company_id uuid not null`
+- `squad_id uuid not null`
 - `project_id uuid null`
 - `issue_id uuid not null`
 - `execution_workspace_id uuid null`
@@ -283,7 +283,7 @@ Create a new durable table for outputs.
 
 ### Foreign keys
 
-- `company_id -> companies.id`
+- `squad_id -> squads.id`
 - `project_id -> projects.id on delete set null`
 - `issue_id -> issues.id on delete cascade`
 - `execution_workspace_id -> execution_workspaces.id on delete set null`
@@ -292,10 +292,10 @@ Create a new durable table for outputs.
 
 ### Indexes
 
-- `(company_id, issue_id, type)`
-- `(company_id, execution_workspace_id, type)`
-- `(company_id, provider, external_id)`
-- `(company_id, updated_at desc)`
+- `(squad_id, issue_id, type)`
+- `(squad_id, execution_workspace_id, type)`
+- `(squad_id, provider, external_id)`
+- `(squad_id, updated_at desc)`
 
 ## 5. Extend `workspace_runtime_services`
 
@@ -416,7 +416,7 @@ Otherwise, workspace realization happens when execution starts.
 ### Update behavior
 
 - allow changing `projectWorkspaceId` only if the workspace belongs to the same project
-- allow setting `executionWorkspaceId` only if it belongs to the same company and project
+- allow setting `executionWorkspaceId` only if it belongs to the same squad and project
 - do not automatically destroy or relink historical work products when workspace linkage changes
 
 ## 3. Workspace realization service
@@ -534,7 +534,7 @@ Extend existing routes:
 
 Add:
 
-- `GET /companies/:companyId/execution-workspaces`
+- `GET /squads/:squadId/execution-workspaces`
   - filters:
     - `projectId`
     - `projectWorkspaceId`

@@ -35,14 +35,14 @@ export interface RestoreRoutineRevisionResponse {
 }
 
 export const routinesApi = {
-  list: (companyId: string, filters?: { projectId?: string | null }) => {
+  list: (squadId: string, filters?: { projectId?: string | null }) => {
     const params = new URLSearchParams();
     if (filters?.projectId) params.set("projectId", filters.projectId);
     const query = params.toString();
-    return api.get<RoutineListItem[]>(`/companies/${companyId}/routines${query ? `?${query}` : ""}`);
+    return api.get<RoutineListItem[]>(`/squads/${squadId}/routines${query ? `?${query}` : ""}`);
   },
-  create: (companyId: string, data: Record<string, unknown>) =>
-    api.post<Routine>(`/companies/${companyId}/routines`, data),
+  create: (squadId: string, data: Record<string, unknown>) =>
+    api.post<Routine>(`/squads/${squadId}/routines`, data),
   get: (id: string) => api.get<RoutineDetail>(`/routines/${id}`),
   update: (id: string, data: Record<string, unknown>) => api.patch<Routine>(`/routines/${id}`, data),
   listRevisions: (id: string) => api.get<RoutineRevision[]>(`/routines/${id}/revisions`),
@@ -66,16 +66,16 @@ export const routinesApi = {
   run: (id: string, data?: Record<string, unknown>) =>
     api.post<RoutineRun>(`/routines/${id}/run`, data ?? {}),
   activity: async (
-    companyId: string,
+    squadId: string,
     routineId: string,
     related?: { triggerIds?: string[]; runIds?: string[] },
   ) => {
     const requests = [
-      activityApi.list(companyId, { entityType: "routine", entityId: routineId }),
+      activityApi.list(squadId, { entityType: "routine", entityId: routineId }),
       ...(related?.triggerIds ?? []).map((triggerId) =>
-        activityApi.list(companyId, { entityType: "routine_trigger", entityId: triggerId })),
+        activityApi.list(squadId, { entityType: "routine_trigger", entityId: triggerId })),
       ...(related?.runIds ?? []).map((runId) =>
-        activityApi.list(companyId, { entityType: "routine_run", entityId: runId })),
+        activityApi.list(squadId, { entityType: "routine_run", entityId: runId })),
     ];
     const events = (await Promise.all(requests)).flat();
     const deduped = new Map(events.map((event) => [event.id, event]));

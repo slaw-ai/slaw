@@ -18,7 +18,7 @@ const mockBoardAuthService = vi.hoisted(() => ({
   approveCliAuthChallenge: vi.fn(),
   cancelCliAuthChallenge: vi.fn(),
   resolveBoardAccess: vi.fn(),
-  resolveBoardActivityCompanyIds: vi.fn(),
+  resolveBoardActivitySquadIds: vi.fn(),
   assertCurrentBoardKey: vi.fn(),
   revokeBoardApiKey: vi.fn(),
   listBoardApiKeys: vi.fn(),
@@ -66,7 +66,7 @@ async function createApp(actor: any, db: any = {} as any) {
   app.use((req, _res, next) => {
     req.actor = {
       ...actor,
-      companyIds: Array.isArray(actor.companyIds) ? [...actor.companyIds] : actor.companyIds,
+      squadIds: Array.isArray(actor.squadIds) ? [...actor.squadIds] : actor.squadIds,
       memberships: Array.isArray(actor.memberships)
         ? actor.memberships.map((membership: unknown) =>
             typeof membership === "object" && membership !== null
@@ -115,7 +115,7 @@ describe.sequential("cli auth routes", () => {
     const res = await request(app)
       .post("/api/cli-auth/challenges")
       .send({
-        command: "slaw company import",
+        command: "slaw squad import",
         clientName: "slaw cli",
         requestedAccess: "board",
       });
@@ -146,8 +146,8 @@ describe.sequential("cli auth routes", () => {
   it.sequential("serves the invite-scoped slaw skill anonymously for active invites", async () => {
     const invite = {
       id: "invite-1",
-      companyId: "company-1",
-      inviteType: "company_join",
+      squadId: "squad-1",
+      inviteType: "squad_join",
       allowedJoinTypes: "agent",
       tokenHash: "hash",
       defaultsPayload: null,
@@ -178,11 +178,11 @@ describe.sequential("cli auth routes", () => {
     mockBoardAuthService.describeCliAuthChallenge.mockResolvedValue({
       id: "challenge-1",
       status: "pending",
-      command: "slaw company import",
+      command: "slaw squad import",
       clientName: "slaw cli",
       requestedAccess: "board",
-      requestedCompanyId: null,
-      requestedCompanyName: null,
+      requestedSquadId: null,
+      requestedSquadName: null,
       approvedAt: null,
       cancelledAt: null,
       expiresAt: "2026-03-23T13:00:00.000Z",
@@ -204,23 +204,23 @@ describe.sequential("cli auth routes", () => {
         id: "challenge-1",
         boardApiKeyId: "board-key-1",
         requestedAccess: "board",
-        requestedCompanyId: "company-1",
+        requestedSquadId: "squad-1",
         expiresAt: new Date("2026-03-23T13:00:00.000Z"),
       },
     });
     mockBoardAuthService.resolveBoardAccess.mockResolvedValue({
       user: { id: "user-1", name: "User One", email: "user@example.com" },
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       isInstanceAdmin: false,
     });
-    mockBoardAuthService.resolveBoardActivityCompanyIds.mockResolvedValue(["company-1"]);
+    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-1"]);
 
     const app = await createApp({
       type: "board",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
     const res = await request(app)
       .post("/api/cli-auth/challenges/challenge-1/approve")
@@ -236,51 +236,51 @@ describe.sequential("cli auth routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         action: "board_api_key.created",
       }),
     );
   });
 
-  it.sequential("logs approve activity for instance admins without company memberships", async () => {
+  it.sequential("logs approve activity for instance admins without squad memberships", async () => {
     mockBoardAuthService.approveCliAuthChallenge.mockResolvedValue({
       status: "approved",
       challenge: {
         id: "challenge-2",
         boardApiKeyId: "board-key-2",
         requestedAccess: "instance_admin_required",
-        requestedCompanyId: null,
+        requestedSquadId: null,
         expiresAt: new Date("2026-03-23T13:00:00.000Z"),
       },
     });
-    mockBoardAuthService.resolveBoardActivityCompanyIds.mockResolvedValue(["company-a", "company-b"]);
+    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-a", "squad-b"]);
 
     const app = await createApp({
       type: "board",
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
-      companyIds: [],
+      squadIds: [],
     });
     const res = await request(app)
       .post("/api/cli-auth/challenges/challenge-2/approve")
       .send({ token: "pcp_cli_auth_secret" });
 
     expect(res.status).toBe(200);
-    expect(mockBoardAuthService.resolveBoardActivityCompanyIds).toHaveBeenCalledWith({
+    expect(mockBoardAuthService.resolveBoardActivitySquadIds).toHaveBeenCalledWith({
       userId: "admin-1",
-      requestedCompanyId: null,
+      requestedSquadId: null,
       boardApiKeyId: "board-key-2",
     });
     expect(mockLogActivity).toHaveBeenCalledTimes(2);
   });
 
-  it.sequential("logs revoke activity with resolved audit company ids", async () => {
+  it.sequential("logs revoke activity with resolved audit squad ids", async () => {
     mockBoardAuthService.assertCurrentBoardKey.mockResolvedValue({
       id: "board-key-3",
       userId: "admin-2",
     });
-    mockBoardAuthService.resolveBoardActivityCompanyIds.mockResolvedValue(["company-z"]);
+    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-z"]);
 
     const app = await createApp({
       type: "board",
@@ -288,19 +288,19 @@ describe.sequential("cli auth routes", () => {
       keyId: "board-key-3",
       source: "board_key",
       isInstanceAdmin: true,
-      companyIds: [],
+      squadIds: [],
     });
     const res = await request(app).post("/api/cli-auth/revoke-current").send({});
 
     expect(res.status).toBe(200);
-    expect(mockBoardAuthService.resolveBoardActivityCompanyIds).toHaveBeenCalledWith({
+    expect(mockBoardAuthService.resolveBoardActivitySquadIds).toHaveBeenCalledWith({
       userId: "admin-2",
       boardApiKeyId: "board-key-3",
     });
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-z",
+        squadId: "squad-z",
         action: "board_api_key.revoked",
       }),
     );
@@ -316,20 +316,20 @@ describe.sequential("cli auth routes", () => {
       revokedAt: null,
       expiresAt: new Date("2026-06-23T12:00:00.000Z"),
     });
-    mockBoardAuthService.resolveBoardActivityCompanyIds.mockResolvedValue(["11111111-1111-4111-8111-111111111111"]);
+    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["11111111-1111-4111-8111-111111111111"]);
 
     const app = await createApp({
       type: "board",
       userId: "user-1",
       source: "board_key",
       isInstanceAdmin: false,
-      companyIds: ["11111111-1111-4111-8111-111111111111"],
+      squadIds: ["11111111-1111-4111-8111-111111111111"],
     });
     const res = await request(app)
       .post("/api/board-api-keys")
       .send({
         name: "external-admin",
-        requestedCompanyId: "11111111-1111-4111-8111-111111111111",
+        requestedSquadId: "11111111-1111-4111-8111-111111111111",
         expiresAt: "2026-06-23T12:00:00.000Z",
       });
 
@@ -348,7 +348,7 @@ describe.sequential("cli auth routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "11111111-1111-4111-8111-111111111111",
+        squadId: "11111111-1111-4111-8111-111111111111",
         action: "board_api_key.created",
         details: expect.objectContaining({ name: "external-admin" }),
       }),
@@ -377,14 +377,14 @@ describe.sequential("cli auth routes", () => {
       userId: "user-1",
       name: "external-admin",
     });
-    mockBoardAuthService.resolveBoardActivityCompanyIds.mockResolvedValue(["company-1"]);
+    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-1"]);
 
     const app = await createApp({
       type: "board",
       userId: "user-1",
       source: "board_key",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const listRes = await request(app).get("/api/board-api-keys");
@@ -401,7 +401,7 @@ describe.sequential("cli auth routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         action: "board_api_key.revoked",
       }),
     );
@@ -413,7 +413,7 @@ describe.sequential("cli auth routes", () => {
       userId: "user-1",
       source: "board_key",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app).delete("/api/board-api-keys/not-a-uuid");

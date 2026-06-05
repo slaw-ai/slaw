@@ -147,7 +147,7 @@ Always use in a responsive grid: `grid md:grid-cols-2 xl:grid-cols-4 gap-4`.
 
 ```tsx
 <Identity name="Agent Alpha" size="sm" />
-<Identity name="CEO Agent" />
+<Identity name="Squad Lead Agent" />
 <Identity name="Backend Service" size="lg" avatarUrl="/img/bot.png" />
 ```
 
@@ -183,10 +183,10 @@ Use in property rows, comment headers, assignee displays, and anywhere a user/ag
 **File:** `GoalTree.tsx`
 **Usage:** Hierarchical goal tree with expand/collapse. Used on the goals page.
 
-### CompanySwitcher
+### SquadSwitcher
 
-**File:** `CompanySwitcher.tsx`
-**Usage:** Company selector dropdown in sidebar header.
+**File:** `SquadSwitcher.tsx`
+**Usage:** Squad selector dropdown in sidebar header.
 
 ---
 
@@ -200,7 +200,7 @@ Use in property rows, comment headers, assignee displays, and anywhere a user/ag
 ### Sidebar
 
 **File:** `Sidebar.tsx`
-**Usage:** Left navigation sidebar (`w-60`). Contains CompanySwitcher, search button, new issue button, and SidebarSections.
+**Usage:** Left navigation sidebar (`w-60`). Contains SquadSwitcher, search button, new issue button, and SidebarSections.
 
 ### SidebarSection
 
@@ -250,7 +250,7 @@ Use in property rows, comment headers, assignee displays, and anywhere a user/ag
 ### OnboardingWizard
 
 **File:** `OnboardingWizard.tsx`
-**Usage:** Multi-step onboarding flow for new users/companies.
+**Usage:** Multi-step onboarding flow for new users/squads.
 
 ---
 

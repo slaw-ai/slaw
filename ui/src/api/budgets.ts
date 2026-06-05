@@ -8,13 +8,13 @@ import type {
 import { api } from "./client";
 
 export const budgetsApi = {
-  overview: (companyId: string) =>
-    api.get<BudgetOverview>(`/companies/${companyId}/budgets/overview`),
-  upsertPolicy: (companyId: string, data: BudgetPolicyUpsertInput) =>
-    api.post<BudgetPolicySummary>(`/companies/${companyId}/budgets/policies`, data),
-  resolveIncident: (companyId: string, incidentId: string, data: BudgetIncidentResolutionInput) =>
+  overview: (squadId: string) =>
+    api.get<BudgetOverview>(`/squads/${squadId}/budgets/overview`),
+  upsertPolicy: (squadId: string, data: BudgetPolicyUpsertInput) =>
+    api.post<BudgetPolicySummary>(`/squads/${squadId}/budgets/policies`, data),
+  resolveIncident: (squadId: string, incidentId: string, data: BudgetIncidentResolutionInput) =>
     api.post<BudgetIncident>(
-      `/companies/${companyId}/budget-incidents/${encodeURIComponent(incidentId)}/resolve`,
+      `/squads/${squadId}/budget-incidents/${encodeURIComponent(incidentId)}/resolve`,
       data,
     ),
 };

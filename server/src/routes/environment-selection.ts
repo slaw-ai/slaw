@@ -1,16 +1,16 @@
 import { unprocessable } from "../errors.js";
 
-export async function assertEnvironmentSelectionForCompany(
+export async function assertEnvironmentSelectionForSquad(
   environmentsSvc: {
     getById(environmentId: string): Promise<{
       id: string;
-      companyId: string;
+      squadId: string;
       driver: string;
       status?: string | null;
       config: Record<string, unknown> | null;
     } | null>;
   },
-  companyId: string,
+  squadId: string,
   environmentId: string | null | undefined,
   options?: {
     allowedDrivers?: string[];
@@ -19,7 +19,7 @@ export async function assertEnvironmentSelectionForCompany(
 ) {
   if (environmentId === undefined || environmentId === null) return;
   const environment = await environmentsSvc.getById(environmentId);
-  if (!environment || environment.companyId !== companyId) {
+  if (!environment || environment.squadId !== squadId) {
     throw unprocessable("Environment not found.");
   }
   if (environment.status === "archived") {

@@ -94,7 +94,7 @@ describe("plugin-worker-manager stderr failure context", () => {
 
       await expect(handle.call("environmentExecute", {
         driverKey: "e2b",
-        companyId: "company-1",
+        squadId: "squad-1",
         environmentId: "environment-1",
         config: {},
         lease: { providerLeaseId: "lease-1" },
@@ -127,7 +127,7 @@ describe("plugin-worker-manager stderr failure context", () => {
 
       await expect(handle.call("environmentExecute", {
         driverKey: "e2b",
-        companyId: "company-1",
+        squadId: "squad-1",
         environmentId: "environment-1",
         config: {},
         lease: { providerLeaseId: "lease-1" },
@@ -165,7 +165,7 @@ describe("plugin-worker-manager stderr failure context", () => {
         "environmentExecute" as keyof HostToWorkerMethods,
         {
           driverKey: "e2b",
-          companyId: "company-1",
+          squadId: "squad-1",
           environmentId: "environment-1",
           config: {},
           lease: { providerLeaseId: "lease-1" },
@@ -187,12 +187,12 @@ describe("plugin-worker-manager stderr failure context", () => {
   });
 
   it("passes performAction invocation scope to nested worker host calls", async () => {
-    const companiesGet = vi.fn(async (
-      params: { companyId: string },
-      context?: { invocationScope?: { companyId?: string | null } | null },
+    const squadsGet = vi.fn(async (
+      params: { squadId: string },
+      context?: { invocationScope?: { squadId?: string | null } | null },
     ) => ({
-      id: params.companyId,
-      scopedCompanyId: context?.invocationScope?.companyId ?? null,
+      id: params.squadId,
+      scopedSquadId: context?.invocationScope?.squadId ?? null,
     }));
     const handle = createPluginWorkerHandle("test.plugin", {
       entrypointPath: INVOCATION_SCOPE_WORKER_ENTRYPOINT,
@@ -204,7 +204,7 @@ describe("plugin-worker-manager stderr failure context", () => {
       },
       apiVersion: 1,
       hostHandlers: {
-        "companies.get": companiesGet as never,
+        "squads.get": squadsGet as never,
       },
     });
 
@@ -215,23 +215,23 @@ describe("plugin-worker-manager stderr failure context", () => {
         key: "probe",
         params: {
           mode: "echo",
-          requestedCompanyId: "company-a",
+          requestedSquadId: "squad-a",
         },
         actorContext: {
           type: "agent",
           userId: null,
           agentId: "agent-1",
           runId: "run-1",
-          companyId: "company-a",
+          squadId: "squad-a",
         },
         renderEnvironment: null,
       })).resolves.toEqual({
-        id: "company-a",
-        scopedCompanyId: "company-a",
+        id: "squad-a",
+        scopedSquadId: "squad-a",
       });
-      expect(companiesGet).toHaveBeenCalledWith(
-        { companyId: "company-a" },
-        { invocationScope: { companyId: "company-a" } },
+      expect(squadsGet).toHaveBeenCalledWith(
+        { squadId: "squad-a" },
+        { invocationScope: { squadId: "squad-a" } },
       );
     } finally {
       await handle.stop().catch(() => undefined);
@@ -239,7 +239,7 @@ describe("plugin-worker-manager stderr failure context", () => {
   });
 
   it("passes echoed invocation scope to worker-to-host handlers", async () => {
-    const companiesGet = vi.fn(async () => ({ id: "company-1" }));
+    const squadsGet = vi.fn(async () => ({ id: "squad-1" }));
     const handle = createPluginWorkerHandle("test.plugin", {
       entrypointPath: INVOCATION_SCOPE_WORKER_ENTRYPOINT,
       manifest: TEST_MANIFEST,
@@ -250,7 +250,7 @@ describe("plugin-worker-manager stderr failure context", () => {
       },
       apiVersion: 1,
       hostHandlers: {
-        "companies.get": companiesGet,
+        "squads.get": squadsGet,
       },
     });
 
@@ -259,16 +259,16 @@ describe("plugin-worker-manager stderr failure context", () => {
 
       await expect(handle.call("getData", {
         key: "probe",
-        companyId: "company-1",
+        squadId: "squad-1",
         params: {
           mode: "echo",
-          requestedCompanyId: "company-1",
+          requestedSquadId: "squad-1",
         },
-      } as HostToWorkerMethods["getData"][0])).resolves.toEqual({ id: "company-1" });
+      } as HostToWorkerMethods["getData"][0])).resolves.toEqual({ id: "squad-1" });
 
-      expect(companiesGet).toHaveBeenCalledWith(
-        { companyId: "company-1" },
-        { invocationScope: { companyId: "company-1" } },
+      expect(squadsGet).toHaveBeenCalledWith(
+        { squadId: "squad-1" },
+        { invocationScope: { squadId: "squad-1" } },
       );
     } finally {
       await handle.stop().catch(() => undefined);
@@ -278,11 +278,11 @@ describe("plugin-worker-manager stderr failure context", () => {
   it("rejects performAction nested host calls that omit the invocation id", async () => {
     const handlers = createHostClientHandlers({
       pluginId: "test.plugin",
-      capabilities: ["companies.read"],
+      capabilities: ["squads.read"],
       services: {
-        companies: {
+        squads: {
           list: vi.fn(async () => []),
-          get: vi.fn(async (params: { companyId: string }) => ({ id: params.companyId })),
+          get: vi.fn(async (params: { squadId: string }) => ({ id: params.squadId })),
         },
       } as unknown as HostServices,
     });
@@ -304,14 +304,14 @@ describe("plugin-worker-manager stderr failure context", () => {
       await expect(handle.call("performAction", {
         key: "probe",
         params: {
-          requestedCompanyId: "company-b",
+          requestedSquadId: "squad-b",
         },
         actorContext: {
           type: "agent",
           userId: null,
           agentId: "agent-1",
           runId: "run-1",
-          companyId: "company-a",
+          squadId: "squad-a",
         },
         renderEnvironment: null,
       })).rejects.toMatchObject({
@@ -324,13 +324,13 @@ describe("plugin-worker-manager stderr failure context", () => {
   });
 
   it("rejects nested worker host calls that forge an unknown invocation id", async () => {
-    const companiesGet = vi.fn(async (params: { companyId: string }) => ({ id: params.companyId }));
+    const squadsGet = vi.fn(async (params: { squadId: string }) => ({ id: params.squadId }));
     const handlers = createHostClientHandlers({
       pluginId: "test.plugin",
-      capabilities: ["companies.read"],
+      capabilities: ["squads.read"],
       services: {
-        companies: {
-          get: companiesGet,
+        squads: {
+          get: squadsGet,
         },
       } as unknown as HostServices,
     });
@@ -353,34 +353,34 @@ describe("plugin-worker-manager stderr failure context", () => {
         key: "probe",
         params: {
           mode: "unknown",
-          requestedCompanyId: "company-a",
+          requestedSquadId: "squad-a",
         },
         actorContext: {
           type: "agent",
           userId: null,
           agentId: "agent-1",
           runId: "run-1",
-          companyId: "company-a",
+          squadId: "squad-a",
         },
         renderEnvironment: null,
       })).rejects.toMatchObject({
         code: PLUGIN_RPC_ERROR_CODES.INVOCATION_SCOPE_DENIED,
         message: expect.stringContaining("unknown invocation scope"),
       });
-      expect(companiesGet).not.toHaveBeenCalled();
+      expect(squadsGet).not.toHaveBeenCalled();
     } finally {
       await handle.stop().catch(() => undefined);
     }
   });
 
-  it("rejects missing or unknown invocation ids while a company invocation is active", async () => {
-    const companiesGet = vi.fn(async () => ({ id: "company-2" }));
+  it("rejects missing or unknown invocation ids while a squad invocation is active", async () => {
+    const squadsGet = vi.fn(async () => ({ id: "squad-2" }));
     const hostHandlers = createHostClientHandlers({
       pluginId: "test.plugin",
-      capabilities: ["companies.read"],
+      capabilities: ["squads.read"],
       services: {
-        companies: {
-          get: companiesGet,
+        squads: {
+          get: squadsGet,
         },
       } as unknown as HostServices,
     });
@@ -402,17 +402,17 @@ describe("plugin-worker-manager stderr failure context", () => {
       for (const mode of ["omit", "unknown"]) {
         await expect(handle.call("getData", {
           key: "probe",
-          companyId: "company-1",
+          squadId: "squad-1",
           params: {
             mode,
-            requestedCompanyId: "company-2",
+            requestedSquadId: "squad-2",
           },
         } as HostToWorkerMethods["getData"][0])).rejects.toMatchObject({
           code: PLUGIN_RPC_ERROR_CODES.INVOCATION_SCOPE_DENIED,
         });
       }
 
-      expect(companiesGet).not.toHaveBeenCalled();
+      expect(squadsGet).not.toHaveBeenCalled();
     } finally {
       await handle.stop().catch(() => undefined);
     }

@@ -19,15 +19,15 @@ Current V1 assumptions are centered on one board operator. We now need:
 - safe cloud deployment defaults (no accidental loginless production)
 - local mode that still feels instant (`npx slaw run` and go)
 - agent-to-human task delegation, including a human inbox
-- one user account with access to multiple companies in one deployment
-- instance admins who can manage company access across the instance
+- one user account with access to multiple squads in one deployment
+- instance admins who can manage squad access across the instance
 - join approvals surfaced as actionable inbox alerts, not buried in admin-only pages
 - a symmetric invite-and-approve onboarding path for both humans and agents
 - one shared membership and permission model for both humans and agents
 
 ## Product constraints
 
-1. Keep company scoping strict for every new table, endpoint, and permission check.
+1. Keep squad scoping strict for every new table, endpoint, and permission check.
 2. Preserve existing control-plane invariants:
 
 - single-assignee task model
@@ -106,10 +106,10 @@ Problem:
 Bootstrap flow:
 
 1. If no `instance_admin` user exists for the deployment, instance is in `bootstrap_pending` state.
-2. CLI command `pnpm slaw auth bootstrap-ceo` creates a one-time CEO onboarding invite URL for that instance.
+2. CLI command `pnpm slaw auth bootstrap-squad-lead` creates a one-time Squad Lead onboarding invite URL for that instance.
 3. `pnpm slaw onboard` runs this bootstrap check and prints the invite URL automatically when `bootstrap_pending`.
 4. Visiting the app while `bootstrap_pending` shows a blocking setup page with the exact CLI command to run (`pnpm slaw onboard`).
-5. Accepting that CEO invite creates the first admin user and exits bootstrap mode.
+5. Accepting that Squad Lead invite creates the first admin user and exits bootstrap mode.
 
 Security rules:
 
@@ -126,32 +126,32 @@ Security rules:
 - identity record for human users (email-based)
 - optional instance-level role field (or companion table) for admin rights
 
-2. `company_memberships`
+2. `squad_memberships`
 
-- `company_id`, `principal_type` (`user | agent`), `principal_id`
+- `squad_id`, `principal_type` (`user | agent`), `principal_id`
 - status (`pending | active | suspended`), role metadata
 - stores effective access state for both humans and agents
-- many-to-many: one principal can belong to multiple companies
+- many-to-many: one principal can belong to multiple squads
 
 3. `invites`
 
-- `company_id`, `invite_type` (`company_join | bootstrap_ceo`), token hash, expires_at, invited_by, revoked_at, accepted_at
+- `squad_id`, `invite_type` (`squad_join | bootstrap_squad_lead`), token hash, expires_at, invited_by, revoked_at, accepted_at
 - one-time share link (no pre-bound invite email)
-- `allowed_join_types` (`human | agent | both`) for `company_join` links
+- `allowed_join_types` (`human | agent | both`) for `squad_join` links
 - optional defaults payload keyed by join type:
   - human defaults: initial permissions/membership role
   - agent defaults: proposed role/title/adapter defaults
 
 4. `principal_permission_grants`
 
-- `company_id`, `principal_type` (`user | agent`), `principal_id`, `permission_key`
+- `squad_id`, `principal_type` (`user | agent`), `principal_id`, `permission_key`
 - explicit grants such as `agents:create`
 - includes scope payload for chain-of-command limits
 - normalized table (not JSON blob) for auditable grant/revoke history
 
 5. `join_requests`
 
-- `invite_id`, `company_id`, `request_type` (`human | agent`)
+- `invite_id`, `squad_id`, `request_type` (`human | agent`)
 - `status` (`pending_approval | approved | rejected`)
 - common review metadata:
   - `request_ip`
@@ -178,13 +178,13 @@ Security rules:
 Principle:
 
 - humans and agents use the same membership + grant evaluation engine
-- permission checks resolve against `(company_id, principal_type, principal_id)` for both actor types
+- permission checks resolve against `(squad_id, principal_type, principal_id)` for both actor types
 - this avoids separate authz codepaths and keeps behavior consistent
 
 Role layers:
 
-- `instance_admin`: deployment-wide admin, can access/manage all companies and user-company access mapping
-- `company_member`: company-scoped permissions only
+- `instance_admin`: deployment-wide admin, can access/manage all squads and user-squad access mapping
+- `squad_member`: squad-scoped permissions only
 
 Core grants:
 
@@ -197,8 +197,8 @@ Core grants:
 
 Additional behavioral rules:
 
-- instance admins can promote/demote instance admins and manage user access across companies
-- board-level users can manage company grants inside companies they control
+- instance admins can promote/demote instance admins and manage user access across squads
+- board-level users can manage squad grants inside squads they control
 - non-admin principals can only act within explicit grants
 - assignment checks apply to both agent and human assignees
 
@@ -209,7 +209,7 @@ Initial approach:
 - represent assignment scope as an allow rule over org hierarchy
 - examples:
   - `subtree:<agentId>` (can assign into that manager subtree)
-  - `exclude:<agentId>` (cannot assign to protected roles, e.g., CEO)
+  - `exclude:<agentId>` (cannot assign to protected roles, e.g., Squad Lead)
 
 Enforcement:
 
@@ -219,7 +219,7 @@ Enforcement:
 
 ## Invite and signup flow
 
-1. Authorized user creates one `company_join` invite share link with optional defaults + expiry.
+1. Authorized user creates one `squad_join` invite share link with optional defaults + expiry.
 2. System sends invite URL containing one-time token.
 3. Invite landing page presents two paths: `Join as human` or `Join as agent` (subject to `allowed_join_types`).
 4. Requester selects join path and submits required data.
@@ -230,10 +230,10 @@ Enforcement:
 - both: source IP
 - agent: proposed agent metadata
 
-7. Company admin/instance admin reviews request and approves or rejects.
+7. Squad admin/instance admin reviews request and approves or rejects.
 8. On approval:
 
-- human: activate `company_membership` and apply permission grants
+- human: activate `squad_membership` and apply permission grants
 - agent: create agent record and enable API-key claim flow
 
 9. Link is one-time and cannot be reused.
@@ -244,13 +244,13 @@ Security rules:
 - store invite token hashed at rest
 - one-time use token with short expiry
 - all invite lifecycle events logged in `activity_log`
-- pending users cannot read or mutate any company data until approved
+- pending users cannot read or mutate any squad data until approved
 
 ## Join approval inbox
 
 - join requests generate inbox alerts for eligible approvers (`joins:approve` or admin role)
 - alerts appear in both:
-  - global/company inbox feed
+  - global/squad inbox feed
   - dedicated pending-approvals UI
 - each alert includes approve/reject actions inline (no context switch required)
 - alert payload must include:
@@ -268,7 +268,7 @@ Behavior:
 
 ## Agent join path (via unified invite link)
 
-1. Authorized user shares one `company_join` invite link (with `allowed_join_types` including `agent`).
+1. Authorized user shares one `squad_join` invite link (with `allowed_join_types` including `agent`).
 2. Agent operator opens link, chooses `Join as agent`, and submits join payload (name/role/adapter metadata).
 3. System creates `pending_approval` agent join request and captures source IP.
 4. Approver sees alert in inbox and approves or rejects.
@@ -284,28 +284,28 @@ Long-lived token policy:
 
 API additions (proposed):
 
-- `GET /companies/:companyId/inbox` (human actor scoped to self; includes task items + pending join approval alerts when authorized)
-- `POST /companies/:companyId/issues/:issueId/assign-user`
-- `POST /companies/:companyId/invites`
+- `GET /squads/:squadId/inbox` (human actor scoped to self; includes task items + pending join approval alerts when authorized)
+- `POST /squads/:squadId/issues/:issueId/assign-user`
+- `POST /squads/:squadId/invites`
 - `GET /invites/:token` (invite landing payload with `allowed_join_types`)
 - `POST /invites/:token/accept` (body includes `requestType=human|agent` and request metadata)
 - `POST /invites/:inviteId/revoke`
-- `GET /companies/:companyId/join-requests?status=pending_approval&requestType=human|agent`
-- `POST /companies/:companyId/join-requests/:requestId/approve`
-- `POST /companies/:companyId/join-requests/:requestId/reject`
+- `GET /squads/:squadId/join-requests?status=pending_approval&requestType=human|agent`
+- `POST /squads/:squadId/join-requests/:requestId/approve`
+- `POST /squads/:squadId/join-requests/:requestId/reject`
 - `POST /join-requests/:requestId/claim-api-key` (approved agent requests only)
-- `GET /companies/:companyId/members` (returns both human and agent principals)
-- `PATCH /companies/:companyId/members/:memberId/permissions`
+- `GET /squads/:squadId/members` (returns both human and agent principals)
+- `PATCH /squads/:squadId/members/:memberId/permissions`
 - `POST /admin/users/:userId/promote-instance-admin`
 - `POST /admin/users/:userId/demote-instance-admin`
-- `PUT /admin/users/:userId/company-access` (set accessible companies for a user)
-- `GET /admin/users/:userId/company-access`
+- `PUT /admin/users/:userId/squad-access` (set accessible squads for a user)
+- `GET /admin/users/:userId/squad-access`
 
 ## Local mode UX policy
 
 - no login prompt or account setup required
 - local implicit board user is auto-provisioned for audit attribution
-- local operator can still use instance settings and company settings as effective instance admin
+- local operator can still use instance settings and squad settings as effective instance admin
 - invite, join approval, and permission-management UI is available in local mode
 - agent onboarding is expected in local mode, including creating invite links and approving join requests
 - public/untrusted network ingress is out of scope for V1 local mode
@@ -313,7 +313,7 @@ API additions (proposed):
 ## Cloud agents in this model
 
 - cloud agents continue authenticating through `agent_api_keys`
-- same-company boundary checks remain mandatory
+- same-squad boundary checks remain mandatory
 - agent ability to assign human tasks is permission-gated, not implicit
 
 ## Instance settings surface
@@ -341,7 +341,7 @@ V1 approach:
 
 - add schema + migrations for users/memberships/invites
 - wire auth middleware for cloud mode
-- add membership lookup and company access checks
+- add membership lookup and squad access checks
 - implement Better Auth email/password flow (no email verification)
 - implement first-admin bootstrap invite command and onboard integration
 - implement one-time share-link invite acceptance flow with `pending_approval` join requests
@@ -350,13 +350,13 @@ V1 approach:
 
 - add shared principal grant model and enforcement helpers
 - add chain-of-command scope checks for assignment APIs
-- add tests for forbidden assignment (for example, cannot assign to CEO)
-- add instance-admin promotion/demotion and global company-access management APIs
+- add tests for forbidden assignment (for example, cannot assign to Squad Lead)
+- add instance-admin promotion/demotion and global squad-access management APIs
 - add `joins:approve` permission checks for human and agent join approvals
 
 ## Phase 4: Invite workflow
 
-- unified `company_join` invite create/landing/accept/revoke endpoints
+- unified `squad_join` invite create/landing/accept/revoke endpoints
 - join request approve/reject endpoints with review metadata (email when applicable, IP)
 - one-time token security and revocation semantics
 - UI for invite management, pending join approvals, and membership permissions
@@ -385,29 +385,29 @@ V1 approach:
 4. `cloud_hosted` cannot start without auth configured.
 5. No request in `cloud_hosted` can mutate data without authenticated actor.
 6. If no initial admin exists, app shows bootstrap instructions with CLI command.
-7. `pnpm slaw onboard` outputs a CEO onboarding invite URL when bootstrap is pending.
-8. One `company_join` link supports both human and agent onboarding via join-type selection on the invite landing page.
+7. `pnpm slaw onboard` outputs a Squad Lead onboarding invite URL when bootstrap is pending.
+8. One `squad_join` link supports both human and agent onboarding via join-type selection on the invite landing page.
 9. Invite delivery in V1 is copy-link only (no built-in email delivery).
 10. Share-link acceptance creates a pending join request; it does not grant immediate access.
 11. Pending join requests appear as inbox alerts with inline approve/reject actions.
 12. Admin review view includes join metadata before decision (human email when applicable, source IP, and agent metadata for agent requests).
 13. Only approved join requests unlock access:
 
-- human: active company membership + permission grants
+- human: active squad membership + permission grants
 - agent: agent creation + API-key claim eligibility
 
 14. Agent enrollment follows the same link -> pending approval -> approve flow.
 15. Approved agents can claim a long-lived API key exactly once, with plaintext display-once semantics.
 16. Agent API keys are indefinite by default in V1 and revocable/regenerable by admins.
 17. Public/untrusted ingress for `local_trusted` is not supported in V1 (loopback-only local server).
-18. One user can hold memberships in multiple companies.
+18. One user can hold memberships in multiple squads.
 19. Instance admins can promote another user to instance admin.
-20. Instance admins can manage which companies each user can access.
+20. Instance admins can manage which squads each user can access.
 21. Permissions can be granted/revoked per member principal (human or agent) through one shared grant system.
 22. Assignment scope prevents out-of-hierarchy or protected-role assignments.
 23. Agents can assign tasks to humans only when allowed.
 24. Humans can view assigned tasks in inbox and act on them per permissions.
-25. All new mutations are company-scoped and logged in `activity_log`.
+25. All new mutations are squad-scoped and logged in `activity_log`.
 
 ## V1 decisions (locked)
 

@@ -11,11 +11,11 @@ vi.mock("acpx/runtime", () => ({
 }));
 
 const agentId = "11111111-1111-4111-8111-111111111111";
-const companyId = "22222222-2222-4222-8222-222222222222";
+const squadId = "22222222-2222-4222-8222-222222222222";
 
 const baseAgent = {
   id: agentId,
-  companyId,
+  squadId,
   name: "Builder",
   urlKey: "builder",
   role: "engineer",
@@ -91,7 +91,7 @@ const mockSecretService = vi.hoisted(() => ({
 const mockAgentInstructionsService = vi.hoisted(() => ({
   materializeManagedBundle: vi.fn(),
 }));
-const mockCompanySkillService = vi.hoisted(() => ({
+const mockSquadSkillService = vi.hoisted(() => ({
   listRuntimeSkillEntries: vi.fn(),
   resolveRequestedSkillKeys: vi.fn(),
 }));
@@ -139,8 +139,8 @@ function registerModuleMocks() {
     approvalService: () => mockApprovalService,
   }));
 
-  vi.doMock("../services/company-skills.js", () => ({
-    companySkillService: () => mockCompanySkillService,
+  vi.doMock("../services/squad-skills.js", () => ({
+    squadSkillService: () => mockSquadSkillService,
   }));
 
   vi.doMock("../services/budgets.js", () => ({
@@ -189,7 +189,7 @@ function registerModuleMocks() {
     agentInstructionsService: () => mockAgentInstructionsService,
     accessService: () => mockAccessService,
     approvalService: () => mockApprovalService,
-    companySkillService: () => mockCompanySkillService,
+    squadSkillService: () => mockSquadSkillService,
     budgetService: () => mockBudgetService,
     heartbeatService: () => mockHeartbeatService,
     ISSUE_LIST_DEFAULT_LIMIT: 500,
@@ -210,7 +210,7 @@ function createDbStub(options: { requireBoardApprovalForNewAgents?: boolean } = 
         where: vi.fn().mockReturnValue({
           then: vi.fn((resolve) =>
             Promise.resolve(resolve([{
-              id: companyId,
+              id: squadId,
               name: "Slaw",
               requireBoardApprovalForNewAgents: options.requireBoardApprovalForNewAgents ?? false,
             }])),
@@ -231,7 +231,7 @@ async function createApp(actor: Record<string, unknown>, dbOptions: { requireBoa
   app.use((req, _res, next) => {
     (req as any).actor = {
       ...actor,
-      companyIds: Array.isArray(actor.companyIds) ? [...actor.companyIds] : actor.companyIds,
+      squadIds: Array.isArray(actor.squadIds) ? [...actor.squadIds] : actor.squadIds,
     };
     next();
   });
@@ -278,7 +278,7 @@ describe.sequential("agent permission routes", () => {
     vi.doUnmock("../services/agents.js");
     vi.doUnmock("../services/approvals.js");
     vi.doUnmock("../services/budgets.js");
-    vi.doUnmock("../services/company-skills.js");
+    vi.doUnmock("../services/squad-skills.js");
     vi.doUnmock("../services/heartbeat.js");
     vi.doUnmock("../services/index.js");
     vi.doUnmock("../services/instance-settings.js");
@@ -321,8 +321,8 @@ describe.sequential("agent permission routes", () => {
     mockSecretService.normalizeAdapterConfigForPersistence.mockReset();
     mockSecretService.resolveAdapterConfigForRuntime.mockReset();
     mockAgentInstructionsService.materializeManagedBundle.mockReset();
-    mockCompanySkillService.listRuntimeSkillEntries.mockReset();
-    mockCompanySkillService.resolveRequestedSkillKeys.mockReset();
+    mockSquadSkillService.listRuntimeSkillEntries.mockReset();
+    mockSquadSkillService.resolveRequestedSkillKeys.mockReset();
     mockLogActivity.mockReset();
     mockTrackAgentCreated.mockReset();
     mockGetTelemetryClient.mockReset();
@@ -355,7 +355,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.hasPermission.mockResolvedValue(false);
     mockAccessService.getMembership.mockResolvedValue({
       id: "membership-1",
-      companyId,
+      squadId,
       principalType: "agent",
       principalId: agentId,
       status: "active",
@@ -366,8 +366,8 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.listPrincipalGrants.mockResolvedValue([]);
     mockAccessService.ensureMembership.mockResolvedValue(undefined);
     mockAccessService.setPrincipalPermission.mockResolvedValue(undefined);
-    mockCompanySkillService.listRuntimeSkillEntries.mockResolvedValue([]);
-    mockCompanySkillService.resolveRequestedSkillKeys.mockImplementation(async (_companyId, requested) => requested);
+    mockSquadSkillService.listRuntimeSkillEntries.mockResolvedValue([]);
+    mockSquadSkillService.resolveRequestedSkillKeys.mockImplementation(async (_squadId, requested) => requested);
     mockBudgetService.upsertPolicy.mockResolvedValue(undefined);
     mockAgentInstructionsService.materializeManagedBundle.mockImplementation(
       async (agent: Record<string, unknown>, files: Record<string, string>) => ({
@@ -382,19 +382,19 @@ describe.sequential("agent permission routes", () => {
         },
       }),
     );
-    mockCompanySkillService.listRuntimeSkillEntries.mockResolvedValue([]);
-    mockCompanySkillService.resolveRequestedSkillKeys.mockImplementation(
-      async (_companyId: string, requested: string[]) => requested,
+    mockSquadSkillService.listRuntimeSkillEntries.mockResolvedValue([]);
+    mockSquadSkillService.resolveRequestedSkillKeys.mockImplementation(
+      async (_squadId: string, requested: string[]) => requested,
     );
-    mockSecretService.normalizeAdapterConfigForPersistence.mockImplementation(async (_companyId, config) => config);
-    mockSecretService.resolveAdapterConfigForRuntime.mockImplementation(async (_companyId, config) => ({ config }));
+    mockSecretService.normalizeAdapterConfigForPersistence.mockImplementation(async (_squadId, config) => config);
+    mockSecretService.resolveAdapterConfigForRuntime.mockImplementation(async (_squadId, config) => ({ config }));
     mockInstanceSettingsService.getGeneral.mockResolvedValue({
       censorUsernameInLogs: false,
     });
     mockLogActivity.mockResolvedValue(undefined);
   });
 
-  it("redacts agent detail for authenticated company members without agent admin permission", async () => {
+  it("redacts agent detail for authenticated squad members without agent admin permission", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
@@ -402,7 +402,7 @@ describe.sequential("agent permission routes", () => {
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl).get(`/api/agents/${agentId}`));
@@ -412,7 +412,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.body.runtimeConfig).toEqual({});
   }, 20_000);
 
-  it("redacts company agent list for authenticated company members without agent admin permission", async () => {
+  it("redacts squad agent list for authenticated squad members without agent admin permission", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
@@ -420,10 +420,10 @@ describe.sequential("agent permission routes", () => {
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
-    const res = await requestApp(app, (baseUrl) => request(baseUrl).get(`/api/companies/${companyId}/agents`));
+    const res = await requestApp(app, (baseUrl) => request(baseUrl).get(`/api/squads/${squadId}/agents`));
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -435,7 +435,7 @@ describe.sequential("agent permission routes", () => {
     ]);
   });
 
-  it("blocks agent updates for authenticated company members without agent admin permission", async () => {
+  it("blocks agent updates for authenticated squad members without agent admin permission", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
@@ -443,7 +443,7 @@ describe.sequential("agent permission routes", () => {
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -453,7 +453,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.status).toBe(403);
   });
 
-  it("blocks api key creation for authenticated company members without agent admin permission", async () => {
+  it("blocks api key creation for authenticated squad members without agent admin permission", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
@@ -461,7 +461,7 @@ describe.sequential("agent permission routes", () => {
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -471,7 +471,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.status).toBe(403);
   });
 
-  it("blocks wakeups for authenticated company members without agent admin permission", async () => {
+  it("blocks wakeups for authenticated squad members without agent admin permission", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
@@ -479,7 +479,7 @@ describe.sequential("agent permission routes", () => {
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -493,7 +493,7 @@ describe.sequential("agent permission routes", () => {
     const app = await createApp({
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       source: "agent_key",
       runId: "run-1",
     });
@@ -523,7 +523,7 @@ describe.sequential("agent permission routes", () => {
     const app = await createApp({
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       source: "agent_key",
       runId: "run-1",
     });
@@ -564,7 +564,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const runtimeConfig = {
@@ -600,7 +600,7 @@ describe.sequential("agent permission routes", () => {
       ...baseAgent,
       adapterType: "codex_local",
     });
-    mockSecretService.normalizeAdapterConfigForPersistence.mockImplementation(async (_companyId, config) => ({
+    mockSecretService.normalizeAdapterConfigForPersistence.mockImplementation(async (_squadId, config) => ({
       ...config,
       env: {
         API_TOKEN: {
@@ -616,7 +616,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -642,7 +642,7 @@ describe.sequential("agent permission routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(mockSecretService.normalizeAdapterConfigForPersistence).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       expect.objectContaining({
         model: "gpt-5.3-codex-spark",
         env: expect.any(Object),
@@ -677,7 +677,7 @@ describe.sequential("agent permission routes", () => {
     const app = await createApp({
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       source: "agent_key",
       runId: "run-1",
     });
@@ -700,7 +700,7 @@ describe.sequential("agent permission routes", () => {
     const app = await createApp({
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       source: "agent_key",
       runId: "run-1",
     });
@@ -720,13 +720,13 @@ describe.sequential("agent permission routes", () => {
     const app = await createApp({
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       source: "agent_key",
       runId: "run-1",
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agent-hires`)
+      .post(`/api/squads/${squadId}/agent-hires`)
       .send({
         name: "Injected",
         role: "engineer",
@@ -743,7 +743,7 @@ describe.sequential("agent permission routes", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("blocks direct agent creation for authenticated company members without agent create permission", async () => {
+  it("blocks direct agent creation for authenticated squad members without agent create permission", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
@@ -751,11 +751,11 @@ describe.sequential("agent permission routes", () => {
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Backdoor",
         role: "engineer",
@@ -777,11 +777,11 @@ describe.sequential("agent permission routes", () => {
       userId: "agent-admin-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -791,13 +791,13 @@ describe.sequential("agent permission routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       expect.objectContaining({
         status: "idle",
       }),
     );
     expect(mockAccessService.setPrincipalPermission).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       "agent",
       agentId,
       "tasks:assign",
@@ -813,13 +813,13 @@ describe.sequential("agent permission routes", () => {
         userId: "board-user",
         source: "local_implicit",
         isInstanceAdmin: true,
-        companyIds: [companyId],
+        squadIds: [squadId],
       },
       { requireBoardApprovalForNewAgents: true },
     );
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -840,11 +840,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -854,14 +854,14 @@ describe.sequential("agent permission routes", () => {
 
     expect([200, 201]).toContain(res.status);
     expect(mockAccessService.ensureMembership).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       "agent",
       agentId,
       "member",
       "active",
     );
     expect(mockAccessService.setPrincipalPermission).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       "agent",
       agentId,
       "tasks:assign",
@@ -876,11 +876,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .get(`/api/companies/${companyId}/agents`)
+      .get(`/api/squads/${squadId}/agents`)
       .query({ urlKey: "builder" }));
 
     expect(res.status).toBe(400);
@@ -894,11 +894,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -913,7 +913,7 @@ describe.sequential("agent permission routes", () => {
 
     expect([200, 201]).toContain(res.status);
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       expect.objectContaining({
         runtimeConfig: {
           heartbeat: {
@@ -936,11 +936,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "OpenCode Builder",
         role: "engineer",
@@ -951,7 +951,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockEnsureOpenCodeModelConfiguredAndAvailable).not.toHaveBeenCalled();
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       expect.objectContaining({
         adapterType: "opencode_local",
         adapterConfig: expect.objectContaining({
@@ -971,11 +971,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "OpenCode Builder",
         role: "engineer",
@@ -988,7 +988,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockEnsureOpenCodeModelConfiguredAndAvailable).not.toHaveBeenCalled();
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       expect.objectContaining({
         adapterType: "opencode_local",
         adapterConfig: expect.objectContaining({
@@ -1004,11 +1004,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agent-hires`)
+      .post(`/api/squads/${squadId}/agent-hires`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -1023,7 +1023,7 @@ describe.sequential("agent permission routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       expect.objectContaining({
         runtimeConfig: {
           heartbeat: {
@@ -1056,7 +1056,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1066,7 +1066,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.status).toBe(200);
     expect(mockAgentService.activatePendingApproval).toHaveBeenCalledWith(agentId);
     expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      companyId,
+      squadId,
       actorType: "user",
       actorId: "board-user",
       action: "agent.approved",
@@ -1082,7 +1082,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1096,11 +1096,11 @@ describe.sequential("agent permission routes", () => {
     }));
   });
 
-  it("rejects creating an agent with an environment from another company", async () => {
+  it("rejects creating an agent with an environment from another squad", async () => {
     const environmentId = "33333333-3333-4333-8333-333333333333";
     mockEnvironmentService.getById.mockResolvedValue({
       id: environmentId,
-      companyId: "other-company",
+      squadId: "other-squad",
       driver: "local",
       config: {},
     });
@@ -1110,11 +1110,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -1132,7 +1132,7 @@ describe.sequential("agent permission routes", () => {
     const environmentId = "33333333-3333-4333-8333-333333333333";
     mockEnvironmentService.getById.mockResolvedValue({
       id: environmentId,
-      companyId,
+      squadId,
       driver: "ssh",
       config: {},
     });
@@ -1142,11 +1142,11 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
+      .post(`/api/squads/${squadId}/agents`)
       .send({
         name: "Builder",
         role: "engineer",
@@ -1174,7 +1174,7 @@ describe.sequential("agent permission routes", () => {
       const environmentId = "33333333-3333-4333-8333-333333333333";
       mockEnvironmentService.getById.mockResolvedValue({
         id: environmentId,
-        companyId,
+        squadId,
         driver: "ssh",
         config: {},
       });
@@ -1190,11 +1190,11 @@ describe.sequential("agent permission routes", () => {
         userId: "board-user",
         source: "local_implicit",
         isInstanceAdmin: true,
-        companyIds: [companyId],
+        squadIds: [squadId],
       });
 
       const res = await requestApp(app, (baseUrl) => request(baseUrl)
-        .post(`/api/companies/${companyId}/agents`)
+        .post(`/api/squads/${squadId}/agents`)
         .send({
           name: adapterCase.name,
           role: "engineer",
@@ -1205,7 +1205,7 @@ describe.sequential("agent permission routes", () => {
 
       expect(res.status, JSON.stringify(res.body)).toBe(201);
       expect(mockAgentService.create).toHaveBeenCalledWith(
-        companyId,
+        squadId,
         expect.objectContaining({
           adapterType: adapterCase.adapterType,
           defaultEnvironmentId: environmentId,
@@ -1218,7 +1218,7 @@ describe.sequential("agent permission routes", () => {
     const environmentId = "33333333-3333-4333-8333-333333333333";
     mockEnvironmentService.getById.mockResolvedValue({
       id: environmentId,
-      companyId,
+      squadId,
       driver: "ssh",
       config: {},
     });
@@ -1228,7 +1228,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1247,7 +1247,7 @@ describe.sequential("agent permission routes", () => {
       const environmentId = "33333333-3333-4333-8333-333333333333";
       mockEnvironmentService.getById.mockResolvedValue({
         id: environmentId,
-        companyId,
+        squadId,
         driver: "ssh",
         config: {},
       });
@@ -1269,7 +1269,7 @@ describe.sequential("agent permission routes", () => {
         userId: "board-user",
         source: "local_implicit",
         isInstanceAdmin: true,
-        companyIds: [companyId],
+        squadIds: [squadId],
       });
 
       const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1293,7 +1293,7 @@ describe.sequential("agent permission routes", () => {
     const environmentId = "33333333-3333-4333-8333-333333333333";
     mockEnvironmentService.getById.mockResolvedValue({
       id: environmentId,
-      companyId,
+      squadId,
       driver: "ssh",
       config: {},
     });
@@ -1308,7 +1308,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1326,7 +1326,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.listPrincipalGrants.mockResolvedValue([
       {
         id: "grant-1",
-        companyId,
+        squadId,
         principalType: "agent",
         principalId: agentId,
         permissionKey: "tasks:assign",
@@ -1342,7 +1342,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl).get(`/api/agents/${agentId}`));
@@ -1352,7 +1352,7 @@ describe.sequential("agent permission routes", () => {
     expect(res.body.access.taskAssignSource).toBe("explicit_grant");
   }, 15_000);
 
-  it("reports simple-mode task assignment as enabled for active company agent members", async () => {
+  it("reports simple-mode task assignment as enabled for active squad agent members", async () => {
     mockAccessService.listPrincipalGrants.mockResolvedValue([]);
 
     const app = await createApp({
@@ -1360,7 +1360,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl).get(`/api/agents/${agentId}`));
@@ -1381,7 +1381,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "local_implicit",
       isInstanceAdmin: true,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1390,7 +1390,7 @@ describe.sequential("agent permission routes", () => {
 
     expect(res.status).toBe(200);
     expect(mockAccessService.setPrincipalPermission).toHaveBeenCalledWith(
-      companyId,
+      squadId,
       "agent",
       agentId,
       "tasks:assign",
@@ -1414,7 +1414,7 @@ describe.sequential("agent permission routes", () => {
     const app = await createApp({
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       runId: "run-1",
       source: "agent_key",
     });
@@ -1432,7 +1432,7 @@ describe.sequential("agent permission routes", () => {
         status: "todo",
       },
     ]);
-    expect(mockIssueService.list).toHaveBeenCalledWith(companyId, {
+    expect(mockIssueService.list).toHaveBeenCalledWith(squadId, {
       touchedByUserId: "board-user",
       inboxArchivedByUserId: "board-user",
       status: "backlog,todo,in_progress,in_review,blocked,done",
@@ -1440,10 +1440,10 @@ describe.sequential("agent permission routes", () => {
     });
   });
 
-  it("rejects heartbeat cancellation outside the caller company scope", async () => {
+  it("rejects heartbeat cancellation outside the caller squad scope", async () => {
     mockHeartbeatService.getRun.mockResolvedValue({
       id: "run-1",
-      companyId: "33333333-3333-4333-8333-333333333333",
+      squadId: "33333333-3333-4333-8333-333333333333",
       agentId,
       status: "running",
     });
@@ -1453,7 +1453,7 @@ describe.sequential("agent permission routes", () => {
       userId: "board-user",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [companyId],
+      squadIds: [squadId],
     });
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl).post("/api/heartbeat-runs/run-1/cancel").send({}));

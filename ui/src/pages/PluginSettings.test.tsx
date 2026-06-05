@@ -28,17 +28,17 @@ vi.mock("@/context/BreadcrumbContext", () => ({
   }),
 }));
 
-vi.mock("@/context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompany: { id: "company-1", name: "Slaw", issuePrefix: "PAP" },
-    selectedCompanyId: "company-1",
+vi.mock("@/context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquad: { id: "squad-1", name: "Slaw", issuePrefix: "PAP" },
+    selectedSquadId: "squad-1",
   }),
 }));
 
 vi.mock("@/lib/router", () => ({
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
   Navigate: () => null,
-  useParams: () => ({ companyPrefix: "PAP", pluginId: "plugin-1" }),
+  useParams: () => ({ squadPrefix: "PAP", pluginId: "plugin-1" }),
 }));
 
 vi.mock("@/plugins/slots", () => ({
@@ -91,7 +91,7 @@ function wikiFolderDeclaration() {
   return {
     folderKey: "wiki-root",
     displayName: "Wiki root",
-    description: "Company-scoped local folder that stores wiki files.",
+    description: "Squad-scoped local folder that stores wiki files.",
     access: "readWrite" as const,
     requiredDirectories: ["raw", "wiki"],
     requiredFiles: ["WIKI.md", "index.md"],
@@ -149,7 +149,7 @@ describe("PluginSettings", () => {
     mockPluginsApi.logs.mockResolvedValue([]);
     mockPluginsApi.listLocalFolders.mockResolvedValue({
       pluginId: "plugin-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       declarations: [],
       folders: [],
     });
@@ -161,13 +161,13 @@ describe("PluginSettings", () => {
     vi.clearAllMocks();
   });
 
-  it("routes environment-provider plugins to company environments when they have no instance config", async () => {
+  it("routes environment-provider plugins to squad environments when they have no instance config", async () => {
     const root = await renderSettings(container);
 
-    expect(container.textContent).toContain("Configure this plugin from Company Environments.");
-    expect(container.textContent).toContain("company-scoped instead of instance-global");
-    const link = container.querySelector('a[href="/company/settings/environments"]');
-    expect(link?.textContent).toContain("Open Company Environments");
+    expect(container.textContent).toContain("Configure this plugin from Squad Environments.");
+    expect(container.textContent).toContain("squad-scoped instead of instance-global");
+    const link = container.querySelector('a[href="/squad/settings/environments"]');
+    expect(link?.textContent).toContain("Open Squad Environments");
 
     await act(async () => {
       root.unmount();
@@ -191,7 +191,7 @@ describe("PluginSettings", () => {
     }));
     mockPluginsApi.listLocalFolders.mockResolvedValue({
       pluginId: "plugin-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       declarations: [declaration],
       folders: [folderStatus()],
     });
@@ -224,7 +224,7 @@ describe("PluginSettings", () => {
     }));
     mockPluginsApi.listLocalFolders.mockResolvedValue({
       pluginId: "plugin-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       declarations: [declaration],
       folders: [folderStatus({
         configured: true,
@@ -266,7 +266,7 @@ describe("PluginSettings", () => {
     }));
     mockPluginsApi.listLocalFolders.mockResolvedValue({
       pluginId: "plugin-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       declarations: [declaration],
       folders: [folderStatus({
         configured: true,
@@ -305,7 +305,7 @@ describe("PluginSettings", () => {
     }));
     mockPluginsApi.listLocalFolders.mockResolvedValue({
       pluginId: "plugin-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       declarations: [declaration],
       folders: [folderStatus({
         configured: true,

@@ -28,8 +28,8 @@ const mockIssueThreadInteractionService = vi.hoisted(() => ({
 }));
 
 vi.mock("../services/index.js", () => ({
-  companyService: () => ({
-    getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+  squadService: () => ({
+    getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
   }),
   accessService: () => ({
     canUser: vi.fn(async () => true),
@@ -43,7 +43,7 @@ vi.mock("../services/index.js", () => ({
   }),
   agentService: () => ({
     getById: vi.fn(async () => null),
-    resolveByReference: vi.fn(async (_companyId: string, raw: string) => ({
+    resolveByReference: vi.fn(async (_squadId: string, raw: string) => ({
       ambiguous: false,
       agent: { id: raw },
     })),
@@ -65,7 +65,7 @@ vi.mock("../services/index.js", () => ({
         feedbackDataSharingPreference: "prompt",
       },
     })),
-    listCompanyIds: vi.fn(async () => ["company-1"]),
+    listSquadIds: vi.fn(async () => ["squad-1"]),
   }),
   issueApprovalService: () => ({}),
   issueReferenceService: () => ({
@@ -97,8 +97,8 @@ vi.mock("../services/index.js", () => ({
 
 function registerModuleMocks() {
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => ({
       canUser: vi.fn(async () => true),
@@ -112,7 +112,7 @@ function registerModuleMocks() {
     }),
     agentService: () => ({
       getById: vi.fn(async () => null),
-      resolveByReference: vi.fn(async (_companyId: string, raw: string) => ({
+      resolveByReference: vi.fn(async (_squadId: string, raw: string) => ({
         ambiguous: false,
         agent: { id: raw },
       })),
@@ -134,7 +134,7 @@ function registerModuleMocks() {
           feedbackDataSharingPreference: "prompt",
         },
       })),
-      listCompanyIds: vi.fn(async () => ["company-1"]),
+      listSquadIds: vi.fn(async () => ["squad-1"]),
     }),
     issueApprovalService: () => ({}),
     issueReferenceService: () => ({
@@ -176,7 +176,7 @@ async function createApp() {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -190,7 +190,7 @@ async function createApp() {
 function makeIssue(overrides: Record<string, unknown> = {}) {
   return {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-    companyId: "company-1",
+    squadId: "squad-1",
     status: "todo",
     priority: "medium",
     projectId: null,
@@ -234,7 +234,7 @@ describe("issue update comment wakeups", () => {
     mockIssueService.addComment.mockResolvedValue({
       id: "comment-1",
       issueId: existing.id,
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       body: "write the whole thing",
     });
 
@@ -281,7 +281,7 @@ describe("issue update comment wakeups", () => {
     mockIssueService.addComment.mockResolvedValue({
       id: "comment-2",
       issueId: existing.id,
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       body: "please revise this",
     });
 

@@ -5,8 +5,8 @@ import {
   PLUGIN_CAPABILITIES,
   PLUGIN_UI_SLOT_TYPES,
   PLUGIN_UI_SLOT_ENTITY_TYPES,
-  PLUGIN_RESERVED_COMPANY_ROUTE_SEGMENTS,
-  PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS,
+  PLUGIN_RESERVED_SQUAD_ROUTE_SEGMENTS,
+  PLUGIN_RESERVED_SQUAD_SETTINGS_ROUTE_SEGMENTS,
   PLUGIN_LAUNCHER_PLACEMENT_ZONES,
   PLUGIN_LAUNCHER_ACTIONS,
   PLUGIN_LAUNCHER_BOUNDS,
@@ -323,10 +323,10 @@ export const pluginUiSlotDeclarationSchema = z.object({
       path: ["entityTypes"],
     });
   }
-  if (value.routePath && value.type !== "page" && value.type !== "routeSidebar" && value.type !== "companySettingsPage") {
+  if (value.routePath && value.type !== "page" && value.type !== "routeSidebar" && value.type !== "squadSettingsPage") {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "routePath is only supported for page, routeSidebar, and companySettingsPage slots",
+      message: "routePath is only supported for page, routeSidebar, and squadSettingsPage slots",
       path: ["routePath"],
     });
   }
@@ -337,14 +337,14 @@ export const pluginUiSlotDeclarationSchema = z.object({
       path: ["routePath"],
     });
   }
-  if (value.type === "companySettingsPage" && !value.routePath) {
+  if (value.type === "squadSettingsPage" && !value.routePath) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "companySettingsPage slots require routePath",
+      message: "squadSettingsPage slots require routePath",
       path: ["routePath"],
     });
   }
-  if (value.routePath && PLUGIN_RESERVED_COMPANY_ROUTE_SEGMENTS.includes(value.routePath as (typeof PLUGIN_RESERVED_COMPANY_ROUTE_SEGMENTS)[number])) {
+  if (value.routePath && PLUGIN_RESERVED_SQUAD_ROUTE_SEGMENTS.includes(value.routePath as (typeof PLUGIN_RESERVED_SQUAD_ROUTE_SEGMENTS)[number])) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `routePath "${value.routePath}" is reserved by the host`,
@@ -352,13 +352,13 @@ export const pluginUiSlotDeclarationSchema = z.object({
     });
   }
   if (
-    value.type === "companySettingsPage"
+    value.type === "squadSettingsPage"
     && value.routePath
-    && PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS.includes(value.routePath as (typeof PLUGIN_RESERVED_COMPANY_SETTINGS_ROUTE_SEGMENTS)[number])
+    && PLUGIN_RESERVED_SQUAD_SETTINGS_ROUTE_SEGMENTS.includes(value.routePath as (typeof PLUGIN_RESERVED_SQUAD_SETTINGS_ROUTE_SEGMENTS)[number])
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `company settings routePath "${value.routePath}" is reserved by the host`,
+      message: `squad settings routePath "${value.routePath}" is reserved by the host`,
       path: ["routePath"],
     });
   }
@@ -558,7 +558,7 @@ export const pluginApiRouteDeclarationSchema = z.object({
   auth: z.enum(PLUGIN_API_ROUTE_AUTH_MODES),
   capability: z.literal("api.routes.register"),
   checkoutPolicy: z.enum(PLUGIN_API_ROUTE_CHECKOUT_POLICIES).optional(),
-  companyResolution: z.discriminatedUnion("from", [
+  squadResolution: z.discriminatedUnion("from", [
     z.object({ from: z.literal("body"), key: z.string().min(1) }),
     z.object({ from: z.literal("query"), key: z.string().min(1) }),
     z.object({ from: z.literal("issue"), param: z.string().min(1) }),

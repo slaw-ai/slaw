@@ -19,9 +19,9 @@ import {
   assets,
   agentApiKeys,
   authUsers,
-  companies,
-  companyLogos,
-  companyMemberships,
+  squads,
+  squadLogos,
+  squadMemberships,
   instanceUserRoles,
   invites,
   joinRequests,
@@ -32,20 +32,20 @@ import {
   createCliAuthChallengeSchema,
   claimJoinRequestApiKeySchema,
   createBoardApiKeySchema,
-  createCompanyInviteSchema,
-  listCompanyInvitesQuerySchema,
+  createSquadInviteSchema,
+  listSquadInvitesQuerySchema,
   listJoinRequestsQuerySchema,
   resolveCliAuthChallengeSchema,
   searchAdminUsersQuerySchema,
-  updateCompanyMemberWithPermissionsSchema,
-  updateCompanyMemberSchema,
-  archiveCompanyMemberSchema,
+  updateSquadMemberWithPermissionsSchema,
+  updateSquadMemberSchema,
+  archiveSquadMemberSchema,
   updateMemberPermissionsSchema,
-  updateUserCompanyAccessSchema,
+  updateUserSquadAccessSchema,
   PERMISSION_KEYS,
   isUuidLike,
 } from "@slaw/shared";
-import type { DeploymentExposure, DeploymentMode, HumanCompanyMembershipRole, PermissionKey } from "@slaw/shared";
+import type { DeploymentExposure, DeploymentMode, HumanSquadMembershipRole, PermissionKey } from "@slaw/shared";
 import {
   forbidden,
   conflict,
@@ -68,13 +68,13 @@ import {
   grantsForHumanRole,
   normalizeHumanRole,
   resolveHumanInviteRole,
-} from "../services/company-member-roles.js";
+} from "../services/squad-member-roles.js";
 import { humanJoinGrantsFromDefaults } from "../services/invite-grants.js";
 import {
   collapseDuplicatePendingHumanJoinRequests,
   findReusableHumanJoinRequest,
 } from "../lib/join-request-dedupe.js";
-import { assertAuthenticated, assertCompanyAccess } from "./authz.js";
+import { assertAuthenticated, assertSquadAccess } from "./authz.js";
 import {
   claimBoardOwnership,
   inspectBoardClaimChallenge
@@ -90,7 +90,7 @@ const INVITE_TOKEN_PREFIX = "pcp_invite_";
 const INVITE_TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 const INVITE_TOKEN_SUFFIX_LENGTH = 8;
 const INVITE_TOKEN_MAX_RETRIES = 5;
-const COMPANY_INVITE_TTL_MS = 72 * 60 * 60 * 1000;
+const SQUAD_INVITE_TTL_MS = 72 * 60 * 60 * 1000;
 const INVITE_RESOLUTION_DNS_TIMEOUT_MS = 3_000;
 
 type MemberGrantPayload = {
@@ -111,8 +111,8 @@ function createClaimSecret() {
   return `pcp_claim_${randomBytes(24).toString("hex")}`;
 }
 
-export function companyInviteExpiresAt(nowMs: number = Date.now()) {
-  return new Date(nowMs + COMPANY_INVITE_TTL_MS);
+export function squadInviteExpiresAt(nowMs: number = Date.now()) {
+  return new Date(nowMs + SQUAD_INVITE_TTL_MS);
 }
 
 function tokenHashesMatch(left: string, right: string) {
@@ -526,7 +526,7 @@ function toInviteSummaryResponse(
   req: Request,
   token: string,
   invite: typeof invites.$inferSelect,
-  company:
+  squad:
     | string
     | {
       name: string | null;
@@ -535,9 +535,9 @@ function toInviteSummaryResponse(
     }
     | null = null
 ) {
-  const companyInfo = typeof company === "string"
-    ? { name: company, brandColor: null, logoUrl: null }
-    : company;
+  const squadInfo = typeof squad === "string"
+    ? { name: squad, brandColor: null, logoUrl: null }
+    : squad;
   const baseUrl = requestBaseUrl(req);
   const invitePath = `/invite/${token}`;
   const onboardingPath = `/api/invites/${token}/onboarding`;
@@ -546,10 +546,10 @@ function toInviteSummaryResponse(
   const inviteMessage = extractInviteMessage(invite);
   return {
     id: invite.id,
-    companyId: invite.companyId,
-    companyName: companyInfo?.name ?? null,
-    companyLogoUrl: companyInfo?.logoUrl ?? null,
-    companyBrandColor: companyInfo?.brandColor ?? null,
+    squadId: invite.squadId,
+    squadName: squadInfo?.name ?? null,
+    squadLogoUrl: squadInfo?.logoUrl ?? null,
+    squadBrandColor: squadInfo?.brandColor ?? null,
     inviteType: invite.inviteType,
     allowedJoinTypes: invite.allowedJoinTypes,
     humanRole: extractInviteHumanRole(invite),
@@ -570,14 +570,14 @@ function toInviteSummaryResponse(
   };
 }
 
-function actorHasActiveUserMembership(req: Request, companyId: string) {
+function actorHasActiveUserMembership(req: Request, squadId: string) {
   return (
     req.actor.type === "board" &&
     typeof req.actor.userId === "string" &&
     Array.isArray(req.actor.memberships) &&
     req.actor.memberships.some(
       (membership) =>
-        membership.companyId === companyId && membership.status === "active",
+        membership.squadId === squadId && membership.status === "active",
     )
   );
 }
@@ -596,10 +596,10 @@ async function loadUsersById(db: Db, userIds: string[]) {
   return new Map(rows.map((row) => [row.id, toUserProfile(row)]));
 }
 
-async function loadCompanyAccessSummary(
+async function loadSquadAccessSummary(
   req: Request,
   access: ReturnType<typeof accessService>,
-  companyId: string,
+  squadId: string,
 ) {
   if (req.actor.type !== "board") {
     return {
@@ -619,12 +619,12 @@ async function loadCompanyAccessSummary(
   }
   const userId = req.actor.userId ?? null;
   const membership =
-    userId ? await access.getMembership(companyId, "user", userId) : null;
+    userId ? await access.getMembership(squadId, "user", userId) : null;
   const [canManageMembers, canInviteUsers, canApproveJoinRequests] =
     await Promise.all([
-      access.canUser(companyId, userId, "users:manage_permissions"),
-      access.canUser(companyId, userId, "users:invite"),
-      access.canUser(companyId, userId, "joins:approve"),
+      access.canUser(squadId, userId, "users:manage_permissions"),
+      access.canUser(squadId, userId, "users:invite"),
+      access.canUser(squadId, userId, "joins:approve"),
     ]);
 
   return {
@@ -638,22 +638,22 @@ async function loadCompanyAccessSummary(
   };
 }
 
-async function loadCompanyMemberRecords(
+async function loadSquadMemberRecords(
   db: Db,
-  companyId: string,
+  squadId: string,
   options: { includeArchived?: boolean } = {},
 ) {
   const members = await db
     .select()
-    .from(companyMemberships)
+    .from(squadMemberships)
     .where(
       and(
-        eq(companyMemberships.companyId, companyId),
-        eq(companyMemberships.principalType, "user"),
-        options.includeArchived ? undefined : ne(companyMemberships.status, "archived"),
+        eq(squadMemberships.squadId, squadId),
+        eq(squadMemberships.principalType, "user"),
+        options.includeArchived ? undefined : ne(squadMemberships.status, "archived"),
       ),
     )
-    .orderBy(desc(companyMemberships.updatedAt));
+    .orderBy(desc(squadMemberships.updatedAt));
 
   const userIds = [...new Set(members.map((member) => member.principalId))];
   const [userMap, grants] = await Promise.all([
@@ -664,7 +664,7 @@ async function loadCompanyMemberRecords(
           .from(principalPermissionGrants)
           .where(
             and(
-              eq(principalPermissionGrants.companyId, companyId),
+              eq(principalPermissionGrants.squadId, squadId),
               eq(principalPermissionGrants.principalType, "user"),
               inArray(principalPermissionGrants.principalId, userIds),
             ),
@@ -690,9 +690,9 @@ async function loadCompanyMemberRecords(
   }));
 }
 
-type CompanyMemberRecord = Awaited<ReturnType<typeof loadCompanyMemberRecords>>[number];
+type SquadMemberRecord = Awaited<ReturnType<typeof loadSquadMemberRecords>>[number];
 
-const humanRoleRank: Record<HumanCompanyMembershipRole, number> = {
+const humanRoleRank: Record<HumanSquadMembershipRole, number> = {
   viewer: 1,
   operator: 2,
   admin: 3,
@@ -702,13 +702,13 @@ const humanRoleRank: Record<HumanCompanyMembershipRole, number> = {
 async function resolveActorHumanRole(
   req: Request,
   access: ReturnType<typeof accessService>,
-  companyId: string,
-): Promise<HumanCompanyMembershipRole | null> {
+  squadId: string,
+): Promise<HumanSquadMembershipRole | null> {
   if (req.actor.type !== "board") return null;
   if (isLocalImplicit(req) || req.actor.isInstanceAdmin) return "owner";
   const userId = req.actor.userId ?? null;
   if (!userId) return null;
-  const membership = await access.getMembership(companyId, "user", userId);
+  const membership = await access.getMembership(squadId, "user", userId);
   if (membership?.status !== "active" || !membership.membershipRole) return null;
   return normalizeHumanRole(membership.membershipRole, "operator");
 }
@@ -716,60 +716,60 @@ async function resolveActorHumanRole(
 async function getProtectedMemberReason(
   req: Request,
   access: ReturnType<typeof accessService>,
-  companyId: string,
+  squadId: string,
   member: { principalId: string; principalType: string; membershipRole: string | null },
   opts?: {
-    actorRole?: HumanCompanyMembershipRole | null;
+    actorRole?: HumanSquadMembershipRole | null;
     instanceAdminUserIds?: ReadonlySet<string>;
     operation?: "archive" | "update";
   },
 ): Promise<string | null> {
-  if (member.principalType !== "user") return "Only human company members can be removed.";
+  if (member.principalType !== "user") return "Only human squad members can be removed.";
   if (req.actor.type !== "board") return "Board access is required to remove members.";
   if (member.principalId === req.actor.userId) return "You cannot remove yourself.";
   const isTargetInstanceAdmin = opts?.instanceAdminUserIds
     ? opts.instanceAdminUserIds.has(member.principalId)
     : await access.isInstanceAdmin(member.principalId);
   if (isTargetInstanceAdmin) {
-    return "Instance admins cannot be removed from company access.";
+    return "Instance admins cannot be removed from squad access.";
   }
 
   const targetRole = member.membershipRole
     ? normalizeHumanRole(member.membershipRole, "operator")
     : "operator";
   if (opts?.operation === "archive") {
-    if (targetRole === "owner") return "Board owners cannot be removed from company access.";
-    if (targetRole === "admin") return "Company admins cannot be removed from company access.";
+    if (targetRole === "owner") return "Board owners cannot be removed from squad access.";
+    if (targetRole === "admin") return "Squad admins cannot be removed from squad access.";
   }
 
-  const actorRole = opts?.actorRole ?? await resolveActorHumanRole(req, access, companyId);
-  if (!actorRole) return "Only active company members can remove users.";
+  const actorRole = opts?.actorRole ?? await resolveActorHumanRole(req, access, squadId);
+  if (!actorRole) return "Only active squad members can remove users.";
   if (humanRoleRank[targetRole] >= humanRoleRank[actorRole]) {
-    return "You can only remove users below your company role.";
+    return "You can only remove users below your squad role.";
   }
 
   return null;
 }
 
-async function assertCanManageCompanyMember(
+async function assertCanManageSquadMember(
   req: Request,
   access: ReturnType<typeof accessService>,
-  companyId: string,
+  squadId: string,
   member: { principalId: string; principalType: string; membershipRole: string | null },
   operation: "archive" | "update" = "update",
 ) {
-  const reason = await getProtectedMemberReason(req, access, companyId, member, { operation });
+  const reason = await getProtectedMemberReason(req, access, squadId, member, { operation });
   if (reason) throw forbidden(reason);
 }
 
-async function addCompanyMemberRemovalAccess(
+async function addSquadMemberRemovalAccess(
   req: Request,
   db: Db,
   access: ReturnType<typeof accessService>,
-  companyId: string,
-  members: CompanyMemberRecord[],
+  squadId: string,
+  members: SquadMemberRecord[],
 ) {
-  const actorRole = await resolveActorHumanRole(req, access, companyId);
+  const actorRole = await resolveActorHumanRole(req, access, squadId);
   const userIds = [...new Set(members
     .filter((member) => member.principalType === "user")
     .map((member) => member.principalId))];
@@ -784,7 +784,7 @@ async function addCompanyMemberRemovalAccess(
     : new Set<string>();
   return Promise.all(
     members.map(async (member) => {
-      const reason = await getProtectedMemberReason(req, access, companyId, member, {
+      const reason = await getProtectedMemberReason(req, access, squadId, member, {
         actorRole,
         instanceAdminUserIds,
         operation: "archive",
@@ -800,21 +800,21 @@ async function addCompanyMemberRemovalAccess(
   );
 }
 
-async function loadCompanyUserDirectory(db: Db, companyId: string) {
+async function loadSquadUserDirectory(db: Db, squadId: string) {
   const members = await db
     .select({
-      principalId: companyMemberships.principalId,
-      status: companyMemberships.status,
+      principalId: squadMemberships.principalId,
+      status: squadMemberships.status,
     })
-    .from(companyMemberships)
+    .from(squadMemberships)
     .where(
       and(
-        eq(companyMemberships.companyId, companyId),
-        eq(companyMemberships.principalType, "user"),
-        eq(companyMemberships.status, "active"),
+        eq(squadMemberships.squadId, squadId),
+        eq(squadMemberships.principalType, "user"),
+        eq(squadMemberships.status, "active"),
       ),
     )
-    .orderBy(desc(companyMemberships.updatedAt));
+    .orderBy(desc(squadMemberships.updatedAt));
 
   const userIds = [...new Set(members.map((member) => member.principalId))];
   const userMap = await loadUsersById(db, userIds);
@@ -852,9 +852,9 @@ function inviteStateWhereClause(
   }
 }
 
-async function loadCompanyInviteRecords(
+async function loadSquadInviteRecords(
   db: Db,
-  companyId: string,
+  squadId: string,
   options: {
     state?: "active" | "accepted" | "expired" | "revoked";
     limit: number;
@@ -865,7 +865,7 @@ async function loadCompanyInviteRecords(
   const rows = await db
     .select()
     .from(invites)
-    .where(whereClause ? and(eq(invites.companyId, companyId), whereClause) : eq(invites.companyId, companyId))
+    .where(whereClause ? and(eq(invites.squadId, squadId), whereClause) : eq(invites.squadId, squadId))
     .orderBy(desc(invites.createdAt))
     .limit(options.limit + 1)
     .offset(options.offset);
@@ -878,7 +878,7 @@ async function loadCompanyInviteRecords(
         .filter((value): value is string => Boolean(value)),
     ),
   ];
-  const [userMap, joinRows, companyName] = await Promise.all([
+  const [userMap, joinRows, squadName] = await Promise.all([
     loadUsersById(db, userIds),
     visibleRows.length
       ? db
@@ -886,7 +886,7 @@ async function loadCompanyInviteRecords(
           .from(joinRequests)
           .where(
             and(
-              eq(joinRequests.companyId, companyId),
+              eq(joinRequests.squadId, squadId),
               inArray(
                 joinRequests.inviteId,
                 visibleRows.map((invite) => invite.id),
@@ -895,10 +895,10 @@ async function loadCompanyInviteRecords(
           )
       : Promise.resolve([]),
     db
-      .select({ name: companies.name })
-      .from(companies)
-      .where(eq(companies.id, companyId))
-      .then((companyRows) => companyRows[0]?.name ?? null),
+      .select({ name: squads.name })
+      .from(squads)
+      .where(eq(squads.id, squadId))
+      .then((squadRows) => squadRows[0]?.name ?? null),
   ]);
   const joinRequestIdByInviteId = new Map(
     joinRows.map((row: { inviteId: string; id: string }) => [row.inviteId, row.id]),
@@ -907,7 +907,7 @@ async function loadCompanyInviteRecords(
   return {
     invites: visibleRows.map((invite) => ({
       ...invite,
-      companyName,
+      squadName,
       humanRole: extractInviteHumanRole(invite),
       inviteMessage: extractInviteMessage(invite),
       state: inviteState(invite),
@@ -920,12 +920,12 @@ async function loadCompanyInviteRecords(
   };
 }
 
-async function loadJoinRequestRecords(db: Db, companyId: string) {
+async function loadJoinRequestRecords(db: Db, squadId: string) {
   const rows = collapseDuplicatePendingHumanJoinRequests(
     await db
       .select()
       .from(joinRequests)
-      .where(eq(joinRequests.companyId, companyId))
+      .where(eq(joinRequests.squadId, squadId))
       .orderBy(desc(joinRequests.createdAt))
   );
   const inviteIds = [...new Set(rows.map((row) => row.inviteId))];
@@ -981,13 +981,13 @@ async function loadJoinRequestRecords(db: Db, companyId: string) {
   });
 }
 
-async function loadUserCompanyAccessResponse(
+async function loadUserSquadAccessResponse(
   db: Db,
   access: ReturnType<typeof accessService>,
   userId: string,
 ) {
   const [memberships, user, isInstanceAdmin] = await Promise.all([
-    access.listUserCompanyAccess(userId),
+    access.listUserSquadAccess(userId),
     db
       .select({
         id: authUsers.id,
@@ -1000,18 +1000,18 @@ async function loadUserCompanyAccessResponse(
       .then((rows) => rows[0] ?? null),
     access.isInstanceAdmin(userId),
   ]);
-  const companyIds = [...new Set(memberships.map((membership) => membership.companyId))];
-  const companyRows = companyIds.length
+  const squadIds = [...new Set(memberships.map((membership) => membership.squadId))];
+  const squadRows = squadIds.length
     ? await db
         .select({
-          id: companies.id,
-          name: companies.name,
-          status: companies.status,
+          id: squads.id,
+          name: squads.name,
+          status: squads.status,
         })
-        .from(companies)
-        .where(inArray(companies.id, companyIds))
+        .from(squads)
+        .where(inArray(squads.id, squadIds))
     : [];
-  const companyMap = new Map(companyRows.map((company) => [company.id, company]));
+  const squadMap = new Map(squadRows.map((squad) => [squad.id, squad]));
 
   return {
     user: user
@@ -1020,13 +1020,13 @@ async function loadUserCompanyAccessResponse(
           isInstanceAdmin,
         }
       : null,
-    companyAccess: memberships.map((membership) => {
-      const company = companyMap.get(membership.companyId) ?? null;
+    squadAccess: memberships.map((membership) => {
+      const squad = squadMap.get(membership.squadId) ?? null;
       return {
         ...membership,
         principalType: "user" as const,
-        companyName: company?.name ?? null,
-        companyStatus: company?.status ?? null,
+        squadName: squad?.name ?? null,
+        squadStatus: squad?.status ?? null,
       };
     }),
   };
@@ -1148,7 +1148,7 @@ function buildInviteOnboardingManifest(
   token: string,
   invite: typeof invites.$inferSelect,
   opts: {
-    companyName?: string | null;
+    squadName?: string | null;
     deploymentMode: DeploymentMode;
     deploymentExposure: DeploymentExposure;
     bindHost: string;
@@ -1184,7 +1184,7 @@ function buildInviteOnboardingManifest(
       req,
       token,
       invite,
-      opts.companyName ?? null
+      opts.squadName ?? null
     ),
     onboarding: {
       instructions:
@@ -1246,7 +1246,7 @@ export function buildInviteOnboardingTextDocument(
   token: string,
   invite: typeof invites.$inferSelect,
   opts: {
-    companyName?: string | null;
+    squadName?: string | null;
     deploymentMode: DeploymentMode;
     deploymentExposure: DeploymentExposure;
     bindHost: string;
@@ -1296,8 +1296,8 @@ export function buildInviteOnboardingTextDocument(
     - expiresAt: ${invite.expiresAt.toISOString()}
   `);
 
-  if (manifest.invite.companyName) {
-    lines.push(`- companyName: ${manifest.invite.companyName}`);
+  if (manifest.invite.squadName) {
+    lines.push(`- squadName: ${manifest.invite.squadName}`);
   }
 
   if (onboarding.inviteMessage) {
@@ -1540,7 +1540,7 @@ async function resolveAcceptedInviteJoinRequest(
     .then((rows) => rows[0] ?? null);
   if (directJoinRequest) return directJoinRequest;
 
-  if (!invite.companyId) return null;
+  if (!invite.squadId) return null;
 
   const actorRequestingUserId = isLocalImplicit(req)
     ? "local-board"
@@ -1560,7 +1560,7 @@ async function resolveAcceptedInviteJoinRequest(
       .from(joinRequests)
       .where(
         and(
-          eq(joinRequests.companyId, invite.companyId),
+          eq(joinRequests.squadId, invite.squadId),
           eq(joinRequests.requestType, "human"),
         ),
       )
@@ -1636,7 +1636,7 @@ export function resolveJoinRequestAgentManagerId(
   candidates: JoinRequestManagerCandidate[]
 ): string | null {
   const ceoCandidates = candidates.filter(
-    (candidate) => candidate.role === "ceo"
+    (candidate) => candidate.role === "squad_lead"
   );
   if (ceoCandidates.length === 0) return null;
   const rootCeo = ceoCandidates.find(
@@ -2162,14 +2162,14 @@ export function accessRoutes(
       );
 
       if (approved.status === "approved") {
-        const companyIds = await boardAuth.resolveBoardActivityCompanyIds({
+        const squadIds = await boardAuth.resolveBoardActivitySquadIds({
           userId,
-          requestedCompanyId: approved.challenge.requestedCompanyId,
+          requestedSquadId: approved.challenge.requestedSquadId,
           boardApiKeyId: approved.challenge.boardApiKeyId,
         });
-        for (const companyId of companyIds) {
+        for (const squadId of squadIds) {
           await logActivity(db, {
-            companyId,
+            squadId,
             actorType: "user",
             actorId: userId,
             action: "board_api_key.created",
@@ -2178,7 +2178,7 @@ export function accessRoutes(
             details: {
               boardApiKeyId: approved.challenge.boardApiKeyId,
               requestedAccess: approved.challenge.requestedAccess,
-              requestedCompanyId: approved.challenge.requestedCompanyId,
+              requestedSquadId: approved.challenge.requestedSquadId,
               challengeId: approved.challenge.id,
             },
           });
@@ -2217,7 +2217,7 @@ export function accessRoutes(
       user: accessSnapshot.user,
       userId: req.actor.userId,
       isInstanceAdmin: accessSnapshot.isInstanceAdmin,
-      companyIds: accessSnapshot.companyIds,
+      squadIds: accessSnapshot.squadIds,
       memberships: accessSnapshot.memberships,
       source: req.actor.source ?? "none",
       keyId: req.actor.source === "board_key" ? req.actor.keyId ?? null : null,
@@ -2242,8 +2242,8 @@ export function accessRoutes(
         throw unauthorized("Board authentication required");
       }
 
-      if (req.body.requestedCompanyId) {
-        assertCompanyAccess(req, req.body.requestedCompanyId);
+      if (req.body.requestedSquadId) {
+        assertSquadAccess(req, req.body.requestedSquadId);
       }
 
       const key = await boardAuth.createNamedBoardApiKey({
@@ -2251,14 +2251,14 @@ export function accessRoutes(
         name: req.body.name,
         expiresAt: req.body.expiresAt === undefined ? undefined : req.body.expiresAt,
       });
-      const companyIds = await boardAuth.resolveBoardActivityCompanyIds({
+      const squadIds = await boardAuth.resolveBoardActivitySquadIds({
         userId: req.actor.userId,
-        requestedCompanyId: req.body.requestedCompanyId ?? null,
+        requestedSquadId: req.body.requestedSquadId ?? null,
         boardApiKeyId: key.id,
       });
-      for (const companyId of companyIds) {
+      for (const squadId of squadIds) {
         await logActivity(db, {
-          companyId,
+          squadId,
           actorType: "user",
           actorId: req.actor.userId,
           action: "board_api_key.created",
@@ -2267,7 +2267,7 @@ export function accessRoutes(
           details: {
             boardApiKeyId: key.id,
             name: key.name,
-            requestedCompanyId: req.body.requestedCompanyId ?? null,
+            requestedSquadId: req.body.requestedSquadId ?? null,
             expiresAt: key.expiresAt?.toISOString() ?? null,
           },
         });
@@ -2290,13 +2290,13 @@ export function accessRoutes(
     const revoked = await boardAuth.revokeBoardApiKey(key.id);
     if (!revoked) throw notFound("Board API key not found");
 
-    const companyIds = await boardAuth.resolveBoardActivityCompanyIds({
+    const squadIds = await boardAuth.resolveBoardActivitySquadIds({
       userId: req.actor.userId,
       boardApiKeyId: key.id,
     });
-    for (const companyId of companyIds) {
+    for (const squadId of squadIds) {
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId,
         action: "board_api_key.revoked",
@@ -2322,13 +2322,13 @@ export function accessRoutes(
       req.actor.userId,
     );
     await boardAuth.revokeBoardApiKey(key.id);
-    const companyIds = await boardAuth.resolveBoardActivityCompanyIds({
+    const squadIds = await boardAuth.resolveBoardActivitySquadIds({
       userId: key.userId,
       boardApiKeyId: key.id,
     });
-    for (const companyId of companyIds) {
+    for (const squadId of squadIds) {
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: key.userId,
         action: "board_api_key.revoked",
@@ -2343,16 +2343,16 @@ export function accessRoutes(
     res.json({ revoked: true, keyId: key.id });
   });
 
-  async function assertCompanyPermission(
+  async function assertSquadPermission(
     req: Request,
-    companyId: string,
+    squadId: string,
     permissionKey: any
   ) {
-    assertCompanyAccess(req, companyId);
+    assertSquadAccess(req, squadId);
     if (req.actor.type === "agent") {
       if (!req.actor.agentId) throw forbidden();
       const allowed = await access.hasPermission(
-        companyId,
+        squadId,
         "agent",
         req.actor.agentId,
         permissionKey
@@ -2363,16 +2363,16 @@ export function accessRoutes(
     if (req.actor.type !== "board") throw unauthorized();
     if (isLocalImplicit(req)) return;
     const allowed = await access.canUser(
-      companyId,
+      squadId,
       req.actor.userId,
       permissionKey
     );
     if (!allowed) throw forbidden("Permission denied");
   }
 
-  async function createCompanyInviteForCompany(input: {
+  async function createSquadInviteForSquad(input: {
     req: Request;
-    companyId: string;
+    squadId: string;
     allowedJoinTypes: "human" | "agent" | "both";
     humanRole?: "owner" | "admin" | "operator" | "viewer" | null;
     defaultsPayload?: Record<string, unknown> | null;
@@ -2387,15 +2387,15 @@ export function accessRoutes(
         ? null
         : input.humanRole ?? "operator";
     const insertValues = {
-      companyId: input.companyId,
-      inviteType: "company_join" as const,
+      squadId: input.squadId,
+      inviteType: "squad_join" as const,
       allowedJoinTypes: input.allowedJoinTypes,
       defaultsPayload: mergeInviteDefaults(
         input.defaultsPayload ?? null,
         normalizedAgentMessage,
         effectiveHumanRole,
       ),
-      expiresAt: companyInviteExpiresAt(),
+      expiresAt: squadInviteExpiresAt(),
       invitedByUserId: input.req.actor.userId ?? null
     };
 
@@ -2432,7 +2432,7 @@ export function accessRoutes(
     req: Request;
     invite: typeof invites.$inferSelect;
     joinRequest: typeof joinRequests.$inferSelect;
-    companyId: string;
+    squadId: string;
   }) {
     if (input.joinRequest.requestType !== "human") {
       throw badRequest("Only human join requests can be approved through a human invite");
@@ -2445,7 +2445,7 @@ export function accessRoutes(
       input.invite.defaultsPayload as Record<string, unknown> | null,
     );
     await access.ensureMembership(
-      input.companyId,
+      input.squadId,
       "user",
       input.joinRequest.requestingUserId,
       membershipRole,
@@ -2456,7 +2456,7 @@ export function accessRoutes(
       membershipRole,
     );
     await access.setPrincipalGrants(
-      input.companyId,
+      input.squadId,
       "user",
       input.joinRequest.requestingUserId,
       grants,
@@ -2483,7 +2483,7 @@ export function accessRoutes(
       .then((rows) => rows[0] ?? null);
 
     await logActivity(db, {
-      companyId: input.companyId,
+      squadId: input.squadId,
       actorType: "user",
       actorId: approvedByUserId ?? "board",
       action: "join.approved",
@@ -2505,8 +2505,8 @@ export function accessRoutes(
     };
   }
 
-  async function getInviteCompanyBranding(
-    companyId: string | null,
+  async function getInviteSquadBranding(
+    squadId: string | null,
     inviteToken: string | null = null,
   ): Promise<{
     name: string | null;
@@ -2514,26 +2514,26 @@ export function accessRoutes(
     logoAssetId: string | null;
     logoUrl: string | null;
   }> {
-    if (!companyId) {
+    if (!squadId) {
       return { name: null, brandColor: null, logoAssetId: null, logoUrl: null };
     }
-    const company = await db
+    const squad = await db
       .select({
-        name: companies.name,
-        brandColor: companies.brandColor,
-        logoAssetId: companyLogos.assetId,
+        name: squads.name,
+        brandColor: squads.brandColor,
+        logoAssetId: squadLogos.assetId,
       })
-      .from(companies)
-      .leftJoin(companyLogos, eq(companyLogos.companyId, companies.id))
-      .where(eq(companies.id, companyId))
+      .from(squads)
+      .leftJoin(squadLogos, eq(squadLogos.squadId, squads.id))
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0] ?? null);
     let logoUrl: string | null = null;
-    if (inviteToken && company?.logoAssetId) {
-      const logoAsset = await getInviteLogoAsset(companyId);
-      if (logoAsset?.companyId) {
+    if (inviteToken && squad?.logoAssetId) {
+      const logoAsset = await getInviteLogoAsset(squadId);
+      if (logoAsset?.squadId) {
         try {
           const storage = getStorageService();
-          const logoObject = await storage.headObject(logoAsset.companyId, logoAsset.objectKey);
+          const logoObject = await storage.headObject(logoAsset.squadId, logoAsset.objectKey);
           if (logoObject.exists) {
             logoUrl = `/api/invites/${inviteToken}/logo`;
           }
@@ -2541,8 +2541,8 @@ export function accessRoutes(
           logger.warn(
             {
               err,
-              companyId,
-              logoAssetId: company.logoAssetId,
+              squadId,
+              logoAssetId: squad.logoAssetId,
             },
             "invite logo storage check failed",
           );
@@ -2551,38 +2551,38 @@ export function accessRoutes(
     }
 
     return {
-      name: company?.name ?? null,
-      brandColor: company?.brandColor ?? null,
-      logoAssetId: company?.logoAssetId ?? null,
+      name: squad?.name ?? null,
+      brandColor: squad?.brandColor ?? null,
+      logoAssetId: squad?.logoAssetId ?? null,
       logoUrl,
     };
   }
 
-  async function getInviteLogoAsset(companyId: string | null): Promise<{
-    companyId: string | null;
+  async function getInviteLogoAsset(squadId: string | null): Promise<{
+    squadId: string | null;
     objectKey: string;
     contentType: string | null;
     byteSize: number | null;
     originalFilename: string | null;
   } | null> {
-    if (!companyId) return null;
+    if (!squadId) return null;
     const logoAsset = await db
       .select({
-        companyId: companies.id,
+        squadId: squads.id,
         objectKey: assets.objectKey,
         contentType: assets.contentType,
         byteSize: assets.byteSize,
         originalFilename: assets.originalFilename,
       })
-      .from(companies)
-      .leftJoin(companyLogos, eq(companyLogos.companyId, companies.id))
-      .leftJoin(assets, eq(assets.id, companyLogos.assetId))
-      .where(eq(companies.id, companyId))
+      .from(squads)
+      .leftJoin(squadLogos, eq(squadLogos.squadId, squads.id))
+      .leftJoin(assets, eq(assets.id, squadLogos.assetId))
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0] ?? null);
 
     if (!logoAsset?.objectKey) return null;
     return {
-      companyId: logoAsset.companyId,
+      squadId: logoAsset.squadId,
       objectKey: logoAsset.objectKey,
       contentType: logoAsset.contentType,
       byteSize: logoAsset.byteSize,
@@ -2625,15 +2625,15 @@ export function accessRoutes(
   });
 
   router.post(
-    "/companies/:companyId/invites",
-    validate(createCompanyInviteSchema),
+    "/squads/:squadId/invites",
+    validate(createSquadInviteSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
-      await assertCompanyPermission(req, companyId, "users:invite");
+      const squadId = req.params.squadId as string;
+      await assertSquadPermission(req, squadId, "users:invite");
       const { token, created, normalizedAgentMessage } =
-        await createCompanyInviteForCompany({
+        await createSquadInviteForSquad({
           req,
-          companyId,
+          squadId,
           allowedJoinTypes: req.body.allowedJoinTypes,
           humanRole: req.body.humanRole ?? null,
           defaultsPayload: req.body.defaultsPayload ?? null,
@@ -2641,7 +2641,7 @@ export function accessRoutes(
         });
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: req.actor.type === "agent" ? "agent" : "user",
         actorId:
           req.actor.type === "agent"
@@ -2659,19 +2659,19 @@ export function accessRoutes(
         }
       });
 
-      const companyBranding = await getInviteCompanyBranding(created.companyId, token);
+      const squadBranding = await getInviteSquadBranding(created.squadId, token);
       const inviteSummary = toInviteSummaryResponse(
         req,
         token,
         created,
-        companyBranding
+        squadBranding
       );
       res.status(201).json({
         ...created,
         token,
         invitePath: inviteSummary.invitePath,
         inviteUrl: inviteSummary.inviteUrl,
-        companyName: companyBranding.name,
+        squadName: squadBranding.name,
         onboardingTextPath: inviteSummary.onboardingTextPath,
         onboardingTextUrl: inviteSummary.onboardingTextUrl,
         inviteMessage: inviteSummary.inviteMessage
@@ -2697,14 +2697,14 @@ export function accessRoutes(
       throw notFound("Invite not found");
     }
 
-    const companyBranding = await getInviteCompanyBranding(invite.companyId, token);
+    const squadBranding = await getInviteSquadBranding(invite.squadId, token);
     const inviterName = invite.invitedByUserId
       ? await loadUsersById(db, [invite.invitedByUserId]).then(
           (m) => m.get(invite.invitedByUserId!)?.name ?? null
         )
       : null;
     res.json({
-      ...toInviteSummaryResponse(req, token, invite, companyBranding),
+      ...toInviteSummaryResponse(req, token, invite, squadBranding),
       invitedByUserName: inviterName,
       joinRequestStatus: inviteJoinRequest?.status ?? null,
       joinRequestType: inviteJoinRequest?.requestType ?? null,
@@ -2729,18 +2729,18 @@ export function accessRoutes(
       throw notFound("Invite not found");
     }
 
-    const logoAsset = await getInviteLogoAsset(invite.companyId);
-    if (!logoAsset || !logoAsset.companyId) {
+    const logoAsset = await getInviteLogoAsset(invite.squadId);
+    if (!logoAsset || !logoAsset.squadId) {
       throw notFound("Invite logo not found");
     }
-    const companyId = logoAsset.companyId;
+    const squadId = logoAsset.squadId;
 
     const storage = getStorageService();
-    const logoHead = await storage.headObject(companyId, logoAsset.objectKey);
+    const logoHead = await storage.headObject(squadId, logoAsset.objectKey);
     if (!logoHead.exists) {
       throw notFound("Invite logo not found");
     }
-    const object = await storage.getObject(companyId, logoAsset.objectKey);
+    const object = await storage.getObject(squadId, logoAsset.objectKey);
     const responseContentType =
       logoAsset.contentType ||
       logoHead.contentType ||
@@ -2756,7 +2756,7 @@ export function accessRoutes(
     if (responseContentType === "image/svg+xml") {
       res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'");
     }
-    const filename = logoAsset.originalFilename ?? "company-logo";
+    const filename = logoAsset.originalFilename ?? "squad-logo";
     res.setHeader("Content-Disposition", `inline; filename=\"${filename.replaceAll("\"", "")}\"`);
 
     object.stream.on("error", (err) => {
@@ -2777,10 +2777,10 @@ export function accessRoutes(
       throw notFound("Invite not found");
     }
 
-    const companyBranding = await getInviteCompanyBranding(invite.companyId);
+    const squadBranding = await getInviteSquadBranding(invite.squadId);
     res.json(buildInviteOnboardingManifest(req, token, invite, {
       ...opts,
-      companyName: companyBranding.name
+      squadName: squadBranding.name
     }));
   });
 
@@ -2796,13 +2796,13 @@ export function accessRoutes(
       throw notFound("Invite not found");
     }
 
-    const companyBranding = await getInviteCompanyBranding(invite.companyId);
+    const squadBranding = await getInviteSquadBranding(invite.squadId);
     res
       .type("text/plain; charset=utf-8")
       .send(
         buildInviteOnboardingTextDocument(req, token, invite, {
           ...opts,
-          companyName: companyBranding.name
+          squadName: squadBranding.name
         })
       );
   });
@@ -2915,7 +2915,7 @@ export function accessRoutes(
             .then((rows) => rows[0] ?? null)
         : null;
 
-      if (invite.inviteType === "bootstrap_ceo") {
+      if (invite.inviteType === "bootstrap_squad_lead") {
         if (inviteAlreadyAccepted) throw notFound("Invite not found");
         if (req.body.requestType !== "human") {
           throw badRequest("Bootstrap invite requires human request type");
@@ -2964,8 +2964,8 @@ export function accessRoutes(
       }
 
       const requestType = req.body.requestType as "human" | "agent";
-      const companyId = invite.companyId;
-      if (!companyId) throw conflict("Invite is missing company scope");
+      const squadId = invite.squadId;
+      if (!squadId) throw conflict("Invite is missing squad scope");
       if (
         invite.allowedJoinTypes !== "both" &&
         invite.allowedJoinTypes !== requestType
@@ -2987,9 +2987,9 @@ export function accessRoutes(
       }
       if (
         requestType === "human" &&
-        actorHasActiveUserMembership(req, companyId)
+        actorHasActiveUserMembership(req, squadId)
       ) {
-        throw conflict("You already belong to this company");
+        throw conflict("You already belong to this squad");
       }
       if (requestType === "agent" && !req.body.agentName) {
         if (
@@ -3080,7 +3080,7 @@ export function accessRoutes(
                 .from(joinRequests)
                 .where(
                   and(
-                    eq(joinRequests.companyId, companyId),
+                    eq(joinRequests.squadId, squadId),
                     eq(joinRequests.requestType, "human")
                   )
                 )
@@ -3122,7 +3122,7 @@ export function accessRoutes(
                 .insert(joinRequests)
                 .values({
                   inviteId: invite.id,
-                  companyId,
+                  squadId,
                   requestType,
                   status: "pending_approval",
                   requestIp: requestIp(req),
@@ -3178,7 +3178,7 @@ export function accessRoutes(
       }
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: req.actor.type === "agent" ? "agent" : "user",
         actorId:
           req.actor.type === "agent"
@@ -3204,20 +3204,20 @@ export function accessRoutes(
           req,
           invite,
           joinRequest: created,
-          companyId,
+          squadId,
         });
       }
 
       const response = toJoinRequestResponse(created);
       if (claimSecret) {
-        const companyBranding = await getInviteCompanyBranding(invite.companyId);
+        const squadBranding = await getInviteSquadBranding(invite.squadId);
         const onboardingManifest = buildInviteOnboardingManifest(
           req,
           token,
           invite,
           {
             ...opts,
-            companyName: companyBranding.name
+            squadName: squadBranding.name
           }
         );
         res.status(202).json({
@@ -3246,11 +3246,11 @@ export function accessRoutes(
       .where(eq(invites.id, id))
       .then((rows) => rows[0] ?? null);
     if (!invite) throw notFound("Invite not found");
-    if (invite.inviteType === "bootstrap_ceo") {
+    if (invite.inviteType === "bootstrap_squad_lead") {
       await assertInstanceAdmin(req);
     } else {
-      if (!invite.companyId) throw conflict("Invite is missing company scope");
-      await assertCompanyPermission(req, invite.companyId, "users:invite");
+      if (!invite.squadId) throw conflict("Invite is missing squad scope");
+      await assertSquadPermission(req, invite.squadId, "users:invite");
     }
     if (invite.acceptedAt) throw conflict("Invite already consumed");
     if (invite.revokedAt) return res.json(invite);
@@ -3262,9 +3262,9 @@ export function accessRoutes(
       .returning()
       .then((rows) => rows[0]);
 
-    if (invite.companyId) {
+    if (invite.squadId) {
       await logActivity(db, {
-        companyId: invite.companyId,
+        squadId: invite.squadId,
         actorType: req.actor.type === "agent" ? "agent" : "user",
         actorId:
           req.actor.type === "agent"
@@ -3279,19 +3279,19 @@ export function accessRoutes(
     res.json(revoked);
   });
 
-  router.get("/companies/:companyId/invites", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    await assertCompanyPermission(req, companyId, "users:invite");
-    const query = listCompanyInvitesQuerySchema.parse(req.query);
-    const invitesForCompany = await loadCompanyInviteRecords(db, companyId, query);
-    res.json(invitesForCompany);
+  router.get("/squads/:squadId/invites", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    await assertSquadPermission(req, squadId, "users:invite");
+    const query = listSquadInvitesQuerySchema.parse(req.query);
+    const invitesForSquad = await loadSquadInviteRecords(db, squadId, query);
+    res.json(invitesForSquad);
   });
 
-  router.get("/companies/:companyId/join-requests", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    await assertCompanyPermission(req, companyId, "joins:approve");
+  router.get("/squads/:squadId/join-requests", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    await assertSquadPermission(req, squadId, "joins:approve");
     const query = listJoinRequestsQuerySchema.parse(req.query);
-    const all = await loadJoinRequestRecords(db, companyId);
+    const all = await loadJoinRequestRecords(db, squadId);
     const filtered = all.filter((row) => {
       if (query.status && row.status !== query.status) return false;
       if (query.requestType && row.requestType !== query.requestType)
@@ -3302,18 +3302,18 @@ export function accessRoutes(
   });
 
   router.post(
-    "/companies/:companyId/join-requests/:requestId/approve",
+    "/squads/:squadId/join-requests/:requestId/approve",
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const requestId = req.params.requestId as string;
-      await assertCompanyPermission(req, companyId, "joins:approve");
+      await assertSquadPermission(req, squadId, "joins:approve");
 
       const existing = await db
         .select()
         .from(joinRequests)
         .where(
           and(
-            eq(joinRequests.companyId, companyId),
+            eq(joinRequests.squadId, squadId),
             eq(joinRequests.id, requestId)
           )
         )
@@ -3337,7 +3337,7 @@ export function accessRoutes(
           invite.defaultsPayload as Record<string, unknown> | null,
         );
         await access.ensureMembership(
-          companyId,
+          squadId,
           "user",
           existing.requestingUserId,
           membershipRole,
@@ -3348,18 +3348,18 @@ export function accessRoutes(
           membershipRole
         );
         await access.setPrincipalGrants(
-          companyId,
+          squadId,
           "user",
           existing.requestingUserId,
           grants,
           req.actor.userId ?? null
         );
       } else {
-        const existingAgents = await agents.list(companyId);
+        const existingAgents = await agents.list(squadId);
         const managerId = resolveJoinRequestAgentManagerId(existingAgents);
         if (!managerId) {
           throw conflict(
-            "Join request cannot be approved because this company has no active CEO"
+            "Join request cannot be approved because this squad has no active Squad Lead"
           );
         }
 
@@ -3372,7 +3372,7 @@ export function accessRoutes(
           }))
         );
 
-        const created = await agents.create(companyId, {
+        const created = await agents.create(squadId, {
           name: agentName,
           role: "general",
           title: null,
@@ -3394,7 +3394,7 @@ export function accessRoutes(
         });
         createdAgentId = created.id;
         await access.ensureMembership(
-          companyId,
+          squadId,
           "agent",
           created.id,
           "member",
@@ -3404,7 +3404,7 @@ export function accessRoutes(
           invite.defaultsPayload as Record<string, unknown> | null
         );
         await access.setPrincipalGrants(
-          companyId,
+          squadId,
           "agent",
           created.id,
           grants,
@@ -3427,7 +3427,7 @@ export function accessRoutes(
         .then((rows) => rows[0]);
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
         action: "join.approved",
@@ -3438,7 +3438,7 @@ export function accessRoutes(
 
       if (createdAgentId) {
         void notifyHireApproved(db, {
-          companyId,
+          squadId,
           agentId: createdAgentId,
           source: "join_request",
           sourceId: requestId,
@@ -3451,18 +3451,18 @@ export function accessRoutes(
   );
 
   router.post(
-    "/companies/:companyId/join-requests/:requestId/reject",
+    "/squads/:squadId/join-requests/:requestId/reject",
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const requestId = req.params.requestId as string;
-      await assertCompanyPermission(req, companyId, "joins:approve");
+      await assertSquadPermission(req, squadId, "joins:approve");
 
       const existing = await db
         .select()
         .from(joinRequests)
         .where(
           and(
-            eq(joinRequests.companyId, companyId),
+            eq(joinRequests.squadId, squadId),
             eq(joinRequests.id, requestId)
           )
         )
@@ -3485,7 +3485,7 @@ export function accessRoutes(
         .then((rows) => rows[0]);
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
         action: "join.rejected",
@@ -3558,7 +3558,7 @@ export function accessRoutes(
       );
 
       await logActivity(db, {
-        companyId: joinRequest.companyId,
+        squadId: joinRequest.squadId,
         actorType: "system",
         actorId: "join-claim",
         action: "agent_api_key.claimed",
@@ -3579,55 +3579,55 @@ export function accessRoutes(
     }
   );
 
-  router.get("/companies/:companyId/members", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    await assertCompanyPermission(req, companyId, "users:manage_permissions");
+  router.get("/squads/:squadId/members", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    await assertSquadPermission(req, squadId, "users:manage_permissions");
     const [members, currentAccess] = await Promise.all([
-      loadCompanyMemberRecords(db, companyId),
-      loadCompanyAccessSummary(req, access, companyId),
+      loadSquadMemberRecords(db, squadId),
+      loadSquadAccessSummary(req, access, squadId),
     ]);
     res.json({
-      members: await addCompanyMemberRemovalAccess(req, db, access, companyId, members),
+      members: await addSquadMemberRemovalAccess(req, db, access, squadId, members),
       access: currentAccess,
     });
   });
 
-  router.get("/companies/:companyId/user-directory", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    const users = await loadCompanyUserDirectory(db, companyId);
+  router.get("/squads/:squadId/user-directory", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+    const users = await loadSquadUserDirectory(db, squadId);
     res.json({ users });
   });
 
   router.patch(
-    "/companies/:companyId/members/:memberId",
-    validate(updateCompanyMemberSchema),
+    "/squads/:squadId/members/:memberId",
+    validate(updateSquadMemberSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const memberId = req.params.memberId as string;
-      await assertCompanyPermission(req, companyId, "users:manage_permissions");
-      const memberToUpdate = await access.getMemberById(companyId, memberId);
+      await assertSquadPermission(req, squadId, "users:manage_permissions");
+      const memberToUpdate = await access.getMemberById(squadId, memberId);
       if (!memberToUpdate) throw notFound("Member not found");
-      await assertCanManageCompanyMember(req, access, companyId, memberToUpdate);
+      await assertCanManageSquadMember(req, access, squadId, memberToUpdate);
 
       const updated = await db.transaction(async (tx) => {
         await tx.execute(sql`
-          select ${companyMemberships.id}
-          from ${companyMemberships}
-          where ${companyMemberships.companyId} = ${companyId}
-            and ${companyMemberships.principalType} = 'user'
-            and ${companyMemberships.status} = 'active'
-            and ${companyMemberships.membershipRole} = 'owner'
+          select ${squadMemberships.id}
+          from ${squadMemberships}
+          where ${squadMemberships.squadId} = ${squadId}
+            and ${squadMemberships.principalType} = 'user'
+            and ${squadMemberships.status} = 'active'
+            and ${squadMemberships.membershipRole} = 'owner'
           for update
         `);
 
         const existing = await tx
           .select()
-          .from(companyMemberships)
+          .from(squadMemberships)
           .where(
             and(
-              eq(companyMemberships.companyId, companyId),
-              eq(companyMemberships.id, memberId),
+              eq(squadMemberships.squadId, squadId),
+              eq(squadMemberships.id, memberId),
             ),
           )
           .then((rows) => rows[0] ?? null);
@@ -3646,14 +3646,14 @@ export function accessRoutes(
           (nextStatus !== "active" || nextMembershipRole !== "owner")
         ) {
           const activeOwnerCount = await tx
-            .select({ id: companyMemberships.id })
-            .from(companyMemberships)
+            .select({ id: squadMemberships.id })
+            .from(squadMemberships)
             .where(
               and(
-                eq(companyMemberships.companyId, companyId),
-                eq(companyMemberships.principalType, "user"),
-                eq(companyMemberships.status, "active"),
-                eq(companyMemberships.membershipRole, "owner"),
+                eq(squadMemberships.squadId, squadId),
+                eq(squadMemberships.principalType, "user"),
+                eq(squadMemberships.status, "active"),
+                eq(squadMemberships.membershipRole, "owner"),
               ),
             )
             .then((rows) => rows.length);
@@ -3663,24 +3663,24 @@ export function accessRoutes(
         }
 
         return tx
-          .update(companyMemberships)
+          .update(squadMemberships)
           .set({
             membershipRole: nextMembershipRole,
             status: nextStatus,
             updatedAt: new Date(),
           })
-          .where(eq(companyMemberships.id, existing.id))
+          .where(eq(squadMemberships.id, existing.id))
           .returning()
           .then((rows) => rows[0] ?? existing);
       });
       if (!updated) throw notFound("Member not found");
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
-        action: "company_member.updated",
-        entityType: "company_membership",
+        action: "squad_member.updated",
+        entityType: "squad_membership",
         entityId: memberId,
         details: {
           membershipRole: updated.membershipRole,
@@ -3688,7 +3688,7 @@ export function accessRoutes(
         },
       });
 
-      const member = (await loadCompanyMemberRecords(db, companyId)).find(
+      const member = (await loadSquadMemberRecords(db, squadId)).find(
         (entry) => entry.id === memberId,
       );
       if (!member) throw notFound("Member not found");
@@ -3697,34 +3697,34 @@ export function accessRoutes(
   );
 
   router.patch(
-    "/companies/:companyId/members/:memberId/role-and-grants",
-    validate(updateCompanyMemberWithPermissionsSchema),
+    "/squads/:squadId/members/:memberId/role-and-grants",
+    validate(updateSquadMemberWithPermissionsSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const memberId = req.params.memberId as string;
-      await assertCompanyPermission(req, companyId, "users:manage_permissions");
-      const memberToUpdate = await access.getMemberById(companyId, memberId);
+      await assertSquadPermission(req, squadId, "users:manage_permissions");
+      const memberToUpdate = await access.getMemberById(squadId, memberId);
       if (!memberToUpdate) throw notFound("Member not found");
-      await assertCanManageCompanyMember(req, access, companyId, memberToUpdate);
+      await assertCanManageSquadMember(req, access, squadId, memberToUpdate);
 
       const updated = await db.transaction(async (tx) => {
         await tx.execute(sql`
-          select ${companyMemberships.id}
-          from ${companyMemberships}
-          where ${companyMemberships.companyId} = ${companyId}
-            and ${companyMemberships.principalType} = 'user'
-            and ${companyMemberships.status} = 'active'
-            and ${companyMemberships.membershipRole} = 'owner'
+          select ${squadMemberships.id}
+          from ${squadMemberships}
+          where ${squadMemberships.squadId} = ${squadId}
+            and ${squadMemberships.principalType} = 'user'
+            and ${squadMemberships.status} = 'active'
+            and ${squadMemberships.membershipRole} = 'owner'
           for update
         `);
 
         const existing = await tx
           .select()
-          .from(companyMemberships)
+          .from(squadMemberships)
           .where(
             and(
-              eq(companyMemberships.companyId, companyId),
-              eq(companyMemberships.id, memberId),
+              eq(squadMemberships.squadId, squadId),
+              eq(squadMemberships.id, memberId),
             ),
           )
           .then((rows) => rows[0] ?? null);
@@ -3743,14 +3743,14 @@ export function accessRoutes(
           (nextStatus !== "active" || nextMembershipRole !== "owner")
         ) {
           const activeOwnerCount = await tx
-            .select({ id: companyMemberships.id })
-            .from(companyMemberships)
+            .select({ id: squadMemberships.id })
+            .from(squadMemberships)
             .where(
               and(
-                eq(companyMemberships.companyId, companyId),
-                eq(companyMemberships.principalType, "user"),
-                eq(companyMemberships.status, "active"),
-                eq(companyMemberships.membershipRole, "owner"),
+                eq(squadMemberships.squadId, squadId),
+                eq(squadMemberships.principalType, "user"),
+                eq(squadMemberships.status, "active"),
+                eq(squadMemberships.membershipRole, "owner"),
               ),
             )
             .then((rows) => rows.length);
@@ -3761,13 +3761,13 @@ export function accessRoutes(
 
         const now = new Date();
         const updatedMember = await tx
-          .update(companyMemberships)
+          .update(squadMemberships)
           .set({
             membershipRole: nextMembershipRole,
             status: nextStatus,
             updatedAt: now,
           })
-          .where(eq(companyMemberships.id, existing.id))
+          .where(eq(squadMemberships.id, existing.id))
           .returning()
           .then((rows) => rows[0] ?? existing);
 
@@ -3775,7 +3775,7 @@ export function accessRoutes(
           .delete(principalPermissionGrants)
           .where(
             and(
-              eq(principalPermissionGrants.companyId, companyId),
+              eq(principalPermissionGrants.squadId, squadId),
               eq(principalPermissionGrants.principalType, existing.principalType),
               eq(principalPermissionGrants.principalId, existing.principalId),
             ),
@@ -3785,7 +3785,7 @@ export function accessRoutes(
         if (grants.length > 0) {
           await tx.insert(principalPermissionGrants).values(
             grants.map((grant) => ({
-              companyId,
+              squadId,
               principalType: existing.principalType,
               principalId: existing.principalId,
               permissionKey: grant.permissionKey,
@@ -3802,11 +3802,11 @@ export function accessRoutes(
       if (!updated) throw notFound("Member not found");
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
-        action: "company_member.access_updated",
-        entityType: "company_membership",
+        action: "squad_member.access_updated",
+        entityType: "squad_membership",
         entityId: memberId,
         details: {
           membershipRole: updated.membershipRole,
@@ -3815,7 +3815,7 @@ export function accessRoutes(
         },
       });
 
-      const member = (await loadCompanyMemberRecords(db, companyId)).find(
+      const member = (await loadSquadMemberRecords(db, squadId)).find(
         (entry) => entry.id === memberId,
       );
       if (!member) throw notFound("Member not found");
@@ -3824,27 +3824,27 @@ export function accessRoutes(
   );
 
   router.post(
-    "/companies/:companyId/members/:memberId/archive",
-    validate(archiveCompanyMemberSchema),
+    "/squads/:squadId/members/:memberId/archive",
+    validate(archiveSquadMemberSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const memberId = req.params.memberId as string;
-      await assertCompanyPermission(req, companyId, "users:manage_permissions");
-      const memberToArchive = await access.getMemberById(companyId, memberId);
+      await assertSquadPermission(req, squadId, "users:manage_permissions");
+      const memberToArchive = await access.getMemberById(squadId, memberId);
       if (!memberToArchive) throw notFound("Member not found");
-      await assertCanManageCompanyMember(req, access, companyId, memberToArchive, "archive");
+      await assertCanManageSquadMember(req, access, squadId, memberToArchive, "archive");
 
-      const result = await access.archiveMember(companyId, memberId, {
+      const result = await access.archiveMember(squadId, memberId, {
         reassignment: req.body.reassignment ?? null,
       });
       if (!result) throw notFound("Member not found");
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
-        action: "company_member.archived",
-        entityType: "company_membership",
+        action: "squad_member.archived",
+        entityType: "squad_membership",
         entityId: memberId,
         details: {
           principalId: result.member.principalId,
@@ -3853,7 +3853,7 @@ export function accessRoutes(
         },
       });
 
-      const member = (await loadCompanyMemberRecords(db, companyId, { includeArchived: true })).find(
+      const member = (await loadSquadMemberRecords(db, squadId, { includeArchived: true })).find(
         (entry) => entry.id === memberId,
       );
       if (!member) throw notFound("Member not found");
@@ -3865,34 +3865,34 @@ export function accessRoutes(
   );
 
   router.patch(
-    "/companies/:companyId/members/:memberId/permissions",
+    "/squads/:squadId/members/:memberId/permissions",
     validate(updateMemberPermissionsSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const memberId = req.params.memberId as string;
-      await assertCompanyPermission(req, companyId, "users:manage_permissions");
-      const memberToUpdate = await access.getMemberById(companyId, memberId);
+      await assertSquadPermission(req, squadId, "users:manage_permissions");
+      const memberToUpdate = await access.getMemberById(squadId, memberId);
       if (!memberToUpdate) throw notFound("Member not found");
-      await assertCanManageCompanyMember(req, access, companyId, memberToUpdate);
+      await assertCanManageSquadMember(req, access, squadId, memberToUpdate);
       const updated = await access.setMemberPermissions(
-        companyId,
+        squadId,
         memberId,
         req.body.grants ?? [],
         req.actor.userId ?? null
       );
       if (!updated) throw notFound("Member not found");
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
-        action: "company_member.permissions_updated",
-        entityType: "company_membership",
+        action: "squad_member.permissions_updated",
+        entityType: "squad_membership",
         entityId: memberId,
         details: {
           grantCount: req.body.grants?.length ?? 0,
         },
       });
-      const member = (await loadCompanyMemberRecords(db, companyId)).find(
+      const member = (await loadSquadMemberRecords(db, squadId)).find(
         (entry) => entry.id === memberId,
       );
       if (!member) throw notFound("Member not found");
@@ -3934,14 +3934,14 @@ export function accessRoutes(
     const memberships = userIds.length
       ? await db
           .select({
-            principalId: companyMemberships.principalId,
+            principalId: squadMemberships.principalId,
           })
-          .from(companyMemberships)
+          .from(squadMemberships)
           .where(
             and(
-              eq(companyMemberships.principalType, "user"),
-              eq(companyMemberships.status, "active"),
-              inArray(companyMemberships.principalId, userIds),
+              eq(squadMemberships.principalType, "user"),
+              eq(squadMemberships.status, "active"),
+              inArray(squadMemberships.principalId, userIds),
             ),
           )
       : [];
@@ -3964,7 +3964,7 @@ export function accessRoutes(
       filteredUsers.slice(0, 50).map((user) => ({
         ...toUserProfile(user),
         isInstanceAdmin: adminIds.has(user.id),
-        activeCompanyMembershipCount:
+        activeSquadMembershipCount:
           membershipCountByUserId.get(user.id) ?? 0,
       })),
     );
@@ -3981,24 +3981,24 @@ export function accessRoutes(
     }
   );
 
-  router.get("/admin/users/:userId/company-access", async (req, res) => {
+  router.get("/admin/users/:userId/squad-access", async (req, res) => {
     await assertInstanceAdmin(req);
     const userId = req.params.userId as string;
-    res.json(await loadUserCompanyAccessResponse(db, access, userId));
+    res.json(await loadUserSquadAccessResponse(db, access, userId));
   });
 
   router.put(
-    "/admin/users/:userId/company-access",
-    validate(updateUserCompanyAccessSchema),
+    "/admin/users/:userId/squad-access",
+    validate(updateUserSquadAccessSchema),
     async (req, res) => {
       await assertInstanceAdmin(req);
       const userId = req.params.userId as string;
-      await access.setUserCompanyAccess(
+      await access.setUserSquadAccess(
         userId,
-        req.body.companyIds ?? [],
+        req.body.squadIds ?? [],
         { actorUserId: req.actor.userId ?? null },
       );
-      res.json(await loadUserCompanyAccessResponse(db, access, userId));
+      res.json(await loadUserSquadAccessResponse(db, access, userId));
     }
   );
 

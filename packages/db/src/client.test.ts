@@ -57,7 +57,7 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
         await sql.unsafe(
           `DELETE FROM "drizzle"."__drizzle_migrations" WHERE hash = '${richMagnetoHash}'`,
         );
-        await sql.unsafe(`DROP TABLE "company_logos"`);
+        await sql.unsafe(`DROP TABLE "squad_logos"`);
       } finally {
         await sql.end();
       }
@@ -81,13 +81,13 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
             SELECT table_name
             FROM information_schema.tables
             WHERE table_schema = 'public'
-              AND table_name IN ('company_logos', 'execution_workspaces')
+              AND table_name IN ('squad_logos', 'execution_workspaces')
             ORDER BY table_name
           `,
         );
         expect(rows.map((row) => row.table_name)).toEqual([
-          "company_logos",
           "execution_workspaces",
+          "squad_logos",
         ]);
       } finally {
         await verifySql.end();
@@ -277,7 +277,7 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
             FROM information_schema.columns
             WHERE table_schema = 'public'
               AND (
-                (table_name = 'companies' AND column_name IN (
+                (table_name = 'squads' AND column_name IN (
                   'feedback_data_sharing_enabled',
                   'feedback_data_sharing_consent_at',
                   'feedback_data_sharing_consent_by_user_id',
@@ -313,21 +313,21 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
             SELECT conname
             FROM pg_constraint
             WHERE conname IN (
-              'feedback_exports_company_id_companies_id_fk',
+              'feedback_exports_squad_id_squads_id_fk',
               'feedback_exports_feedback_vote_id_feedback_votes_id_fk',
               'feedback_exports_issue_id_issues_id_fk',
-              'feedback_votes_company_id_companies_id_fk',
+              'feedback_votes_squad_id_squads_id_fk',
               'feedback_votes_issue_id_issues_id_fk'
             )
             ORDER BY conname
           `,
         );
         expect(constraints.map((row) => row.conname)).toEqual([
-          "feedback_exports_company_id_companies_id_fk",
           "feedback_exports_feedback_vote_id_feedback_votes_id_fk",
           "feedback_exports_issue_id_issues_id_fk",
-          "feedback_votes_company_id_companies_id_fk",
+          "feedback_exports_squad_id_squads_id_fk",
           "feedback_votes_issue_id_issues_id_fk",
+          "feedback_votes_squad_id_squads_id_fk",
         ]);
       } finally {
         await verifySql.end();

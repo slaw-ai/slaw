@@ -27,16 +27,16 @@ function readWorkspaceRealizationRequest(value: unknown): WorkspaceRealizationRe
   const source = parseObject(parsed.source);
   const runtimeOverlay = parseObject(parsed.runtimeOverlay);
   const localPath = readString(source.localPath);
-  const companyId = readString(parsed.companyId);
+  const squadId = readString(parsed.squadId);
   const environmentId = readString(parsed.environmentId);
   const heartbeatRunId = readString(parsed.heartbeatRunId);
   const adapterType = readString(parsed.adapterType);
-  if (!localPath || !companyId || !environmentId || !heartbeatRunId || !adapterType) return null;
+  if (!localPath || !squadId || !environmentId || !heartbeatRunId || !adapterType) return null;
 
   return {
     version: 1,
     adapterType,
-    companyId,
+    squadId,
     environmentId,
     executionWorkspaceId: readString(parsed.executionWorkspaceId),
     issueId: readString(parsed.issueId),
@@ -69,7 +69,7 @@ function readWorkspaceRealizationRequest(value: unknown): WorkspaceRealizationRe
 
 export function buildWorkspaceRealizationRequest(input: {
   adapterType: string;
-  companyId: string;
+  squadId: string;
   environmentId: string;
   executionWorkspaceId: string | null;
   issueId: string | null;
@@ -81,7 +81,7 @@ export function buildWorkspaceRealizationRequest(input: {
   return {
     version: 1,
     adapterType: input.adapterType,
-    companyId: input.companyId,
+    squadId: input.squadId,
     environmentId: input.environmentId,
     executionWorkspaceId: input.executionWorkspaceId,
     issueId: input.issueId,
@@ -238,7 +238,7 @@ export function buildWorkspaceRealizationRecordFromDriverInput(input: {
     readWorkspaceRealizationRequest(input.workspace.metadata?.request) ??
     buildWorkspaceRealizationRequest({
       adapterType: "unknown",
-      companyId: input.lease.companyId,
+      squadId: input.lease.squadId,
       environmentId: input.environment.id,
       executionWorkspaceId: input.lease.executionWorkspaceId,
       issueId: input.lease.issueId,

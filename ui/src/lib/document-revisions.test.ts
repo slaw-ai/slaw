@@ -5,7 +5,7 @@ import { deriveDocumentRevisionState } from "./document-revisions";
 function createDocument(overrides: Partial<IssueDocument> = {}): IssueDocument {
   return {
     id: "document-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     key: "plan",
     title: "Plan",
@@ -29,7 +29,7 @@ function createDocument(overrides: Partial<IssueDocument> = {}): IssueDocument {
 function createRevision(overrides: Partial<DocumentRevision> = {}): DocumentRevision {
   return {
     id: "revision-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     documentId: "document-1",
     issueId: "issue-1",
     key: "plan",

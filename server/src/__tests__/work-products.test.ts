@@ -5,7 +5,7 @@ function createWorkProductRow(overrides: Partial<Record<string, unknown>> = {}) 
   const now = new Date("2026-03-17T00:00:00.000Z");
   return {
     id: "work-product-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     issueId: "issue-1",
     executionWorkspaceId: null,
@@ -46,7 +46,7 @@ describe("workProductService", () => {
     const transaction = vi.fn(async (callback: (input: typeof tx) => Promise<unknown>) => await callback(tx));
 
     const svc = workProductService({ transaction } as any);
-    const result = await svc.createForIssue("issue-1", "company-1", {
+    const result = await svc.createForIssue("issue-1", "squad-1", {
       type: "pull_request",
       provider: "github",
       title: "PR 1",

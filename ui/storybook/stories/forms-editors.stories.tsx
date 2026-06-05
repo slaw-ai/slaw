@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, CompanySecret, EnvBinding, Project, RoutineVariable } from "@slaw/shared";
+import type { Agent, SquadSecret, EnvBinding, Project, RoutineVariable } from "@slaw/shared";
 import { Code2, FileText, ListPlus, RotateCcw, Table2 } from "lucide-react";
 import { EnvVarEditor } from "@/components/EnvVarEditor";
 import { ExecutionParticipantPicker } from "@/components/ExecutionParticipantPicker";
@@ -88,7 +88,7 @@ const reviewMarkdown = `# Release review
 
 Ship criteria for the board UI refresh:
 
-- [x] Preserve company-scoped routes
+- [x] Preserve squad-scoped routes
 - [x] Keep comments and task updates auditable
 - [ ] Attach screenshots after QA
 
@@ -100,7 +100,7 @@ Tooling: lean on [/react-perf-optimizer](skill://skill-react-perf?s=react-perf-o
 | Approvals | CTO | Ready |
 
 \`\`\`ts
-const shouldRun = issue.status === "in_progress" && issue.companyId === company.id;
+const shouldRun = issue.status === "in_progress" && issue.squadId === squad.id;
 \`\`\`
 
 See [the implementation notes](https://github.com/slaw/slaw).`;
@@ -145,7 +145,7 @@ const adapterSchema: JsonSchemaNode = {
     dryRun: {
       type: "boolean",
       title: "Dry run first",
-      description: "Require a preview run before mutating company data.",
+      description: "Require a preview run before mutating squad data.",
       default: true,
     },
     notes: {
@@ -198,10 +198,10 @@ const adapterErrors = {
   "/concurrency": "Must be at most 6",
 };
 
-const storybookSecrets: CompanySecret[] = [
+const storybookSecrets: SquadSecret[] = [
 	  {
 	    id: "secret-openai",
-	    companyId: "company-storybook",
+	    squadId: "squad-storybook",
 	    key: "openai-api-key",
 	    name: "OPENAI_API_KEY",
 	    provider: "local_encrypted",
@@ -222,7 +222,7 @@ const storybookSecrets: CompanySecret[] = [
   },
 	  {
 	    id: "secret-github",
-	    companyId: "company-storybook",
+	    squadId: "squad-storybook",
 	    key: "github-token",
 	    name: "GITHUB_TOKEN",
 	    provider: "local_encrypted",
@@ -285,11 +285,11 @@ const routineVariables: RoutineVariable[] = [
 
 const storybookProject: Project = {
   id: "project-board-ui",
-  companyId: "company-storybook",
+  squadId: "squad-storybook",
   urlKey: "board-ui",
-  goalId: "goal-company",
-  goalIds: ["goal-company"],
-  goals: [{ id: "goal-company", title: "We're building Slaw" }],
+  goalId: "goal-squad",
+  goalIds: ["goal-squad"],
+  goals: [{ id: "goal-squad", title: "We're building Slaw" }],
   name: "Board UI",
   description: "Control-plane interface, Storybook review surfaces, and operator workflows.",
   status: "in_progress",
@@ -460,7 +460,7 @@ function InlineEditorGallery() {
 function EnvVarEditorGallery() {
   const [emptyEnv, setEmptyEnv] = useState<Record<string, EnvBinding>>({});
   const [env, setEnv] = useState<Record<string, EnvBinding>>(filledEnv);
-  const createSecret = async (name: string): Promise<CompanySecret> => ({
+  const createSecret = async (name: string): Promise<SquadSecret> => ({
     ...storybookSecrets[0]!,
     id: `secret-${name.toLowerCase()}`,
     name,
@@ -592,7 +592,7 @@ function PickerGallery() {
             />
           </div>
         </StatePanel>
-        <StatePanel label="ReportsToPicker" detail="Selected manager, CEO disabled state, and filtered hierarchy choices.">
+        <StatePanel label="ReportsToPicker" detail="Selected manager, Squad Lead disabled state, and filtered hierarchy choices.">
           <div className="flex flex-wrap gap-3">
             <ReportsToPicker agents={agentsWithTerminated} value={manager} onChange={setManager} excludeAgentIds={["agent-codex"]} />
             <ReportsToPicker agents={agentsWithTerminated} value={null} onChange={() => undefined} disabled />
@@ -687,7 +687,7 @@ function RoutineRunDialogStory() {
       <RoutineRunVariablesDialog
         open={open}
         onOpenChange={setOpen}
-        companyId="company-storybook"
+        squadId="squad-storybook"
         routineName="Weekly release review"
         projects={[storybookProject]}
         agents={storybookAgents}

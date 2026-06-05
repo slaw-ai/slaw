@@ -42,14 +42,14 @@ const mockAgentInstructionsService = vi.hoisted(() => ({
   materializeManagedBundle: vi.fn(),
 }));
 
-const mockCompanySkillService = vi.hoisted(() => ({
+const mockSquadSkillService = vi.hoisted(() => ({
   listRuntimeSkillEntries: vi.fn(),
   resolveRequestedSkillKeys: vi.fn(),
 }));
 
 const mockSecretService = vi.hoisted(() => ({
   resolveAdapterConfigForRuntime: vi.fn(),
-  normalizeAdapterConfigForPersistence: vi.fn(async (_companyId: string, config: Record<string, unknown>) => config),
+  normalizeAdapterConfigForPersistence: vi.fn(async (_squadId: string, config: Record<string, unknown>) => config),
 }));
 
 const mockLogActivity = vi.hoisted(() => vi.fn());
@@ -76,7 +76,7 @@ vi.mock("../services/index.js", () => ({
   agentInstructionsService: () => mockAgentInstructionsService,
   accessService: () => mockAccessService,
   approvalService: () => mockApprovalService,
-  companySkillService: () => mockCompanySkillService,
+  squadSkillService: () => mockSquadSkillService,
   budgetService: () => mockBudgetService,
   environmentService: () => mockEnvironmentService,
   heartbeatService: () => mockHeartbeatService,
@@ -110,7 +110,7 @@ function registerModuleMocks() {
     agentInstructionsService: () => mockAgentInstructionsService,
     accessService: () => mockAccessService,
     approvalService: () => mockApprovalService,
-    companySkillService: () => mockCompanySkillService,
+    squadSkillService: () => mockSquadSkillService,
     budgetService: () => mockBudgetService,
     heartbeatService: () => mockHeartbeatService,
     issueApprovalService: () => mockIssueApprovalService,
@@ -135,7 +135,7 @@ function createDb(requireBoardApprovalForNewAgents = false) {
       from: vi.fn(() => ({
         where: vi.fn(async () => [
           {
-            id: "company-1",
+            id: "squad-1",
             requireBoardApprovalForNewAgents,
           },
         ]),
@@ -155,7 +155,7 @@ async function createApp(db: Record<string, unknown> = createDb()) {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -196,7 +196,7 @@ async function requestApp(
 function makeAgent(adapterType: string) {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Agent",
     role: "engineer",
     title: "Engineer",
@@ -225,7 +225,7 @@ describe.sequential("agent skill routes", () => {
     for (const mock of Object.values(mockApprovalService)) mock.mockReset();
     for (const mock of Object.values(mockIssueApprovalService)) mock.mockReset();
     for (const mock of Object.values(mockAgentInstructionsService)) mock.mockReset();
-    for (const mock of Object.values(mockCompanySkillService)) mock.mockReset();
+    for (const mock of Object.values(mockSquadSkillService)) mock.mockReset();
     for (const mock of Object.values(mockSecretService)) mock.mockReset();
     mockLogActivity.mockReset();
     mockTrackAgentCreated.mockReset();
@@ -241,7 +241,7 @@ describe.sequential("agent skill routes", () => {
       agent: makeAgent("claude_local"),
     });
     mockSecretService.resolveAdapterConfigForRuntime.mockResolvedValue({ config: { env: {} } });
-    mockCompanySkillService.listRuntimeSkillEntries.mockResolvedValue([
+    mockSquadSkillService.listRuntimeSkillEntries.mockResolvedValue([
       {
         key: "slaw/slaw/slaw",
         runtimeName: "slaw",
@@ -250,8 +250,8 @@ describe.sequential("agent skill routes", () => {
         requiredReason: "required",
       },
     ]);
-    mockCompanySkillService.resolveRequestedSkillKeys.mockImplementation(
-      async (_companyId: string, requested: string[]) =>
+    mockSquadSkillService.resolveRequestedSkillKeys.mockImplementation(
+      async (_squadId: string, requested: string[]) =>
         requested.map((value) =>
           value === "slaw"
             ? "slaw/slaw/slaw"
@@ -283,7 +283,7 @@ describe.sequential("agent skill routes", () => {
       };
       return persistedAgent;
     });
-    mockAgentService.create.mockImplementation(async (_companyId: string, input: Record<string, unknown>) => {
+    mockAgentService.create.mockImplementation(async (_squadId: string, input: Record<string, unknown>) => {
       persistedAgent = {
         ...makeAgent(String(input.adapterType ?? "claude_local")),
         ...input,
@@ -294,9 +294,9 @@ describe.sequential("agent skill routes", () => {
       };
       return persistedAgent;
     });
-    mockApprovalService.create.mockImplementation(async (_companyId: string, input: Record<string, unknown>) => ({
+    mockApprovalService.create.mockImplementation(async (_squadId: string, input: Record<string, unknown>) => ({
       id: "approval-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       type: "hire_agent",
       status: "pending",
       payload: input.payload ?? {},
@@ -334,11 +334,11 @@ describe.sequential("agent skill routes", () => {
     const res = await requestApp(
       await createApp(),
       (baseUrl) => request(baseUrl)
-        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?companyId=company-1"),
+        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?squadId=squad-1"),
     );
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(mockCompanySkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("company-1", {
+    expect(mockSquadSkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("squad-1", {
       materializeMissing: false,
     });
     expect(mockAdapter.listSkills).toHaveBeenCalledWith(
@@ -365,11 +365,11 @@ describe.sequential("agent skill routes", () => {
     const res = await requestApp(
       await createApp(),
       (baseUrl) => request(baseUrl)
-        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?companyId=company-1"),
+        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?squadId=squad-1"),
     );
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(mockCompanySkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("company-1", {
+    expect(mockSquadSkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("squad-1", {
       materializeMissing: false,
     });
   });
@@ -394,11 +394,11 @@ describe.sequential("agent skill routes", () => {
     const res = await requestApp(
       await createApp(),
       (baseUrl) => request(baseUrl)
-        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?companyId=company-1"),
+        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?squadId=squad-1"),
     );
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(mockCompanySkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("company-1", {
+    expect(mockSquadSkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("squad-1", {
       materializeMissing: false,
     });
     expect(mockAdapter.listSkills).toHaveBeenCalledWith(
@@ -439,7 +439,7 @@ describe.sequential("agent skill routes", () => {
     });
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
+      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?squadId=squad-1")
       .send({ desiredSkills: ["slaw"] }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
@@ -481,11 +481,11 @@ describe.sequential("agent skill routes", () => {
     const res = await requestApp(
       await createApp(),
       (baseUrl) => request(baseUrl)
-        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?companyId=company-1"),
+        .get("/api/agents/11111111-1111-4111-8111-111111111111/skills?squadId=squad-1"),
     );
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(mockCompanySkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("company-1", {
+    expect(mockSquadSkillService.listRuntimeSkillEntries).toHaveBeenCalledWith("squad-1", {
       materializeMissing: false,
     });
   });
@@ -494,7 +494,7 @@ describe.sequential("agent skill routes", () => {
     mockAgentService.getById.mockResolvedValue(makeAgent("claude_local"));
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
+      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?squadId=squad-1")
       .send({ desiredSkills: ["slaw/slaw/slaw"] }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
@@ -505,7 +505,7 @@ describe.sequential("agent skill routes", () => {
     mockAgentService.getById.mockResolvedValue(makeAgent("claude_local"));
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
+      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?squadId=squad-1")
       .send({ desiredSkills: ["slaw"] }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
@@ -524,7 +524,7 @@ describe.sequential("agent skill routes", () => {
 
   it("persists canonical desired skills when creating an agent directly", async () => {
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-1/agents")
+      .post("/api/squads/squad-1/agents")
       .send({
         name: "QA Agent",
         role: "engineer",
@@ -535,7 +535,7 @@ describe.sequential("agent skill routes", () => {
 
     expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         adapterConfig: expect.objectContaining({
           slawSkillSync: expect.objectContaining({
@@ -555,7 +555,7 @@ describe.sequential("agent skill routes", () => {
 
   it("accepts the security role on direct agent creation and preserves it in telemetry", async () => {
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-1/agents")
+      .post("/api/squads/squad-1/agents")
       .send({
         name: "Security Engineer",
         role: "security",
@@ -568,7 +568,7 @@ describe.sequential("agent skill routes", () => {
       role: "security",
     });
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         role: "security",
       }),
@@ -584,7 +584,7 @@ describe.sequential("agent skill routes", () => {
 
   it("materializes a managed AGENTS.md for directly created local agents", async () => {
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-1/agents")
+      .post("/api/squads/squad-1/agents")
       .send({
         name: "QA Agent",
         role: "engineer",
@@ -617,7 +617,7 @@ describe.sequential("agent skill routes", () => {
 
   it("rejects legacy prompt templates for directly created local agents", async () => {
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-1/agents")
+      .post("/api/squads/squad-1/agents")
       .send({
         name: "QA Agent",
         role: "engineer",
@@ -635,12 +635,12 @@ describe.sequential("agent skill routes", () => {
     expect(mockAgentInstructionsService.materializeManagedBundle).not.toHaveBeenCalled();
   });
 
-  it("materializes the bundled CEO instruction set for default CEO agents", async () => {
+  it("materializes the bundled Squad Lead instruction set for default Squad Lead agents", async () => {
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-1/agents")
+      .post("/api/squads/squad-1/agents")
       .send({
-        name: "CEO",
-        role: "ceo",
+        name: "Squad Lead",
+        role: "squad_lead",
         adapterType: "claude_local",
         adapterConfig: {},
       }));
@@ -649,22 +649,22 @@ describe.sequential("agent skill routes", () => {
     expect(mockAgentInstructionsService.materializeManagedBundle).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "11111111-1111-4111-8111-111111111111",
-        role: "ceo",
+        role: "squad_lead",
         adapterType: "claude_local",
       }),
       expect.objectContaining({
-        "AGENTS.md": expect.stringContaining("You are the CEO."),
-        "HEARTBEAT.md": expect.stringContaining("CEO Heartbeat Checklist"),
-        "SOUL.md": expect.stringContaining("CEO Persona"),
+        "AGENTS.md": expect.stringContaining("You are the Squad Lead."),
+        "HEARTBEAT.md": expect.stringContaining("Squad Lead Heartbeat Checklist"),
+        "SOUL.md": expect.stringContaining("Squad Lead Persona"),
         "TOOLS.md": expect.stringContaining("# Tools"),
       }),
       { entryFile: "AGENTS.md", replaceExisting: false },
     );
   });
 
-  it("materializes the bundled default instruction set for non-CEO agents with no prompt template", async () => {
+  it("materializes the bundled default instruction set for non-Squad Lead agents with no prompt template", async () => {
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-1/agents")
+      .post("/api/squads/squad-1/agents")
       .send({
         name: "Engineer",
         role: "engineer",
@@ -713,7 +713,7 @@ describe.sequential("agent skill routes", () => {
     const db = createDb(true);
 
     const res = await request(await createApp(db))
-      .post("/api/companies/company-1/agent-hires")
+      .post("/api/squads/squad-1/agent-hires")
       .send({
         name: "QA Agent",
         role: "engineer",
@@ -724,7 +724,7 @@ describe.sequential("agent skill routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockApprovalService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         payload: expect.objectContaining({
           desiredSkills: ["slaw/slaw/slaw"],
@@ -741,7 +741,7 @@ describe.sequential("agent skill routes", () => {
     const sourceIssueId = "22222222-2222-4222-8222-222222222222";
 
     const res = await request(await createApp(db))
-      .post("/api/companies/company-1/agent-hires")
+      .post("/api/squads/squad-1/agent-hires")
       .send({
         name: "Security Engineer",
         role: "engineer",
@@ -754,7 +754,7 @@ describe.sequential("agent skill routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockAgentService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         icon: "crown",
         adapterConfig: expect.objectContaining({
@@ -765,7 +765,7 @@ describe.sequential("agent skill routes", () => {
       }),
     );
     expect(mockApprovalService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         payload: expect.objectContaining({
           icon: "crown",
@@ -785,7 +785,7 @@ describe.sequential("agent skill routes", () => {
 
   it("uses managed AGENTS config in hire approval payloads", async () => {
     const res = await request(await createApp(createDb(true)))
-      .post("/api/companies/company-1/agent-hires")
+      .post("/api/squads/squad-1/agent-hires")
       .send({
         name: "QA Agent",
         role: "engineer",
@@ -800,7 +800,7 @@ describe.sequential("agent skill routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockApprovalService.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         payload: expect.objectContaining({
           adapterConfig: expect.objectContaining({
@@ -819,7 +819,7 @@ describe.sequential("agent skill routes", () => {
 
   it("rejects legacy prompt templates for hire approval payloads", async () => {
     const res = await request(await createApp(createDb(true)))
-      .post("/api/companies/company-1/agent-hires")
+      .post("/api/squads/squad-1/agent-hires")
       .send({
         name: "QA Agent",
         role: "engineer",

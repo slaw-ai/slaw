@@ -31,7 +31,7 @@ $AGENT_HOME/life/
       items.yaml
   areas/             # Ongoing responsibilities, no end date
     people/<name>/
-    companies/<name>/
+    squads/<name>/
   resources/         # Reference material, topics of interest
     <topic>/
   archives/          # Inactive items from the other three
@@ -41,7 +41,7 @@ $AGENT_HOME/life/
 **PARA rules:**
 
 - **Projects** -- active work with a goal or deadline. Move to archives when complete.
-- **Areas** -- ongoing (people, companies, responsibilities). No end date.
+- **Areas** -- ongoing (people, squads, responsibilities). No end date.
 - **Resources** -- reference material, topics of interest.
 - **Archives** -- inactive items from any category.
 
@@ -56,7 +56,7 @@ $AGENT_HOME/life/
 
 - Mentioned 3+ times, OR
 - Direct relationship to the user (family, coworker, partner, client), OR
-- Significant project or company in the user's life.
+- Significant project or squad in the user's life.
 - Otherwise, note it in daily notes.
 
 For the atomic fact YAML schema and memory decay rules, see [references/schemas.md](references/schemas.md).

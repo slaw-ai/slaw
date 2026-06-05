@@ -7,7 +7,7 @@ export const PAGE_ROUTE = "kitchensink";
 export const SLOT_IDS = {
   page: "kitchen-sink-page",
   settingsPage: "kitchen-sink-settings-page",
-  companySettingsPage: "kitchen-sink-company-settings-page",
+  squadSettingsPage: "kitchen-sink-squad-settings-page",
   dashboardWidget: "kitchen-sink-dashboard-widget",
   sidebar: "kitchen-sink-sidebar-link",
   sidebarPanel: "kitchen-sink-sidebar-panel",
@@ -24,7 +24,7 @@ export const SLOT_IDS = {
 export const EXPORT_NAMES = {
   page: "KitchenSinkPage",
   settingsPage: "KitchenSinkSettingsPage",
-  companySettingsPage: "KitchenSinkCompanySettingsPage",
+  squadSettingsPage: "KitchenSinkSquadSettingsPage",
   dashboardWidget: "KitchenSinkDashboardWidget",
   sidebar: "KitchenSinkSidebarLink",
   sidebarPanel: "KitchenSinkSidebarPanel",
@@ -49,7 +49,7 @@ export const WEBHOOK_KEYS = {
 
 export const TOOL_NAMES = {
   echo: "echo",
-  companySummary: "company-summary",
+  squadSummary: "squad-summary",
   createIssue: "create-issue",
 } as const;
 

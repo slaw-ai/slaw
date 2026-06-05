@@ -123,7 +123,7 @@ function createApp(actor: Express.Request["actor"]) {
   app.use((req, _res, next) => {
     req.actor = {
       ...actor,
-      companyIds: Array.isArray(actor.companyIds) ? [...actor.companyIds] : actor.companyIds,
+      squadIds: Array.isArray(actor.squadIds) ? [...actor.squadIds] : actor.squadIds,
       memberships: Array.isArray(actor.memberships)
         ? actor.memberships.map((membership) => ({ ...membership }))
         : actor.memberships,
@@ -170,10 +170,10 @@ function boardMember(membershipRole: "admin" | "operator" | "viewer"): Express.R
     userEmail: null,
     source: "session",
     isInstanceAdmin: false,
-    companyIds: ["company-1"],
+    squadIds: ["squad-1"],
     memberships: [
       {
-        companyId: "company-1",
+        squadId: "squad-1",
         membershipRole,
         status: "active",
       },
@@ -188,7 +188,7 @@ const instanceAdmin: Express.Request["actor"] = {
   userEmail: null,
   source: "session",
   isInstanceAdmin: true,
-  companyIds: [],
+  squadIds: [],
   memberships: [],
 };
 
@@ -277,7 +277,7 @@ describe.sequential("adapter management route authorization", () => {
     setOverridePaused("claude_local", false);
   });
 
-  it("rejects mutating adapter routes for a non-instance-admin board user with company membership", async () => {
+  it("rejects mutating adapter routes for a non-instance-admin board user with squad membership", async () => {
     for (const routeName of [
       "install",
       "disable",
@@ -318,7 +318,7 @@ describe.sequential("adapter management route authorization", () => {
   });
 
   it.each(["viewer", "operator"] as const)(
-    "does not let a company %s trigger adapter npm install or reload",
+    "does not let a squad %s trigger adapter npm install or reload",
     async (membershipRole) => {
       seedInstalledExternalAdapter();
       const installApp = createApp(boardMember(membershipRole));

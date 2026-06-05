@@ -217,7 +217,7 @@ export interface PluginToolDispatcher {
  * const result = await dispatcher.executeTool(
  *   "acme.linear:search-issues",
  *   { query: "auth bug" },
- *   { agentId: "a-1", runId: "r-1", companyId: "c-1", projectId: "p-1" },
+ *   { agentId: "a-1", runId: "r-1", squadId: "c-1", projectId: "p-1" },
  * );
  * ```
  */

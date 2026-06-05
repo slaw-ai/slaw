@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   activityLog,
   agents,
-  companies,
+  squads,
   createDb,
   heartbeatRuns,
   issueComments,
@@ -47,7 +47,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     await db.delete(issues);
     await db.delete(heartbeatRuns);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -66,21 +66,21 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     return app;
   }
 
-  async function seedCompanyAgentAndRuns() {
-    const companyId = randomUUID();
+  async function seedSquadAgentAndRuns() {
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const failedRunId = randomUUID();
     const currentRunId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -92,7 +92,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     await db.insert(heartbeatRuns).values([
       {
         id: failedRunId,
-        companyId,
+        squadId,
         agentId,
         status: "failed",
         invocationSource: "manual",
@@ -100,7 +100,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       },
       {
         id: currentRunId,
-        companyId,
+        squadId,
         agentId,
         status: "running",
         invocationSource: "manual",
@@ -108,36 +108,36 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       },
     ]);
 
-    return { companyId, agentId, failedRunId, currentRunId };
+    return { squadId, agentId, failedRunId, currentRunId };
   }
 
-  function agentActor(companyId: string, agentId: string, runId: string): Express.Request["actor"] {
+  function agentActor(squadId: string, agentId: string, runId: string): Express.Request["actor"] {
     return {
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       runId,
       source: "agent_jwt",
     };
   }
 
-  function boardActor(companyId: string): Express.Request["actor"] {
+  function boardActor(squadId: string): Express.Request["actor"] {
     return {
       type: "board",
       userId: "board-user",
-      companyIds: [companyId],
-      memberships: [{ companyId, membershipRole: "admin", status: "active" }],
+      squadIds: [squadId],
+      memberships: [{ squadId, membershipRole: "admin", status: "active" }],
       isInstanceAdmin: false,
       source: "session",
     };
   }
 
   it("allows an assigned agent PATCH to recover a terminal stale executionRunId", async () => {
-    const { companyId, agentId, failedRunId, currentRunId } = await seedCompanyAgentAndRuns();
+    const { squadId, agentId, failedRunId, currentRunId } = await seedSquadAgentAndRuns();
     const issueId = randomUUID();
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Stale execution lock",
       status: "in_progress",
       priority: "high",
@@ -148,7 +148,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       executionLockedAt: new Date(),
     });
 
-    const res = await request(createApp(agentActor(companyId, agentId, currentRunId)))
+    const res = await request(createApp(agentActor(squadId, agentId, currentRunId)))
       .patch(`/api/issues/${issueId}`)
       .send({ title: "Recovered execution lock" });
 
@@ -172,11 +172,11 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
   });
 
   it("allows the rightful assignee to release after the owning run failed", async () => {
-    const { companyId, agentId, failedRunId, currentRunId } = await seedCompanyAgentAndRuns();
+    const { squadId, agentId, failedRunId, currentRunId } = await seedSquadAgentAndRuns();
     const issueId = randomUUID();
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Failed run release",
       status: "in_progress",
       priority: "high",
@@ -187,7 +187,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       executionLockedAt: new Date(),
     });
 
-    const res = await request(createApp(agentActor(companyId, agentId, currentRunId)))
+    const res = await request(createApp(agentActor(squadId, agentId, currentRunId)))
       .post(`/api/issues/${issueId}/release`)
       .send();
 
@@ -213,12 +213,12 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     });
   });
 
-  it("restricts admin force-release to board users with company access and writes an audit event", async () => {
-    const { companyId, agentId, failedRunId, currentRunId } = await seedCompanyAgentAndRuns();
+  it("restricts admin force-release to board users with squad access and writes an audit event", async () => {
+    const { squadId, agentId, failedRunId, currentRunId } = await seedSquadAgentAndRuns();
     const issueId = randomUUID();
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Admin force release",
       status: "in_progress",
       priority: "high",
@@ -229,13 +229,13 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       executionLockedAt: new Date(),
     });
 
-    await request(createApp(agentActor(companyId, agentId, currentRunId)))
+    await request(createApp(agentActor(squadId, agentId, currentRunId)))
       .post(`/api/issues/${issueId}/admin/force-release`)
       .expect(403);
     await request(createApp({
       type: "board",
       userId: "outside-user",
-      companyIds: [],
+      squadIds: [],
       memberships: [],
       isInstanceAdmin: false,
       source: "session",
@@ -243,7 +243,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       .post(`/api/issues/${issueId}/admin/force-release`)
       .expect(403);
 
-    const res = await request(createApp(boardActor(companyId)))
+    const res = await request(createApp(boardActor(squadId)))
       .post(`/api/issues/${issueId}/admin/force-release?clearAssignee=true`)
       .send();
 

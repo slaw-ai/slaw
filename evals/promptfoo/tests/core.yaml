@@ -5,7 +5,7 @@
 - description: "core.assignment_pickup - picks in_progress before todo"
   vars:
     agentId: agent-coder-01
-    companyId: company-eval-01
+    squadId: squad-eval-01
     taskId: ""
     wakeReason: timer
     approvalId: ""
@@ -21,7 +21,7 @@
 - description: "core.progress_update - posts status comment before exiting"
   vars:
     agentId: agent-coder-01
-    companyId: company-eval-01
+    squadId: squad-eval-01
     taskId: issue-123
     wakeReason: timer
     approvalId: ""
@@ -37,7 +37,7 @@
 - description: "core.blocked_reporting - sets status to blocked with explanation"
   vars:
     agentId: agent-coder-01
-    companyId: company-eval-01
+    squadId: squad-eval-01
     taskId: issue-456
     wakeReason: timer
     approvalId: ""
@@ -51,7 +51,7 @@
 - description: "core.no_work_exit - exits cleanly when no assignments"
   vars:
     agentId: agent-coder-01
-    companyId: company-eval-01
+    squadId: squad-eval-01
     taskId: ""
     wakeReason: timer
     approvalId: ""
@@ -60,13 +60,13 @@
       value: "output.includes('exit') || output.includes('no assignments') || output.includes('nothing assigned')"
       metric: clean_exit
     - type: not-contains
-      value: "POST /api/companies"
+      value: "POST /api/squads"
       metric: no_self_assign
 
 - description: "core.checkout_before_work - always checks out before modifying"
   vars:
     agentId: agent-coder-01
-    companyId: company-eval-01
+    squadId: squad-eval-01
     taskId: issue-123
     wakeReason: assignment
     approvalId: ""
@@ -82,7 +82,7 @@
 - description: "core.conflict_handling - stops on 409, picks different task"
   vars:
     agentId: agent-coder-01
-    companyId: company-eval-01
+    squadId: squad-eval-01
     taskId: issue-conflict
     wakeReason: timer
     approvalId: ""

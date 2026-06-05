@@ -1,12 +1,12 @@
 import { pgTable, uuid, text, timestamp, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 
 export const invites = pgTable(
   "invites",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").references(() => companies.id),
-    inviteType: text("invite_type").notNull().default("company_join"),
+    squadId: uuid("squad_id").references(() => squads.id),
+    inviteType: text("invite_type").notNull().default("squad_join"),
     tokenHash: text("token_hash").notNull(),
     allowedJoinTypes: text("allowed_join_types").notNull().default("both"),
     defaultsPayload: jsonb("defaults_payload").$type<Record<string, unknown> | null>(),
@@ -19,8 +19,8 @@ export const invites = pgTable(
   },
   (table) => ({
     tokenHashUniqueIdx: uniqueIndex("invites_token_hash_unique_idx").on(table.tokenHash),
-    companyInviteStateIdx: index("invites_company_invite_state_idx").on(
-      table.companyId,
+    squadInviteStateIdx: index("invites_squad_invite_state_idx").on(
+      table.squadId,
       table.inviteType,
       table.revokedAt,
       table.expiresAt,

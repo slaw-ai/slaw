@@ -28,7 +28,7 @@ import { getSdkUiRuntimeValue } from "./runtime.js";
  * ```tsx
  * function SyncWidget({ context }: PluginWidgetProps) {
  *   const { data, loading, error } = usePluginData<SyncHealth>("sync-health", {
- *     companyId: context.companyId,
+ *     squadId: context.squadId,
  *   });
  *
  *   if (loading) return <div>Loading…</div>;
@@ -71,7 +71,7 @@ export function usePluginData<T = unknown>(
  *
  *   async function handleClick() {
  *     try {
- *       await resync({ companyId: context.companyId });
+ *       await resync({ squadId: context.squadId });
  *     } catch (err) {
  *       setError((err as PluginBridgeError).message);
  *     }
@@ -94,7 +94,7 @@ export function usePluginAction(key: string): PluginActionFn {
 // ---------------------------------------------------------------------------
 
 /**
- * Read the current host context (active company, project, entity, user).
+ * Read the current host context (active squad, project, entity, user).
  *
  * Use this to know which context the plugin component is being rendered in
  * so you can scope data requests and actions accordingly.
@@ -104,7 +104,7 @@ export function usePluginAction(key: string): PluginActionFn {
  * @example
  * ```tsx
  * function IssueTab() {
- *   const { companyId, entityId } = useHostContext();
+ *   const { squadId, entityId } = useHostContext();
  *   const { data } = usePluginData("linear-link", { issueId: entityId });
  *   return <div>{data?.linearIssueUrl}</div>;
  * }
@@ -203,10 +203,10 @@ export function useHostLocation(): HostLocation {
  */
 export function usePluginStream<T = unknown>(
   channel: string,
-  options?: { companyId?: string },
+  options?: { squadId?: string },
 ): PluginStreamResult<T> {
   const impl = getSdkUiRuntimeValue<
-    (nextChannel: string, nextOptions?: { companyId?: string }) => PluginStreamResult<T>
+    (nextChannel: string, nextOptions?: { squadId?: string }) => PluginStreamResult<T>
   >("usePluginStream");
   return impl(channel, options);
 }

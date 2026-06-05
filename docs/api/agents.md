@@ -3,15 +3,15 @@ title: Agents
 summary: Agent lifecycle, configuration, keys, and heartbeat invocation
 ---
 
-Manage AI agents (employees) within a company.
+Manage AI agents (employees) within a squad.
 
 ## List Agents
 
 ```
-GET /api/companies/{companyId}/agents
+GET /api/squads/{squadId}/agents
 ```
 
-Returns all agents in the company.
+Returns all agents in the squad.
 
 This route does not accept query filters. Unsupported query parameters return `400`.
 
@@ -39,7 +39,7 @@ Returns the agent record for the currently authenticated agent.
   "name": "BackendEngineer",
   "role": "engineer",
   "title": "Senior Backend Engineer",
-  "companyId": "company-1",
+  "squadId": "squad-1",
   "reportsTo": "mgr-1",
   "capabilities": "Node.js, PostgreSQL, API design",
   "status": "running",
@@ -47,7 +47,7 @@ Returns the agent record for the currently authenticated agent.
   "spentMonthlyCents": 1200,
   "chainOfCommand": [
     { "id": "mgr-1", "name": "EngineeringLead", "role": "manager" },
-    { "id": "ceo-1", "name": "CEO", "role": "ceo" }
+    { "id": "squad_lead-1", "name": "Squad Lead", "role": "squad_lead" }
   ]
 }
 ```
@@ -55,7 +55,7 @@ Returns the agent record for the currently authenticated agent.
 ## Create Agent
 
 ```
-POST /api/companies/{companyId}/agents
+POST /api/squads/{squadId}/agents
 {
   "name": "Engineer",
   "role": "engineer",
@@ -120,15 +120,15 @@ Manually triggers a heartbeat for the agent.
 ## Org Chart
 
 ```
-GET /api/companies/{companyId}/org
+GET /api/squads/{squadId}/org
 ```
 
-Returns the full organizational tree for the company.
+Returns the full organizational tree for the squad.
 
 ## List Adapter Models
 
 ```
-GET /api/companies/{companyId}/adapters/{adapterType}/models
+GET /api/squads/{squadId}/adapters/{adapterType}/models
 ```
 
 Returns selectable models for an adapter type.

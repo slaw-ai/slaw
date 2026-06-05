@@ -4,10 +4,10 @@ import { assets } from "@slaw/db";
 
 export function assetService(db: Db) {
   return {
-    create: (companyId: string, data: Omit<typeof assets.$inferInsert, "companyId">) =>
+    create: (squadId: string, data: Omit<typeof assets.$inferInsert, "squadId">) =>
       db
         .insert(assets)
-        .values({ ...data, companyId })
+        .values({ ...data, squadId })
         .returning()
         .then((rows) => rows[0]),
 

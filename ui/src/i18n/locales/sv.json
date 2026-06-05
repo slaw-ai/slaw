@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "Skapa ditt första företag",
       "description": "Kom igång genom att skapa ett företag.",
-      "newCompany": "Nytt företag"
+      "newSquad": "Nytt företag"
     }
   }
 }

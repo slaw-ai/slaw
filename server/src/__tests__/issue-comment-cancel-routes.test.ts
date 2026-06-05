@@ -32,7 +32,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
       feedbackDataSharingPreference: "prompt",
     },
   })),
-  listCompanyIds: vi.fn(async () => ["company-1"]),
+  listSquadIds: vi.fn(async () => ["squad-1"]),
 }));
 const mockIssueThreadInteractionService = vi.hoisted(() => ({
   expireRequestConfirmationsSupersededByComment: vi.fn(async () => []),
@@ -74,8 +74,8 @@ function registerModuleMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => ({ getById: vi.fn(async () => null) }),
@@ -129,7 +129,7 @@ async function installActor(app: express.Express, actor?: Record<string, unknown
     (req as any).actor = actor ?? {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -143,7 +143,7 @@ async function installActor(app: express.Express, actor?: Record<string, unknown
 function makeIssue() {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    companyId: "company-1",
+    squadId: "squad-1",
     status: "in_progress",
     assigneeAgentId: "22222222-2222-4222-8222-222222222222",
     assigneeUserId: null,
@@ -156,7 +156,7 @@ function makeIssue() {
 function makeComment(overrides: Record<string, unknown> = {}) {
   return {
     id: "comment-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "11111111-1111-4111-8111-111111111111",
     authorAgentId: null,
     authorUserId: "local-board",
@@ -198,7 +198,7 @@ describe.sequential("issue comment cancel routes", () => {
     });
     mockHeartbeatService.getRun.mockResolvedValue({
       id: "run-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       agentId: "22222222-2222-4222-8222-222222222222",
       status: "running",
       startedAt: new Date("2026-04-11T15:00:00.000Z"),
@@ -212,7 +212,7 @@ describe.sequential("issue comment cancel routes", () => {
         feedbackDataSharingPreference: "prompt",
       },
     });
-    mockInstanceSettingsService.listCompanyIds.mockResolvedValue(["company-1"]);
+    mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);
     mockLogActivity.mockResolvedValue(undefined);
   });
 

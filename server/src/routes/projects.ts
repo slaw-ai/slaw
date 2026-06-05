@@ -15,7 +15,7 @@ import { trackProjectCreated } from "@slaw/shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { projectService, logActivity, workspaceOperationService } from "../services/index.js";
 import { conflict, forbidden } from "../errors.js";
-import { assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertSquadAccess, getActorInfo } from "./authz.js";
 import {
   buildWorkspaceRuntimeDesiredStatePatch,
   listConfiguredRuntimeServiceEntries,
@@ -31,7 +31,7 @@ import {
 import { assertCanManageProjectWorkspaceRuntimeServices } from "./workspace-runtime-service-authz.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { appendWithCap } from "../adapters/utils.js";
-import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
+import { assertEnvironmentSelectionForSquad } from "./environment-selection.js";
 import { environmentService } from "../services/environments.js";
 import { secretService } from "../services/secrets.js";
 
@@ -46,9 +46,9 @@ export function projectRoutes(db: Db) {
   const strictSecretsMode = process.env.SLAW_SECRETS_STRICT_MODE === "true";
   const environmentsSvc = environmentService(db);
 
-  async function assertProjectEnvironmentSelection(companyId: string, environmentId: string | null | undefined) {
+  async function assertProjectEnvironmentSelection(squadId: string, environmentId: string | null | undefined) {
     if (environmentId === undefined || environmentId === null) return;
-    await assertEnvironmentSelectionForCompany(environmentsSvc, companyId, environmentId, {
+    await assertEnvironmentSelectionForSquad(environmentsSvc, squadId, environmentId, {
       allowedDrivers: ["local", "ssh", "sandbox"],
     });
   }
@@ -61,29 +61,29 @@ export function projectRoutes(db: Db) {
     return typeof environmentId === "string" || environmentId === null ? environmentId : undefined;
   }
 
-  async function resolveCompanyIdForProjectReference(req: Request) {
-    const companyIdQuery = req.query.companyId;
-    const requestedCompanyId =
-      typeof companyIdQuery === "string" && companyIdQuery.trim().length > 0
-        ? companyIdQuery.trim()
+  async function resolveSquadIdForProjectReference(req: Request) {
+    const squadIdQuery = req.query.squadId;
+    const requestedSquadId =
+      typeof squadIdQuery === "string" && squadIdQuery.trim().length > 0
+        ? squadIdQuery.trim()
         : null;
-    if (requestedCompanyId) {
-      assertCompanyAccess(req, requestedCompanyId);
-      return requestedCompanyId;
+    if (requestedSquadId) {
+      assertSquadAccess(req, requestedSquadId);
+      return requestedSquadId;
     }
-    if (req.actor.type === "agent" && req.actor.companyId) {
-      return req.actor.companyId;
+    if (req.actor.type === "agent" && req.actor.squadId) {
+      return req.actor.squadId;
     }
     return null;
   }
 
   async function normalizeProjectReference(req: Request, rawId: string) {
     if (isUuidLike(rawId)) return rawId;
-    const companyId = await resolveCompanyIdForProjectReference(req);
-    if (!companyId) return rawId;
-    const resolved = await svc.resolveByReference(companyId, rawId);
+    const squadId = await resolveSquadIdForProjectReference(req);
+    if (!squadId) return rawId;
+    const resolved = await svc.resolveByReference(squadId, rawId);
     if (resolved.ambiguous) {
-      throw conflict("Project shortname is ambiguous in this company. Use the project ID.");
+      throw conflict("Project shortname is ambiguous in this squad. Use the project ID.");
     }
     return resolved.project?.id ?? rawId;
   }
@@ -97,10 +97,10 @@ export function projectRoutes(db: Db) {
     }
   });
 
-  router.get("/companies/:companyId/projects", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    const result = await svc.list(companyId);
+  router.get("/squads/:squadId/projects", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+    const result = await svc.list(squadId);
     res.json(result);
   });
 
@@ -111,20 +111,20 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, project.companyId);
+    assertSquadAccess(req, project.squadId);
     res.json(project);
   });
 
-  router.post("/companies/:companyId/projects", validate(createProjectSchema), async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+  router.post("/squads/:squadId/projects", validate(createProjectSchema), async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     type CreateProjectPayload = Parameters<typeof svc.create>[1] & {
       workspace?: Parameters<typeof svc.createWorkspace>[1];
     };
 
     const { workspace, ...projectData } = req.body as CreateProjectPayload;
     await assertProjectEnvironmentSelection(
-      companyId,
+      squadId,
       readProjectPolicyEnvironmentId(projectData.executionWorkspacePolicy),
     );
     assertNoAgentHostWorkspaceCommandMutation(
@@ -136,15 +136,15 @@ export function projectRoutes(db: Db) {
     );
     if (projectData.env !== undefined) {
       projectData.env = await secretsSvc.normalizeEnvBindingsForPersistence(
-        companyId,
+        squadId,
         projectData.env,
         { strictMode: strictSecretsMode, fieldPath: "env" },
       );
     }
-    const project = await svc.create(companyId, projectData);
+    const project = await svc.create(squadId, projectData);
     if (project.env) {
       await secretsSvc.syncEnvBindingsForTarget?.(
-        companyId,
+        squadId,
         { targetType: "project", targetId: project.id },
         project.env,
       );
@@ -163,7 +163,7 @@ export function projectRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -190,21 +190,21 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     const body = { ...req.body };
     assertNoAgentHostWorkspaceCommandMutation(
       req,
       collectProjectExecutionWorkspaceCommandPaths(body.executionWorkspacePolicy),
     );
     await assertProjectEnvironmentSelection(
-      existing.companyId,
+      existing.squadId,
       readProjectPolicyEnvironmentId(body.executionWorkspacePolicy),
     );
     if (typeof body.archivedAt === "string") {
       body.archivedAt = new Date(body.archivedAt);
     }
     if (body.env !== undefined) {
-      body.env = await secretsSvc.normalizeEnvBindingsForPersistence(existing.companyId, body.env, {
+      body.env = await secretsSvc.normalizeEnvBindingsForPersistence(existing.squadId, body.env, {
         strictMode: strictSecretsMode,
         fieldPath: "env",
       });
@@ -216,7 +216,7 @@ export function projectRoutes(db: Db) {
     }
     if (body.env !== undefined) {
       await secretsSvc.syncEnvBindingsForTarget?.(
-        project.companyId,
+        project.squadId,
         { targetType: "project", targetId: project.id },
         project.env,
       );
@@ -224,7 +224,7 @@ export function projectRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: project.companyId,
+      squadId: project.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -250,7 +250,7 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     const workspaces = await svc.listWorkspaces(id);
     res.json(workspaces);
   });
@@ -262,7 +262,7 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     assertNoAgentHostWorkspaceCommandMutation(
       req,
       collectProjectWorkspaceCommandPaths(req.body),
@@ -275,7 +275,7 @@ export function projectRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -304,7 +304,7 @@ export function projectRoutes(db: Db) {
         res.status(404).json({ error: "Project not found" });
         return;
       }
-      assertCompanyAccess(req, existing.companyId);
+      assertSquadAccess(req, existing.squadId);
       assertNoAgentHostWorkspaceCommandMutation(
         req,
         collectProjectWorkspaceCommandPaths(req.body),
@@ -322,7 +322,7 @@ export function projectRoutes(db: Db) {
 
       const actor = getActorInfo(req);
       await logActivity(db, {
-        companyId: existing.companyId,
+        squadId: existing.squadId,
         actorType: actor.actorType,
         actorId: actor.actorId,
         agentId: actor.agentId,
@@ -353,7 +353,7 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, project.companyId);
+    assertSquadAccess(req, project.squadId);
 
     const workspace = project.workspaces.find((entry) => entry.id === workspaceId) ?? null;
     if (!workspace) {
@@ -371,7 +371,7 @@ export function projectRoutes(db: Db) {
     }
 
     await assertCanManageProjectWorkspaceRuntimeServices(db, req, {
-      companyId: project.companyId,
+      squadId: project.squadId,
       projectWorkspaceId: workspace.id,
     });
 
@@ -430,7 +430,7 @@ export function projectRoutes(db: Db) {
     }
 
     const actor = getActorInfo(req);
-    const recorder = workspaceOperations.createRecorder({ companyId: project.companyId });
+    const recorder = workspaceOperations.createRecorder({ squadId: project.squadId });
     let runtimeServiceCount = workspace.runtimeServices?.length ?? 0;
     let stdout = "";
     let stderr = "";
@@ -458,7 +458,7 @@ export function projectRoutes(db: Db) {
             actor: {
               id: actor.agentId ?? null,
               name: actor.actorType === "user" ? "Board" : "Agent",
-              companyId: project.companyId,
+              squadId: project.squadId,
             },
             issue: null,
             workspace: {
@@ -513,7 +513,7 @@ export function projectRoutes(db: Db) {
             actor: {
               id: actor.agentId ?? null,
               name: actor.actorType === "user" ? "Board" : "Agent",
-              companyId: project.companyId,
+              squadId: project.squadId,
             },
             issue: null,
             workspace: {
@@ -590,7 +590,7 @@ export function projectRoutes(db: Db) {
     const updatedWorkspace = (await svc.listWorkspaces(project.id)).find((entry) => entry.id === workspace.id) ?? workspace;
 
     await logActivity(db, {
-      companyId: project.companyId,
+      squadId: project.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -625,7 +625,7 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     const workspace = await svc.removeWorkspace(id, workspaceId);
     if (!workspace) {
       res.status(404).json({ error: "Project workspace not found" });
@@ -634,7 +634,7 @@ export function projectRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -657,7 +657,7 @@ export function projectRoutes(db: Db) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     const project = await svc.remove(id);
     if (!project) {
       res.status(404).json({ error: "Project not found" });
@@ -666,7 +666,7 @@ export function projectRoutes(db: Db) {
 
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: project.companyId,
+      squadId: project.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,

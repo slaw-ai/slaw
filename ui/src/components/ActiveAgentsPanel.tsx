@@ -51,7 +51,7 @@ function isRunActive(run: LiveRunForIssue): boolean {
 }
 
 interface ActiveAgentsPanelProps {
-  companyId: string;
+  squadId: string;
   title?: string;
   minRunCount?: number;
   fetchLimit?: number;
@@ -64,7 +64,7 @@ interface ActiveAgentsPanelProps {
 }
 
 export function ActiveAgentsPanel({
-  companyId,
+  squadId,
   title = "Agents",
   minRunCount = MIN_DASHBOARD_RUNS,
   fetchLimit,
@@ -76,8 +76,8 @@ export function ActiveAgentsPanel({
   showMoreLink = true,
 }: ActiveAgentsPanelProps) {
   const { data: liveRuns } = useQuery({
-    queryKey: [...queryKeys.liveRuns(companyId), queryScope, { minRunCount, fetchLimit }],
-    queryFn: () => heartbeatsApi.liveRunsForCompany(companyId, { minCount: minRunCount, limit: fetchLimit }),
+    queryKey: [...queryKeys.liveRuns(squadId), queryScope, { minRunCount, fetchLimit }],
+    queryFn: () => heartbeatsApi.liveRunsForSquad(squadId, { minCount: minRunCount, limit: fetchLimit }),
   });
 
   const runs = liveRuns ?? [];
@@ -108,7 +108,7 @@ export function ActiveAgentsPanel({
 
   const { transcriptByRun, hasOutputForRun } = useLiveRunTranscripts({
     runs: visibleRuns,
-    companyId,
+    squadId,
     maxChunksPerRun: DASHBOARD_MAX_CHUNKS_PER_RUN,
     logPollIntervalMs: DASHBOARD_LOG_POLL_INTERVAL_MS,
     logReadLimitBytes: DASHBOARD_LOG_READ_LIMIT_BYTES,
@@ -129,7 +129,7 @@ export function ActiveAgentsPanel({
           {visibleRuns.map((run) => (
             <AgentRunCard
               key={run.id}
-              companyId={companyId}
+              squadId={squadId}
               run={run}
               issue={run.issueId ? issueById.get(run.issueId) : undefined}
               transcript={transcriptByRun.get(run.id) ?? EMPTY_TRANSCRIPT}
@@ -152,7 +152,7 @@ export function ActiveAgentsPanel({
 }
 
 const AgentRunCard = memo(function AgentRunCard({
-  companyId,
+  squadId,
   run,
   issue,
   transcript,
@@ -160,7 +160,7 @@ const AgentRunCard = memo(function AgentRunCard({
   isActive,
   className,
 }: {
-  companyId: string;
+  squadId: string;
   run: LiveRunForIssue;
   issue?: Issue;
   transcript: TranscriptEntry[];
@@ -230,7 +230,7 @@ const AgentRunCard = memo(function AgentRunCard({
           run={run}
           transcript={transcript}
           hasOutput={hasOutput}
-          companyId={companyId}
+          squadId={squadId}
         />
       </div>
     </div>

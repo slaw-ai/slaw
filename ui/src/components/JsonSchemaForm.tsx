@@ -490,7 +490,7 @@ EnumField.displayName = "EnumField";
 
 /**
  * Specialized field for secret-ref values. Renders a picker for existing
- * company secrets plus a raw-value fallback. A UUID-shaped value is treated
+ * squad secrets plus a raw-value fallback. A UUID-shaped value is treated
  * as a bound secret reference; anything else is a raw value that the server
  * converts to a stored secret on save.
  */
@@ -633,7 +633,7 @@ const SecretField = React.memo(({
       label={label}
       description={
         description ||
-        "Pick an existing company secret, or paste a raw value (Slaw will store it as a secret on save)."
+        "Pick an existing squad secret, or paste a raw value (Slaw will store it as a secret on save)."
       }
       required={isRequired}
       error={error}

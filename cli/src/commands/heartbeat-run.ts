@@ -224,7 +224,7 @@ export async function heartbeatRun(opts: HeartbeatRunOptions): Promise<void> {
     }
 
       const runList = (await api.get<(HeartbeatRun | null)[]>(
-        `/api/companies/${agent.companyId}/heartbeat-runs?agentId=${agent.id}`,
+        `/api/squads/${agent.squadId}/heartbeat-runs?agentId=${agent.id}`,
       )) || [];
       const currentRun = runList.find((r) => r && r.id === activeRunId) ?? null;
 

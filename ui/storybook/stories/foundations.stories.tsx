@@ -190,7 +190,7 @@ function FoundationsMatrix() {
                   <span>
                     <span className="font-medium">Require board approval for new agents</span>
                     <span className="mt-1 block text-xs text-muted-foreground">
-                      Mirrors the company-level governance control.
+                      Mirrors the squad-level governance control.
                     </span>
                   </span>
                 </label>

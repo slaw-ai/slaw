@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { companies, createDb } from "@slaw/db";
+import { squads, createDb } from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -24,7 +24,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let app!: ReturnType<typeof createApp>;
-  let companyId!: string;
+  let squadId!: string;
 
   const title = "验证中文任务";
   const description = [
@@ -53,11 +53,11 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("slaw-multilingual-issues-");
     db = createDb(tempDb.connectionString);
-    companyId = randomUUID();
-    app = createApp(companyId);
+    squadId = randomUUID();
+    app = createApp(squadId);
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Multilingual tenant",
       issuePrefix: "LNG",
       requireBoardApprovalForNewAgents: false,
@@ -82,15 +82,15 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
     };
   }
 
-  function createApp(companyId: string) {
+  function createApp(squadId: string) {
     const app = express();
     app.use(express.json());
     app.use((req, _res, next) => {
       (req as any).actor = {
         type: "board",
         userId: "cloud-user-1",
-        companyIds: [companyId],
-        memberships: [{ companyId, membershipRole: "owner", status: "active" }],
+        squadIds: [squadId],
+        memberships: [{ squadId, membershipRole: "owner", status: "active" }],
         source: "cloud_tenant",
         isInstanceAdmin: true,
       };
@@ -103,7 +103,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
 
   it("creates an issue with multilingual title and description", async () => {
     const createRes = await request(app)
-      .post(`/api/companies/${companyId}/issues`)
+      .post(`/api/squads/${squadId}/issues`)
       .send({
         title,
         description,
@@ -129,7 +129,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
   });
 
   it("finds the issue by Chinese search text", async () => {
-    const searchRes = await request(app).get(`/api/companies/${companyId}/issues`).query({ q: "中文" });
+    const searchRes = await request(app).get(`/api/squads/${squadId}/issues`).query({ q: "中文" });
     expect(searchRes.status, JSON.stringify(searchRes.body)).toBe(200);
     expect(searchRes.body.map((issue: { identifier: string }) => issue.identifier)).toContain("LNG-1");
   });

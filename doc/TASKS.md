@@ -132,7 +132,7 @@ team.
 - Labels can be team-scoped or workspace-wide
 - Projects can span multiple teams
 
-In our context (AI company), teams map to functional areas. Each agent reports
+In our context (AI squad), teams map to functional areas. Each agent reports
 to a team based on role.
 
 ---

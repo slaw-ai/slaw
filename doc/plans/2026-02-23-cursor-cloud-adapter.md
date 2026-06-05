@@ -185,7 +185,7 @@ Flow:
 
 1. Before launch/follow-up, Slaw mints a one-time bootstrap token bound to:
    - `agentId`
-   - `companyId`
+   - `squadId`
    - `runId`
    - short TTL (for example 10 minutes)
 2. Adapter includes only:

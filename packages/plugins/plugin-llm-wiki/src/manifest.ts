@@ -92,7 +92,7 @@ const manifest: SlawPluginManifestV1 = {
     "database.namespace.migrate",
     "database.namespace.read",
     "database.namespace.write",
-    "companies.read",
+    "squads.read",
     "projects.read",
     "projects.managed",
     "skills.managed",
@@ -129,13 +129,13 @@ const manifest: SlawPluginManifestV1 = {
   database: {
     namespaceSlug: "llm_wiki",
     migrationsDir: "migrations",
-    coreReadTables: ["companies", "issues", "projects", "agents"]
+    coreReadTables: ["squads", "issues", "projects", "agents"]
   },
   localFolders: [
     {
       folderKey: WIKI_ROOT_FOLDER_KEY,
       displayName: "Wiki root",
-      description: "Company-scoped local folder that stores raw sources, wiki pages, Slaw project standups under wiki/projects/, AGENTS.md, IDEA.md, wiki/index.md, and wiki/log.md.",
+      description: "Squad-scoped local folder that stores raw sources, wiki pages, Slaw project standups under wiki/projects/, AGENTS.md, IDEA.md, wiki/index.md, and wiki/log.md.",
       access: "readWrite",
       requiredDirectories: [
         "raw",
@@ -201,7 +201,7 @@ const manifest: SlawPluginManifestV1 = {
       skillKey: WIKI_MAINTAINER_SKILL_KEY,
       displayName: "LLM Wiki Maintainer",
       slug: "llm-wiki-maintainer",
-      description: "Use the LLM Wiki plugin tools to maintain a cited local company wiki.",
+      description: "Use the LLM Wiki plugin tools to maintain a cited local squad wiki.",
       markdown: skillMarkdown(WIKI_MAINTAINER_SKILL_KEY)
     },
     {
@@ -331,13 +331,13 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           query: { type: "string" },
           limit: { type: "number" }
         },
-        required: ["companyId", "wikiId", "query"]
+        required: ["squadId", "wikiId", "query"]
       }
     },
     {
@@ -347,12 +347,12 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           path: { type: "string" }
         },
-        required: ["companyId", "wikiId", "path"]
+        required: ["squadId", "wikiId", "path"]
       }
     },
     {
@@ -362,7 +362,7 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           path: { type: "string" },
@@ -370,7 +370,7 @@ const manifest: SlawPluginManifestV1 = {
           expectedHash: { type: "string" },
           summary: { type: "string" }
         },
-        required: ["companyId", "wikiId", "path", "contents"]
+        required: ["squadId", "wikiId", "path", "contents"]
       }
     },
     {
@@ -380,14 +380,14 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           path: { type: "string" },
           contents: { type: "string" },
           summary: { type: "string" }
         },
-        required: ["companyId", "wikiId", "path", "contents"]
+        required: ["squadId", "wikiId", "path", "contents"]
       }
     },
     {
@@ -397,12 +397,12 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           limit: { type: "number" }
         },
-        required: ["companyId", "wikiId"]
+        required: ["squadId", "wikiId"]
       }
     },
     {
@@ -412,12 +412,12 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           rawPath: { type: "string" }
         },
-        required: ["companyId", "wikiId", "rawPath"]
+        required: ["squadId", "wikiId", "rawPath"]
       }
     },
     {
@@ -427,12 +427,12 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           entry: { type: "string" }
         },
-        required: ["companyId", "wikiId", "entry"]
+        required: ["squadId", "wikiId", "entry"]
       }
     },
     {
@@ -442,13 +442,13 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           contents: { type: "string" },
           expectedHash: { type: "string" }
         },
-        required: ["companyId", "wikiId", "contents"]
+        required: ["squadId", "wikiId", "contents"]
       }
     },
     {
@@ -458,12 +458,12 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" },
           path: { type: "string" }
         },
-        required: ["companyId", "wikiId", "path"]
+        required: ["squadId", "wikiId", "path"]
       }
     },
     {
@@ -473,11 +473,11 @@ const manifest: SlawPluginManifestV1 = {
       parametersSchema: {
         type: "object",
         properties: {
-          companyId: { type: "string" },
+          squadId: { type: "string" },
           wikiId: { type: "string" },
           spaceSlug: { type: "string" }
         },
-        required: ["companyId", "wikiId"]
+        required: ["squadId", "wikiId"]
       }
     }
   ],
@@ -488,7 +488,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/overview",
       auth: "board-or-agent",
       capability: "api.routes.register",
-      companyResolution: { from: "query", key: "companyId" }
+      squadResolution: { from: "query", key: "squadId" }
     },
     {
       routeKey: "bootstrap",
@@ -496,7 +496,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/bootstrap",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "capture-source",
@@ -504,7 +504,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/sources",
       auth: "board-or-agent",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "spaces",
@@ -512,7 +512,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/spaces",
       auth: "board-or-agent",
       capability: "api.routes.register",
-      companyResolution: { from: "query", key: "companyId" }
+      squadResolution: { from: "query", key: "squadId" }
     },
     {
       routeKey: "create-space",
@@ -520,7 +520,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/spaces",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "update-space",
@@ -528,7 +528,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/spaces/:spaceSlug",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "bootstrap-space",
@@ -536,7 +536,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/spaces/:spaceSlug/bootstrap",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "archive-space",
@@ -544,7 +544,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/spaces/:spaceSlug/archive",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "operations",
@@ -552,7 +552,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/operations",
       auth: "board-or-agent",
       capability: "api.routes.register",
-      companyResolution: { from: "query", key: "companyId" }
+      squadResolution: { from: "query", key: "squadId" }
     },
     {
       routeKey: "start-query",
@@ -560,7 +560,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/query-sessions",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     },
     {
       routeKey: "file-as-page",
@@ -568,7 +568,7 @@ const manifest: SlawPluginManifestV1 = {
       path: "/file-as-page",
       auth: "board",
       capability: "api.routes.register",
-      companyResolution: { from: "body", key: "companyId" }
+      squadResolution: { from: "body", key: "squadId" }
     }
   ],
   ui: {

@@ -8,10 +8,10 @@ import { projectsApi } from "../api/projects";
 import { issuesApi } from "../api/issues";
 import { heartbeatsApi } from "../api/heartbeats";
 import { accessApi } from "../api/access";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
-import { buildMarkdownMentionOptions } from "../lib/company-members";
+import { buildMarkdownMentionOptions } from "../lib/squad-members";
 import { queryKeys } from "../lib/queryKeys";
 import { groupBy } from "../lib/groupBy";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
@@ -200,7 +200,7 @@ function buildRoutinesTabHref(tab: RoutinesTab) {
 }
 
 export function Routines() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -235,8 +235,8 @@ export function Routines() {
     catchUpPolicy: "skip_missed",
     variables: [],
   });
-  const routineViewStateKey = selectedCompanyId
-    ? `slaw:routines-view:${selectedCompanyId}`
+  const routineViewStateKey = selectedSquadId
+    ? `slaw:routines-view:${selectedSquadId}`
     : "slaw:routines-view";
   const [routineViewState, setRoutineViewState] = useState<RoutineViewState>(() => getRoutineViewState(routineViewStateKey));
 
@@ -249,34 +249,34 @@ export function Routines() {
   }, [routineViewStateKey]);
 
   const { data: routines, isLoading, error } = useQuery({
-    queryKey: queryKeys.routines.list(selectedCompanyId!),
-    queryFn: () => routinesApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.routines.list(selectedSquadId!),
+    queryFn: () => routinesApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.projects.list(selectedSquadId!),
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: routineExecutionIssues, isLoading: recentRunsLoading, error: recentRunsError } = useQuery({
-    queryKey: [...queryKeys.issues.list(selectedCompanyId!), "routine-executions"],
-    queryFn: () => issuesApi.list(selectedCompanyId!, { originKind: "routine_execution" }),
-    enabled: !!selectedCompanyId && activeTab === "runs",
+    queryKey: [...queryKeys.issues.list(selectedSquadId!), "routine-executions"],
+    queryFn: () => issuesApi.list(selectedSquadId!, { originKind: "routine_execution" }),
+    enabled: !!selectedSquadId && activeTab === "runs",
   });
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(selectedCompanyId!),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
-    enabled: !!selectedCompanyId && activeTab === "runs",
+    queryKey: queryKeys.liveRuns(selectedSquadId!),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(selectedSquadId!),
+    enabled: !!selectedSquadId && activeTab === "runs",
     refetchInterval: 5000,
   });
 
@@ -288,13 +288,13 @@ export function Routines() {
     return buildMarkdownMentionOptions({
       agents,
       projects,
-      members: companyMembers?.users,
+      members: squadMembers?.users,
     });
-  }, [agents, companyMembers?.users, projects]);
+  }, [agents, squadMembers?.users, projects]);
 
   const createRoutine = useMutation({
     mutationFn: () =>
-      routinesApi.create(selectedCompanyId!, buildRoutineMutationPayload(draft)),
+      routinesApi.create(selectedSquadId!, buildRoutineMutationPayload(draft)),
     onSuccess: async (routine) => {
       setDraft({
         title: "",
@@ -308,7 +308,7 @@ export function Routines() {
       });
       setComposerOpen(false);
       setAdvancedOpen(false);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) });
       pushToast({
         title: "Routine created",
         body: routine.assigneeAgentId
@@ -323,7 +323,7 @@ export function Routines() {
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       issuesApi.update(id, data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: [...queryKeys.issues.list(selectedCompanyId!), "routine-executions"] });
+      await queryClient.invalidateQueries({ queryKey: [...queryKeys.issues.list(selectedSquadId!), "routine-executions"] });
     },
   });
 
@@ -334,7 +334,7 @@ export function Routines() {
     },
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(variables.id) }),
       ]);
     },
@@ -369,7 +369,7 @@ export function Routines() {
     onSuccess: async (_, { id }) => {
       setRunDialogRoutine(null);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedSquadId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(id) }),
       ]);
     },
@@ -478,8 +478,8 @@ export function Routines() {
     });
   }
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message="Select a company to view routines." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={Repeat} message="Select a squad to view routines." />;
   }
 
   if (isLoading) {
@@ -936,7 +936,7 @@ export function Routines() {
         onOpenChange={(next) => {
           if (!next) setRunDialogRoutine(null);
         }}
-        companyId={selectedCompanyId}
+        squadId={selectedSquadId}
         routineName={runDialogRoutine?.title ?? null}
         agents={agents ?? []}
         projects={projects ?? []}

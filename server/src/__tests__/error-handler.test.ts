@@ -41,7 +41,7 @@ describe("errorHandler", () => {
     const req = {
       ...makeReq(),
       method: "POST",
-      originalUrl: "/api/companies/import",
+      originalUrl: "/api/squads/import",
       actor: {
         type: "board",
         userId: "cloud-user",

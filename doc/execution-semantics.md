@@ -243,7 +243,7 @@ An explicit recovery action is a typed liveness repair path for a source issue. 
 
 A valid recovery action must name:
 
-- the source issue and company
+- the source issue and squad
 - the recovery kind and idempotency fingerprint
 - the recovery owner, plus previous or return owner when ownership may temporarily shift
 - the cause, bounded evidence, and next action
@@ -447,12 +447,12 @@ Active-run watchdog work is source-aware. Before the watchdog creates, refreshes
 
 Fold watchdog work when all of these are true:
 
-- the run is linked to a source issue in the same company
+- the run is linked to a source issue in the same squad
 - the source issue is terminal (`done` or `cancelled`)
 - durable source activity from the same run proves the source issue reached that terminal disposition after the stale-run or output-silence evidence point
 - there is no independent evidence that the still-running or detached process is doing harmful work, still owns external cleanup that needs an operator decision, or needs a separate security/ownership review
 
-Folding means resolving or cancelling the watchdog recovery action or issue-backed evaluation through the explicit recovery lifecycle. It must preserve the run id, source issue, detected silence or detached-process evidence, terminal source activity, decision reason, and best-effort process cleanup result. It must be idempotent for the `(companyId, runId, sourceIssueId)` signal and must not recursively recover the watchdog evaluation issue itself.
+Folding means resolving or cancelling the watchdog recovery action or issue-backed evaluation through the explicit recovery lifecycle. It must preserve the run id, source issue, detected silence or detached-process evidence, terminal source activity, decision reason, and best-effort process cleanup result. It must be idempotent for the `(squadId, runId, sourceIssueId)` signal and must not recursively recover the watchdog evaluation issue itself.
 
 Do not fold watchdog work only because the run is quiet. The watchdog must still create or continue reviewer work when:
 
@@ -460,7 +460,7 @@ Do not fold watchdog work only because the run is quiet. The watchdog must still
 - the source issue remains `in_progress` after a successful run with no valid disposition, because the successful-run handoff path owns that bounded correction
 - the run terminated or disappeared while the source issue remains `in_progress` without a live path, because stranded assigned recovery owns that continuity repair
 - the source issue is terminal but there is no durable same-run terminal activity after the stale evidence point
-- there is independent evidence that the process may still be mutating external state, leaking resources, crossing company or ownership boundaries, or otherwise needs operator review
+- there is independent evidence that the process may still be mutating external state, leaking resources, crossing squad or ownership boundaries, or otherwise needs operator review
 
 In the normal non-terminal case, critical silence can still create issue-backed evaluation work and block the source issue when blocking is necessary for correctness. In the source-resolved case, a completed source issue should not acquire a new manager review or blocker merely because an old run handle stayed active; only real unresolved work should block work.
 

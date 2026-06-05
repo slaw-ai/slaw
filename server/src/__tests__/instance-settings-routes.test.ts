@@ -7,7 +7,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
   getExperimental: vi.fn(),
   updateGeneral: vi.fn(),
   updateExperimental: vi.fn(),
-  listCompanyIds: vi.fn(),
+  listSquadIds: vi.fn(),
 }));
 const mockHeartbeatService = vi.hoisted(() => ({
   buildIssueGraphLivenessAutoRecoveryPreview: vi.fn(),
@@ -52,7 +52,7 @@ describe("instance settings routes", () => {
     mockInstanceSettingsService.getExperimental.mockReset();
     mockInstanceSettingsService.updateGeneral.mockReset();
     mockInstanceSettingsService.updateExperimental.mockReset();
-    mockInstanceSettingsService.listCompanyIds.mockReset();
+    mockInstanceSettingsService.listSquadIds.mockReset();
     mockHeartbeatService.buildIssueGraphLivenessAutoRecoveryPreview.mockReset();
     mockHeartbeatService.reconcileIssueGraphLiveness.mockReset();
     mockLogActivity.mockReset();
@@ -90,7 +90,7 @@ describe("instance settings routes", () => {
         issueGraphLivenessAutoRecoveryLookbackHours: 24,
       },
     });
-    mockInstanceSettingsService.listCompanyIds.mockResolvedValue(["company-1", "company-2"]);
+    mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1", "squad-2"]);
     mockHeartbeatService.buildIssueGraphLivenessAutoRecoveryPreview.mockResolvedValue({
       lookbackHours: 24,
       cutoff: "2026-04-26T12:00:00.000Z",
@@ -284,7 +284,7 @@ describe("instance settings routes", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app).get("/api/instance/settings/general");
@@ -297,13 +297,13 @@ describe("instance settings routes", () => {
     });
   });
 
-  it("rejects signed-in users without company access from reading general settings", async () => {
+  it("rejects signed-in users without squad access from reading general settings", async () => {
     const app = await createApp({
       type: "board",
       userId: "user-2",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: [],
+      squadIds: [],
       memberships: [],
     });
 
@@ -319,7 +319,7 @@ describe("instance settings routes", () => {
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
     });
 
     const res = await request(app)
@@ -334,7 +334,7 @@ describe("instance settings routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
     });
 

@@ -23,8 +23,8 @@ import { Input } from "@/components/ui/input";
 import { cloudUpstreamsApi } from "@/api/cloudUpstreams";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
-import { useCompany } from "@/context/CompanyContext";
-import { applyCompanyPrefix, extractCompanyPrefixFromPath } from "@/lib/company-routes";
+import { useSquad } from "@/context/SquadContext";
+import { applySquadPrefix, extractSquadPrefixFromPath } from "@/lib/squad-routes";
 import { Link, useLocation } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -64,7 +64,7 @@ const ACTIVATION_CATEGORIES: Array<{
 ];
 
 export function CloudUpstream() {
-  const { selectedCompany, selectedCompanyId } = useCompany();
+  const { selectedSquad, selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const location = useLocation();
@@ -76,11 +76,11 @@ export function CloudUpstream() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings", href: "/company/settings" },
+      { label: selectedSquad?.name ?? "Squad", href: "/dashboard" },
+      { label: "Settings", href: "/squad/settings" },
       { label: "Cloud upstream" },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs]);
+  }, [selectedSquad?.name, setBreadcrumbs]);
 
   const experimentalQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -89,9 +89,9 @@ export function CloudUpstream() {
   const cloudSyncEnabled = experimentalQuery.data?.enableCloudSync === true;
 
   const upstreamQuery = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.cloudUpstreams(selectedCompanyId) : ["cloud-upstreams", "__disabled__"],
-    queryFn: () => cloudUpstreamsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && cloudSyncEnabled,
+    queryKey: selectedSquadId ? queryKeys.cloudUpstreams(selectedSquadId) : ["cloud-upstreams", "__disabled__"],
+    queryFn: () => cloudUpstreamsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && cloudSyncEnabled,
   });
 
   const connection = upstreamQuery.data?.connections[0] ?? null;
@@ -103,9 +103,9 @@ export function CloudUpstream() {
   const callbackError = callbackParams.get("error");
 
   const settingsPath = useMemo(() => {
-    const pathPrefix = extractCompanyPrefixFromPath(location.pathname);
-    return applyCompanyPrefix("/company/settings/cloud-upstream", pathPrefix ?? selectedCompany?.issuePrefix ?? null);
-  }, [location.pathname, selectedCompany?.issuePrefix]);
+    const pathPrefix = extractSquadPrefixFromPath(location.pathname);
+    return applySquadPrefix("/squad/settings/cloud-upstream", pathPrefix ?? selectedSquad?.issuePrefix ?? null);
+  }, [location.pathname, selectedSquad?.issuePrefix]);
 
   const finishMutation = useMutation({
     mutationFn: (input: { pendingConnectionId: string; code: string; state: string }) =>
@@ -145,7 +145,7 @@ export function CloudUpstream() {
   const startMutation = useMutation({
     mutationFn: () =>
       cloudUpstreamsApi.startConnect({
-        companyId: selectedCompanyId!,
+        squadId: selectedSquadId!,
         remoteUrl,
         redirectUri: `${window.location.origin}${settingsPath}`,
       }),
@@ -158,8 +158,8 @@ export function CloudUpstream() {
   });
 
   const previewMutation = useMutation({
-    mutationFn: (input: { connectionId: string; companyId: string }) =>
-      cloudUpstreamsApi.preview(input.connectionId, { companyId: input.companyId }),
+    mutationFn: (input: { connectionId: string; squadId: string }) =>
+      cloudUpstreamsApi.preview(input.connectionId, { squadId: input.squadId }),
     onSuccess: (nextPreview) => {
       setPreview(nextPreview);
       setActionError(null);
@@ -168,9 +168,9 @@ export function CloudUpstream() {
   });
 
   const runMutation = useMutation({
-    mutationFn: (input: { connectionId: string; companyId: string; retryOfRunId?: string | null }) =>
+    mutationFn: (input: { connectionId: string; squadId: string; retryOfRunId?: string | null }) =>
       cloudUpstreamsApi.createRun(input.connectionId, {
-        companyId: input.companyId,
+        squadId: input.squadId,
         retryOfRunId: input.retryOfRunId ?? null,
       }),
     onSuccess: async (run) => {
@@ -186,7 +186,7 @@ export function CloudUpstream() {
   const activationMutation = useMutation({
     mutationFn: (input: { run: CloudUpstreamRun; entityType: CloudUpstreamActivationEntityType }) =>
       cloudUpstreamsApi.activateEntities(input.run.connectionId, input.run.id, {
-        companyId: input.run.companyId,
+        squadId: input.run.squadId,
         entityType: input.entityType,
       }),
     onSuccess: async (run) => {
@@ -199,12 +199,12 @@ export function CloudUpstream() {
   });
 
   async function invalidateUpstreams() {
-    if (!selectedCompanyId) return;
-    await queryClient.invalidateQueries({ queryKey: queryKeys.cloudUpstreams(selectedCompanyId) });
+    if (!selectedSquadId) return;
+    await queryClient.invalidateQueries({ queryKey: queryKeys.cloudUpstreams(selectedSquadId) });
   }
 
-  if (!selectedCompanyId || !selectedCompany) {
-    return <div className="text-sm text-muted-foreground">Select a company to configure cloud upstream.</div>;
+  if (!selectedSquadId || !selectedSquad) {
+    return <div className="text-sm text-muted-foreground">Select a squad to configure cloud upstream.</div>;
   }
 
   if (experimentalQuery.isLoading) {
@@ -238,7 +238,7 @@ export function CloudUpstream() {
             <h1 className="text-lg font-semibold">Cloud upstream</h1>
           </div>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            Push {selectedCompany.name} into a Slaw Cloud stack. Automations stay paused until activation.
+            Push {selectedSquad.name} into a Slaw Cloud stack. Automations stay paused until activation.
           </p>
         </div>
         {connection?.target.origin ? (
@@ -284,7 +284,7 @@ export function CloudUpstream() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => previewMutation.mutate({ connectionId: connection.id, companyId: connection.companyId })}
+                  onClick={() => previewMutation.mutate({ connectionId: connection.id, squadId: connection.squadId })}
                   disabled={previewMutation.isPending || connection.tokenStatus !== "connected"}
                 >
                   {previewMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
@@ -315,7 +315,7 @@ export function CloudUpstream() {
           <div className="flex items-center justify-between gap-3">
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Preview</div>
             <Button
-              onClick={() => runMutation.mutate({ connectionId: preview.connectionId, companyId: preview.sourceCompanyId })}
+              onClick={() => runMutation.mutate({ connectionId: preview.connectionId, squadId: preview.sourceSquadId })}
               disabled={runMutation.isPending || !preview.schemaCompatible}
             >
               {runMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudUpload className="h-4 w-4" />}
@@ -343,7 +343,7 @@ export function CloudUpstream() {
                   size="sm"
                   onClick={() => runMutation.mutate({
                     connectionId: latestRun.connectionId,
-                    companyId: latestRun.companyId,
+                    squadId: latestRun.squadId,
                     retryOfRunId: latestRun.id,
                   })}
                   disabled={runMutation.isPending}
@@ -355,7 +355,7 @@ export function CloudUpstream() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => runMutation.mutate({ connectionId: latestRun.connectionId, companyId: latestRun.companyId })}
+                  onClick={() => runMutation.mutate({ connectionId: latestRun.connectionId, squadId: latestRun.squadId })}
                   disabled={runMutation.isPending}
                 >
                   <RefreshCcw className="h-4 w-4" />
@@ -434,8 +434,8 @@ function PreviewProgressHint() {
   const message = elapsed < 15
     ? "Building manifest..."
     : elapsed < 45
-      ? `Building manifest... ${elapsed}s. Large companies can take up to a minute.`
-      : `Still building manifest... ${elapsed}s. PAP-scale companies routinely take ~60s.`;
+      ? `Building manifest... ${elapsed}s. Large squads can take up to a minute.`
+      : `Still building manifest... ${elapsed}s. PAP-scale squads routinely take ~60s.`;
   return <div className="text-xs text-muted-foreground">{message}</div>;
 }
 
@@ -640,7 +640,7 @@ function formatBytes(value: number) {
 function previewErrorMessage(error: unknown): string {
   const code = error instanceof Error ? error.message : null;
   if (code === "payload_too_large" || code === "bad_request") {
-    return "Local company is too large to preview as a single request. Click Push to continue (the Push step uploads in chunks), or see the docs for chunked-preview options.";
+    return "Local squad is too large to preview as a single request. Click Push to continue (the Push step uploads in chunks), or see the docs for chunked-preview options.";
   }
   return code ?? "Failed to preview push.";
 }

@@ -35,7 +35,7 @@ These are set automatically by the server when invoking agents:
 | Variable | Description |
 |----------|-------------|
 | `SLAW_AGENT_ID` | Agent's unique ID |
-| `SLAW_COMPANY_ID` | Company ID |
+| `SLAW_SQUAD_ID` | Squad ID |
 | `SLAW_API_URL` | Slaw API base URL (inherits the server-level value; see Server Configuration above) |
 | `SLAW_API_KEY` | Short-lived JWT for API auth |
 | `SLAW_RUN_ID` | Current heartbeat run ID |

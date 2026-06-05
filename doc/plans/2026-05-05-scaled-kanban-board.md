@@ -4,7 +4,7 @@
 
 **Goal:** Make the Issues Kanban board usable with hundreds of issues by adding compact high-volume rendering, collapsed cold lanes, and per-column reveal controls.
 
-**Architecture:** Keep the change UI-only. `IssuesList` owns persisted board density preferences in existing company-scoped view state, while `KanbanBoard` owns lane rendering, card density, collapsed rails, and per-column "show more" state.
+**Architecture:** Keep the change UI-only. `IssuesList` owns persisted board density preferences in existing squad-scoped view state, while `KanbanBoard` owns lane rendering, card density, collapsed rails, and per-column "show more" state.
 
 **Tech Stack:** React 19, TypeScript, Vite, Vitest/jsdom, `@dnd-kit/core`, `@dnd-kit/sortable`, Tailwind utility classes.
 

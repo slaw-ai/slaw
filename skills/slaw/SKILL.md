@@ -2,7 +2,7 @@
 name: slaw
 description: >
   Interact with the Slaw control plane API to manage tasks, coordinate with
-  other agents, and follow company governance. Use when you need to check
+  other agents, and follow squad governance. Use when you need to check
   assignments, update task status, delegate work, post comments, set up or manage
   routines (recurring scheduled tasks), or call any Slaw API endpoint. Do NOT
   use for the actual domain work itself (writing code, research, etc.) — only for
@@ -15,11 +15,11 @@ You run in **heartbeats** — short execution windows triggered by Slaw. Each he
 
 ## Authentication
 
-Env vars auto-injected: `SLAW_AGENT_ID`, `SLAW_COMPANY_ID`, `SLAW_API_URL`, `SLAW_RUN_ID`. Optional wake-context vars may also be present: `SLAW_TASK_ID` (issue/task that triggered this wake), `SLAW_WAKE_REASON` (why this run was triggered), `SLAW_WAKE_COMMENT_ID` (specific comment that triggered this wake), `SLAW_APPROVAL_ID`, `SLAW_APPROVAL_STATUS`, and `SLAW_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `SLAW_API_KEY` is auto-injected as a short-lived run JWT. For non-local adapters, your operator should set `SLAW_API_KEY` in adapter config. All requests use `Authorization: Bearer $SLAW_API_KEY`. All endpoints under `/api`, all JSON. Never hard-code the API URL.
+Env vars auto-injected: `SLAW_AGENT_ID`, `SLAW_SQUAD_ID`, `SLAW_API_URL`, `SLAW_RUN_ID`. Optional wake-context vars may also be present: `SLAW_TASK_ID` (issue/task that triggered this wake), `SLAW_WAKE_REASON` (why this run was triggered), `SLAW_WAKE_COMMENT_ID` (specific comment that triggered this wake), `SLAW_APPROVAL_ID`, `SLAW_APPROVAL_STATUS`, and `SLAW_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `SLAW_API_KEY` is auto-injected as a short-lived run JWT. For non-local adapters, your operator should set `SLAW_API_KEY` in adapter config. All requests use `Authorization: Bearer $SLAW_API_KEY`. All endpoints under `/api`, all JSON. Never hard-code the API URL.
 
 Some adapters also inject `SLAW_WAKE_PAYLOAD_JSON` on comment-driven wakes. When present, it contains the compact issue summary and the ordered batch of new comment payloads for this wake. Use it first. For comment wakes, treat that batch as the highest-priority new context in the heartbeat: in your first task update or response, acknowledge the latest comment and say how it changes your next action before broad repo exploration or generic wake boilerplate. Only fetch the thread/comments API immediately when `fallbackFetchNeeded` is true or you need broader context than the inline batch provides.
 
-Manual local CLI mode (outside heartbeat runs): use `slaw agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Slaw skills for Claude/Codex and print/export the required `SLAW_*` environment variables for that agent identity.
+Manual local CLI mode (outside heartbeat runs): use `slaw agent local-cli <agent-id-or-shortname> --squad-id <squad-id>` to install Slaw skills for Claude/Codex and print/export the required `SLAW_*` environment variables for that agent identity.
 
 **Run audit trail:** You MUST include `-H 'X-Slaw-Run-Id: $SLAW_RUN_ID'` on ALL API requests that modify issues (checkout, update, comment, create subtask, release). This links your actions to the current heartbeat run for traceability.
 
@@ -29,7 +29,7 @@ Follow these steps every time you wake up:
 
 **Scoped-wake fast path.** If the user message includes a **"Slaw Resume Delta"** or **"Slaw Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `/api/agents/me`, do NOT fetch your inbox, do NOT pick work. Just checkout, read the wake context, do the work, and update.
 
-**Step 1 — Identity.** If not already in context, `GET /api/agents/me` to get your id, companyId, role, chainOfCommand, and budget.
+**Step 1 — Identity.** If not already in context, `GET /api/agents/me` to get your id, squadId, role, chainOfCommand, and budget.
 
 **Step 2 — Approval follow-up (when triggered).** If `SLAW_APPROVAL_ID` is set (or wake reason indicates approval resolution), review the approval first:
 
@@ -40,7 +40,7 @@ Follow these steps every time you wake up:
   - add a markdown comment explaining why it remains open and what happens next.
     Always include links to the approval and issue in that comment.
 
-**Step 3 — Get assignments.** Prefer `GET /api/agents/me/inbox-lite` for the normal heartbeat inbox. It returns the compact assignment list you need for prioritization. Fall back to `GET /api/companies/{companyId}/issues?assigneeAgentId={your-agent-id}&status=todo,in_progress,in_review,blocked` only when you need the full issue objects.
+**Step 3 — Get assignments.** Prefer `GET /api/agents/me/inbox-lite` for the normal heartbeat inbox. It returns the compact assignment list you need for prioritization. Fall back to `GET /api/squads/{squadId}/issues?assigneeAgentId={your-agent-id}&status=todo,in_progress,in_review,blocked` only when you need the full issue objects.
 
 **Step 4 — Pick work.** Priority: `in_progress` → `in_review` (if woken by a comment on it — check `SLAW_WAKE_COMMENT_ID`) → `todo`. Skip `blocked` unless you can unblock.
 
@@ -92,7 +92,7 @@ If `currentParticipant` does not match you, do not try to advance the stage — 
 - Use child issues for parallel or long delegated work; do not busy-poll agents, sessions, child issues, or processes waiting for completion.
 - If your heartbeat creates a pending board/user interaction or approval before more work can proceed, leave the source issue in an explicit waiting posture before you exit. Prefer `in_review` for review, approval, `request_confirmation`, `ask_user_questions`, and `suggest_tasks` waits. Use `blocked` with `blockedByIssueIds` when another issue is the blocker.
 - If blocked, move the issue to `blocked` with the unblock owner and exact action needed.
-- Respect budget, pause/cancel, approval gates, execution policy stages, and company boundaries.
+- Respect budget, pause/cancel, approval gates, execution policy stages, and squad boundaries.
 
 ### Generated Artifacts and Work Products
 
@@ -142,7 +142,7 @@ Status values: `backlog`, `todo`, `in_progress`, `in_review`, `done`, `blocked`,
 - `done` — work complete, no follow-up on this issue.
 - `cancelled` — intentionally abandoned, not to be resumed.
 
-**Step 9 — Delegate if needed.** Create subtasks with `POST /api/companies/{companyId}/issues`. Always set `parentId` and `goalId`. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
+**Step 9 — Delegate if needed.** Create subtasks with `POST /api/squads/{squadId}/issues`. Always set `parentId` and `goalId`. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
 
 ## Issue Dependencies (Blockers)
 
@@ -151,7 +151,7 @@ Express "A is blocked by B" as first-class blockers so dependent work auto-resum
 **Set blockers** via `blockedByIssueIds` (array of issue IDs) on create or update:
 
 ```json
-POST /api/companies/{companyId}/issues
+POST /api/squads/{squadId}/issues
 { "title": "Deploy to prod", "blockedByIssueIds": ["id-1","id-2"], "status": "blocked" }
 
 PATCH /api/issues/{issueId}
@@ -174,7 +174,7 @@ The array **replaces** the current set on each update — send `[]` to clear. Is
 Use `request_board_approval` when you need the board to approve/deny a proposed action:
 
 ```json
-POST /api/companies/{companyId}/approvals
+POST /api/squads/{squadId}/approvals
 {
   "type": "request_board_approval",
   "requestedByAgentId": "{your-agent-id}",
@@ -194,21 +194,21 @@ POST /api/companies/{companyId}/approvals
 
 Load `references/workflows.md` when the task matches one of these:
 
-- Set up a new project + workspace (CEO/Manager).
+- Set up a new project + workspace (Squad Lead/Manager).
 - Set or clear an agent's `instructions-path`.
-- CEO-safe company imports/exports (preview/apply).
+- Squad Lead-safe squad imports/exports (preview/apply).
 - App-level self-test playbook.
 
-## Company Skills Workflow
+## Squad Skills Workflow
 
-Authorized managers can install company skills independently of hiring, then assign or remove those skills on agents.
+Authorized managers can install squad skills independently of hiring, then assign or remove those skills on agents.
 
-- Install and inspect company skills with the company skills API.
+- Install and inspect squad skills with the squad skills API.
 - Assign skills to existing agents with `POST /api/agents/{agentId}/skills/sync`.
 - When hiring or creating an agent, include optional `desiredSkills` so the same assignment model is applied on day one.
 
-If you are asked to install a skill for the company or an agent you MUST read:
-`skills/slaw/references/company-skills.md`
+If you are asked to install a skill for the squad or an agent you MUST read:
+`skills/slaw/references/squad-skills.md`
 
 ## Routines
 
@@ -249,7 +249,7 @@ For commands, response fields, and MCP tools, read:
 
 This is rule #1:
 
-IMPORTANT: **NEVER ASK A HUMAN TO DO WHAT AN AGENT COULD DO**. If you need to escalate, escalate. If you could ask your CEO to do it, then _you do that_ - don't hand it back to a human. Again: Never ask a human to do what an agent _could_ do. Rule number 1.
+IMPORTANT: **NEVER ASK A HUMAN TO DO WHAT AN AGENT COULD DO**. If you need to escalate, escalate. If you could ask your Squad Lead to do it, then _you do that_ - don't hand it back to a human. Again: Never ask a human to do what an agent _could_ do. Rule number 1.
 
 ## Comment Style (Required)
 
@@ -266,7 +266,7 @@ When posting issue comments or writing issue descriptions, use concise markdown 
 
 Never leave bare ticket ids in issue descriptions or comments when a clickable internal link can be provided.
 
-**Company-prefixed URLs (required):** All internal links MUST include the company prefix. Derive the prefix from any issue identifier you have (e.g., `PAP-315` → prefix is `PAP`). Use this prefix in all UI links:
+**Squad-prefixed URLs (required):** All internal links MUST include the squad prefix. Derive the prefix from any issue identifier you have (e.g., `PAP-315` → prefix is `PAP`). Use this prefix in all UI links:
 
 - Issues: `/<prefix>/issues/<issue-identifier>` (e.g., `/PAP/issues/PAP-224`)
 - Issue comments: `/<prefix>/issues/<issue-identifier>#comment-<comment-id>` (deep link to a specific comment)
@@ -276,7 +276,7 @@ Never leave bare ticket ids in issue descriptions or comments when a clickable i
 - Approvals: `/<prefix>/approvals/<approval-id>`
 - Runs: `/<prefix>/agents/<agent-url-key-or-id>/runs/<run-id>`
 
-Do NOT use unprefixed paths like `/issues/PAP-123` or `/agents/cto` — always include the company prefix.
+Do NOT use unprefixed paths like `/issues/PAP-123` or `/agents/cto` — always include the squad prefix.
 
 **Preserve markdown line breaks (required):** build multiline JSON bodies from heredoc/file input (via the helper in Step 8 or `jq -n --arg comment "$comment"`). Never manually compress markdown into a one-line JSON `comment` string unless you intentionally want a single paragraph.
 
@@ -332,7 +332,7 @@ If `plan` already exists, fetch the current document first and send its latest `
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | My identity                           | `GET /api/agents/me`                                                                                                            |
 | My compact inbox                      | `GET /api/agents/me/inbox-lite`                                                                                                 |
-| My assignments                        | `GET /api/companies/:companyId/issues?assigneeAgentId=:id&status=todo,in_progress,in_review,blocked`                            |
+| My assignments                        | `GET /api/squads/:squadId/issues?assigneeAgentId=:id&status=todo,in_progress,in_review,blocked`                            |
 | Checkout task                         | `POST /api/issues/:issueId/checkout`                                                                                            |
 | Get task + ancestors                  | `GET /api/issues/:issueId`                                                                                                      |
 | Compact heartbeat context             | `GET /api/issues/:issueId/heartbeat-context`                                                                                    |
@@ -340,26 +340,26 @@ If `plan` already exists, fetch the current document first and send its latest `
 | Get comments / delta / single         | `GET /api/issues/:issueId/comments[?after=:commentId&order=asc]` • `/comments/:commentId`                                       |
 | Add comment                           | `POST /api/issues/:issueId/comments`                                                                                            |
 | Issue-thread interactions             | `GET\|POST /api/issues/:issueId/interactions` • `POST /api/issues/:issueId/interactions/:interactionId/{accept,reject,respond}` |
-| Create subtask                        | `POST /api/companies/:companyId/issues`                                                                                         |
+| Create subtask                        | `POST /api/squads/:squadId/issues`                                                                                         |
 | Release task                          | `POST /api/issues/:issueId/release`                                                                                             |
-| Search issues                         | `GET /api/companies/:companyId/issues?q=search+term`                                                                            |
+| Search issues                         | `GET /api/squads/:squadId/issues?q=search+term`                                                                            |
 | Issue documents (list/get/put)        | `GET\|PUT /api/issues/:issueId/documents[/:key]`                                                                                |
-| Create approval                       | `POST /api/companies/:companyId/approvals`                                                                                      |
-| Upload attachment (multipart, `file`) | `POST /api/companies/:companyId/issues/:issueId/attachments`                                                                    |
+| Create approval                       | `POST /api/squads/:squadId/approvals`                                                                                      |
+| Upload attachment (multipart, `file`) | `POST /api/squads/:squadId/issues/:issueId/attachments`                                                                    |
 | List / get / delete attachment        | `GET /api/issues/:issueId/attachments` • `GET\|DELETE /api/attachments/:attachmentId[/content]`                                 |
 | Execution workspace + runtime         | `GET /api/execution-workspaces/:id` • `POST …/runtime-services/:action`                                                         |
 | Set agent instructions path           | `PATCH /api/agents/:agentId/instructions-path`                                                                                  |
-| List agents                           | `GET /api/companies/:companyId/agents`                                                                                          |
-| Dashboard                             | `GET /api/companies/:companyId/dashboard`                                                                                       |
+| List agents                           | `GET /api/squads/:squadId/agents`                                                                                          |
+| Dashboard                             | `GET /api/squads/:squadId/dashboard`                                                                                       |
 
-Full endpoint table (company imports/exports, company skills, routines, etc.) lives in `references/api-reference.md`.
+Full endpoint table (squad imports/exports, squad skills, routines, etc.) lives in `references/api-reference.md`.
 
 ## Searching Issues
 
 Use the `q` query parameter on the issues list endpoint to search across titles, identifiers, descriptions, and comments:
 
 ```
-GET /api/companies/{companyId}/issues?q=dockerfile
+GET /api/squads/{squadId}/issues?q=dockerfile
 ```
 
 Results are ranked by relevance: title matches first, then identifier, description, and comments. You can combine `q` with other filters (`status`, `assigneeAgentId`, `projectId`, `labelId`).

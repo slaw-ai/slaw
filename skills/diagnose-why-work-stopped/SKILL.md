@@ -66,15 +66,15 @@ Do not invent a new rule until you can state how it differs from the current exe
 Do this in the same heartbeat. Do not propose a rule until you have a concrete stop point.
 
 - Open the linked issue (and its blocker chain, parents, recovery siblings, recent runs).
-- Walk the tree node-by-node and find the exact issue + state combination that stops the world. Common shapes seen in the company so far:
+- Walk the tree node-by-node and find the exact issue + state combination that stops the world. Common shapes seen in the squad so far:
   - `in_review` with no typed execution participant, no active run, no pending interaction, no recovery issue ([PAP-2335](/PAP/issues/PAP-2335), [PAP-2674](/PAP/issues/PAP-2674)).
   - `in_progress` after a successful run with no future action path queued ([PAP-2674](/PAP/issues/PAP-2674)).
-  - Blocker chain whose leaf is `cancelled` / malformed / cross-company-inaccessible ([PAP-2602](/PAP/issues/PAP-2602)).
+  - Blocker chain whose leaf is `cancelled` / malformed / cross-squad-inaccessible ([PAP-2602](/PAP/issues/PAP-2602)).
   - `issue.continuation_recovery` waking the same issue >N times after successful runs ([PAP-2602](/PAP/issues/PAP-2602)).
   - Stranded-work recovery treating its own recovery issues as more recoverable source work ([PAP-2486](/PAP/issues/PAP-2486)).
 - Quote the evidence: run ids, comment timestamps, status transitions. "Inferred" is acceptable only when an API boundary blocks direct evidence — say so explicitly and mark the claim provisional ([PAP-2631](/PAP/issues/PAP-2631)).
 
-Respect the API boundary. If the linked issue is in another company and your agent token returns 403, do not bypass scoping. Either request a board-approved diagnostic path or proceed from inferred PAP-side evidence and label it.
+Respect the API boundary. If the linked issue is in another squad and your agent token returns 403, do not bypass scoping. Either request a board-approved diagnostic path or proceed from inferred PAP-side evidence and label it.
 
 ### 2. Survey recent related work
 
@@ -144,7 +144,7 @@ When the phase chain is complete, post a board-level summary comment on the pare
 - **Restating one invariant at the cost of another.** Bound continuation too tightly and productive work stalls; loosen recovery and infinite loops return. Always check all three.
 - **Skipping the recent-work survey.** Proposing a contract that contradicts what shipped 24 hours ago is the easiest way to get the plan rejected.
 - **Letting "in_review" mean done.** A leaf assigned to another agent with no participant or active run is not progress; treat it as a stop.
-- **Bypassing company scoping.** Cross-company forensics needs a board-approved diagnostic path, not a database read.
+- **Bypassing squad scoping.** Cross-squad forensics needs a board-approved diagnostic path, not a database read.
 - **Recursive recovery.** Stranded-work recovery that recovers its own recovery issues is the canonical infinite loop ([PAP-2486](/PAP/issues/PAP-2486)). Detect it and refuse to deepen.
 - **Hiding the chain.** Don't silently delete or hide the symptomatic recovery issues — the operator needs the audit trail.
 

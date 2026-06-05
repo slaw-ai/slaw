@@ -2,7 +2,7 @@ import { startTransition, useDeferredValue, useEffect, useMemo, useState, useCal
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { accessApi } from "../api/access";
 import { useDialogActions } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { Link } from "@/lib/router";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { issuesApi } from "../api/issues";
@@ -14,7 +14,7 @@ import {
   shouldBlurPageSearchOnEscape,
 } from "../lib/keyboardShortcuts";
 import { formatAssigneeUserLabel } from "../lib/assignees";
-import { buildCompanyUserLabelMap, buildCompanyUserProfileMap } from "../lib/company-members";
+import { buildSquadUserLabelMap, buildSquadUserProfileMap } from "../lib/squad-members";
 import { createIssueDetailPath, withIssueDetailHeaderSeed } from "../lib/issueDetailBreadcrumb";
 import {
   buildSubIssueProgressSummary,
@@ -624,16 +624,16 @@ export function IssuesList({
   onUpdateIssue,
 }: IssuesListProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { openNewIssue } = useDialogActions();
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -643,8 +643,8 @@ export function IssuesList({
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const isolatedWorkspacesEnabled = experimentalSettings?.enableIsolatedWorkspaces === true;
 
-  // Scope the storage key per company so folding/view state is independent across companies.
-  const scopedKey = selectedCompanyId ? `${viewStateKey}:${selectedCompanyId}` : viewStateKey;
+  // Scope the storage key per squad so folding/view state is independent across squads.
+  const scopedKey = selectedSquadId ? `${viewStateKey}:${selectedSquadId}` : viewStateKey;
   const initialAssigneesKey = initialAssignees?.join("|") ?? "";
   const initialWorkspacesKey = initialWorkspaces?.join("|") ?? "";
 
@@ -705,26 +705,26 @@ export function IssuesList({
 
   const { data: searchedIssues = [] } = useQuery({
     queryKey: [
-      ...queryKeys.issues.search(selectedCompanyId!, normalizedIssueSearch, projectId),
+      ...queryKeys.issues.search(selectedSquadId!, normalizedIssueSearch, projectId),
       searchFilters ?? {},
       ISSUE_SEARCH_RESULT_LIMIT,
       enableRoutineVisibilityFilter ? "with-routine-executions" : "without-routine-executions",
     ],
     queryFn: () =>
-      issuesApi.list(selectedCompanyId!, {
+      issuesApi.list(selectedSquadId!, {
         q: normalizedIssueSearch,
         projectId,
         limit: ISSUE_SEARCH_RESULT_LIMIT,
         ...searchFilters,
         ...(enableRoutineVisibilityFilter ? { includeRoutineExecutions: true } : {}),
       }),
-    enabled: !!selectedCompanyId && normalizedIssueSearch.length > 0 && !searchWithinLoadedIssues,
+    enabled: !!selectedSquadId && normalizedIssueSearch.length > 0 && !searchWithinLoadedIssues,
     placeholderData: (previousData) => previousData,
   });
   const boardIssueQueries = useQueries({
     queries: boardIssueStatuses.map((status) => ({
       queryKey: [
-        ...queryKeys.issues.list(selectedCompanyId ?? "__no-company__"),
+        ...queryKeys.issues.list(selectedSquadId ?? "__no-squad__"),
         "board-column",
         status,
         normalizedIssueSearch,
@@ -734,7 +734,7 @@ export function IssuesList({
         enableRoutineVisibilityFilter ? "with-routine-executions" : "without-routine-executions",
       ],
       queryFn: () =>
-        issuesApi.list(selectedCompanyId!, {
+        issuesApi.list(selectedSquadId!, {
           ...searchFilters,
           ...(normalizedIssueSearch.length > 0 ? { q: normalizedIssueSearch } : {}),
           projectId,
@@ -742,16 +742,16 @@ export function IssuesList({
           limit: ISSUE_BOARD_COLUMN_RESULT_LIMIT,
           ...(enableRoutineVisibilityFilter ? { includeRoutineExecutions: true } : {}),
         }),
-      enabled: !!selectedCompanyId && viewState.viewMode === "board" && !searchWithinLoadedIssues,
+      enabled: !!selectedSquadId && viewState.viewMode === "board" && !searchWithinLoadedIssues,
       placeholderData: (previousData: Issue[] | undefined) => previousData,
     })),
   });
   const { data: executionWorkspaces = [] } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.executionWorkspaces.summaryList(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.executionWorkspaces.summaryList(selectedSquadId)
       : ["execution-workspaces", "__disabled__"],
-    queryFn: () => executionWorkspacesApi.listSummaries(selectedCompanyId!),
-    enabled: !!selectedCompanyId && isolatedWorkspacesEnabled,
+    queryFn: () => executionWorkspacesApi.listSummaries(selectedSquadId!),
+    enabled: !!selectedSquadId && isolatedWorkspacesEnabled,
   });
 
   const agentName = useCallback((id: string | null) => {
@@ -759,13 +759,13 @@ export function IssuesList({
     return agents.find((a) => a.id === id)?.name ?? null;
   }, [agents]);
 
-  const companyUserLabelMap = useMemo(
-    () => buildCompanyUserLabelMap(companyMembers?.users),
-    [companyMembers?.users],
+  const squadUserLabelMap = useMemo(
+    () => buildSquadUserLabelMap(squadMembers?.users),
+    [squadMembers?.users],
   );
-  const companyUserProfileMap = useMemo(
-    () => buildCompanyUserProfileMap(companyMembers?.users),
-    [companyMembers?.users],
+  const squadUserProfileMap = useMemo(
+    () => buildSquadUserProfileMap(squadMembers?.users),
+    [squadMembers?.users],
   );
 
   const projectById = useMemo(() => {
@@ -1038,9 +1038,9 @@ export function IssuesList({
   }, [checklistAffordanceEnabled, filtered, issueById, viewState.nestingEnabled]);
 
   const { data: labels } = useQuery({
-    queryKey: queryKeys.issues.labels(selectedCompanyId!),
-    queryFn: () => issuesApi.listLabels(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.issues.labels(selectedSquadId!),
+    queryFn: () => issuesApi.listLabels(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const activeFilterCount = countActiveIssueFilters(viewState, enableRoutineVisibilityFilter);
@@ -1137,7 +1137,7 @@ export function IssuesList({
         key === "__unassigned"
           ? "Unassigned"
           : key.startsWith("__user:")
-            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId, companyUserLabelMap) ?? "User")
+            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId, squadUserLabelMap) ?? "User")
             : (agentName(key) ?? key.slice(0, 8)),
       items: groups[key]!,
     }));
@@ -1150,7 +1150,7 @@ export function IssuesList({
     currentUserId,
     workspaceNameMap,
     issueTitleMap,
-    companyUserLabelMap,
+    squadUserLabelMap,
     projectById,
   ]);
 
@@ -1654,12 +1654,12 @@ export function IssuesList({
                   const issueBadge = issueBadgeById?.get(issue.id);
                   const isMutedIssue = mutedIssueIds?.has(issue.id) === true;
                   const assigneeUserProfile = issue.assigneeUserId
-                    ? companyUserProfileMap.get(issue.assigneeUserId) ?? null
+                    ? squadUserProfileMap.get(issue.assigneeUserId) ?? null
                     : null;
                   const assigneeUserLabel = formatAssigneeUserLabel(
                     issue.assigneeUserId,
                     currentUserId,
-                    companyUserLabelMap,
+                    squadUserLabelMap,
                   ) ?? assigneeUserProfile?.label ?? null;
                   const toggleCollapse = (e: { preventDefault: () => void; stopPropagation: () => void }) => {
                     e.preventDefault();

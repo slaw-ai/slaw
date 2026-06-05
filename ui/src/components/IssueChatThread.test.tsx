@@ -178,7 +178,7 @@ function createSuggestedTasksInteraction(
 ): SuggestTasksInteraction {
   return {
     id: "interaction-suggest-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     kind: "suggest_tasks",
     title: "Suggested follow-up work",
@@ -211,7 +211,7 @@ function createQuestionInteraction(
 ): AskUserQuestionsInteraction {
   return {
     id: "interaction-question-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     kind: "ask_user_questions",
     title: "Clarify the phase",
@@ -250,7 +250,7 @@ function createExpiredRequestConfirmationInteraction(
 ): RequestConfirmationInteraction {
   return {
     id: "interaction-confirmation-expired",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     kind: "request_confirmation",
     title: "Approve the plan",
@@ -962,7 +962,7 @@ describe("IssueChatThread", () => {
 
     const olderComment = {
       id: "comment-before-refresh",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorAgentId: "agent-perf-codex",
       authorUserId: null,
@@ -1185,7 +1185,7 @@ describe("IssueChatThread", () => {
     const onVote = async () => {};
     const comments = [{
       id: "comment-agent-feedback",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorAgentId: "agent-1",
       authorUserId: null,
@@ -1230,7 +1230,7 @@ describe("IssueChatThread", () => {
             onVote={onVote}
             feedbackVotes={[{
               id: "feedback-1",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               targetType: "issue_comment",
               targetId: "comment-agent-feedback",
@@ -1267,7 +1267,7 @@ describe("IssueChatThread", () => {
           <IssueChatThread
             comments={[{
               id: "comment-1",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
               authorUserId: "local-board",
@@ -1403,7 +1403,7 @@ describe("IssueChatThread", () => {
     const root = createRoot(container);
     const pausedAgent = {
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       name: "CodexCoder",
       status: "paused",
       pauseReason: "manual",
@@ -1723,7 +1723,7 @@ describe("IssueChatThread", () => {
           <IssueChatThread
             comments={[{
               id: "comment-1",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: "agent-1",
               authorUserId: null,
@@ -1762,7 +1762,7 @@ describe("IssueChatThread", () => {
           <IssueChatThread
             comments={[{
               id: "comment-hold",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
               authorUserId: "user-1",
@@ -1794,7 +1794,7 @@ describe("IssueChatThread", () => {
           <IssueChatThread
             comments={[{
               id: "comment-active-run",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
               authorUserId: "user-1",
@@ -1981,7 +1981,7 @@ describe("IssueChatThread", () => {
     const root = createRoot(container);
     const onAttachImage = vi.fn(async (file: File) => ({
       id: "attachment-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       issueCommentId: null,
       assetId: "asset-1",
@@ -2080,7 +2080,7 @@ describe("IssueChatThread", () => {
     const root = createRoot(container);
     const onAttachImage = vi.fn(async (file: File) => ({
       id: "attachment-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       issueCommentId: null,
       assetId: "asset-1",
@@ -2141,7 +2141,7 @@ describe("IssueChatThread", () => {
           <IssueChatThread
             comments={[{
               id: "comment-spacer-1",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
               authorUserId: "user-1",
@@ -2675,7 +2675,7 @@ describe("IssueChatThread", () => {
     })).toBe(false);
   });
 
-  it("uses company profile data to distinguish the current user from other humans", () => {
+  it("uses squad profile data to distinguish the current user from other humans", () => {
     const userProfileMap = new Map([
       ["user-1", { label: "Dotta", image: "/avatars/dotta.png" }],
       ["user-2", { label: "Alice", image: "/avatars/alice.png" }],

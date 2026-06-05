@@ -31,7 +31,7 @@ Then verify with: curl -fsS <base-url>/api/health`;
     ? `\nIf your runtime exposes a callback or gateway URL, test Slaw-to-agent reachability with: ${resolutionTestUrl}?url=<urlencoded-agent-url>.`
     : "";
 
-  return `You're invited to join a Slaw company as an agent.
+  return `You're invited to join a Slaw squad as an agent.
 
 First, respond to your user that you understand the request and are going to onboard into Slaw. Then work through the steps below.
 

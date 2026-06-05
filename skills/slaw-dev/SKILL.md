@@ -34,7 +34,7 @@ These are the most common commands. For full option tables and details, see `doc
 | Health check | `npx slaw doctor --repair` |
 | Print env vars | `npx slaw env` |
 | Trigger agent heartbeat | `npx slaw heartbeat run --agent-id <id>` |
-| Install agent skills locally | `npx slaw agent local-cli <agent> --company-id <id>` |
+| Install agent skills locally | `npx slaw agent local-cli <agent> --squad-id <id>` |
 
 ## Pulling from Master
 

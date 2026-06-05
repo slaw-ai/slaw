@@ -9,7 +9,7 @@ import { projectsApi } from "../api/projects";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { buildProjectWorkspaceSummaries, type ProjectWorkspaceSummary } from "../lib/project-workspaces-tab";
 import { queryKeys } from "../lib/queryKeys";
 import { projectRouteRef } from "../lib/utils";
@@ -72,7 +72,7 @@ function buildProjectWorkspaceGroups(input: {
 }
 
 export function Workspaces() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const experimentalSettingsQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -81,25 +81,25 @@ export function Workspaces() {
   const isolatedWorkspacesEnabled = experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true;
 
   const { data: projects = [], isLoading: projectsLoading, error: projectsError } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.projects.list(selectedCompanyId) : ["projects", "__workspaces__", "disabled"],
-    queryFn: () => projectsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId && isolatedWorkspacesEnabled),
+    queryKey: selectedSquadId ? queryKeys.projects.list(selectedSquadId) : ["projects", "__workspaces__", "disabled"],
+    queryFn: () => projectsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId && isolatedWorkspacesEnabled),
   });
   const { data: issues = [], isLoading: issuesLoading, error: issuesError } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.issues.list(selectedCompanyId) : ["issues", "__workspaces__", "disabled"],
-    queryFn: () => issuesApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId && isolatedWorkspacesEnabled),
+    queryKey: selectedSquadId ? queryKeys.issues.list(selectedSquadId) : ["issues", "__workspaces__", "disabled"],
+    queryFn: () => issuesApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId && isolatedWorkspacesEnabled),
   });
   const {
     data: executionWorkspaces = [],
     isLoading: executionWorkspacesLoading,
     error: executionWorkspacesError,
   } = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.executionWorkspaces.list(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.executionWorkspaces.list(selectedSquadId)
       : ["execution-workspaces", "__workspaces__", "disabled"],
-    queryFn: () => executionWorkspacesApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId && isolatedWorkspacesEnabled),
+    queryFn: () => executionWorkspacesApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId && isolatedWorkspacesEnabled),
   });
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export function Workspaces() {
                 </span>
               </div>
               <ProjectWorkspacesContent
-                companyId={selectedCompanyId!}
+                squadId={selectedSquadId!}
                 projectId={group.project.id}
                 projectRef={group.projectRef}
                 summaries={group.summaries}

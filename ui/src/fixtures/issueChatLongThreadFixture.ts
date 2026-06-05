@@ -22,7 +22,7 @@ function createAgent(id: string, name: string, icon: string, urlKey: string): Ag
   const now = new Date("2026-04-28T14:00:00.000Z");
   return {
     id,
-    companyId: "company-long-thread",
+    squadId: "squad-long-thread",
     name,
     urlKey,
     role: "engineer",
@@ -92,7 +92,7 @@ function createComment(index: number): IssueChatComment {
 
   return {
     id: `long-thread-comment-${String(index + 1).padStart(3, "0")}`,
-    companyId: "company-long-thread",
+    squadId: "squad-long-thread",
     issueId: "issue-long-thread",
     authorType: authorAgentId ? "agent" : "user",
     authorAgentId,

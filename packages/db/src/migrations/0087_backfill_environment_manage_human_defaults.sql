@@ -1,5 +1,5 @@
 INSERT INTO "principal_permission_grants" (
-  "company_id",
+  "squad_id",
   "principal_type",
   "principal_id",
   "permission_key",
@@ -9,7 +9,7 @@ INSERT INTO "principal_permission_grants" (
   "updated_at"
 )
 SELECT
-  "company_id",
+  "squad_id",
   'user',
   "principal_id",
   'environments:manage',
@@ -17,12 +17,12 @@ SELECT
   NULL,
   now(),
   now()
-FROM "company_memberships"
+FROM "squad_memberships"
 WHERE "principal_type" = 'user'
   AND "status" = 'active'
   AND "membership_role" IN ('owner', 'admin')
 ON CONFLICT (
-  "company_id",
+  "squad_id",
   "principal_type",
   "principal_id",
   "permission_key"

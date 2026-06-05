@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "Cipta syarikat pertama anda",
       "description": "Mulakan dengan mencipta syarikat.",
-      "newCompany": "Syarikat Baharu"
+      "newSquad": "Syarikat Baharu"
     }
   }
 }

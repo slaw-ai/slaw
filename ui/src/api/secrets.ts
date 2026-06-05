@@ -1,7 +1,7 @@
 import type {
-  CompanySecret,
-  CompanySecretUsageBinding,
-  CompanySecretProviderConfig,
+  SquadSecret,
+  SquadSecretUsageBinding,
+  SquadSecretProviderConfig,
   SecretProviderConfigDiscoveryPreviewResult,
   RemoteSecretImportPreviewResult,
   RemoteSecretImportResult,
@@ -17,7 +17,7 @@ import { api } from "./client";
 
 export interface SecretUsageResponse {
   secretId: string;
-  bindings: CompanySecretUsageBinding[];
+  bindings: SquadSecretUsageBinding[];
 }
 
 export interface CreateSecretInput {
@@ -105,53 +105,53 @@ export interface SecretProviderConfigDiscoveryPreviewInput {
 }
 
 export const secretsApi = {
-  list: (companyId: string) => api.get<CompanySecret[]>(`/companies/${companyId}/secrets`),
-  providers: (companyId: string) =>
-    api.get<SecretProviderDescriptor[]>(`/companies/${companyId}/secret-providers`),
-  providerHealth: (companyId: string) =>
-    api.get<SecretProviderHealthResponse>(`/companies/${companyId}/secret-providers/health`),
-  providerConfigs: (companyId: string) =>
-    api.get<CompanySecretProviderConfig[]>(`/companies/${companyId}/secret-provider-configs`),
+  list: (squadId: string) => api.get<SquadSecret[]>(`/squads/${squadId}/secrets`),
+  providers: (squadId: string) =>
+    api.get<SecretProviderDescriptor[]>(`/squads/${squadId}/secret-providers`),
+  providerHealth: (squadId: string) =>
+    api.get<SecretProviderHealthResponse>(`/squads/${squadId}/secret-providers/health`),
+  providerConfigs: (squadId: string) =>
+    api.get<SquadSecretProviderConfig[]>(`/squads/${squadId}/secret-provider-configs`),
   providerConfigDiscoveryPreview: (
-    companyId: string,
+    squadId: string,
     data: SecretProviderConfigDiscoveryPreviewInput,
   ) =>
     api.post<SecretProviderConfigDiscoveryPreviewResult>(
-      `/companies/${companyId}/secret-provider-configs/discovery/preview`,
+      `/squads/${squadId}/secret-provider-configs/discovery/preview`,
       data,
     ),
-  createProviderConfig: (companyId: string, data: CreateSecretProviderConfigInput) =>
-    api.post<CompanySecretProviderConfig>(`/companies/${companyId}/secret-provider-configs`, data),
+  createProviderConfig: (squadId: string, data: CreateSecretProviderConfigInput) =>
+    api.post<SquadSecretProviderConfig>(`/squads/${squadId}/secret-provider-configs`, data),
   updateProviderConfig: (id: string, data: UpdateSecretProviderConfigInput) =>
-    api.patch<CompanySecretProviderConfig>(`/secret-provider-configs/${id}`, data),
+    api.patch<SquadSecretProviderConfig>(`/secret-provider-configs/${id}`, data),
   disableProviderConfig: (id: string) =>
-    api.patch<CompanySecretProviderConfig>(`/secret-provider-configs/${id}`, { status: "disabled" }),
+    api.patch<SquadSecretProviderConfig>(`/secret-provider-configs/${id}`, { status: "disabled" }),
   removeProviderConfig: (id: string) =>
-    api.delete<CompanySecretProviderConfig>(`/secret-provider-configs/${id}`),
+    api.delete<SquadSecretProviderConfig>(`/secret-provider-configs/${id}`),
   setDefaultProviderConfig: (id: string) =>
-    api.post<CompanySecretProviderConfig>(`/secret-provider-configs/${id}/default`, {}),
+    api.post<SquadSecretProviderConfig>(`/secret-provider-configs/${id}/default`, {}),
   checkProviderConfigHealth: (id: string) =>
     api.post<SecretProviderConfigHealthResponse>(`/secret-provider-configs/${id}/health`, {}),
-  create: (companyId: string, data: CreateSecretInput) =>
-    api.post<CompanySecret>(`/companies/${companyId}/secrets`, data),
+  create: (squadId: string, data: CreateSecretInput) =>
+    api.post<SquadSecret>(`/squads/${squadId}/secrets`, data),
   update: (id: string, data: UpdateSecretInput) =>
-    api.patch<CompanySecret>(`/secrets/${id}`, data),
+    api.patch<SquadSecret>(`/secrets/${id}`, data),
   rotate: (id: string, data: RotateSecretInput) =>
-    api.post<CompanySecret>(`/secrets/${id}/rotate`, data),
+    api.post<SquadSecret>(`/secrets/${id}/rotate`, data),
   disable: (id: string) =>
-    api.patch<CompanySecret>(`/secrets/${id}`, { status: "disabled" satisfies SecretStatus }),
+    api.patch<SquadSecret>(`/secrets/${id}`, { status: "disabled" satisfies SecretStatus }),
   enable: (id: string) =>
-    api.patch<CompanySecret>(`/secrets/${id}`, { status: "active" satisfies SecretStatus }),
+    api.patch<SquadSecret>(`/secrets/${id}`, { status: "active" satisfies SecretStatus }),
   archive: (id: string) =>
-    api.patch<CompanySecret>(`/secrets/${id}`, { status: "archived" satisfies SecretStatus }),
+    api.patch<SquadSecret>(`/secrets/${id}`, { status: "archived" satisfies SecretStatus }),
   remove: (id: string) => api.delete<{ ok: true }>(`/secrets/${id}`),
   usage: (id: string) => api.get<SecretUsageResponse>(`/secrets/${id}/usage`),
   accessEvents: (id: string) => api.get<SecretAccessEvent[]>(`/secrets/${id}/access-events`),
-  remoteImportPreview: (companyId: string, data: RemoteImportPreviewInput) =>
+  remoteImportPreview: (squadId: string, data: RemoteImportPreviewInput) =>
     api.post<RemoteSecretImportPreviewResult>(
-      `/companies/${companyId}/secrets/remote-import/preview`,
+      `/squads/${squadId}/secrets/remote-import/preview`,
       data,
     ),
-  remoteImport: (companyId: string, data: RemoteImportInput) =>
-    api.post<RemoteSecretImportResult>(`/companies/${companyId}/secrets/remote-import`, data),
+  remoteImport: (squadId: string, data: RemoteImportInput) =>
+    api.post<RemoteSecretImportResult>(`/squads/${squadId}/secrets/remote-import`, data),
 };

@@ -68,7 +68,7 @@ describe("grok_local testEnvironment", () => {
       });
 
     const result = await testEnvironment({
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "grok_local",
       config: {
         command: "grok",
@@ -123,7 +123,7 @@ describe("grok_local testEnvironment", () => {
       });
 
     const result = await testEnvironment({
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "grok_local",
       config: {
         command: "grok",

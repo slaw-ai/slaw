@@ -16,7 +16,7 @@ interface PromptOptions extends BaseClientOptions {
   issue?: string;
   title?: string;
   wake?: boolean;
-  companyId?: string;
+  squadId?: string;
 }
 
 interface PromptResult {
@@ -24,7 +24,7 @@ interface PromptResult {
   mode: "issue" | "comment";
   actor: "agent" | "board";
   apiBase: string;
-  companyId: string;
+  squadId: string;
   agent: {
     id: string;
     name: string;
@@ -92,7 +92,7 @@ export function registerPromptCommands(program: Command): void {
       .command("prompt")
       .description("Create/update Slaw work for an agent using board auth")
       .requiredOption("--agent <agent>", "Target agent ID, shortname, or name")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .option("--issue <issueId>", "Append as a comment to an existing issue")
       .option("--title <title>", "Issue title when creating a new issue")
       .option("--no-wake", "Do not wake the agent after creating/updating work")
@@ -105,7 +105,7 @@ export function registerPromptCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
@@ -128,7 +128,7 @@ export async function runAgentPrompt(
     api: ctx.api,
     actor: "agent",
     agent: me,
-    companyId: me.companyId,
+    squadId: me.squadId,
     prompt: body,
     issueId: opts.issue,
     title: opts.title,
@@ -142,12 +142,12 @@ export async function runBoardPrompt(
   prompt: string,
   opts: PromptOptions,
 ): Promise<PromptResult> {
-  const ctx = resolveCommandContext(opts, { requireCompany: true });
+  const ctx = resolveCommandContext(opts, { requireSquad: true });
   if (ctx.profile.persona && ctx.profile.persona !== "board") {
     throw new Error(`Profile '${ctx.profileName}' is persona=${ctx.profile.persona}; use an agent prompt command or a board profile.`);
   }
   const body = normalizePrompt(prompt);
-  const query = new URLSearchParams({ companyId: ctx.companyId ?? "" });
+  const query = new URLSearchParams({ squadId: ctx.squadId ?? "" });
   const agent = await ctx.api.get<Agent>(`${apiPath`/api/agents/${agentRef}`}?${query.toString()}`);
   if (!agent) throw new Error(`Agent not found: ${agentRef}`);
 
@@ -155,7 +155,7 @@ export async function runBoardPrompt(
     api: ctx.api,
     actor: "board",
     agent,
-    companyId: ctx.companyId ?? agent.companyId,
+    squadId: ctx.squadId ?? agent.squadId,
     prompt: body,
     issueId: opts.issue,
     title: opts.title,
@@ -170,7 +170,7 @@ async function createOrCommentForAgent(input: {
   };
   actor: "agent" | "board";
   agent: Agent;
-  companyId: string;
+  squadId: string;
   prompt: string;
   issueId?: string;
   title?: string;
@@ -190,7 +190,7 @@ async function createOrCommentForAgent(input: {
       mode: "comment",
       actor: input.actor,
       apiBase: input.api.apiBase,
-      companyId: input.companyId,
+      squadId: input.squadId,
       agent: agentSummary(input.agent),
       comment,
       wakeup,
@@ -204,7 +204,7 @@ async function createOrCommentForAgent(input: {
     priority: "medium",
     assigneeAgentId: input.agent.id,
   });
-  const issue = await input.api.post<Issue>(apiPath`/api/companies/${input.companyId}/issues`, payload);
+  const issue = await input.api.post<Issue>(apiPath`/api/squads/${input.squadId}/issues`, payload);
   const wakeup = input.wake && issue?.id
     ? await wakeAgent(input.api, input.agent.id, issue.id, "Prompt issue handoff")
     : null;
@@ -213,7 +213,7 @@ async function createOrCommentForAgent(input: {
     mode: "issue",
     actor: input.actor,
     apiBase: input.api.apiBase,
-    companyId: input.companyId,
+    squadId: input.squadId,
     agent: agentSummary(input.agent),
     issue,
     wakeup,

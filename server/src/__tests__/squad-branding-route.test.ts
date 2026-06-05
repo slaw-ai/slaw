@@ -1,0 +1,207 @@
+import express from "express";
+import request from "supertest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mockSquadService = vi.hoisted(() => ({
+  list: vi.fn(),
+  stats: vi.fn(),
+  getById: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  archive: vi.fn(),
+  remove: vi.fn(),
+}));
+
+const mockAgentService = vi.hoisted(() => ({
+  getById: vi.fn(),
+}));
+
+const mockAccessService = vi.hoisted(() => ({
+  ensureMembership: vi.fn(),
+}));
+
+const mockBudgetService = vi.hoisted(() => ({
+  upsertPolicy: vi.fn(),
+}));
+
+const mockSquadPortabilityService = vi.hoisted(() => ({
+  exportBundle: vi.fn(),
+  previewExport: vi.fn(),
+  previewImport: vi.fn(),
+  importBundle: vi.fn(),
+}));
+
+const mockLogActivity = vi.hoisted(() => vi.fn());
+const mockFeedbackService = vi.hoisted(() => ({
+  listIssueVotesForUser: vi.fn(),
+  listFeedbackTraces: vi.fn(),
+  getFeedbackTraceById: vi.fn(),
+  saveIssueVote: vi.fn(),
+}));
+
+vi.mock("../services/index.js", () => ({
+  accessService: () => mockAccessService,
+  agentService: () => mockAgentService,
+  budgetService: () => mockBudgetService,
+  squadPortabilityService: () => mockSquadPortabilityService,
+  squadService: () => mockSquadService,
+  feedbackService: () => mockFeedbackService,
+  logActivity: mockLogActivity,
+}));
+
+function createSquad() {
+  const now = new Date("2026-03-19T02:00:00.000Z");
+  return {
+    id: "squad-1",
+    name: "Slaw",
+    description: null,
+    status: "active",
+    issuePrefix: "PAP",
+    issueCounter: 568,
+    budgetMonthlyCents: 0,
+    spentMonthlyCents: 0,
+    requireBoardApprovalForNewAgents: false,
+    brandColor: "#123456",
+    logoAssetId: "11111111-1111-4111-8111-111111111111",
+    logoUrl: "/api/assets/11111111-1111-4111-8111-111111111111/content",
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+async function createApp(actor: Record<string, unknown>) {
+  const [{ squadRoutes }, { errorHandler }] = await Promise.all([
+    vi.importActual<typeof import("../routes/squads.js")>("../routes/squads.js"),
+    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
+  ]);
+  const app = express();
+  app.use(express.json());
+  app.use((req, _res, next) => {
+    (req as any).actor = actor;
+    next();
+  });
+  app.use("/api/squads", squadRoutes({} as any));
+  app.use(errorHandler);
+  return app;
+}
+
+describe("PATCH /api/squads/:squadId/branding", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.doUnmock("../routes/squads.js");
+    vi.doUnmock("../routes/authz.js");
+    vi.doUnmock("../middleware/index.js");
+    vi.clearAllMocks();
+  });
+
+  it("rejects non-Squad Lead agent callers", async () => {
+    mockAgentService.getById.mockResolvedValue({
+      id: "agent-1",
+      squadId: "squad-1",
+      role: "engineer",
+    });
+    const app = await createApp({
+      type: "agent",
+      agentId: "agent-1",
+      squadId: "squad-1",
+      source: "agent_key",
+      runId: "run-1",
+    });
+
+    const res = await request(app)
+      .patch("/api/squads/squad-1/branding")
+      .send({ logoAssetId: "11111111-1111-4111-8111-111111111111" });
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toContain("Only Squad Lead agents");
+    expect(mockSquadService.update).not.toHaveBeenCalled();
+  });
+
+  it("allows Squad Lead agent callers to update branding fields", async () => {
+    const squad = createSquad();
+    mockAgentService.getById.mockResolvedValue({
+      id: "agent-1",
+      squadId: "squad-1",
+      role: "squad_lead",
+    });
+    mockSquadService.update.mockResolvedValue(squad);
+    const app = await createApp({
+      type: "agent",
+      agentId: "agent-1",
+      squadId: "squad-1",
+      source: "agent_key",
+      runId: "run-1",
+    });
+
+    const res = await request(app)
+      .patch("/api/squads/squad-1/branding")
+      .send({
+        logoAssetId: "11111111-1111-4111-8111-111111111111",
+        brandColor: "#123456",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.logoAssetId).toBe(squad.logoAssetId);
+    expect(mockSquadService.update).toHaveBeenCalledWith("squad-1", {
+      logoAssetId: "11111111-1111-4111-8111-111111111111",
+      brandColor: "#123456",
+    });
+    expect(mockLogActivity).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        squadId: "squad-1",
+        actorType: "agent",
+        actorId: "agent-1",
+        agentId: "agent-1",
+        runId: "run-1",
+        action: "squad.branding_updated",
+        details: {
+          logoAssetId: "11111111-1111-4111-8111-111111111111",
+          brandColor: "#123456",
+        },
+      }),
+    );
+  });
+
+  it("allows board callers to update branding fields", async () => {
+    const squad = createSquad();
+    mockSquadService.update.mockResolvedValue({
+      ...squad,
+      brandColor: null,
+      logoAssetId: null,
+      logoUrl: null,
+    });
+    const app = await createApp({
+      type: "board",
+      userId: "user-1",
+      source: "local_implicit",
+    });
+
+    const res = await request(app)
+      .patch("/api/squads/squad-1/branding")
+      .send({ brandColor: null, logoAssetId: null });
+
+    expect(res.status).toBe(200);
+    expect(res.body.brandColor ?? null).toBeNull();
+    expect(res.body.logoAssetId ?? null).toBeNull();
+  });
+
+  it("rejects non-branding fields in the request body", async () => {
+    const app = await createApp({
+      type: "board",
+      userId: "user-1",
+      source: "local_implicit",
+    });
+
+    const res = await request(app)
+      .patch("/api/squads/squad-1/branding")
+      .send({
+        logoAssetId: "11111111-1111-4111-8111-111111111111",
+        status: "archived",
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("Validation error");
+    expect(mockSquadService.update).not.toHaveBeenCalled();
+  });
+});

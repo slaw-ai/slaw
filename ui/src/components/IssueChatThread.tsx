@@ -101,7 +101,7 @@ import {
 } from "../lib/issue-chat-scroll";
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import { useOptionalToastActions } from "../context/ToastContext";
-import type { CompanyUserProfile } from "../lib/company-members";
+import type { SquadUserProfile } from "../lib/squad-members";
 import { timeAgo } from "../lib/timeAgo";
 import {
   isSuccessfulRunHandoffComment,
@@ -144,7 +144,7 @@ interface IssueChatMessageContext {
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
   userLabelMap?: ReadonlyMap<string, string> | null;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile> | null;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile> | null;
   onVote?: (
     commentId: string,
     vote: FeedbackVoteValue,
@@ -313,13 +313,13 @@ interface IssueChatThreadProps {
   assigneeUserId?: string | null;
   onResumeFromBacklog?: () => Promise<void> | void;
   resumeFromBacklogPending?: boolean;
-  companyId?: string | null;
+  squadId?: string | null;
   projectId?: string | null;
   issueStatus?: string;
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
   userLabelMap?: ReadonlyMap<string, string> | null;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile> | null;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile> | null;
   onVote?: (
     commentId: string,
     vote: FeedbackVoteValue,
@@ -734,7 +734,7 @@ export function resolveIssueChatHumanAuthor(args: {
   authorName?: string | null;
   authorUserId?: string | null;
   currentUserId?: string | null;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile> | null;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile> | null;
 }) {
   const { authorName, authorUserId, currentUserId, userProfileMap } = args;
   const profile = authorUserId ? userProfileMap?.get(authorUserId) ?? null : null;
@@ -3629,7 +3629,7 @@ export function IssueChatThread({
   onResolveRecoveryAction,
   canFalsePositiveRecoveryAction = false,
   legacyRecoverySourceIssue = null,
-  companyId,
+  squadId,
   projectId,
   issueStatus,
   agentMap,
@@ -3745,7 +3745,7 @@ export function IssueChatThread({
 
   const { transcriptByRun, hasOutputForRun } = useLiveRunTranscripts({
     runs: enableLiveTranscriptPolling ? transcriptRuns : [],
-    companyId,
+    squadId,
   });
   const resolvedTranscriptByRun = transcriptsByRunId ?? transcriptByRun;
   const resolvedHasOutputForRun = hasOutputForRunOverride ?? hasOutputForRun;
@@ -3761,7 +3761,7 @@ export function IssueChatThread({
         transcriptsByRunId: resolvedTranscriptByRun,
         hasOutputForRun: resolvedHasOutputForRun,
         includeSucceededRunsWithoutOutput,
-        companyId,
+        squadId,
         projectId,
         agentMap,
         currentUserId,
@@ -3777,7 +3777,7 @@ export function IssueChatThread({
       resolvedTranscriptByRun,
       resolvedHasOutputForRun,
       includeSucceededRunsWithoutOutput,
-      companyId,
+      squadId,
       projectId,
       agentMap,
       currentUserId,

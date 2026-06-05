@@ -8,7 +8,7 @@ import {
   activityLog,
   agentWakeupRequests,
   agents,
-  companies,
+  squads,
   costEvents,
   createDb,
   executionWorkspaces,
@@ -73,25 +73,25 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.delete(projects);
     await db.delete(plugins);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
     await tempDb?.cleanup();
   });
 
-  async function seedCompanyAndAgent() {
-    const companyId = randomUUID();
+  async function seedSquadAndAgent() {
+    const squadId = randomUUID();
     const agentId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: issuePrefix(companyId),
+      issuePrefix: issuePrefix(squadId),
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "Engineer",
       role: "engineer",
       status: "idle",
@@ -100,7 +100,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       runtimeConfig: {},
       permissions: {},
     });
-    return { companyId, agentId };
+    return { squadId, agentId };
   }
 
   async function makeLocalRoot() {
@@ -109,26 +109,26 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     return root;
   }
 
-  it("returns plugin-safe execution workspace metadata scoped to the company", async () => {
-    const { companyId } = await seedCompanyAndAgent();
-    const otherCompanyId = randomUUID();
+  it("returns plugin-safe execution workspace metadata scoped to the squad", async () => {
+    const { squadId } = await seedSquadAndAgent();
+    const otherSquadId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    await db.insert(companies).values({
-      id: otherCompanyId,
+    await db.insert(squads).values({
+      id: otherSquadId,
       name: "Other",
-      issuePrefix: issuePrefix(otherCompanyId),
+      issuePrefix: issuePrefix(otherSquadId),
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,
-      companyId,
+      squadId,
       name: "Workspaces",
       status: "in_progress",
     });
     await db.insert(executionWorkspaces).values({
       id: workspaceId,
-      companyId,
+      squadId,
       projectId,
       mode: "isolated_workspace",
       strategyType: "git_worktree",
@@ -148,9 +148,9 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
 
     const services = buildHostServices(db, "plugin-record-id", "slaw.workspace", createEventBusStub());
 
-    await expect(services.executionWorkspaces.get({ workspaceId, companyId })).resolves.toMatchObject({
+    await expect(services.executionWorkspaces.get({ workspaceId, squadId })).resolves.toMatchObject({
       id: workspaceId,
-      companyId,
+      squadId,
       projectId,
       projectWorkspaceId: null,
       path: "/tmp/slaw-feature",
@@ -161,16 +161,16 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       providerType: "git_worktree",
       providerMetadata: { sandboxId: "sandbox-1" },
     });
-    await expect(services.executionWorkspaces.get({ workspaceId, companyId: otherCompanyId })).resolves.toBeNull();
+    await expect(services.executionWorkspaces.get({ workspaceId, squadId: otherSquadId })).resolves.toBeNull();
   });
 
   it("creates plugin-origin issues with full orchestration fields and audit activity", async () => {
-    const { companyId, agentId } = await seedCompanyAndAgent();
+    const { squadId, agentId } = await seedSquadAndAgent();
     const blockerIssueId = randomUUID();
     const originRunId = randomUUID();
     await db.insert(heartbeatRuns).values({
       id: originRunId,
-      companyId,
+      squadId,
       agentId,
       status: "running",
       invocationSource: "assignment",
@@ -178,16 +178,16 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     });
     await db.insert(issues).values({
       id: blockerIssueId,
-      companyId,
+      squadId,
       title: "Blocker",
       status: "todo",
       priority: "medium",
-      identifier: `${issuePrefix(companyId)}-blocker`,
+      identifier: `${issuePrefix(squadId)}-blocker`,
     });
 
     const services = buildHostServices(db, "plugin-record-id", "slaw.missions", createEventBusStub());
     const issue = await services.issues.create({
-      companyId,
+      squadId,
       title: "Plugin child issue",
       status: "todo",
       assigneeAgentId: agentId,
@@ -236,11 +236,11 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   });
 
   it("enforces plugin origin namespaces", async () => {
-    const { companyId } = await seedCompanyAndAgent();
+    const { squadId } = await seedSquadAndAgent();
     const services = buildHostServices(db, "plugin-record-id", "slaw.missions", createEventBusStub());
 
     const featureIssue = await services.issues.create({
-      companyId,
+      squadId,
       title: "Feature issue",
       originKind: "plugin:slaw.missions:feature",
       originId: "mission-alpha:feature-1",
@@ -249,7 +249,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
 
     await expect(
       services.issues.create({
-        companyId,
+        squadId,
         title: "Spoofed issue",
         originKind: "plugin:other.plugin:feature",
       }),
@@ -258,18 +258,18 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await expect(
       services.issues.update({
         issueId: featureIssue.id,
-        companyId,
+        squadId,
         patch: { originKind: "plugin:other.plugin:feature" },
       }),
     ).rejects.toThrow("Plugin may only use originKind values under plugin:slaw.missions");
   });
 
   it("creates plugin operation issues with the generic operation origin", async () => {
-    const { companyId } = await seedCompanyAndAgent();
+    const { squadId } = await seedSquadAndAgent();
     const services = buildHostServices(db, "plugin-record-id", "slaw.missions", createEventBusStub());
 
     const issue = await services.issues.create({
-      companyId,
+      squadId,
       title: "Background operation",
       surfaceVisibility: "plugin_operation",
       originId: "mission-alpha:operation-1",
@@ -280,7 +280,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   });
 
   it("lets bootstrap-style actions initialize required local folders from an empty root", async () => {
-    const { companyId } = await seedCompanyAndAgent();
+    const { squadId } = await seedSquadAndAgent();
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
@@ -341,7 +341,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     );
 
     const configured = await services.localFolders.configure({
-      companyId,
+      squadId,
       folderKey: "wiki-root",
       path: root,
       access: "readWrite",
@@ -354,22 +354,22 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
 
     await fs.rm(path.join(root, "raw"), { recursive: true, force: true });
     await fs.rm(path.join(root, "wiki"), { recursive: true, force: true });
-    await expect(services.localFolders.readText({ companyId, folderKey: "wiki-root", relativePath: "WIKI.md" }))
+    await expect(services.localFolders.readText({ squadId, folderKey: "wiki-root", relativePath: "WIKI.md" }))
       .rejects.toThrow("Local folder is not healthy");
     await services.localFolders.writeTextAtomic({
-      companyId,
+      squadId,
       folderKey: "wiki-root",
       relativePath: "WIKI.md",
       contents: "# Wiki\n",
     });
     await services.localFolders.writeTextAtomic({
-      companyId,
+      squadId,
       folderKey: "wiki-root",
       relativePath: "AGENTS.md",
       contents: "# Agents\n",
     });
 
-    const finalStatus = await services.localFolders.status({ companyId, folderKey: "wiki-root" });
+    const finalStatus = await services.localFolders.status({ squadId, folderKey: "wiki-root" });
     expect(finalStatus.healthy).toBe(true);
     await expect(fs.stat(path.join(root, "raw"))).resolves.toMatchObject({});
     await expect(fs.stat(path.join(root, "wiki/concepts"))).resolves.toMatchObject({});
@@ -377,7 +377,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   });
 
   it("rejects worker local-folder access for undeclared manifest keys", async () => {
-    const { companyId } = await seedCompanyAndAgent();
+    const { squadId } = await seedSquadAndAgent();
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
@@ -432,17 +432,17 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       },
     );
     await expect(services.localFolders.configure({
-      companyId,
+      squadId,
       folderKey: "ssh",
       path: "/tmp",
       access: "read",
     })).rejects.toThrow("Local folder key is not declared");
-    await expect(services.localFolders.status({ companyId, folderKey: "ssh" }))
+    await expect(services.localFolders.status({ squadId, folderKey: "ssh" }))
       .rejects.toThrow("Local folder key is not declared");
-    await expect(services.localFolders.readText({ companyId, folderKey: "ssh", relativePath: "id_rsa" }))
+    await expect(services.localFolders.readText({ squadId, folderKey: "ssh", relativePath: "id_rsa" }))
       .rejects.toThrow("Local folder key is not declared");
     await expect(services.localFolders.writeTextAtomic({
-      companyId,
+      squadId,
       folderKey: "ssh",
       relativePath: "id_rsa",
       contents: "secret",
@@ -450,7 +450,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   });
 
   it("resolves plugin-managed projects by stable key without overwriting user edits", async () => {
-    const { companyId } = await seedCompanyAndAgent();
+    const { squadId } = await seedSquadAndAgent();
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
@@ -482,7 +482,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     });
 
     const services = buildHostServices(db, pluginId, "slaw.missions", createEventBusStub());
-    const missing = await services.projects.getManaged({ companyId, projectKey: "operations" });
+    const missing = await services.projects.getManaged({ squadId, projectKey: "operations" });
     expect(missing.status).toBe("missing");
     expect(missing.projectId).toBeNull();
     await expect(
@@ -490,14 +490,14 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
         .select()
         .from(pluginManagedResources)
         .where(and(
-          eq(pluginManagedResources.companyId, companyId),
+          eq(pluginManagedResources.squadId, squadId),
           eq(pluginManagedResources.pluginId, pluginId),
           eq(pluginManagedResources.resourceKind, "project"),
           eq(pluginManagedResources.resourceKey, "operations"),
         )),
     ).resolves.toHaveLength(0);
 
-    const created = await services.projects.reconcileManaged({ companyId, projectKey: "operations" });
+    const created = await services.projects.reconcileManaged({ squadId, projectKey: "operations" });
 
     expect(created.status).toBe("created");
     expect(created.projectId).toEqual(expect.any(String));
@@ -539,7 +539,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       })
       .where(eq(plugins.id, pluginId));
 
-    const resolved = await services.projects.reconcileManaged({ companyId, projectKey: "operations" });
+    const resolved = await services.projects.reconcileManaged({ squadId, projectKey: "operations" });
 
     expect(resolved.status).toBe("resolved");
     expect(resolved.projectId).toBe(created.projectId);
@@ -552,12 +552,12 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   });
 
   it("asserts checkout ownership for run-scoped plugin actions", async () => {
-    const { companyId, agentId } = await seedCompanyAndAgent();
+    const { squadId, agentId } = await seedSquadAndAgent();
     const issueId = randomUUID();
     const runId = randomUUID();
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       status: "running",
       invocationSource: "assignment",
@@ -565,7 +565,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     });
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Checked out issue",
       status: "in_progress",
       priority: "medium",
@@ -578,7 +578,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await expect(
       services.issues.assertCheckoutOwner({
         issueId,
-        companyId,
+        squadId,
         actorAgentId: agentId,
         actorRunId: runId,
       }),
@@ -591,20 +591,20 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   });
 
   it("refuses plugin wakeups for issues with unresolved blockers", async () => {
-    const { companyId, agentId } = await seedCompanyAndAgent();
+    const { squadId, agentId } = await seedSquadAndAgent();
     const blockerIssueId = randomUUID();
     const blockedIssueId = randomUUID();
     await db.insert(issues).values([
       {
         id: blockerIssueId,
-        companyId,
+        squadId,
         title: "Unresolved blocker",
         status: "todo",
         priority: "medium",
       },
       {
         id: blockedIssueId,
-        companyId,
+        squadId,
         title: "Blocked issue",
         status: "todo",
         priority: "medium",
@@ -612,7 +612,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       },
     ]);
     await db.insert(issueRelations).values({
-      companyId,
+      squadId,
       issueId: blockerIssueId,
       relatedIssueId: blockedIssueId,
       type: "blocks",
@@ -622,21 +622,21 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await expect(
       services.issues.requestWakeup({
         issueId: blockedIssueId,
-        companyId,
+        squadId,
         reason: "mission_advance",
       }),
     ).rejects.toThrow("Issue is blocked by unresolved blockers");
   });
 
   it("narrows orchestration cost summaries by subtree and billing code", async () => {
-    const { companyId, agentId } = await seedCompanyAndAgent();
+    const { squadId, agentId } = await seedSquadAndAgent();
     const rootIssueId = randomUUID();
     const childIssueId = randomUUID();
     const unrelatedIssueId = randomUUID();
     await db.insert(issues).values([
       {
         id: rootIssueId,
-        companyId,
+        squadId,
         title: "Root mission",
         status: "todo",
         priority: "medium",
@@ -644,7 +644,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       },
       {
         id: childIssueId,
-        companyId,
+        squadId,
         parentId: rootIssueId,
         title: "Child mission",
         status: "todo",
@@ -653,7 +653,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       },
       {
         id: unrelatedIssueId,
-        companyId,
+        squadId,
         title: "Different mission",
         status: "todo",
         priority: "medium",
@@ -662,7 +662,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     ]);
     await db.insert(costEvents).values([
       {
-        companyId,
+        squadId,
         agentId,
         issueId: rootIssueId,
         billingCode: "mission:alpha",
@@ -675,7 +675,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
         occurredAt: new Date(),
       },
       {
-        companyId,
+        squadId,
         agentId,
         issueId: childIssueId,
         billingCode: "mission:alpha",
@@ -688,7 +688,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
         occurredAt: new Date(),
       },
       {
-        companyId,
+        squadId,
         agentId,
         issueId: childIssueId,
         billingCode: "mission:beta",
@@ -701,7 +701,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
         occurredAt: new Date(),
       },
       {
-        companyId,
+        squadId,
         agentId,
         issueId: unrelatedIssueId,
         billingCode: "mission:alpha",
@@ -717,7 +717,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
 
     const services = buildHostServices(db, "plugin-record-id", "slaw.missions", createEventBusStub());
     const summary = await services.issues.getOrchestrationSummary({
-      companyId,
+      squadId,
       issueId: rootIssueId,
       includeSubtree: true,
     });

@@ -426,7 +426,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
 
         async configure(input) {
           return callHost("localFolders.configure", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             folderKey: input.folderKey,
             path: input.path,
             access: input.access,
@@ -435,13 +435,13 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async status(companyId: string, folderKey: string) {
-          return callHost("localFolders.status", { companyId, folderKey });
+        async status(squadId: string, folderKey: string) {
+          return callHost("localFolders.status", { squadId, folderKey });
         },
 
-        async list(companyId: string, folderKey: string, options = {}) {
+        async list(squadId: string, folderKey: string, options = {}) {
           return callHost("localFolders.list", {
-            companyId,
+            squadId,
             folderKey,
             relativePath: options.relativePath,
             recursive: options.recursive,
@@ -449,21 +449,21 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async readText(companyId: string, folderKey: string, relativePath: string) {
-          return callHost("localFolders.readText", { companyId, folderKey, relativePath });
+        async readText(squadId: string, folderKey: string, relativePath: string) {
+          return callHost("localFolders.readText", { squadId, folderKey, relativePath });
         },
 
-        async writeTextAtomic(companyId: string, folderKey: string, relativePath: string, contents: string) {
+        async writeTextAtomic(squadId: string, folderKey: string, relativePath: string, contents: string) {
           return callHost("localFolders.writeTextAtomic", {
-            companyId,
+            squadId,
             folderKey,
             relativePath,
             contents,
           });
         },
 
-        async deleteFile(companyId: string, folderKey: string, relativePath: string) {
-          return callHost("localFolders.deleteFile", { companyId, folderKey, relativePath });
+        async deleteFile(squadId: string, folderKey: string, relativePath: string) {
+          return callHost("localFolders.deleteFile", { squadId, folderKey, relativePath });
         },
       },
 
@@ -494,8 +494,8 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           };
         },
 
-        async emit(name: string, companyId: string, payload: unknown): Promise<void> {
-          await callHost("events.emit", { name, companyId, payload });
+        async emit(name: string, squadId: string, payload: unknown): Promise<void> {
+          await callHost("events.emit", { name, squadId, payload });
         },
       },
 
@@ -572,7 +572,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       activity: {
         async log(entry): Promise<void> {
           await callHost("activity.log", {
-            companyId: entry.companyId,
+            squadId: entry.squadId,
             message: entry.message,
             entityType: entry.entityType,
             entityId: entry.entityId,
@@ -639,110 +639,110 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       projects: {
         async list(input) {
           return callHost("projects.list", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             limit: input.limit,
             offset: input.offset,
           });
         },
 
-        async get(projectId: string, companyId: string) {
-          return callHost("projects.get", { projectId, companyId });
+        async get(projectId: string, squadId: string) {
+          return callHost("projects.get", { projectId, squadId });
         },
 
-        async listWorkspaces(projectId: string, companyId: string) {
-          return callHost("projects.listWorkspaces", { projectId, companyId });
+        async listWorkspaces(projectId: string, squadId: string) {
+          return callHost("projects.listWorkspaces", { projectId, squadId });
         },
 
-        async getPrimaryWorkspace(projectId: string, companyId: string) {
-          return callHost("projects.getPrimaryWorkspace", { projectId, companyId });
+        async getPrimaryWorkspace(projectId: string, squadId: string) {
+          return callHost("projects.getPrimaryWorkspace", { projectId, squadId });
         },
 
-        async getWorkspaceForIssue(issueId: string, companyId: string) {
-          return callHost("projects.getWorkspaceForIssue", { issueId, companyId });
+        async getWorkspaceForIssue(issueId: string, squadId: string) {
+          return callHost("projects.getWorkspaceForIssue", { issueId, squadId });
         },
 
         managed: {
-          async get(projectKey: string, companyId: string) {
-            return callHost("projects.managed.get", { projectKey, companyId });
+          async get(projectKey: string, squadId: string) {
+            return callHost("projects.managed.get", { projectKey, squadId });
           },
-          async reconcile(projectKey: string, companyId: string) {
-            return callHost("projects.managed.reconcile", { projectKey, companyId });
+          async reconcile(projectKey: string, squadId: string) {
+            return callHost("projects.managed.reconcile", { projectKey, squadId });
           },
-          async reset(projectKey: string, companyId: string) {
-            return callHost("projects.managed.reset", { projectKey, companyId });
+          async reset(projectKey: string, squadId: string) {
+            return callHost("projects.managed.reset", { projectKey, squadId });
           },
         },
       },
 
       executionWorkspaces: {
-        async get(workspaceId: string, companyId: string) {
-          return callHost("executionWorkspaces.get", { workspaceId, companyId });
+        async get(workspaceId: string, squadId: string) {
+          return callHost("executionWorkspaces.get", { workspaceId, squadId });
         },
       },
 
       routines: {
         managed: {
-          async get(routineKey: string, companyId: string) {
-            return callHost("routines.managed.get", { routineKey, companyId });
+          async get(routineKey: string, squadId: string) {
+            return callHost("routines.managed.get", { routineKey, squadId });
           },
           async reconcile(
             routineKey: string,
-            companyId: string,
+            squadId: string,
             overrides?: { assigneeAgentId?: string | null; projectId?: string | null },
           ) {
-            return callHost("routines.managed.reconcile", { routineKey, companyId, ...overrides });
+            return callHost("routines.managed.reconcile", { routineKey, squadId, ...overrides });
           },
           async reset(
             routineKey: string,
-            companyId: string,
+            squadId: string,
             overrides?: { assigneeAgentId?: string | null; projectId?: string | null },
           ) {
-            return callHost("routines.managed.reset", { routineKey, companyId, ...overrides });
+            return callHost("routines.managed.reset", { routineKey, squadId, ...overrides });
           },
-          async update(routineKey: string, companyId: string, patch: { status?: string }) {
-            return callHost("routines.managed.update", { routineKey, companyId, ...patch });
+          async update(routineKey: string, squadId: string, patch: { status?: string }) {
+            return callHost("routines.managed.update", { routineKey, squadId, ...patch });
           },
           async run(
             routineKey: string,
-            companyId: string,
+            squadId: string,
             overrides?: { assigneeAgentId?: string | null; projectId?: string | null },
           ) {
-            return callHost("routines.managed.run", { routineKey, companyId, ...overrides });
+            return callHost("routines.managed.run", { routineKey, squadId, ...overrides });
           },
         },
       },
 
       skills: {
         managed: {
-          async get(skillKey: string, companyId: string) {
-            return callHost("skills.managed.get", { skillKey, companyId });
+          async get(skillKey: string, squadId: string) {
+            return callHost("skills.managed.get", { skillKey, squadId });
           },
-          async reconcile(skillKey: string, companyId: string) {
-            return callHost("skills.managed.reconcile", { skillKey, companyId });
+          async reconcile(skillKey: string, squadId: string) {
+            return callHost("skills.managed.reconcile", { skillKey, squadId });
           },
-          async reset(skillKey: string, companyId: string) {
-            return callHost("skills.managed.reset", { skillKey, companyId });
+          async reset(skillKey: string, squadId: string) {
+            return callHost("skills.managed.reset", { skillKey, squadId });
           },
         },
       },
 
-      companies: {
+      squads: {
         async list(input) {
-          return callHost("companies.list", {
+          return callHost("squads.list", {
             limit: input?.limit,
             offset: input?.offset,
           });
         },
 
-        async get(companyId: string) {
-          return callHost("companies.get", { companyId });
+        async get(squadId: string) {
+          return callHost("squads.get", { squadId });
         },
       },
 
       issues: {
         async list(input) {
           return callHost("issues.list", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             projectId: input.projectId,
             assigneeAgentId: input.assigneeAgentId,
             originKind: input.originKind,
@@ -755,13 +755,13 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async get(issueId: string, companyId: string) {
-          return callHost("issues.get", { issueId, companyId });
+        async get(issueId: string, squadId: string) {
+          return callHost("issues.get", { issueId, squadId });
         },
 
         async create(input) {
           return callHost("issues.create", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             projectId: input.projectId,
             goalId: input.goalId,
             parentId: input.parentId,
@@ -790,7 +790,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async update(issueId: string, patch, companyId: string, actor) {
+        async update(issueId: string, patch, squadId: string, actor) {
           return callHost("issues.update", {
             issueId,
             patch: {
@@ -799,7 +799,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
               actorUserId: actor?.actorUserId,
               actorRunId: actor?.actorRunId,
             },
-            companyId,
+            squadId,
           });
         },
 
@@ -807,10 +807,10 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           return callHost("issues.assertCheckoutOwner", input);
         },
 
-        async getSubtree(issueId: string, companyId: string, options) {
+        async getSubtree(issueId: string, squadId: string, options) {
           return callHost("issues.getSubtree", {
             issueId,
-            companyId,
+            squadId,
             includeRoot: options?.includeRoot,
             includeRelations: options?.includeRelations,
             includeDocuments: options?.includeDocuments,
@@ -819,10 +819,10 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async requestWakeup(issueId: string, companyId: string, options) {
+        async requestWakeup(issueId: string, squadId: string, options) {
           return callHost("issues.requestWakeup", {
             issueId,
-            companyId,
+            squadId,
             reason: options?.reason,
             contextSource: options?.contextSource,
             idempotencyKey: options?.idempotencyKey,
@@ -832,10 +832,10 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async requestWakeups(issueIds: string[], companyId: string, options) {
+        async requestWakeups(issueIds: string[], squadId: string, options) {
           return callHost("issues.requestWakeups", {
             issueIds,
-            companyId,
+            squadId,
             reason: options?.reason,
             contextSource: options?.contextSource,
             idempotencyKeyPrefix: options?.idempotencyKeyPrefix,
@@ -845,18 +845,18 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async listComments(issueId: string, companyId: string) {
-          return callHost("issues.listComments", { issueId, companyId });
+        async listComments(issueId: string, squadId: string) {
+          return callHost("issues.listComments", { issueId, squadId });
         },
 
-        async createComment(issueId: string, body: string, companyId: string, options?: { authorAgentId?: string }) {
-          return callHost("issues.createComment", { issueId, body, companyId, authorAgentId: options?.authorAgentId });
+        async createComment(issueId: string, body: string, squadId: string, options?: { authorAgentId?: string }) {
+          return callHost("issues.createComment", { issueId, body, squadId, authorAgentId: options?.authorAgentId });
         },
 
-        async createInteraction(issueId: string, interaction, companyId: string, options?: { authorAgentId?: string }) {
+        async createInteraction(issueId: string, interaction, squadId: string, options?: { authorAgentId?: string }) {
           return callHost("issues.createInteraction", {
             issueId,
-            companyId,
+            squadId,
             interaction,
             authorAgentId: options?.authorAgentId,
           });
@@ -865,12 +865,12 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         async suggestTasks(
           issueId: string,
           interaction,
-          companyId: string,
+          squadId: string,
           options?: { authorAgentId?: string },
         ): Promise<SuggestTasksInteraction> {
           return callHost("issues.createInteraction", {
             issueId,
-            companyId,
+            squadId,
             interaction: {
               ...interaction,
               kind: "suggest_tasks",
@@ -882,12 +882,12 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         async askUserQuestions(
           issueId: string,
           interaction,
-          companyId: string,
+          squadId: string,
           options?: { authorAgentId?: string },
         ): Promise<AskUserQuestionsInteraction> {
           return callHost("issues.createInteraction", {
             issueId,
-            companyId,
+            squadId,
             interaction: {
               ...interaction,
               kind: "ask_user_questions",
@@ -899,12 +899,12 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         async requestConfirmation(
           issueId: string,
           interaction,
-          companyId: string,
+          squadId: string,
           options?: { authorAgentId?: string },
         ): Promise<RequestConfirmationInteraction> {
           return callHost("issues.createInteraction", {
             issueId,
-            companyId,
+            squadId,
             interaction: {
               ...interaction,
               kind: "request_confirmation",
@@ -914,12 +914,12 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         },
 
         documents: {
-          async list(issueId: string, companyId: string) {
-            return callHost("issues.documents.list", { issueId, companyId });
+          async list(issueId: string, squadId: string) {
+            return callHost("issues.documents.list", { issueId, squadId });
           },
 
-          async get(issueId: string, key: string, companyId: string) {
-            return callHost("issues.documents.get", { issueId, key, companyId });
+          async get(issueId: string, key: string, squadId: string) {
+            return callHost("issues.documents.get", { issueId, key, squadId });
           },
 
           async upsert(input) {
@@ -927,27 +927,27 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
               issueId: input.issueId,
               key: input.key,
               body: input.body,
-              companyId: input.companyId,
+              squadId: input.squadId,
               title: input.title,
               format: input.format,
               changeSummary: input.changeSummary,
             });
           },
 
-          async delete(issueId: string, key: string, companyId: string) {
-            return callHost("issues.documents.delete", { issueId, key, companyId });
+          async delete(issueId: string, key: string, squadId: string) {
+            return callHost("issues.documents.delete", { issueId, key, squadId });
           },
         },
 
         relations: {
-          async get(issueId: string, companyId: string) {
-            return callHost("issues.relations.get", { issueId, companyId });
+          async get(issueId: string, squadId: string) {
+            return callHost("issues.relations.get", { issueId, squadId });
           },
 
-          async setBlockedBy(issueId: string, blockedByIssueIds: string[], companyId: string, actor) {
+          async setBlockedBy(issueId: string, blockedByIssueIds: string[], squadId: string, actor) {
             return callHost("issues.relations.setBlockedBy", {
               issueId,
-              companyId,
+              squadId,
               blockedByIssueIds,
               actorAgentId: actor?.actorAgentId,
               actorUserId: actor?.actorUserId,
@@ -955,10 +955,10 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
             });
           },
 
-          async addBlockers(issueId: string, blockerIssueIds: string[], companyId: string, actor) {
+          async addBlockers(issueId: string, blockerIssueIds: string[], squadId: string, actor) {
             return callHost("issues.relations.addBlockers", {
               issueId,
-              companyId,
+              squadId,
               blockerIssueIds,
               actorAgentId: actor?.actorAgentId,
               actorUserId: actor?.actorUserId,
@@ -966,10 +966,10 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
             });
           },
 
-          async removeBlockers(issueId: string, blockerIssueIds: string[], companyId: string, actor) {
+          async removeBlockers(issueId: string, blockerIssueIds: string[], squadId: string, actor) {
             return callHost("issues.relations.removeBlockers", {
               issueId,
-              companyId,
+              squadId,
               blockerIssueIds,
               actorAgentId: actor?.actorAgentId,
               actorUserId: actor?.actorUserId,
@@ -988,58 +988,58 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       agents: {
         async list(input) {
           return callHost("agents.list", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             status: input.status,
             limit: input.limit,
             offset: input.offset,
           });
         },
 
-        async get(agentId: string, companyId: string) {
-          return callHost("agents.get", { agentId, companyId });
+        async get(agentId: string, squadId: string) {
+          return callHost("agents.get", { agentId, squadId });
         },
 
-        async pause(agentId: string, companyId: string) {
-          return callHost("agents.pause", { agentId, companyId });
+        async pause(agentId: string, squadId: string) {
+          return callHost("agents.pause", { agentId, squadId });
         },
 
-        async resume(agentId: string, companyId: string) {
-          return callHost("agents.resume", { agentId, companyId });
+        async resume(agentId: string, squadId: string) {
+          return callHost("agents.resume", { agentId, squadId });
         },
 
-        async invoke(agentId: string, companyId: string, opts: { prompt: string; reason?: string }) {
-          return callHost("agents.invoke", { agentId, companyId, prompt: opts.prompt, reason: opts.reason });
+        async invoke(agentId: string, squadId: string, opts: { prompt: string; reason?: string }) {
+          return callHost("agents.invoke", { agentId, squadId, prompt: opts.prompt, reason: opts.reason });
         },
 
         managed: {
-          async get(agentKey: string, companyId: string) {
-            return callHost("agents.managed.get", { agentKey, companyId });
+          async get(agentKey: string, squadId: string) {
+            return callHost("agents.managed.get", { agentKey, squadId });
           },
 
-          async reconcile(agentKey: string, companyId: string) {
-            return callHost("agents.managed.reconcile", { agentKey, companyId });
+          async reconcile(agentKey: string, squadId: string) {
+            return callHost("agents.managed.reconcile", { agentKey, squadId });
           },
 
-          async reset(agentKey: string, companyId: string) {
-            return callHost("agents.managed.reset", { agentKey, companyId });
+          async reset(agentKey: string, squadId: string) {
+            return callHost("agents.managed.reset", { agentKey, squadId });
           },
         },
 
         sessions: {
-          async create(agentId: string, companyId: string, opts?: { taskKey?: string; reason?: string }) {
+          async create(agentId: string, squadId: string, opts?: { taskKey?: string; reason?: string }) {
             return callHost("agents.sessions.create", {
               agentId,
-              companyId,
+              squadId,
               taskKey: opts?.taskKey,
               reason: opts?.reason,
             });
           },
 
-          async list(agentId: string, companyId: string) {
-            return callHost("agents.sessions.list", { agentId, companyId });
+          async list(agentId: string, squadId: string) {
+            return callHost("agents.sessions.list", { agentId, squadId });
           },
 
-          async sendMessage(sessionId: string, companyId: string, opts: {
+          async sendMessage(sessionId: string, squadId: string, opts: {
             prompt: string;
             reason?: string;
             onEvent?: (event: AgentSessionEvent) => void;
@@ -1050,7 +1050,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
             try {
               return await callHost("agents.sessions.sendMessage", {
                 sessionId,
-                companyId,
+                squadId,
                 prompt: opts.prompt,
                 reason: opts.reason,
               });
@@ -1060,9 +1060,9 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
             }
           },
 
-          async close(sessionId: string, companyId: string) {
+          async close(sessionId: string, squadId: string) {
             sessionEventCallbacks.delete(sessionId);
-            await callHost("agents.sessions.close", { sessionId, companyId });
+            await callHost("agents.sessions.close", { sessionId, squadId });
           },
         },
       },
@@ -1070,7 +1070,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       goals: {
         async list(input) {
           return callHost("goals.list", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             level: input.level,
             status: input.status,
             limit: input.limit,
@@ -1078,13 +1078,13 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async get(goalId: string, companyId: string) {
-          return callHost("goals.get", { goalId, companyId });
+        async get(goalId: string, squadId: string) {
+          return callHost("goals.get", { goalId, squadId });
         },
 
         async create(input) {
           return callHost("goals.create", {
-            companyId: input.companyId,
+            squadId: input.squadId,
             title: input.title,
             description: input.description,
             level: input.level,
@@ -1094,11 +1094,11 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
           });
         },
 
-        async update(goalId: string, patch, companyId: string) {
+        async update(goalId: string, patch, squadId: string) {
           return callHost("goals.update", {
             goalId,
             patch: patch as Record<string, unknown>,
-            companyId,
+            squadId,
           });
         },
       },
@@ -1107,24 +1107,24 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         members: {
           async list(input) {
             return callHost("access.members.list", {
-              companyId: input.companyId,
+              squadId: input.squadId,
               includeArchived: input.includeArchived,
             });
           },
 
-          async get(memberId: string, companyId: string) {
-            return callHost("access.members.get", { memberId, companyId });
+          async get(memberId: string, squadId: string) {
+            return callHost("access.members.get", { memberId, squadId });
           },
 
-          async update(memberId: string, patch, companyId: string) {
-            return callHost("access.members.update", { memberId, patch, companyId });
+          async update(memberId: string, patch, squadId: string) {
+            return callHost("access.members.update", { memberId, patch, squadId });
           },
         },
 
         invites: {
           async list(input) {
             return callHost("access.invites.list", {
-              companyId: input.companyId,
+              squadId: input.squadId,
               state: input.state,
               limit: input.limit,
               offset: input.offset,
@@ -1133,7 +1133,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
 
           async create(input) {
             return callHost("access.invites.create", {
-              companyId: input.companyId,
+              squadId: input.squadId,
               allowedJoinTypes: input.allowedJoinTypes,
               humanRole: input.humanRole,
               defaultsPayload: input.defaultsPayload,
@@ -1141,8 +1141,8 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
             });
           },
 
-          async revoke(inviteId: string, companyId: string) {
-            return callHost("access.invites.revoke", { inviteId, companyId });
+          async revoke(inviteId: string, squadId: string) {
+            return callHost("access.invites.revoke", { inviteId, squadId });
           },
         },
       },
@@ -1158,8 +1158,8 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
         },
 
         policies: {
-          async summary(companyId: string) {
-            return callHost("authorization.policies.summary", { companyId });
+          async summary(squadId: string) {
+            return callHost("authorization.policies.summary", { squadId });
           },
           async get(input) {
             return callHost("authorization.policies.get", input);
@@ -1198,21 +1198,21 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       },
 
       streams: (() => {
-        // Track channel → companyId so emit/close don't require companyId
-        const channelCompanyMap = new Map<string, string>();
+        // Track channel → squadId so emit/close don't require squadId
+        const channelSquadMap = new Map<string, string>();
         return {
-          open(channel: string, companyId: string): void {
-            channelCompanyMap.set(channel, companyId);
-            notifyHost("streams.open", { channel, companyId });
+          open(channel: string, squadId: string): void {
+            channelSquadMap.set(channel, squadId);
+            notifyHost("streams.open", { channel, squadId });
           },
           emit(channel: string, event: unknown): void {
-            const companyId = channelCompanyMap.get(channel) ?? "";
-            notifyHost("streams.emit", { channel, companyId, event });
+            const squadId = channelSquadMap.get(channel) ?? "";
+            notifyHost("streams.emit", { channel, squadId, event });
           },
           close(channel: string): void {
-            const companyId = channelCompanyMap.get(channel) ?? "";
-            channelCompanyMap.delete(channel);
-            notifyHost("streams.close", { channel, companyId });
+            const squadId = channelSquadMap.get(channel) ?? "";
+            channelSquadMap.delete(channel);
+            notifyHost("streams.close", { channel, squadId });
           },
         };
       })(),
@@ -1517,7 +1517,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
     }
     return handler({
       ...params.params,
-      ...(params.companyId === undefined ? {} : { companyId: params.companyId }),
+      ...(params.squadId === undefined ? {} : { squadId: params.squadId }),
       ...(params.renderEnvironment === undefined ? {} : { renderEnvironment: params.renderEnvironment }),
     });
   }
@@ -1539,11 +1539,11 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       userId: stringOrNull(rawActor?.userId),
       agentId: stringOrNull(rawActor?.agentId),
       runId: stringOrNull(rawActor?.runId),
-      companyId: stringOrNull(rawActor?.companyId),
+      squadId: stringOrNull(rawActor?.squadId),
     });
     return Object.freeze({
       actor,
-      companyId: actor.companyId,
+      squadId: actor.squadId,
     });
   }
 
@@ -1555,7 +1555,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
     return handler(
       {
         ...params.params,
-        ...(params.companyId === undefined ? {} : { companyId: params.companyId }),
+        ...(params.squadId === undefined ? {} : { squadId: params.squadId }),
         ...(params.renderEnvironment === undefined ? {} : { renderEnvironment: params.renderEnvironment }),
       },
       actionContextFromParams(params),
@@ -1642,9 +1642,9 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
   function allowsEvent(filter: EventFilter, event: PluginEvent): boolean {
     const payload = event.payload as Record<string, unknown> | undefined;
 
-    if (filter.companyId !== undefined) {
-      const companyId = event.companyId ?? String(payload?.companyId ?? "");
-      if (companyId !== filter.companyId) return false;
+    if (filter.squadId !== undefined) {
+      const squadId = event.squadId ?? String(payload?.squadId ?? "");
+      if (squadId !== filter.squadId) return false;
     }
 
     if (filter.projectId !== undefined) {

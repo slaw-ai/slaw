@@ -4,14 +4,14 @@ import { goals } from "@slaw/db";
 
 type GoalReader = Pick<Db, "select">;
 
-export async function getDefaultCompanyGoal(db: GoalReader, companyId: string) {
+export async function getDefaultSquadGoal(db: GoalReader, squadId: string) {
   const activeRootGoal = await db
     .select()
     .from(goals)
     .where(
       and(
-        eq(goals.companyId, companyId),
-        eq(goals.level, "company"),
+        eq(goals.squadId, squadId),
+        eq(goals.level, "squad"),
         eq(goals.status, "active"),
         isNull(goals.parentId),
       ),
@@ -25,8 +25,8 @@ export async function getDefaultCompanyGoal(db: GoalReader, companyId: string) {
     .from(goals)
     .where(
       and(
-        eq(goals.companyId, companyId),
-        eq(goals.level, "company"),
+        eq(goals.squadId, squadId),
+        eq(goals.level, "squad"),
         isNull(goals.parentId),
       ),
     )
@@ -37,14 +37,14 @@ export async function getDefaultCompanyGoal(db: GoalReader, companyId: string) {
   return db
     .select()
     .from(goals)
-    .where(and(eq(goals.companyId, companyId), eq(goals.level, "company")))
+    .where(and(eq(goals.squadId, squadId), eq(goals.level, "squad")))
     .orderBy(asc(goals.createdAt))
     .then((rows) => rows[0] ?? null);
 }
 
 export function goalService(db: Db) {
   return {
-    list: (companyId: string) => db.select().from(goals).where(eq(goals.companyId, companyId)),
+    list: (squadId: string) => db.select().from(goals).where(eq(goals.squadId, squadId)),
 
     getById: (id: string) =>
       db
@@ -53,12 +53,12 @@ export function goalService(db: Db) {
         .where(eq(goals.id, id))
         .then((rows) => rows[0] ?? null),
 
-    getDefaultCompanyGoal: (companyId: string) => getDefaultCompanyGoal(db, companyId),
+    getDefaultSquadGoal: (squadId: string) => getDefaultSquadGoal(db, squadId),
 
-    create: (companyId: string, data: Omit<typeof goals.$inferInsert, "companyId">) =>
+    create: (squadId: string, data: Omit<typeof goals.$inferInsert, "squadId">) =>
       db
         .insert(goals)
-        .values({ ...data, companyId })
+        .values({ ...data, squadId })
         .returning()
         .then((rows) => rows[0]),
 

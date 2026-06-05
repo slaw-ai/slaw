@@ -3,7 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
-  companies,
+  squads,
   createDb,
   environmentLeases,
   environments,
@@ -76,9 +76,9 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
         "heartbeat_runs",
         "agent_wakeup_requests",
         "agent_runtime_state",
-        "company_skills",
+        "squad_skills",
         "agents",
-        "companies"
+        "squads"
       RESTART IDENTITY CASCADE
     `));
   });
@@ -88,12 +88,12 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
   });
 
   it("runs work through the default Local environment lease", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
-    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -101,7 +101,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "ProcessAgent",
       role: "engineer",
       status: "idle",
@@ -124,7 +124,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
     const localRows = await db
       .select()
       .from(environments)
-      .where(and(eq(environments.companyId, companyId), eq(environments.driver, "local")));
+      .where(and(eq(environments.squadId, squadId), eq(environments.driver, "local")));
     expect(localRows).toHaveLength(1);
     expect(localRows[0]?.name).toBe("Local");
 

@@ -35,7 +35,7 @@ describe("buildSlawEnv", () => {
     process.env.SLAW_LISTEN_HOST = "127.0.0.1";
     process.env.SLAW_LISTEN_PORT = "3101";
 
-    const env = buildSlawEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildSlawEnv({ id: "agent-1", squadId: "squad-1" });
 
     expect(env.SLAW_API_URL).toBe("http://203.0.113.42:3102");
   });
@@ -46,7 +46,7 @@ describe("buildSlawEnv", () => {
     process.env.SLAW_LISTEN_HOST = "127.0.0.1";
     process.env.SLAW_LISTEN_PORT = "3101";
 
-    const env = buildSlawEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildSlawEnv({ id: "agent-1", squadId: "squad-1" });
 
     expect(env.SLAW_API_URL).toBe("http://localhost:4100");
   });
@@ -58,7 +58,7 @@ describe("buildSlawEnv", () => {
     process.env.SLAW_LISTEN_PORT = "3101";
     process.env.PORT = "3100";
 
-    const env = buildSlawEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildSlawEnv({ id: "agent-1", squadId: "squad-1" });
 
     expect(env.SLAW_API_URL).toBe("http://localhost:3101");
   });
@@ -69,7 +69,7 @@ describe("buildSlawEnv", () => {
     process.env.SLAW_LISTEN_HOST = "::1";
     process.env.SLAW_LISTEN_PORT = "3101";
 
-    const env = buildSlawEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildSlawEnv({ id: "agent-1", squadId: "squad-1" });
 
     expect(env.SLAW_API_URL).toBe("http://[::1]:3101");
   });

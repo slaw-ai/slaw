@@ -47,7 +47,7 @@ import {
   saveInboxIssueColumns,
   saveInboxWorkItemGroupBy,
   saveLastInboxTab,
-  shouldShowCompanyAlerts,
+  shouldShowSquadAlerts,
   shouldResetInboxWorkspaceGrouping,
   shouldShowInboxSection,
   type InboxWorkItem,
@@ -74,7 +74,7 @@ Object.defineProperty(globalThis, "localStorage", {
 function makeApproval(status: Approval["status"]): Approval {
   return {
     id: `approval-${status}`,
-    companyId: "company-1",
+    squadId: "squad-1",
     type: "hire_agent",
     requestedByAgentId: null,
     requestedByUserId: null,
@@ -105,7 +105,7 @@ function makeJoinRequest(id: string): JoinRequest {
   return {
     id,
     inviteId: "invite-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     requestType: "human",
     status: "pending_approval",
     requestEmailSnapshot: null,
@@ -130,7 +130,7 @@ function makeJoinRequest(id: string): JoinRequest {
 function makeRun(id: string, status: HeartbeatRun["status"], createdAt: string, agentId = "agent-1"): HeartbeatRun {
   return {
     id,
-    companyId: "company-1",
+    squadId: "squad-1",
     agentId,
     invocationSource: "assignment",
     triggerDetail: null,
@@ -177,7 +177,7 @@ function makeRun(id: string, status: HeartbeatRun["status"], createdAt: string, 
 function makeIssue(id: string, isUnreadForMe: boolean): Issue {
   return {
     id,
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,
@@ -221,7 +221,7 @@ function makeIssue(id: string, isUnreadForMe: boolean): Issue {
 function makeProjectWorkspace(overrides: Partial<ProjectWorkspace> = {}): ProjectWorkspace {
   return {
     id: "project-workspace-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     name: "Primary workspace",
     sourceType: "local_path",
@@ -247,7 +247,7 @@ function makeProjectWorkspace(overrides: Partial<ProjectWorkspace> = {}): Projec
 function makeExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): ExecutionWorkspace {
   return {
     id: "execution-workspace-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: "project-workspace-1",
     sourceIssueId: "issue-1",
@@ -276,7 +276,7 @@ function makeExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): Ex
 }
 
 const dashboard: DashboardSummary = {
-  companyId: "company-1",
+  squadId: "squad-1",
   agents: {
     active: 1,
     running: 0,
@@ -381,7 +381,7 @@ describe("inbox helpers", () => {
     const dismissedAtByKey = buildInboxDismissedAtByKey([
       {
         id: "dismissal-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         userId: "user-1",
         itemKey: "approval:approval-1",
         dismissedAt: new Date("2026-03-11T01:00:00.000Z"),
@@ -413,7 +413,7 @@ describe("inbox helpers", () => {
     expect(issues).toHaveLength(2);
   });
 
-  it("shows actionable approvals on mine, while recent and unread stay company-wide", () => {
+  it("shows actionable approvals on mine, while recent and unread stay squad-wide", () => {
     const approvals = [
       {
         ...makeApprovalWithTimestamps("approval-approved", "approved", "2026-03-11T02:00:00.000Z"),
@@ -478,7 +478,7 @@ describe("inbox helpers", () => {
     expect(result.approvals).toBe(1);
   });
 
-  it("does not count company-wide alerts in the personal inbox badge", () => {
+  it("does not count squad-wide alerts in the personal inbox badge", () => {
     const result = computeInboxBadgeData({
       approvals: [],
       joinRequests: [],
@@ -795,11 +795,11 @@ describe("inbox helpers", () => {
     ).toBe(false);
   });
 
-  it("shows company alerts only on the all tab", () => {
-    expect(shouldShowCompanyAlerts("mine")).toBe(false);
-    expect(shouldShowCompanyAlerts("recent")).toBe(false);
-    expect(shouldShowCompanyAlerts("unread")).toBe(false);
-    expect(shouldShowCompanyAlerts("all")).toBe(true);
+  it("shows squad alerts only on the all tab", () => {
+    expect(shouldShowSquadAlerts("mine")).toBe(false);
+    expect(shouldShowSquadAlerts("recent")).toBe(false);
+    expect(shouldShowSquadAlerts("unread")).toBe(false);
+    expect(shouldShowSquadAlerts("all")).toBe(true);
   });
 
   it("limits recent touched issues before unread badge counting", () => {
@@ -1008,8 +1008,8 @@ describe("inbox helpers", () => {
     expect(loadLastInboxTab()).toBe("blocked");
   });
 
-  it("persists inbox filters per company", () => {
-    saveInboxFilterPreferences("company-1", {
+  it("persists inbox filters per squad", () => {
+    saveInboxFilterPreferences("squad-1", {
       allCategoryFilter: "approvals",
       allApprovalFilter: "resolved",
       issueFilters: {
@@ -1024,7 +1024,7 @@ describe("inbox helpers", () => {
         hideRoutineExecutions: false,
       },
     });
-    saveInboxFilterPreferences("company-2", {
+    saveInboxFilterPreferences("squad-2", {
       allCategoryFilter: "failed_runs",
       allApprovalFilter: "actionable",
       issueFilters: {
@@ -1040,7 +1040,7 @@ describe("inbox helpers", () => {
       },
     });
 
-    expect(loadInboxFilterPreferences("company-1")).toEqual({
+    expect(loadInboxFilterPreferences("squad-1")).toEqual({
       allCategoryFilter: "approvals",
       allApprovalFilter: "resolved",
       issueFilters: {
@@ -1055,7 +1055,7 @@ describe("inbox helpers", () => {
         hideRoutineExecutions: false,
       },
     });
-    expect(loadInboxFilterPreferences("company-2")).toEqual({
+    expect(loadInboxFilterPreferences("squad-2")).toEqual({
       allCategoryFilter: "failed_runs",
       allApprovalFilter: "actionable",
       issueFilters: {
@@ -1073,7 +1073,7 @@ describe("inbox helpers", () => {
   });
 
   it("normalizes invalid inbox filter storage back to safe defaults", () => {
-    localStorage.setItem("slaw:inbox:filters:company-1", JSON.stringify({
+    localStorage.setItem("slaw:inbox:filters:squad-1", JSON.stringify({
       allCategoryFilter: "bogus",
       allApprovalFilter: "bogus",
       issueFilters: {
@@ -1089,7 +1089,7 @@ describe("inbox helpers", () => {
       },
     }));
 
-    expect(loadInboxFilterPreferences("company-1")).toEqual({
+    expect(loadInboxFilterPreferences("squad-1")).toEqual({
       allCategoryFilter: "everything",
       allApprovalFilter: "all",
       issueFilters: {
@@ -1450,18 +1450,18 @@ describe("inbox helpers", () => {
     expect(loadInboxWorkItemGroupBy()).toBe("project");
   });
 
-  it("persists collapsed inbox groups per company", () => {
-    saveCollapsedInboxGroupKeys("company-1", new Set(["workspace:alpha", "workspace:beta"]));
-    saveCollapsedInboxGroupKeys("company-2", new Set(["type:approval"]));
+  it("persists collapsed inbox groups per squad", () => {
+    saveCollapsedInboxGroupKeys("squad-1", new Set(["workspace:alpha", "workspace:beta"]));
+    saveCollapsedInboxGroupKeys("squad-2", new Set(["type:approval"]));
 
-    expect(loadCollapsedInboxGroupKeys("company-1")).toEqual(new Set(["workspace:alpha", "workspace:beta"]));
-    expect(loadCollapsedInboxGroupKeys("company-2")).toEqual(new Set(["type:approval"]));
+    expect(loadCollapsedInboxGroupKeys("squad-1")).toEqual(new Set(["workspace:alpha", "workspace:beta"]));
+    expect(loadCollapsedInboxGroupKeys("squad-2")).toEqual(new Set(["type:approval"]));
   });
 
   it("returns empty collapsed inbox groups for missing or invalid storage", () => {
-    expect(loadCollapsedInboxGroupKeys("company-1")).toEqual(new Set());
-    localStorage.setItem("slaw:inbox:collapsed-groups:company-1", JSON.stringify({ nope: true }));
-    expect(loadCollapsedInboxGroupKeys("company-1")).toEqual(new Set());
+    expect(loadCollapsedInboxGroupKeys("squad-1")).toEqual(new Set());
+    localStorage.setItem("slaw:inbox:collapsed-groups:squad-1", JSON.stringify({ nope: true }));
+    expect(loadCollapsedInboxGroupKeys("squad-1")).toEqual(new Set());
   });
 
   it("does not reset workspace grouping before experimental settings have loaded", () => {

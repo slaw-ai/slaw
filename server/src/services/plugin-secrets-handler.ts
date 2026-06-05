@@ -15,7 +15,7 @@
  * ## Secret Reference Format
  *
  * A `secretRef` is a **secret UUID** — the primary key (`id`) of a row in
- * the `company_secrets` table. Operators place these UUIDs into plugin
+ * the `squad_secrets` table. Operators place these UUIDs into plugin
  * config values; plugin workers resolve them at execution time via
  * `ctx.secrets.resolve(secretId)`.
  *
@@ -41,7 +41,7 @@ import {
 } from "./json-schema-secret-refs.js";
 
 export const PLUGIN_SECRET_REFS_DISABLED_MESSAGE =
-  "Plugin secret references are disabled until company-scoped plugin config lands";
+  "Plugin secret references are disabled until squad-scoped plugin config lands";
 
 // ---------------------------------------------------------------------------
 // Error helpers
@@ -231,7 +231,7 @@ export function createPluginSecretsHandler(
       }
 
       // Fail closed until plugin config and worker runtime both carry an
-      // explicit company scope for secret bindings and resolution.
+      // explicit squad scope for secret bindings and resolution.
       throw new Error(PLUGIN_SECRET_REFS_DISABLED_MESSAGE);
     },
   };

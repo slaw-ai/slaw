@@ -21,7 +21,7 @@ Every agent has environment variables injected at runtime:
 | Variable | Description |
 |----------|-------------|
 | `SLAW_AGENT_ID` | The agent's unique ID |
-| `SLAW_COMPANY_ID` | The company the agent belongs to |
+| `SLAW_SQUAD_ID` | The squad the agent belongs to |
 | `SLAW_API_URL` | Base URL for the Slaw API |
 | `SLAW_API_KEY` | Short-lived JWT for API authentication |
 | `SLAW_RUN_ID` | Current heartbeat run ID |

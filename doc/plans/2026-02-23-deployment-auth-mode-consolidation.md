@@ -39,7 +39,7 @@ Keep Slaw low-friction while making the mode model simpler and safer:
 
 ## Membership/Assignment Integration
 
-- User task assignment requires active `company_memberships` entry for that user (`server/src/services/issues.ts`).
+- User task assignment requires active `squad_memberships` entry for that user (`server/src/services/issues.ts`).
 - Local implicit board identity is not automatically a real membership principal; this is a gap for “board as assignable user” semantics.
 
 ## Proposed Runtime Model
@@ -126,16 +126,16 @@ Board must be a real DB user principal so user-centric features (task assignment
 - actor middleware uses that real user id instead of synthetic-only identity.
 - ensure:
   - `instance_user_roles` includes `instance_admin` for this user.
-  - company membership can be created/maintained for this user where needed.
+  - squad membership can be created/maintained for this user where needed.
 
 2. `authenticated`
 - Better Auth sign-up creates user row.
 - bootstrap/admin flow promotes that real user to `instance_admin`.
-- first company creation flow should ensure creator membership is active.
+- first squad creation flow should ensure creator membership is active.
 
 ## Why This Matters
 
-- `assigneeUserId` validation checks company membership.
+- `assigneeUserId` validation checks squad membership.
 - without a real board user + membership path, assigning tasks to board user is inconsistent.
 
 ## Configuration Contract (Target)
@@ -181,7 +181,7 @@ This change is a clean cut:
 - add ensure-board-user startup/setup step:
   - real local board user row
   - instance admin role row
-- ensure first-company creation path grants creator membership.
+- ensure first-squad creation path grants creator membership.
 - remove synthetic-only assumptions where they break user assignment/membership semantics.
 
 ## Phase 5: UI + Docs

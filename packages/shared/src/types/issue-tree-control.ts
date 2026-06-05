@@ -57,7 +57,7 @@ export interface IssueTreePreviewTotals {
 }
 
 export interface IssueTreeControlPreview {
-  companyId: string;
+  squadId: string;
   rootIssueId: string;
   mode: IssueTreeControlMode;
   generatedAt: Date;
@@ -73,7 +73,7 @@ export interface IssueTreeControlPreview {
 
 export interface IssueTreeHoldMember {
   id: string;
-  companyId: string;
+  squadId: string;
   holdId: string;
   issueId: string;
   parentIssueId: string | null;
@@ -92,7 +92,7 @@ export interface IssueTreeHoldMember {
 
 export interface IssueTreeHold {
   id: string;
-  companyId: string;
+  squadId: string;
   rootIssueId: string;
   mode: IssueTreeControlMode;
   status: IssueTreeHoldStatus;

@@ -466,7 +466,7 @@ import plugin from "../src/worker.js";
 const ENV_ID = "env-test-1";
 const BASE_PARAMS = {
   driverKey: manifest.environmentDrivers![0].driverKey,
-  companyId: "co-1",
+  squadId: "co-1",
   environmentId: ENV_ID,
   config: {},
 };

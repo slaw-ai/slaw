@@ -4,7 +4,7 @@ description: Triage Slaw inbox issues that are stale, blocked, in-review, or ass
 key: slaw/bundled/slaw-operations/issue-triage
 recommendedForRoles:
   - manager
-  - ceo
+  - squad_lead
   - engineer
 tags:
   - slaw

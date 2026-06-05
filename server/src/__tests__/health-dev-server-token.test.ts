@@ -84,7 +84,7 @@ describe("GET /health dev-server supervisor access", () => {
           deploymentMode: "authenticated",
           deploymentExposure: "private",
           authReady: true,
-          companyDeletionEnabled: true,
+          squadDeletionEnabled: true,
         }),
       );
 
@@ -187,7 +187,7 @@ describe("POST /health/dev-server/restart", () => {
           deploymentMode: "authenticated",
           deploymentExposure: "private",
           authReady: true,
-          companyDeletionEnabled: true,
+          squadDeletionEnabled: true,
         }),
       );
 

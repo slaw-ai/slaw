@@ -20,8 +20,8 @@ import {
   formatDatabaseBackupResult,
   runDatabaseBackup,
   authUsers,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   instanceUserRoles,
 } from "@slaw/db";
 import detectPort from "detect-port";
@@ -264,22 +264,22 @@ export async function startServer(): Promise<StartedServer> {
       });
     }
   
-    const companyRows = await db.select({ id: companies.id }).from(companies);
-    for (const company of companyRows) {
+    const squadRows = await db.select({ id: squads.id }).from(squads);
+    for (const squad of squadRows) {
       const membership = await db
-        .select({ id: companyMemberships.id })
-        .from(companyMemberships)
+        .select({ id: squadMemberships.id })
+        .from(squadMemberships)
         .where(
           and(
-            eq(companyMemberships.companyId, company.id),
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, LOCAL_BOARD_USER_ID),
+            eq(squadMemberships.squadId, squad.id),
+            eq(squadMemberships.principalType, "user"),
+            eq(squadMemberships.principalId, LOCAL_BOARD_USER_ID),
           ),
         )
         .then((rows: Array<{ id: string }>) => rows[0] ?? null);
       if (membership) continue;
-      await db.insert(companyMemberships).values({
-        companyId: company.id,
+      await db.insert(squadMemberships).values({
+        squadId: squad.id,
         principalType: "user",
         principalId: LOCAL_BOARD_USER_ID,
         status: "active",
@@ -646,7 +646,7 @@ export async function startServer(): Promise<StartedServer> {
     allowedHostnames: config.allowedHostnames,
     bindHost: config.host,
     authReady,
-    companyDeletionEnabled: config.companyDeletionEnabled,
+    squadDeletionEnabled: config.squadDeletionEnabled,
     pluginMigrationDb: pluginMigrationDb as any,
     betterAuthHandler,
     resolveSession,

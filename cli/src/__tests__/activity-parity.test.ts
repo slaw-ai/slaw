@@ -2,7 +2,7 @@ import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { registerActivityCommands } from "../commands/client/activity.js";
 
-const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
+const SQUAD_ID = "22222222-2222-4222-8222-222222222222";
 const ISSUE_ID = "33333333-3333-4333-8333-333333333333";
 
 function createProgram(): Command {
@@ -36,13 +36,13 @@ describe("activity parity commands", () => {
       .mockImplementation(() => Promise.resolve(jsonResponse()));
     vi.stubGlobal("fetch", fetchMock);
 
-    await run(["activity", "list", "--company-id", COMPANY_ID, "--agent-id", "agent-1"]);
-    await run(["activity", "create", "--company-id", COMPANY_ID, "--payload-json", "{}"]);
+    await run(["activity", "list", "--squad-id", SQUAD_ID, "--agent-id", "agent-1"]);
+    await run(["activity", "create", "--squad-id", SQUAD_ID, "--payload-json", "{}"]);
     await run(["activity", "issue", ISSUE_ID]);
 
     expect(fetchMock.mock.calls.map((call) => [call[1]?.method ?? "GET", call[0]])).toEqual([
-      ["GET", `http://localhost:3100/api/companies/${COMPANY_ID}/activity?agentId=agent-1`],
-      ["POST", `http://localhost:3100/api/companies/${COMPANY_ID}/activity`],
+      ["GET", `http://localhost:3100/api/squads/${SQUAD_ID}/activity?agentId=agent-1`],
+      ["POST", `http://localhost:3100/api/squads/${SQUAD_ID}/activity`],
       ["GET", `http://localhost:3100/api/issues/${ISSUE_ID}/activity`],
     ]);
   });

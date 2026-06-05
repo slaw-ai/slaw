@@ -9,7 +9,7 @@ import { goalsApi } from "../api/goals";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { projectsApi } from "../api/projects";
 import { secretsApi } from "../api/secrets";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { queryKeys } from "../lib/queryKeys";
 import { statusBadge, statusBadgeDefault } from "../lib/status-colors";
 import { Separator } from "@/components/ui/separator";
@@ -222,7 +222,7 @@ function ArchiveDangerZone({
 }
 
 export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSaveState, onArchive, archivePending }: ProjectPropertiesProps) {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const queryClient = useQueryClient();
   const [goalOpen, setGoalOpen] = useState(false);
   const [executionWorkspaceAdvancedOpen, setExecutionWorkspaceAdvancedOpen] = useState(false);
@@ -241,9 +241,9 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
   const fieldState = (field: ProjectConfigFieldKey): ProjectFieldSaveState => getFieldSaveState?.(field) ?? "idle";
 
   const { data: allGoals } = useQuery({
-    queryKey: queryKeys.goals.list(selectedCompanyId!),
-    queryFn: () => goalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.goals.list(selectedSquadId!),
+    queryFn: () => goalsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -252,24 +252,24 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
   });
   const environmentsEnabled = experimentalSettings?.enableEnvironments === true;
   const { data: availableSecrets = [] } = useQuery({
-    queryKey: selectedCompanyId ? queryKeys.secrets.list(selectedCompanyId) : ["secrets", "none"],
-    queryFn: () => secretsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryKey: selectedSquadId ? queryKeys.secrets.list(selectedSquadId) : ["secrets", "none"],
+    queryFn: () => secretsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to create secrets");
-      return secretsApi.create(selectedCompanyId, input);
+      if (!selectedSquadId) throw new Error("Select a squad to create secrets");
+      return secretsApi.create(selectedSquadId, input);
     },
     onSuccess: () => {
-      if (!selectedCompanyId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+      if (!selectedSquadId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedSquadId) });
     },
   });
   const { data: environments } = useQuery({
-    queryKey: queryKeys.environments.list(selectedCompanyId!),
-    queryFn: () => environmentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && environmentsEnabled,
+    queryKey: queryKeys.environments.list(selectedSquadId!),
+    queryFn: () => environmentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && environmentsEnabled,
   });
 
   const linkedGoalIds = project.goalIds.length > 0
@@ -314,8 +314,8 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
     if (project.urlKey !== project.id) {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.urlKey) });
     }
-    if (selectedCompanyId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(selectedCompanyId) });
+    if (selectedSquadId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(selectedSquadId) });
     }
   };
 

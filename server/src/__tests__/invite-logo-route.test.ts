@@ -31,14 +31,14 @@ function createSelectChain(rows: unknown[]) {
   };
 }
 
-function createDbStub(inviteRows: unknown[], companyRows: unknown[]) {
+function createDbStub(inviteRows: unknown[], squadRows: unknown[]) {
   let selectCall = 0;
   return {
     select() {
       selectCall += 1;
       return selectCall === 1
         ? createSelectChain(inviteRows)
-        : createSelectChain(companyRows);
+        : createSelectChain(squadRows);
     },
   };
 }
@@ -68,11 +68,11 @@ describe("GET /invites/:token/logo", () => {
     mockStorage.headObject.mockReset();
   });
 
-  it("serves the company logo for an active invite without company auth", async () => {
+  it("serves the squad logo for an active invite without squad auth", async () => {
     const invite = {
       id: "invite-1",
-      companyId: "company-1",
-      inviteType: "company_join",
+      squadId: "squad-1",
+      inviteType: "squad_join",
       allowedJoinTypes: "human",
       tokenHash: "hash",
       defaultsPayload: null,
@@ -95,8 +95,8 @@ describe("GET /invites/:token/logo", () => {
     });
     const app = createApp(
       createDbStub([invite], [{
-        companyId: "company-1",
-        objectKey: "assets/companies/logo-1",
+        squadId: "squad-1",
+        objectKey: "assets/squads/logo-1",
         contentType: "image/png",
         byteSize: 3,
         originalFilename: "logo.png",
@@ -107,15 +107,15 @@ describe("GET /invites/:token/logo", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("image/png");
-    expect(mockStorage.headObject).toHaveBeenCalledWith("company-1", "assets/companies/logo-1");
-    expect(mockStorage.getObject).toHaveBeenCalledWith("company-1", "assets/companies/logo-1");
+    expect(mockStorage.headObject).toHaveBeenCalledWith("squad-1", "assets/squads/logo-1");
+    expect(mockStorage.getObject).toHaveBeenCalledWith("squad-1", "assets/squads/logo-1");
   });
 
   it("returns 404 when the logo asset record exists but storage does not", async () => {
     const invite = {
       id: "invite-1",
-      companyId: "company-1",
-      inviteType: "company_join",
+      squadId: "squad-1",
+      inviteType: "squad_join",
       allowedJoinTypes: "human",
       tokenHash: "hash",
       defaultsPayload: null,
@@ -129,8 +129,8 @@ describe("GET /invites/:token/logo", () => {
     mockStorage.headObject.mockResolvedValue({ exists: false });
     const app = createApp(
       createDbStub([invite], [{
-        companyId: "company-1",
-        objectKey: "assets/companies/logo-1",
+        squadId: "squad-1",
+        objectKey: "assets/squads/logo-1",
         contentType: "image/png",
         byteSize: 3,
         originalFilename: "logo.png",

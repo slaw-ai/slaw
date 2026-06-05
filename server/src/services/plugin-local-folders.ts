@@ -591,8 +591,8 @@ export async function deletePluginLocalFolderFile(
   });
 }
 
-export function defaultLocalFolderBasePath(pluginKey: string, companyId: string) {
-  return path.join(os.homedir(), ".slaw", "plugin-data", companyId, pluginKey);
+export function defaultLocalFolderBasePath(pluginKey: string, squadId: string) {
+  return path.join(os.homedir(), ".slaw", "plugin-data", squadId, pluginKey);
 }
 
 export function assertConfiguredLocalFolder(status: PluginLocalFolderStatus) {

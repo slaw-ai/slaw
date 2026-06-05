@@ -17,8 +17,8 @@ describe("codex managed home", () => {
       slawHome,
       "instances",
       "default",
-      "companies",
-      "company-1",
+      "squads",
+      "squad-1",
       "codex-home",
     );
     const sharedAuth = path.join(sharedCodexHome, "auth.json");
@@ -44,7 +44,7 @@ describe("codex managed home", () => {
             SLAW_INSTANCE_ID: "default",
           },
           async () => {},
-          "company-1",
+          "squad-1",
         ),
       ).resolves.toBe(managedCodexHome);
 

@@ -103,7 +103,7 @@ describe("claude remote execution", () => {
       runId: "run-1",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Claude Coder",
         adapterType: "claude_local",
         adapterConfig: {},
@@ -223,7 +223,7 @@ describe("claude remote execution", () => {
       runId: "run-ssh-no-resume",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Claude Coder",
         adapterType: "claude_local",
         adapterConfig: {},
@@ -277,7 +277,7 @@ describe("claude remote execution", () => {
       runId: "run-ssh-resume",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Claude Coder",
         adapterType: "claude_local",
         adapterConfig: {},

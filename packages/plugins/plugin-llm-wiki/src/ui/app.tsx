@@ -209,7 +209,7 @@ type SlawIngestionSourceScope =
   | { kind: "active_projects"; limit: number; statuses?: Array<"in_progress" | "todo" | "done"> }
   | { kind: "selected_projects"; projectIds: string[] }
   | { kind: "root_issues"; issueIds: string[] }
-  | { kind: "company_all"; requiresBoardConfirmation: true };
+  | { kind: "squad_all"; requiresBoardConfirmation: true };
 
 type SlawIngestionProfile = {
   version: 1;
@@ -267,7 +267,7 @@ type SettingsData = {
 
 type WikiSpace = {
   id: string;
-  companyId: string;
+  squadId: string;
   wikiId: string;
   slug: string;
   displayName: string;
@@ -746,76 +746,76 @@ function useIsMobileLayout(): boolean {
   return useMediaQuery(mobileMediaQuery);
 }
 
-function useOverview(companyId: string | null) {
-  const params = useMemo(() => companyId ? { companyId } : undefined, [companyId]);
+function useOverview(squadId: string | null) {
+  const params = useMemo(() => squadId ? { squadId } : undefined, [squadId]);
   return usePluginData<OverviewData>("overview", params);
 }
 
-function useSettings(companyId: string | null) {
-  const params = useMemo(() => companyId ? { companyId } : undefined, [companyId]);
+function useSettings(squadId: string | null) {
+  const params = useMemo(() => squadId ? { squadId } : undefined, [squadId]);
   return usePluginData<SettingsData>("settings", params);
 }
 
-function usePages(companyId: string | null, opts: { includeRaw?: boolean; spaceSlug?: string | null } = {}) {
+function usePages(squadId: string | null, opts: { includeRaw?: boolean; spaceSlug?: string | null } = {}) {
   const params = useMemo(() => {
-    if (!companyId) return undefined;
-    const next: Record<string, unknown> = { companyId, includeRaw: opts.includeRaw ?? true };
+    if (!squadId) return undefined;
+    const next: Record<string, unknown> = { squadId, includeRaw: opts.includeRaw ?? true };
     if (opts.spaceSlug && opts.spaceSlug !== DEFAULT_SPACE_SLUG) next.spaceSlug = opts.spaceSlug;
     else if (opts.spaceSlug === DEFAULT_SPACE_SLUG) next.spaceSlug = DEFAULT_SPACE_SLUG;
     return next;
-  }, [companyId, opts.includeRaw, opts.spaceSlug]);
+  }, [squadId, opts.includeRaw, opts.spaceSlug]);
   return usePluginData<PagesData>("pages", params);
 }
 
-function useSpaces(companyId: string | null) {
-  const params = useMemo(() => companyId ? { companyId } : undefined, [companyId]);
+function useSpaces(squadId: string | null) {
+  const params = useMemo(() => squadId ? { squadId } : undefined, [squadId]);
   return usePluginData<WikiSpacesData>("spaces", params);
 }
 
-function useSpaceFolderStatus(companyId: string | null, spaceSlug: string | null) {
+function useSpaceFolderStatus(squadId: string | null, spaceSlug: string | null) {
   const params = useMemo(() => {
-    if (!companyId || !spaceSlug) return undefined;
-    return { companyId, spaceSlug };
-  }, [companyId, spaceSlug]);
+    if (!squadId || !spaceSlug) return undefined;
+    return { squadId, spaceSlug };
+  }, [squadId, spaceSlug]);
   return usePluginData<WikiSpaceWithFolderStatus>("space", params);
 }
 
-function useSlawIngestionProfile(companyId: string | null, spaceSlug: string | null) {
+function useSlawIngestionProfile(squadId: string | null, spaceSlug: string | null) {
   const params = useMemo(() => {
-    if (!companyId || !spaceSlug) return undefined;
-    return { companyId, spaceSlug };
-  }, [companyId, spaceSlug]);
+    if (!squadId || !spaceSlug) return undefined;
+    return { squadId, spaceSlug };
+  }, [squadId, spaceSlug]);
   return usePluginData<SlawIngestionProfileData>("slaw-ingestion-profile", params);
 }
 
-function usePageContent(companyId: string | null, path: string | null, spaceSlug?: string | null) {
+function usePageContent(squadId: string | null, path: string | null, spaceSlug?: string | null) {
   const params = useMemo(() => {
-    if (!companyId || !path) return undefined;
-    const next: Record<string, unknown> = { companyId, path };
+    if (!squadId || !path) return undefined;
+    const next: Record<string, unknown> = { squadId, path };
     if (spaceSlug) next.spaceSlug = spaceSlug;
     return next;
-  }, [companyId, path, spaceSlug]);
+  }, [squadId, path, spaceSlug]);
   return usePluginData<PageContentData>("page-content", params);
 }
 
-function useOperations(companyId: string | null, filter: { operationType?: string | null; status?: string | null; spaceSlug?: string | null } = {}) {
+function useOperations(squadId: string | null, filter: { operationType?: string | null; status?: string | null; spaceSlug?: string | null } = {}) {
   const params = useMemo(() => {
-    if (!companyId) return undefined;
+    if (!squadId) return undefined;
     return {
-      companyId,
+      squadId,
       operationType: filter.operationType ?? null,
       status: filter.status ?? null,
       spaceSlug: filter.spaceSlug ?? null,
     };
-  }, [companyId, filter.operationType, filter.status, filter.spaceSlug]);
+  }, [squadId, filter.operationType, filter.status, filter.spaceSlug]);
   return usePluginData<OperationsData>("operations", params);
 }
 
-function useTemplate(companyId: string | null, path: string) {
+function useTemplate(squadId: string | null, path: string) {
   const params = useMemo(() => {
-    if (!companyId) return undefined;
-    return { companyId, path };
-  }, [companyId, path]);
+    if (!squadId) return undefined;
+    return { squadId, path };
+  }, [squadId, path]);
   return usePluginData<TemplateData>("template", params);
 }
 
@@ -902,8 +902,8 @@ type DistillationOverviewData = {
   };
 };
 
-function useDistillationOverview(companyId: string | null) {
-  const params = useMemo(() => (companyId ? { companyId } : undefined), [companyId]);
+function useDistillationOverview(squadId: string | null) {
+  const params = useMemo(() => (squadId ? { squadId } : undefined), [squadId]);
   return usePluginData<DistillationOverviewData>("distillation-overview", params);
 }
 
@@ -923,11 +923,11 @@ type DistillationProvenanceData = {
   cursor: DistillationCursor | null;
 };
 
-function useDistillationProvenance(companyId: string | null, pagePath: string | null) {
+function useDistillationProvenance(squadId: string | null, pagePath: string | null) {
   const params = useMemo(() => {
-    if (!companyId || !pagePath) return undefined;
-    return { companyId, pagePath };
-  }, [companyId, pagePath]);
+    if (!squadId || !pagePath) return undefined;
+    return { squadId, pagePath };
+  }, [squadId, pagePath]);
   return usePluginData<DistillationProvenanceData>("distillation-page-provenance", params);
 }
 
@@ -1330,7 +1330,7 @@ export function SettingsPage({ context }: PluginSettingsPageProps) {
 // ---------------------------------------------------------------------------
 // Main wiki page: section shell for Pages / Ask / Ingest / Lint / History /
 // Settings. Wiki navigation uses path segments so pages can be deep-linked as
-// `/:companyPrefix/wiki/page/path/to/file`. Legacy query-param links are still
+// `/:squadPrefix/wiki/page/path/to/file`. Legacy query-param links are still
 // accepted as a compatibility fallback.
 // ---------------------------------------------------------------------------
 
@@ -1347,7 +1347,7 @@ const SECTIONS: ReadonlyArray<{
   { key: "ingest", label: "Add Content", Icon: PlusCircleIcon, description: "Capture a new source into the active space and queue an ingest operation." },
   { key: "lint", label: "Lint", Icon: ListChecksIcon, description: "Run structural checks for orphan pages, missing backlinks, and stale provenance." },
   { key: "history", label: "History", Icon: HistoryIcon, description: "Inspect recent LLM Wiki operation issues." },
-  { key: "settings", label: "Settings", Icon: SlidersHorizontalIcon, description: "Folder, agent, project, and routine configuration scoped to this company." },
+  { key: "settings", label: "Settings", Icon: SlidersHorizontalIcon, description: "Folder, agent, project, and routine configuration scoped to this squad." },
 ];
 
 const TOP_TOOL_KEYS: ReadonlySet<SectionKey> = new Set<SectionKey>(["query", "ingest"]);
@@ -1476,8 +1476,8 @@ function readSidebarSelectedPathFromNavigationState(state: unknown): string | nu
   return typeof value === "string" && value.trim() ? value : null;
 }
 
-function routeSidebarExpandedStorageKey(companyId: string | null | undefined): string {
-  return `${ROUTE_SIDEBAR_EXPANDED_STORAGE_PREFIX}:${companyId ?? "global"}`;
+function routeSidebarExpandedStorageKey(squadId: string | null | undefined): string {
+  return `${ROUTE_SIDEBAR_EXPANDED_STORAGE_PREFIX}:${squadId ?? "global"}`;
 }
 
 function readRouteSidebarExpandedPaths(storageKey: string): Set<string> {
@@ -1593,7 +1593,7 @@ export function WikiPage({ context }: PluginPageProps) {
   const settingsSection = useMemo(() => readSettingsSectionFromLocation(pathname), [pathname]);
   const activeSpaceSlug = useMemo(() => readActiveSpaceSlugFromLocation(pathname), [pathname]);
   const settingsSpaceSlug = useMemo(() => readSettingsSpaceSlugFromLocation(pathname), [pathname]);
-  const overview = useOverview(context.companyId);
+  const overview = useOverview(context.squadId);
   const [isDragActive, setIsDragActive] = useState(false);
   const [stagedFiles, setStagedFiles] = useState<StagedIngestFile[]>([]);
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
@@ -1674,8 +1674,8 @@ export function WikiPage({ context }: PluginPageProps) {
     };
   }, [isDragActive, resetDragState]);
 
-  if (!context.companyId) {
-    return <main style={{ ...shellStyle, height: isMobile ? "auto" : "100%", minHeight: isMobile ? "auto" : 600 }}>Choose a company to open the LLM Wiki.</main>;
+  if (!context.squadId) {
+    return <main style={{ ...shellStyle, height: isMobile ? "auto" : "100%", minHeight: isMobile ? "auto" : 600 }}>Choose a squad to open the LLM Wiki.</main>;
   }
 
   return (
@@ -1713,7 +1713,7 @@ export function WikiPage({ context }: PluginPageProps) {
       {isDragActive ? <WikiPageDropOverlay onClose={resetDragState} /> : null}
       {isIngestModalOpen ? (
         <IngestFilesModal
-          companyId={context.companyId}
+          squadId={context.squadId}
           files={stagedFiles}
           initialSpaceSlug={activeSpaceSlug}
           onAddFiles={stageFiles}
@@ -1807,7 +1807,7 @@ function WikiPageDropOverlay({ onClose }: { onClose: () => void }) {
 }
 
 function IngestFilesModal({
-  companyId,
+  squadId,
   files,
   onAddFiles,
   onRemoveFile,
@@ -1815,7 +1815,7 @@ function IngestFilesModal({
   onIngested,
   initialSpaceSlug,
 }: {
-  companyId: string;
+  squadId: string;
   files: StagedIngestFile[];
   onAddFiles: (files: File[]) => void;
   onRemoveFile: (id: string) => void;
@@ -1825,7 +1825,7 @@ function IngestFilesModal({
 }) {
   const ingest = usePluginAction("ingest-source");
   const toast = usePluginToast();
-  const spacesQuery = useSpaces(companyId);
+  const spacesQuery = useSpaces(squadId);
   const spaces = useMemo(() => {
     const list = spacesQuery.data?.spaces ?? [];
     return [...list].sort(compareSpaces);
@@ -1860,7 +1860,7 @@ function IngestFilesModal({
       for (const item of files) {
         const contents = await item.file.text();
         const result = await ingest({
-          companyId,
+          squadId,
           spaceSlug: targetSpaceSlug,
           sourceType: "file",
           title: item.file.name,
@@ -1874,7 +1874,7 @@ function IngestFilesModal({
           },
         });
         await uploadIssueAttachmentFile({
-          companyId,
+          squadId,
           issueId: readIngestOperationIssueId(result),
           file: item.file,
         });
@@ -1993,7 +1993,7 @@ function IngestFilesModal({
       </div>
       {createOpen ? (
         <CreateSpaceModal
-          companyId={companyId}
+          squadId={squadId}
           existingSlugs={new Set(spaces.map((s) => s.slug))}
           onClose={() => setCreateOpen(false)}
           onCreated={(space) => {
@@ -2017,8 +2017,8 @@ function formatFileSize(bytes: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Wiki route sidebar — replaces the company sidebar while the user is on a
-// `/wiki` route. Mirrors the shell of the host's CompanySettingsSidebar so
+// Wiki route sidebar — replaces the squad sidebar while the user is on a
+// `/wiki` route. Mirrors the shell of the host's SquadSettingsSidebar so
 // users see a familiar takeover.
 // ---------------------------------------------------------------------------
 
@@ -2041,12 +2041,12 @@ function slugify(input: string): string {
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 
 function CreateSpaceModal({
-  companyId,
+  squadId,
   existingSlugs,
   onClose,
   onCreated,
 }: {
-  companyId: string;
+  squadId: string;
   existingSlugs: ReadonlySet<string>;
   onClose: () => void;
   onCreated: (space: WikiSpace) => void;
@@ -2086,7 +2086,7 @@ function CreateSpaceModal({
     setErrorMsg(null);
     try {
       const result = await create({
-        companyId,
+        squadId,
         slug: effectiveSlug,
         displayName: displayName.trim(),
         folderMode,
@@ -2215,7 +2215,7 @@ function CreateSpaceModal({
                 selected={accessScope === "shared"}
                 onSelect={() => setAccessScope("shared")}
                 label="Shared"
-                help="Visible to everyone in this company."
+                help="Visible to everyone in this squad."
               />
               <ScopeTile
                 selected={accessScope === "personal"}
@@ -2390,16 +2390,16 @@ function spaceTreeKey(spaceSlug: string, path: string): string {
   return `${spaceSlug}::${path}`;
 }
 
-function SpacePageContentWarmup({ companyId, path, spaceSlug }: { companyId: string | null; path: string; spaceSlug: string }) {
-  usePageContent(companyId, path, spaceSlug);
+function SpacePageContentWarmup({ squadId, path, spaceSlug }: { squadId: string | null; path: string; spaceSlug: string }) {
+  usePageContent(squadId, path, spaceSlug);
   return null;
 }
 
-function SpacePagesWarmup({ companyId, spaceSlug }: { companyId: string | null; spaceSlug: string }) {
-  const pages = usePages(companyId, { includeRaw: true, spaceSlug });
+function SpacePagesWarmup({ squadId, spaceSlug }: { squadId: string | null; spaceSlug: string }) {
+  const pages = usePages(squadId, { includeRaw: true, spaceSlug });
   const selectedTreePath = firstSelectableTreePath(pages.data);
   const selected = contentPathFromTreePath(selectedTreePath);
-  return selected ? <SpacePageContentWarmup companyId={companyId} path={selected} spaceSlug={spaceSlug} /> : null;
+  return selected ? <SpacePageContentWarmup squadId={squadId} path={selected} spaceSlug={spaceSlug} /> : null;
 }
 
 export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
@@ -2407,14 +2407,14 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
   const { pathname, search, state } = useHostLocation();
   const activeSection = useMemo(() => readSectionFromLocation(pathname, search), [pathname, search]);
   const activeSpaceSlug = useMemo(() => readActiveSpaceSlugFromLocation(pathname), [pathname]);
-  const companyName = context.companyPrefix ?? "Company";
-  const spacesQuery = useSpaces(context.companyId);
+  const squadName = context.squadPrefix ?? "Squad";
+  const spacesQuery = useSpaces(context.squadId);
   const spaces = useMemo(() => {
     const list = spacesQuery.data?.spaces ?? [];
     if (list.length === 0) return list;
     return activeWikiSpaces(list).sort(compareSpaces);
   }, [spacesQuery.data]);
-  const pages = usePages(context.companyId, { includeRaw: true, spaceSlug: activeSpaceSlug });
+  const pages = usePages(context.squadId, { includeRaw: true, spaceSlug: activeSpaceSlug });
   const activeSpaceNodes = useMemo(
     () => buildBrowseTree(pages.data?.pages ?? [], pages.data?.sources ?? []),
     [pages.data],
@@ -2424,7 +2424,7 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
     const rest = spaces.filter((space) => space.slug !== activeSpaceSlug);
     return (active ? [active, ...rest] : rest).slice(0, WIKI_SPACE_PREFETCH_LIMIT);
   }, [spaces, activeSpaceSlug]);
-  const storageKey = useMemo(() => routeSidebarExpandedStorageKey(context.companyId), [context.companyId]);
+  const storageKey = useMemo(() => routeSidebarExpandedStorageKey(context.squadId), [context.squadId]);
   const [expandedRaw, setExpandedRaw] = useState<Set<string>>(() => readRouteSidebarExpandedPaths(storageKey));
   const [selectedTreePath, setSelectedTreePath] = useState<string | null>(null);
   const [spaceCollapse, setSpaceCollapse] = useState<Set<string>>(new Set());
@@ -2537,7 +2537,7 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
       {warmupSpaces.map((space) => (
-        <SpacePagesWarmup key={space.slug} companyId={context.companyId} spaceSlug={space.slug} />
+        <SpacePagesWarmup key={space.slug} squadId={context.squadId} spaceSlug={space.slug} />
       ))}
       <div className="flex flex-col gap-1 px-3 py-3 shrink-0">
         <a
@@ -2548,7 +2548,7 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
           <span aria-hidden="true" className="shrink-0">
             <ChevronLeftIcon size={14} />
           </span>
-          <span className="truncate">{companyName}</span>
+          <span className="truncate">{squadName}</span>
         </a>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto border-t border-border px-3 py-3">
@@ -2635,7 +2635,7 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
                     }
                   }}
                   activeSpaceSlug={activeSpaceSlug}
-                  companyId={context.companyId}
+                  squadId={context.squadId}
                 />
                 {showTree ? (
                   <div style={{ paddingLeft: 18, marginTop: 2, marginBottom: 6 }}>
@@ -2669,9 +2669,9 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
           {BOTTOM_TOOL_SECTIONS.map(renderToolLink)}
         </div>
       </nav>
-      {createOpen && context.companyId ? (
+      {createOpen && context.squadId ? (
         <CreateSpaceModal
-          companyId={context.companyId}
+          squadId={context.squadId}
           existingSlugs={new Set(spaces.map((s) => s.slug))}
           onClose={() => setCreateOpen(false)}
           onCreated={(space) => {
@@ -2696,7 +2696,7 @@ function SpaceRow({
   onMenuClose,
   onArchived,
   activeSpaceSlug,
-  companyId,
+  squadId,
 }: {
   space: WikiSpace;
   active: boolean;
@@ -2708,7 +2708,7 @@ function SpaceRow({
   onMenuClose: () => void;
   onArchived: (slug: string) => void;
   activeSpaceSlug: string;
-  companyId: string | null;
+  squadId: string | null;
 }) {
   const [hover, setHover] = useState(false);
   const isDefault = space.slug === DEFAULT_SPACE_SLUG;
@@ -2783,7 +2783,7 @@ function SpaceRow({
           isDefault={isDefault}
           hostNavigation={hostNavigation}
           activeSpaceSlug={activeSpaceSlug}
-          companyId={companyId}
+          squadId={squadId}
           onClose={onMenuClose}
           onArchived={onArchived}
         />
@@ -2797,7 +2797,7 @@ function SpaceRowMenu({
   isDefault,
   hostNavigation,
   activeSpaceSlug,
-  companyId,
+  squadId,
   onClose,
   onArchived,
 }: {
@@ -2805,7 +2805,7 @@ function SpaceRowMenu({
   isDefault: boolean;
   hostNavigation: ReturnType<typeof useHostNavigation>;
   activeSpaceSlug: string;
-  companyId: string | null;
+  squadId: string | null;
   onClose: () => void;
   onArchived: (slug: string) => void;
 }) {
@@ -2833,13 +2833,13 @@ function SpaceRowMenu({
   }, [onClose]);
 
   const handleArchive = async () => {
-    if (!companyId || isDefault || busy) return;
+    if (!squadId || isDefault || busy) return;
     if (typeof window !== "undefined" && !window.confirm(`Archive ${space.displayName}? Pages remain on disk; you can restore later through the plugin API or by un-archiving from the database.`)) {
       return;
     }
     setBusy(true);
     try {
-      await archive({ companyId, spaceSlug: space.slug });
+      await archive({ squadId, spaceSlug: space.slug });
       toast({ tone: "success", title: "Space archived", body: `${space.displayName} hidden from sidebar.` });
       onArchived(space.slug);
     } catch (err) {
@@ -2850,10 +2850,10 @@ function SpaceRowMenu({
   };
 
   const handleRefresh = async () => {
-    if (!companyId || busy) return;
+    if (!squadId || busy) return;
     setBusy(true);
     try {
-      await bootstrap({ companyId, spaceSlug: space.slug });
+      await bootstrap({ squadId, spaceSlug: space.slug });
       toast({ tone: "success", title: "Space refreshed", body: `${space.displayName} index re-bootstrapped.` });
       onClose();
     } catch (err) {
@@ -2985,7 +2985,7 @@ const shellStyle: CSSProperties = {
 // Pre-flight: prompt for folder before any tab can be useful.
 // ---------------------------------------------------------------------------
 
-function UnconfiguredFolder({ context, folder, refresh }: { context: { companyId: string | null }; folder?: FolderStatus; refresh: () => void }) {
+function UnconfiguredFolder({ context, folder, refresh }: { context: { squadId: string | null }; folder?: FolderStatus; refresh: () => void }) {
   const bootstrap = usePluginAction("bootstrap-root");
   const toast = usePluginToast();
   const isMobile = useIsMobileLayout();
@@ -2999,11 +2999,11 @@ function UnconfiguredFolder({ context, folder, refresh }: { context: { companyId
   }, [folder?.path]);
 
   async function submit() {
-    if (!context.companyId || !path.trim()) return;
+    if (!context.squadId || !path.trim()) return;
     setBusy(true);
     setErrorMsg(null);
     try {
-      const result = await bootstrap({ companyId: context.companyId, path: path.trim() });
+      const result = await bootstrap({ squadId: context.squadId, path: path.trim() });
       const written = (result as { writtenFiles?: string[] }).writtenFiles ?? [];
       toast({ tone: "success", title: "Wiki root configured", body: written.length ? `Created ${written.length} bootstrap file(s).` : "Existing files preserved." });
       refresh();
@@ -3212,10 +3212,10 @@ function expandedAncestors(path: string | null): string[] {
   return out;
 }
 
-function BrowseTab({ context }: { context: { companyId: string | null } }) {
+function BrowseTab({ context }: { context: { squadId: string | null } }) {
   const { pathname, search } = useHostLocation();
   const activeSpaceSlug = useMemo(() => readActiveSpaceSlugFromLocation(pathname), [pathname]);
-  const pages = usePages(context.companyId, { includeRaw: true, spaceSlug: activeSpaceSlug });
+  const pages = usePages(context.squadId, { includeRaw: true, spaceSlug: activeSpaceSlug });
   const isMobile = useIsMobileLayout();
   const selectedTreePath = readSelectedTreePathFromLocation(pathname, search) ?? firstSelectableTreePath(pages.data);
   const selected = contentPathFromTreePath(selectedTreePath);
@@ -3233,8 +3233,8 @@ function BrowseTab({ context }: { context: { companyId: string | null } }) {
   );
 }
 
-function PageDetail({ context, path, spaceSlug }: { context: { companyId: string | null }; path: string | null; spaceSlug?: string }) {
-  const content = usePageContent(context.companyId, path, spaceSlug ?? null);
+function PageDetail({ context, path, spaceSlug }: { context: { squadId: string | null }; path: string | null; spaceSlug?: string }) {
+  const content = usePageContent(context.squadId, path, spaceSlug ?? null);
   const writePage = usePluginAction("write-page");
   const toast = usePluginToast();
   const hostNavigation = useHostNavigation();
@@ -3320,9 +3320,9 @@ function PageDetail({ context, path, spaceSlug }: { context: { companyId: string
     }
   }, []);
   const savePageContents = useCallback(async (nextContents: string) => {
-    if (!context.companyId || !content.data || !editable || !path) return;
+    if (!context.squadId || !content.data || !editable || !path) return;
     const result = await writePage({
-        companyId: context.companyId,
+        squadId: context.squadId,
         wikiId: content.data.wikiId,
         spaceSlug: spaceSlug ?? null,
         path,
@@ -3331,7 +3331,7 @@ function PageDetail({ context, path, spaceSlug }: { context: { companyId: string
         summary: `Edited ${path} from the LLM Wiki page`,
     }) as { hash?: string };
     if (typeof result.hash === "string") setSavedHash(result.hash);
-  }, [context.companyId, content.data, editable, path, savedHash, writePage, spaceSlug]);
+  }, [context.squadId, content.data, editable, path, savedHash, writePage, spaceSlug]);
 
   if (!path) return <div style={{ padding: isMobile ? 16 : 28, color: tokens.muted, fontSize: 13 }}>Pick a page from the tree.</div>;
   if (content.loading) return <div style={{ padding: isMobile ? 16 : 28, color: tokens.muted, fontSize: 13 }}>Loading {path}…</div>;
@@ -3388,7 +3388,7 @@ function PageDetail({ context, path, spaceSlug }: { context: { companyId: string
         <Tiny>Updated {updatedAt ? formatTime(updatedAt) : "—"}</Tiny>
       </header>
       {isDistilledProjectPage && path ? (
-        <FreshnessChip companyId={context.companyId} pagePath={path} companyPrefix={(context as { companyPrefix?: string | null }).companyPrefix ?? null} />
+        <FreshnessChip squadId={context.squadId} pagePath={path} squadPrefix={(context as { squadPrefix?: string | null }).squadPrefix ?? null} />
       ) : null}
       {editing ? (
         <>
@@ -3449,7 +3449,7 @@ function PageDetail({ context, path, spaceSlug }: { context: { companyId: string
       )}
       {provenanceOpen && path ? (
         <ProvenanceDrawer
-          companyId={context.companyId}
+          squadId={context.squadId}
           pagePath={path}
           onClose={() => setProvenanceOpen(false)}
         />
@@ -3621,8 +3621,8 @@ function OnThisPagePane({
   );
 }
 
-function FreshnessChip({ companyId, pagePath, companyPrefix }: { companyId: string | null; pagePath: string; companyPrefix: string | null }) {
-  const provenance = useDistillationProvenance(companyId, pagePath);
+function FreshnessChip({ squadId, pagePath, squadPrefix }: { squadId: string | null; pagePath: string; squadPrefix: string | null }) {
+  const provenance = useDistillationProvenance(squadId, pagePath);
   const binding = provenance.data?.binding ?? null;
   const cursor = provenance.data?.cursor ?? null;
 
@@ -3648,7 +3648,7 @@ function FreshnessChip({ companyId, pagePath, companyPrefix }: { companyId: stri
   const isRunning = status === "running";
 
   const tone: "info" | "warn" | "danger" | "running" = isFailed ? "danger" : isStale ? "warn" : isRunning ? "running" : "info";
-  const projectLink = cursor && cursor.projectId && companyPrefix ? `/${companyPrefix}/projects/${cursor.projectId}` : null;
+  const projectLink = cursor && cursor.projectId && squadPrefix ? `/${squadPrefix}/projects/${cursor.projectId}` : null;
 
   return (
     <FreshnessChipShell
@@ -3734,9 +3734,9 @@ function formatSourceRef(ref: Record<string, unknown> | string, fallbackIndex: n
   return title ? `${primary}${suffix} - ${title}` : `${primary}${suffix}`;
 }
 
-function ProvenanceDrawer({ companyId, pagePath, onClose }: { companyId: string | null; pagePath: string; onClose: () => void }) {
+function ProvenanceDrawer({ squadId, pagePath, onClose }: { squadId: string | null; pagePath: string; onClose: () => void }) {
   const isMobile = useIsMobileLayout();
-  const provenance = useDistillationProvenance(companyId, pagePath);
+  const provenance = useDistillationProvenance(squadId, pagePath);
   const data = provenance.data;
   const binding = data?.binding ?? null;
   const cursor = data?.cursor ?? null;
@@ -3975,10 +3975,10 @@ function formatTime(iso: string | null | undefined): string {
 // Ingest tab.
 // ---------------------------------------------------------------------------
 
-function IngestTab({ context, refreshOverview }: { context: { companyId: string | null }; refreshOverview: () => void }) {
+function IngestTab({ context, refreshOverview }: { context: { squadId: string | null }; refreshOverview: () => void }) {
   const { pathname } = useHostLocation();
   const activeSpaceSlug = useMemo(() => readActiveSpaceSlugFromLocation(pathname), [pathname]);
-  const spacesQuery = useSpaces(context.companyId);
+  const spacesQuery = useSpaces(context.squadId);
   const spaces = useMemo(() => {
     const list = spacesQuery.data?.spaces ?? [];
     return activeWikiSpaces(list).sort(compareSpaces);
@@ -4001,7 +4001,7 @@ function IngestTab({ context, refreshOverview }: { context: { companyId: string 
       ?? null;
   }, [spaces, activeSpaceSlug]);
 
-  const canSubmit = !!context.companyId && (pasted.trim().length > 0 || url.trim().length > 0) && !busy;
+  const canSubmit = !!context.squadId && (pasted.trim().length > 0 || url.trim().length > 0) && !busy;
 
   useEffect(() => {
     const refresh = () => refreshOverview();
@@ -4010,7 +4010,7 @@ function IngestTab({ context, refreshOverview }: { context: { companyId: string 
   }, [refreshOverview]);
 
   async function submit() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     setBusy(true);
     setErrorMsg(null);
     try {
@@ -4025,7 +4025,7 @@ function IngestTab({ context, refreshOverview }: { context: { companyId: string 
         resolvedTitle = resolvedTitle || pasted.split("\n", 1)[0]?.slice(0, 80) || "Pasted source";
       }
       await ingest({
-        companyId: context.companyId,
+        squadId: context.squadId,
         spaceSlug: activeSpaceSlug,
         sourceType,
         url: url.trim() || null,
@@ -4125,9 +4125,9 @@ function IngestTab({ context, refreshOverview }: { context: { companyId: string 
         </div>
         {errorMsg ? <div style={{ marginTop: 14 }}><Callout tone="danger">{errorMsg}</Callout></div> : null}
       </div>
-      {createOpen && context.companyId ? (
+      {createOpen && context.squadId ? (
         <CreateSpaceModal
-          companyId={context.companyId}
+          squadId={context.squadId}
           existingSlugs={new Set(spaces.map((s) => s.slug))}
           onClose={() => setCreateOpen(false)}
           onCreated={(space) => {
@@ -4346,7 +4346,7 @@ type QueryStreamEvent = {
   answer?: string;
 };
 
-function QueryTab({ context, overview }: { context: { companyId: string | null }; overview: OverviewData }) {
+function QueryTab({ context, overview }: { context: { squadId: string | null }; overview: OverviewData }) {
   const startQuery = usePluginAction("start-query");
   const fileAsPage = usePluginAction("file-as-page");
   const toast = usePluginToast();
@@ -4376,7 +4376,7 @@ function QueryTab({ context, overview }: { context: { companyId: string | null }
   }, [thread]);
 
   const stream = usePluginStream<QueryStreamEvent>(activeEntry?.channel ?? "llm-wiki:idle", {
-    companyId: context.companyId ?? undefined,
+    squadId: context.squadId ?? undefined,
   });
 
   useEffect(() => {
@@ -4401,7 +4401,7 @@ function QueryTab({ context, overview }: { context: { companyId: string | null }
   }, [fileBody, stream.lastEvent, activeEntry?.id]);
 
   async function send() {
-    if (!context.companyId || !prompt.trim()) return;
+    if (!context.squadId || !prompt.trim()) return;
     setBusy(true);
     const entryId = `q-${Date.now()}`;
     setThread((prev) => [...prev, {
@@ -4416,7 +4416,7 @@ function QueryTab({ context, overview }: { context: { companyId: string | null }
       answer: "",
     }]);
     try {
-      const res = await startQuery({ companyId: context.companyId, spaceSlug: activeSpaceSlug, question: prompt.trim() });
+      const res = await startQuery({ squadId: context.squadId, spaceSlug: activeSpaceSlug, question: prompt.trim() });
       const result = res as {
         operationId: string;
         querySessionId?: string;
@@ -4448,11 +4448,11 @@ function QueryTab({ context, overview }: { context: { companyId: string | null }
   async function fileAnswer(entry?: QueryThreadEntry) {
     const source = entry ?? fileSource;
     const answer = fileBody.trim() || source?.answer.trim() || "";
-    if (!context.companyId || !filePath.trim() || !answer) return;
+    if (!context.squadId || !filePath.trim() || !answer) return;
     setFiling(source?.id ?? "manual");
     try {
       await fileAsPage({
-        companyId: context.companyId,
+        squadId: context.squadId,
         wikiId: overview.wikiId,
         spaceSlug: activeSpaceSlug,
         path: filePath.trim(),
@@ -4551,7 +4551,7 @@ function QueryTab({ context, overview }: { context: { companyId: string | null }
 // Lint tab.
 // ---------------------------------------------------------------------------
 
-function LintTab({ context, overview, refreshOverview }: { context: { companyId: string | null }; overview: OverviewData; refreshOverview: () => void }) {
+function LintTab({ context, overview, refreshOverview }: { context: { squadId: string | null }; overview: OverviewData; refreshOverview: () => void }) {
   const isMobile = useIsMobileLayout();
   return (
     <div style={{ flex: 1, minHeight: isMobile ? "auto" : 0, overflow: isMobile ? "visible" : "auto", padding: isMobile ? "16px" : "24px 28px", display: "grid", gap: isMobile ? 14 : 18, minWidth: 0 }}>
@@ -4560,8 +4560,8 @@ function LintTab({ context, overview, refreshOverview }: { context: { companyId:
   );
 }
 
-function SettingsLintPanel({ context }: { context: { companyId: string | null } }) {
-  const overview = useOverview(context.companyId);
+function SettingsLintPanel({ context }: { context: { squadId: string | null } }) {
+  const overview = useOverview(context.squadId);
 
   if (overview.error) {
     return <SettingsPanel title="Lint" badge={<HiddenOpBadge />} description="Run structural checks for orphan pages, missing backlinks, and stale provenance.">
@@ -4592,7 +4592,7 @@ function LintPanelContent({
   refreshOverview,
   showHeading = true,
 }: {
-  context: { companyId: string | null };
+  context: { squadId: string | null };
   overview: OverviewData;
   refreshOverview: () => void;
   showHeading?: boolean;
@@ -4600,17 +4600,17 @@ function LintPanelContent({
   const create = usePluginAction("create-operation");
   const { pathname } = useHostLocation();
   const activeSpaceSlug = useMemo(() => readActiveSpaceSlugFromLocation(pathname), [pathname]);
-  const operations = useOperations(context.companyId, { operationType: "lint", spaceSlug: activeSpaceSlug });
+  const operations = useOperations(context.squadId, { operationType: "lint", spaceSlug: activeSpaceSlug });
   const toast = usePluginToast();
   const isMobile = useIsMobileLayout();
   const [busy, setBusy] = useState(false);
 
   async function runLint() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     setBusy(true);
     try {
       await create({
-        companyId: context.companyId,
+        squadId: context.squadId,
         spaceSlug: activeSpaceSlug,
         operationType: "lint",
         title: `Run LLM Wiki lint · ${activeSpaceSlug}`,
@@ -4752,13 +4752,13 @@ function runStatusLabel(status: string): string {
   }
 }
 
-function HistoryTab({ context, overview }: { context: { companyId: string | null; companyPrefix?: string | null }; overview: OverviewData }) {
+function HistoryTab({ context, overview }: { context: { squadId: string | null; squadPrefix?: string | null }; overview: OverviewData }) {
   const isMobile = useIsMobileLayout();
   const projectId = overview.managedProject.projectId;
   const originKindPrefix = `plugin:${PLUGIN_ID}:operation`;
 
-  if (!context.companyId) {
-    return <div style={{ padding: isMobile ? 16 : 24, flex: 1 }}><Callout>Choose a company to view LLM Wiki history.</Callout></div>;
+  if (!context.squadId) {
+    return <div style={{ padding: isMobile ? 16 : 24, flex: 1 }}><Callout>Choose a squad to view LLM Wiki history.</Callout></div>;
   }
 
   if (!projectId) {
@@ -4772,7 +4772,7 @@ function HistoryTab({ context, overview }: { context: { companyId: string | null
   return (
     <div style={{ flex: 1, minHeight: isMobile ? "auto" : 0, overflow: isMobile ? "visible" : "auto", padding: isMobile ? 12 : 0, minWidth: 0 }}>
       <PluginIssuesList
-        companyId={context.companyId}
+        squadId={context.squadId}
         projectId={projectId}
         filters={{ originKindPrefix }}
         viewStateKey="slaw:llm-wiki-history-issues-view"
@@ -4786,7 +4786,7 @@ function HistoryTab({ context, overview }: { context: { companyId: string | null
 // Settings (tab) and the standalone host SettingsPage share this body.
 // ---------------------------------------------------------------------------
 
-function SettingsTab({ context, initialSection = "root" }: { context: { companyId: string | null; companyPrefix?: string | null }; initialSection?: SettingsSectionKey }) {
+function SettingsTab({ context, initialSection = "root" }: { context: { squadId: string | null; squadPrefix?: string | null }; initialSection?: SettingsSectionKey }) {
   const isMobile = useIsMobileLayout();
   return (
     <div style={{ flex: 1, minHeight: isMobile ? "auto" : 0, overflow: isMobile ? "visible" : "auto", padding: isMobile ? "16px" : "24px 28px", minWidth: 0 }}>
@@ -4879,7 +4879,7 @@ function buildSkillHealthItems(skills: ManagedSkill[]): RoutineHealthItem[] {
     return [{
       label: "Managed skill",
       ok: false,
-      detail: "No plugin-managed skills are installed in the company skill library.",
+      detail: "No plugin-managed skills are installed in the squad skill library.",
     }];
   }
   return skills.map((skill) => ({
@@ -4888,8 +4888,8 @@ function buildSkillHealthItems(skills: ManagedSkill[]): RoutineHealthItem[] {
     detail: managedSkillIsReady(skill)
       ? skill.defaultDrift?.changedFiles.length
         ? `${skillLabel(skill)} differs from the plugin default: ${skill.defaultDrift.changedFiles.join(", ")}.`
-        : `${skillLabel(skill)} is installed in the company skill library.`
-      : `${skillLabel(skill)} is not installed in the company skill library.`,
+        : `${skillLabel(skill)} is installed in the squad skill library.`
+      : `${skillLabel(skill)} is not installed in the squad skill library.`,
   }));
 }
 
@@ -5015,7 +5015,7 @@ const SETTINGS_SECTIONS: ReadonlyArray<{
 }> = [
   { key: "root", label: "Setup", description: "" },
   { key: "spaces", label: "Spaces", description: "Destination spaces - folders, slugs, and folder health. Per-space Slaw indexing is not configurable yet." },
-  { key: "distillation", label: "Distillation", description: "Slaw -> default space. Cursors, caps, and routines for the company-wide distillation pipeline." },
+  { key: "distillation", label: "Distillation", description: "Slaw -> default space. Cursors, caps, and routines for the squad-wide distillation pipeline." },
   { key: "routines", label: "Managed Routines", description: "Scheduled wiki maintenance." },
   { key: "lint", label: "Lint", description: "Run checks and review wiki health findings." },
   { key: "events", label: "Ingestion Settings", description: "Slaw event capture into the default space (issues, comments, documents)." },
@@ -5173,7 +5173,7 @@ function PathInstructionsDialog({ open, onClose }: { open: boolean; onClose: () 
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start" }}>
           <div style={{ display: "grid", gap: 4 }}>
             <h3 id="wiki-path-help-title" style={{ margin: 0, fontSize: 15, fontWeight: 650 }}>Get a full folder path</h3>
-            <Tiny>Paste an absolute path such as <Mono>/Users/you/company-wiki</Mono>.</Tiny>
+            <Tiny>Paste an absolute path such as <Mono>/Users/you/squad-wiki</Mono>.</Tiny>
           </div>
           <Button size="sm" variant="ghost" onClick={onClose} title="Close path help">Close</Button>
         </div>
@@ -5430,8 +5430,8 @@ function MaintainerAgentLink({
 // existing managed-routine and plugin-action endpoints.
 // ---------------------------------------------------------------------------
 
-function DistillationSettingsPanel({ context, settings }: { context: { companyId: string | null }; settings: SettingsData }) {
-  const overview = useDistillationOverview(context.companyId);
+function DistillationSettingsPanel({ context, settings }: { context: { squadId: string | null }; settings: SettingsData }) {
+  const overview = useDistillationOverview(context.squadId);
   const distillNow = usePluginAction("distill-slaw-now");
   const enableActiveProjects = usePluginAction("enable-slaw-distillation-active-projects");
   const queueBackfill = usePluginAction("backfill-slaw-distillation");
@@ -5454,7 +5454,7 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
   }, [cursors]);
 
   async function runDistillNow() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     if (cursors.length === 0) {
       toast({ tone: "warn", title: "Distill now needs at least one cursor" });
       return;
@@ -5462,14 +5462,14 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
     setBusy("distill-now");
     try {
       await distillNow({
-        companyId: context.companyId,
+        squadId: context.squadId,
         useCheapModelProfile: useCheapPath,
-        idempotencyKey: `manual:company:${Date.now()}`,
+        idempotencyKey: `manual:squad:${Date.now()}`,
       });
       toast({
         tone: "success",
         title: "Distill now queued",
-        body: "Wiki Maintainer will scan changed projects in the company and write into the default wiki space.",
+        body: "Wiki Maintainer will scan changed projects in the squad and write into the default wiki space.",
       });
       overview.refresh();
     } catch (err) {
@@ -5480,10 +5480,10 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
   }
 
   async function enableForActiveProjects() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     setBusy("enable-active-projects");
     try {
-      const result = await enableActiveProjects({ companyId: context.companyId, limit: 3 }) as {
+      const result = await enableActiveProjects({ squadId: context.squadId, limit: 3 }) as {
         selectedProjects?: Array<{ name?: string | null }>;
       };
       const count = result.selectedProjects?.length ?? 0;
@@ -5503,7 +5503,7 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
   }
 
   async function runBackfill() {
-    if (!context.companyId || cursors.length === 0) return;
+    if (!context.squadId || cursors.length === 0) return;
     const target = cursors.find((cursor) => cursor.projectId) ?? cursors[0];
     if (!target.projectId && !target.rootIssueId) {
       toast({ tone: "warn", title: "Backfill needs a project or root issue scope" });
@@ -5512,7 +5512,7 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
     setBusy("backfill");
     try {
       await queueBackfill({
-        companyId: context.companyId,
+        squadId: context.squadId,
         projectId: target.projectId ?? undefined,
         rootIssueId: target.rootIssueId ?? undefined,
         useCheapModelProfile: useCheapPath,
@@ -5541,7 +5541,7 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
                 <h3 style={{ margin: 0, fontSize: 17, fontWeight: 650 }}>Distillation is off</h3>
                 <Tiny style={{ marginTop: 6, fontSize: 13, color: tokens.fg, lineHeight: 1.55, maxWidth: 540 }}>
                   When enabled, the Wiki Maintainer reads Slaw issues, comments, and documents for this
-                  company and keeps <Mono>wiki/projects/&lt;slug&gt;/standup.md</Mono> plus <Mono>wiki/projects/&lt;slug&gt;/index.md</Mono> pages in the
+                  squad and keeps <Mono>wiki/projects/&lt;slug&gt;/standup.md</Mono> plus <Mono>wiki/projects/&lt;slug&gt;/index.md</Mono> pages in the
                   <strong> default wiki space</strong>. Pages stay marked stale until a cursor window succeeds -
                   they never imply live state.
                 </Tiny>
@@ -5577,7 +5577,7 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
             <CardHeader title="What it never does" />
             <CardBody padding={14}>
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: tokens.muted, lineHeight: 1.5 }}>
-                <li>Read across companies — strict per-company isolation.</li>
+                <li>Read across squads — strict per-squad isolation.</li>
                 <li>Re-distill its own plugin operation issues.</li>
                 <li>Auto-apply patches when source hashes drift.</li>
               </ul>
@@ -5620,7 +5620,7 @@ function DistillationSettingsPanel({ context, settings }: { context: { companyId
               <legend style={{ fontSize: 12, color: tokens.muted, marginBottom: 4 }}>Issue scope</legend>
               <CheckboxRow label="Active projects" defaultChecked help="Cursors are created for projects with recent activity." />
               <CheckboxRow label="Root issues marked distillable" defaultChecked />
-              <CheckboxRow label="All company issues" help="May create large source windows." />
+              <CheckboxRow label="All squad issues" help="May create large source windows." />
               <Tiny>
                 These filters narrow the Slaw source scope. The destination is always the default
                 wiki space in Phase 1.
@@ -5796,8 +5796,8 @@ function SelectInput({ defaultValue, options }: { defaultValue: string; options:
   );
 }
 
-function SettingsBody({ context, initialSection = "root" }: { context: { companyId: string | null; companyPrefix?: string | null }; initialSection?: SettingsSectionKey }) {
-  const settings = useSettings(context.companyId);
+function SettingsBody({ context, initialSection = "root" }: { context: { squadId: string | null; squadPrefix?: string | null }; initialSection?: SettingsSectionKey }) {
+  const settings = useSettings(context.squadId);
   const hostNavigation = useHostNavigation();
   const { pathname } = useHostLocation();
   const isMobile = useIsMobileLayout();
@@ -5842,7 +5842,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
     setActiveSettingsSection(initialSection);
   }, [initialSection]);
 
-  if (!context.companyId) return <Callout>Choose a company to view LLM Wiki settings.</Callout>;
+  if (!context.squadId) return <Callout>Choose a squad to view LLM Wiki settings.</Callout>;
   if (settings.loading) return <Tiny>Loading settings…</Tiny>;
   if (settings.error) return <Callout tone="danger">{settings.error.message}</Callout>;
   if (!settings.data) return <Tiny>No settings available.</Tiny>;
@@ -5951,10 +5951,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function changeFolder() {
-    if (!context.companyId || !folderPath.trim()) return;
+    if (!context.squadId || !folderPath.trim()) return;
     setFolderBusy(true);
     try {
-      await bootstrap({ companyId: context.companyId, path: folderPath.trim() });
+      await bootstrap({ squadId: context.squadId, path: folderPath.trim() });
       toast({ tone: "success", title: "Folder updated" });
       settings.refresh();
     } catch (err) {
@@ -5966,10 +5966,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
 
   async function chooseAgent() {
     const agentId = selectedAgentId || data.managedAgent.agentId;
-    if (!context.companyId || !agentId) return;
+    if (!context.squadId || !agentId) return;
     setAgentBusy(true);
     try {
-      await selectAgent({ companyId: context.companyId, agentId });
+      await selectAgent({ squadId: context.squadId, agentId });
       toast({ tone: "success", title: "Maintainer agent selected" });
       settings.refresh();
     } catch (err) {
@@ -5981,10 +5981,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
 
   async function chooseProject() {
     const projectId = effectiveSelectedProjectId;
-    if (!context.companyId || !projectId) return;
+    if (!context.squadId || !projectId) return;
     setProjectBusy(true);
     try {
-      await selectProject({ companyId: context.companyId, projectId });
+      await selectProject({ squadId: context.squadId, projectId });
       toast({ tone: "success", title: "Project selected" });
       settings.refresh();
     } catch (err) {
@@ -5995,10 +5995,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function saveEventPolicy() {
-    if (!context.companyId || !eventPolicy) return;
+    if (!context.squadId || !eventPolicy) return;
     setEventPolicyBusy(true);
     try {
-      const next = await updateEventIngestion({ companyId: context.companyId, ...eventPolicy }) as EventIngestionSettings;
+      const next = await updateEventIngestion({ squadId: context.squadId, ...eventPolicy }) as EventIngestionSettings;
       setEventPolicy(next);
       toast({ tone: "success", title: "Event ingestion controls saved" });
       settings.refresh();
@@ -6010,10 +6010,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function repairManagedRoutines() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     setRoutineRepairBusy(true);
     try {
-      await reconcileRoutines({ companyId: context.companyId });
+      await reconcileRoutines({ squadId: context.squadId });
       toast({ tone: "success", title: "Routines fixed" });
       settings.refresh();
     } catch (err) {
@@ -6024,10 +6024,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function resyncManagedSkills() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     setSkillBusy(true);
     try {
-      await resetSkills({ companyId: context.companyId });
+      await resetSkills({ squadId: context.squadId });
       toast({ tone: "success", title: "Skills synced" });
       settings.refresh();
     } catch (err) {
@@ -6038,7 +6038,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function fixAllConfigurationErrors() {
-    if (!context.companyId || !hasConfigurationErrors) return;
+    if (!context.squadId || !hasConfigurationErrors) return;
     const confirmed = typeof window === "undefined" || window.confirm(
       "Fix all detected LLM Wiki configuration errors? This may recreate missing wiki baseline files and restore plugin-managed agents, projects, routines, and skills to their current defaults.",
     );
@@ -6051,11 +6051,11 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
         if (!path && !data.folder.configured) {
           throw new Error("Choose a wiki root folder path before fixing all configuration errors.");
         }
-        await bootstrap(path ? { companyId: context.companyId, path } : { companyId: context.companyId });
+        await bootstrap(path ? { squadId: context.squadId, path } : { squadId: context.squadId });
       }
 
       if (skillHealthWarnings.length > 0) {
-        await resetSkills({ companyId: context.companyId });
+        await resetSkills({ squadId: context.squadId });
       }
 
       const shouldResetAgent =
@@ -6067,19 +6067,19 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
         !managedProjectIsReady(data.managedProject);
 
       if (shouldResetAgent) {
-        await resetAgent({ companyId: context.companyId });
+        await resetAgent({ squadId: context.squadId });
       } else if (routineHealthWarnings.length > 0) {
-        await reconcileAgent({ companyId: context.companyId });
+        await reconcileAgent({ squadId: context.squadId });
       }
 
       if (shouldResetProject) {
-        await resetProject({ companyId: context.companyId });
+        await resetProject({ squadId: context.squadId });
       } else if (routineHealthWarnings.length > 0) {
-        await reconcileProject({ companyId: context.companyId });
+        await reconcileProject({ squadId: context.squadId });
       }
 
       if (routineHealthWarnings.length > 0) {
-        await reconcileRoutines({ companyId: context.companyId });
+        await reconcileRoutines({ squadId: context.squadId });
       }
 
       toast({ tone: "success", title: "Configuration errors fixed" });
@@ -6092,14 +6092,14 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function toggleManagedRoutine(routine: ManagedRoutinesListItem, enabled: boolean) {
-    if (!context.companyId || !routine.resourceKey) return;
+    if (!context.squadId || !routine.resourceKey) return;
     if (!enabled && !routine.assigneeAgentId) {
       toast({ tone: "warn", title: "Default agent required", body: "Set a default maintainer before enabling this routine." });
       return;
     }
     setRoutineBusyKey(`status:${routine.key}`);
     try {
-      await updateRoutineStatus({ companyId: context.companyId, routineKey: routine.resourceKey, status: enabled ? "paused" : "active" });
+      await updateRoutineStatus({ squadId: context.squadId, routineKey: routine.resourceKey, status: enabled ? "paused" : "active" });
       toast({ tone: "success", title: enabled ? "Routine paused" : "Routine enabled" });
       settings.refresh();
     } catch (err) {
@@ -6110,7 +6110,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function runManagedRoutineNow(routine: ManagedRoutinesListItem) {
-    if (!context.companyId || !routine.resourceKey) return;
+    if (!context.squadId || !routine.resourceKey) return;
     const assigneeAgentId = routine.assigneeAgentId ?? data.managedAgent.agentId ?? null;
     const projectId = routine.projectId ?? data.managedProject.projectId ?? null;
     if (!assigneeAgentId) {
@@ -6121,7 +6121,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
     setRoutineBusyKey(`run:${routine.key}`);
     try {
       await runManagedRoutine({
-        companyId: context.companyId,
+        squadId: context.squadId,
         routineKey: routine.resourceKey,
         assigneeAgentId,
         projectId,
@@ -6136,7 +6136,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function resetManagedRoutineToDefaults(routine: ManagedRoutinesListItem) {
-    if (!context.companyId || !routine.resourceKey) return;
+    if (!context.squadId || !routine.resourceKey) return;
     const changedFields = (routine as ManagedRoutinesListItemWithDrift).defaultDrift?.changedFields ?? [];
     const fieldList = changedFields.length > 0 ? changedFields.join(", ") : "managed defaults";
     const confirmed = typeof window === "undefined" || window.confirm(
@@ -6149,7 +6149,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
     setRoutineBusyKey(`reset:${routine.key}`);
     try {
       await resetRoutine({
-        companyId: context.companyId,
+        squadId: context.squadId,
         routineKey: routine.resourceKey,
         assigneeAgentId,
         projectId,
@@ -6164,7 +6164,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
   }
 
   async function resetManagedAgentToDefaults() {
-    if (!context.companyId) return;
+    if (!context.squadId) return;
     const changedFiles = agentDefaultDrift?.changedFiles ?? [];
     const fileList = changedFiles.length > 0 ? changedFiles.join(", ") : "managed instructions and defaults";
     const confirmed = typeof window === "undefined" || window.confirm(
@@ -6174,7 +6174,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
 
     setAgentBusy(true);
     try {
-      await resetAgent({ companyId: context.companyId });
+      await resetAgent({ squadId: context.squadId });
       toast({ tone: "success", title: "Agent reset to plugin defaults" });
       settings.refresh();
     } catch (err) {
@@ -6287,7 +6287,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                     style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
                   >
                     <AssigneePicker
-                      companyId={context.companyId}
+                      squadId={context.squadId}
                       value={effectiveSelectedAgentId ? `agent:${effectiveSelectedAgentId}` : ""}
                       includeUsers={false}
                       placeholder="Select maintainer"
@@ -6329,10 +6329,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                     </Button>
                     {agentLink ? <Button size="sm" onClick={() => hostNavigation.navigate(agentLink)}>Open agent ↗</Button> : null}
                     <Button size="sm" variant="ghost" onClick={async () => {
-                      if (!context.companyId) return;
+                      if (!context.squadId) return;
                       setAgentBusy(true);
                       try {
-                        await reconcileAgent({ companyId: context.companyId });
+                        await reconcileAgent({ squadId: context.squadId });
                         toast({ tone: "success", title: "Agent reconciled" });
                         settings.refresh();
                       } catch (err) {
@@ -6364,7 +6364,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                 ) : (
                   <Callout>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                      <span>LLM Wiki skills are installed in the company skill library.</span>
+                      <span>LLM Wiki skills are installed in the squad skill library.</span>
                       <Button size="sm" variant="ghost" onClick={resyncManagedSkills} loading={skillBusy}>Re-sync skills</Button>
                     </div>
                   </Callout>
@@ -6395,7 +6395,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                     style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
                   >
                     <ProjectPicker
-                      companyId={context.companyId}
+                      squadId={context.squadId}
                       value={effectiveSelectedProjectId}
                       includeArchived
                       placeholder="Project"
@@ -6412,10 +6412,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                     <Button size="sm" variant="primary" onClick={chooseProject} loading={projectBusy} disabled={!effectiveSelectedProjectId}>Save project</Button>
                     {projectLink ? <Button size="sm" onClick={() => hostNavigation.navigate(projectLink)}>Open project ↗</Button> : null}
                     <Button size="sm" variant="ghost" onClick={async () => {
-                      if (!context.companyId) return;
+                      if (!context.squadId) return;
                       setProjectBusy(true);
                       try {
-                        await reconcileProject({ companyId: context.companyId });
+                        await reconcileProject({ squadId: context.squadId });
                         toast({ tone: "success", title: "Project reconciled" });
                         settings.refresh();
                       } catch (err) {
@@ -6425,10 +6425,10 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                       }
                     }} loading={projectBusy}>Repair / reconcile</Button>
                     <Button size="sm" variant="ghost" onClick={async () => {
-                      if (!context.companyId) return;
+                      if (!context.squadId) return;
                       setProjectBusy(true);
                       try {
-                        await resetProject({ companyId: context.companyId });
+                        await resetProject({ squadId: context.squadId });
                         toast({ tone: "success", title: "Project reset to plugin defaults" });
                         settings.refresh();
                       } catch (err) {
@@ -6476,7 +6476,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
           <SettingsPanel
             title="Distillation"
             badge={<Badge tone="default">Default space only</Badge>}
-            description="Read Slaw issues, comments, and documents for this company and write project pages into the default wiki space. Assets/attachments and work products stay metadata-only in Phase 5 and are excluded from source-text extraction. Other spaces cannot be selected as a destination yet - that lands with per-space Slaw ingestion profiles."
+            description="Read Slaw issues, comments, and documents for this squad and write project pages into the default wiki space. Assets/attachments and work products stay metadata-only in Phase 5 and are excluded from source-text extraction. Other spaces cannot be selected as a destination yet - that lands with per-space Slaw ingestion profiles."
           >
             <DistillationSettingsPanel context={context} settings={data} />
           </SettingsPanel>
@@ -6538,7 +6538,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
             description={activeSettingsConfig.description}
           >
           <Tiny style={{ marginBottom: 10 }}>
-            Company-scoped Slaw events can advance default-space cursors. Enable only the first-party text sources this wiki should observe for default-space distillation.
+            Squad-scoped Slaw events can advance default-space cursors. Enable only the first-party text sources this wiki should observe for default-space distillation.
           </Tiny>
           <div style={{ display: "grid", gap: 10 }}>
             <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
@@ -6547,7 +6547,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
                 checked={currentEventPolicy.enabled}
                 onChange={(event) => setEventPolicy({ ...currentEventPolicy, enabled: event.currentTarget.checked })}
               />
-              Enable event ingestion for this company
+              Enable event ingestion for this squad
             </label>
             <div style={{ display: "grid", gap: 8, paddingLeft: isMobile ? 0 : 22 }}>
               {([
@@ -6582,7 +6582,7 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
               />
             </div>
             <Callout tone="warn">
-              Event ingestion records selected Slaw issue, comment, and document activity for the default wiki space. Assets/attachments and work products are excluded here: Phase 5 allows metadata-only references later, not blob reads or linked-content fetches. It never reads across companies or creates non-default space cursors.
+              Event ingestion records selected Slaw issue, comment, and document activity for the default wiki space. Assets/attachments and work products are excluded here: Phase 5 allows metadata-only references later, not blob reads or linked-content fetches. It never reads across squads or creates non-default space cursors.
             </Callout>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Button size="sm" variant="primary" onClick={saveEventPolicy} loading={eventPolicyBusy}>Save controls</Button>
@@ -6601,13 +6601,13 @@ function SettingsBody({ context, initialSection = "root" }: { context: { company
 // Reachable via /wiki/settings/spaces or /wiki/settings/spaces/<slug>.
 // ---------------------------------------------------------------------------
 
-function SpacesSettingsPanel({ context, description }: { context: { companyId: string | null; companyPrefix?: string | null }; description: string }) {
+function SpacesSettingsPanel({ context, description }: { context: { squadId: string | null; squadPrefix?: string | null }; description: string }) {
   const { pathname } = useHostLocation();
   const hostNavigation = useHostNavigation();
   const activeSpaceSlug = useMemo(() => readActiveSpaceSlugFromLocation(pathname), [pathname]);
   const editingSlug = useMemo(() => readSettingsSpaceSlugFromLocation(pathname), [pathname]);
   const isMobile = useIsMobileLayout();
-  const spacesQuery = useSpaces(context.companyId);
+  const spacesQuery = useSpaces(context.squadId);
   const spaces = useMemo(() => {
     const list = spacesQuery.data?.spaces ?? [];
     return activeWikiSpaces(list).sort(compareSpaces);
@@ -6678,7 +6678,7 @@ function SpacesSettingsPanel({ context, description }: { context: { companyId: s
           {focusedSpace ? (
             <SpaceEditCard
               space={focusedSpace}
-              companyId={context.companyId}
+              squadId={context.squadId}
               isOnlySpace={spaces.length === 1}
               refresh={spacesQuery.refresh}
               onArchived={() => {
@@ -6690,9 +6690,9 @@ function SpacesSettingsPanel({ context, description }: { context: { companyId: s
           )}
         </div>
       </div>
-      {createOpen && context.companyId ? (
+      {createOpen && context.squadId ? (
         <CreateSpaceModal
-          companyId={context.companyId}
+          squadId={context.squadId}
           existingSlugs={new Set(spaces.map((s) => s.slug))}
           onClose={() => setCreateOpen(false)}
           onCreated={(space) => {
@@ -6708,13 +6708,13 @@ function SpacesSettingsPanel({ context, description }: { context: { companyId: s
 
 function SpaceEditCard({
   space,
-  companyId,
+  squadId,
   isOnlySpace,
   refresh,
   onArchived,
 }: {
   space: WikiSpace;
-  companyId: string | null;
+  squadId: string | null;
   isOnlySpace: boolean;
   refresh: () => void;
   onArchived: () => void;
@@ -6722,7 +6722,7 @@ function SpaceEditCard({
   const updateSpace = usePluginAction("update-space");
   const archiveSpace = usePluginAction("archive-space");
   const bootstrapSpace = usePluginAction("bootstrap-space");
-  const folderStatusQuery = useSpaceFolderStatus(companyId, space.slug);
+  const folderStatusQuery = useSpaceFolderStatus(squadId, space.slug);
   const toast = usePluginToast();
   const isDefault = space.slug === DEFAULT_SPACE_SLUG;
   const [displayName, setDisplayName] = useState(space.displayName);
@@ -6744,10 +6744,10 @@ function SpaceEditCard({
       : space.folderMode;
 
   async function saveName() {
-    if (!companyId || displayName.trim().length === 0 || displayName.trim() === space.displayName) return;
+    if (!squadId || displayName.trim().length === 0 || displayName.trim() === space.displayName) return;
     setBusy(true);
     try {
-      await updateSpace({ companyId, spaceSlug: space.slug, displayName: displayName.trim() });
+      await updateSpace({ squadId, spaceSlug: space.slug, displayName: displayName.trim() });
       toast({ tone: "success", title: "Display name updated" });
       refresh();
     } catch (err) {
@@ -6758,10 +6758,10 @@ function SpaceEditCard({
   }
 
   async function recreateBaseline() {
-    if (!companyId || folderBusy) return;
+    if (!squadId || folderBusy) return;
     setFolderBusy(true);
     try {
-      await bootstrapSpace({ companyId, spaceSlug: space.slug });
+      await bootstrapSpace({ squadId, spaceSlug: space.slug });
       toast({ tone: "success", title: "Baseline restored", body: `Re-created the standard skeleton for ${space.displayName}.` });
       folderStatusQuery.refresh();
     } catch (err) {
@@ -6772,13 +6772,13 @@ function SpaceEditCard({
   }
 
   async function archive() {
-    if (!companyId || isDefault || isOnlySpace || archiveBusy) return;
+    if (!squadId || isDefault || isOnlySpace || archiveBusy) return;
     if (typeof window !== "undefined" && !window.confirm(`Archive ${space.displayName}? Pages stay on disk; you can restore later through the plugin API or by un-archiving from the database.`)) {
       return;
     }
     setArchiveBusy(true);
     try {
-      await archiveSpace({ companyId, spaceSlug: space.slug });
+      await archiveSpace({ squadId, spaceSlug: space.slug });
       toast({ tone: "success", title: "Space archived", body: `${space.displayName} hidden from the sidebar.` });
       refresh();
       onArchived();
@@ -6854,7 +6854,7 @@ function SpaceEditCard({
         </CardBody>
       </Card>
 
-      <SlawIngestionSpaceCard companyId={companyId} space={space} refresh={refresh} />
+      <SlawIngestionSpaceCard squadId={squadId} space={space} refresh={refresh} />
 
       <Card style={{ opacity: 0.56 }}>
         <CardHeader title="Access" />
@@ -6889,7 +6889,7 @@ function SpaceEditCard({
               {isDefault
                 ? "The default space cannot be archived because new operations and tools fall back to it."
                 : isOnlySpace
-                  ? "This is the only space in the company. Create another before archiving this one."
+                  ? "This is the only space in the squad. Create another before archiving this one."
                   : "Archiving hides the space from the sidebar and pauses scheduled lint/index. Pages remain on disk."}
             </Tiny>
             <div>
@@ -6920,8 +6920,8 @@ function slawIngestionStateBadge(data: SlawIngestionProfileData | null): { tone:
   return { tone: "default", label: data.historicalPageCount > 0 ? `Off · ${data.historicalPageCount} historical pages` : "Off" };
 }
 
-function SlawIngestionSpaceCard({ companyId, space, refresh }: { companyId: string | null; space: WikiSpace; refresh: () => void }) {
-  const profileQuery = useSlawIngestionProfile(companyId, space.slug);
+function SlawIngestionSpaceCard({ squadId, space, refresh }: { squadId: string | null; space: WikiSpace; refresh: () => void }) {
+  const profileQuery = useSlawIngestionProfile(squadId, space.slug);
   const updateProfile = usePluginAction("update-slaw-ingestion-profile");
   const toast = usePluginToast();
   const data = profileQuery.data ?? null;
@@ -6936,7 +6936,7 @@ function SlawIngestionSpaceCard({ companyId, space, refresh }: { companyId: stri
   const locked = data?.effectiveState === "policy_blocked";
   const sourceScope = draft?.sourceScopes[0];
   const activeProjectLimit = sourceScope?.kind === "active_projects" ? sourceScope.limit : 3;
-  const canSave = Boolean(companyId && draft && !busy && !locked);
+  const canSave = Boolean(squadId && draft && !busy && !locked);
   const emptyScopes = Boolean(draft?.enabled && draft.sourceScopes.length === 0);
 
   function patchDraft(patch: Partial<SlawIngestionProfile>) {
@@ -6959,10 +6959,10 @@ function SlawIngestionSpaceCard({ companyId, space, refresh }: { companyId: stri
   }
 
   async function save() {
-    if (!companyId || !draft || locked) return;
+    if (!squadId || !draft || locked) return;
     setBusy(true);
     try {
-      await updateProfile({ companyId, spaceSlug: space.slug, profile: draft });
+      await updateProfile({ squadId, spaceSlug: space.slug, profile: draft });
       toast({ tone: "success", title: "Slaw ingestion profile saved", body: `${space.displayName} will use the selected Slaw sources.` });
       profileQuery.refresh();
       refresh();
@@ -7028,7 +7028,7 @@ function SlawIngestionSpaceCard({ companyId, space, refresh }: { companyId: stri
                     onChange={(event) => setActiveProjectsLimit(Number(event.currentTarget.value))}
                   />
                 </label>
-                <Tiny>Specific projects, issue trees, and company-wide ingestion use the same profile API; this first editor keeps the default auto-scope path visible and capped.</Tiny>
+                <Tiny>Specific projects, issue trees, and squad-wide ingestion use the same profile API; this first editor keeps the default auto-scope path visible and capped.</Tiny>
               </div>
               <div style={{ display: "grid", gap: 8 }}>
                 <strong style={{ fontSize: 13 }}>Source kinds</strong>

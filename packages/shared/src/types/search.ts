@@ -1,23 +1,23 @@
 import type { IssuePriority, IssueStatus } from "../constants.js";
 
-export const COMPANY_SEARCH_SCOPES = ["all", "issues", "comments", "documents", "agents", "projects"] as const;
-export type CompanySearchScope = (typeof COMPANY_SEARCH_SCOPES)[number];
+export const SQUAD_SEARCH_SCOPES = ["all", "issues", "comments", "documents", "agents", "projects"] as const;
+export type SquadSearchScope = (typeof SQUAD_SEARCH_SCOPES)[number];
 
-export type CompanySearchResultType = "issue" | "agent" | "project";
+export type SquadSearchResultType = "issue" | "agent" | "project";
 
-export interface CompanySearchHighlight {
+export interface SquadSearchHighlight {
   start: number;
   end: number;
 }
 
-export interface CompanySearchSnippet {
+export interface SquadSearchSnippet {
   field: string;
   label: string;
   text: string;
-  highlights: CompanySearchHighlight[];
+  highlights: SquadSearchHighlight[];
 }
 
-export interface CompanySearchIssueSummary {
+export interface SquadSearchIssueSummary {
   id: string;
   identifier: string | null;
   title: string;
@@ -29,28 +29,28 @@ export interface CompanySearchIssueSummary {
   updatedAt: string;
 }
 
-export interface CompanySearchResult {
+export interface SquadSearchResult {
   id: string;
-  type: CompanySearchResultType;
+  type: SquadSearchResultType;
   score: number;
   title: string;
   href: string;
   matchedFields: string[];
   sourceLabel: string | null;
   snippet: string | null;
-  snippets: CompanySearchSnippet[];
-  issue?: CompanySearchIssueSummary;
+  snippets: SquadSearchSnippet[];
+  issue?: SquadSearchIssueSummary;
   updatedAt: string | null;
   previewImageUrl: string | null;
 }
 
-export interface CompanySearchResponse {
+export interface SquadSearchResponse {
   query: string;
   normalizedQuery: string;
-  scope: CompanySearchScope;
+  scope: SquadSearchScope;
   limit: number;
   offset: number;
-  results: CompanySearchResult[];
-  countsByType: Record<CompanySearchResultType, number>;
+  results: SquadSearchResult[];
+  countsByType: Record<SquadSearchResultType, number>;
   hasMore: boolean;
 }

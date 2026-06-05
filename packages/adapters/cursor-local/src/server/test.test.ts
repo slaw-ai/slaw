@@ -86,7 +86,7 @@ describe("cursor testEnvironment", () => {
 
     try {
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "cursor",
         config: {
           command: "agent",

@@ -45,7 +45,7 @@ interface PatchBudget {
   totalPatchBytes: number;
 }
 
-type WorkspaceDiffTarget = Pick<PluginExecutionWorkspaceMetadata, "id" | "companyId" | "cwd" | "baseRef">;
+type WorkspaceDiffTarget = Pick<PluginExecutionWorkspaceMetadata, "id" | "squadId" | "cwd" | "baseRef">;
 
 function warning(code: WorkspaceDiffWarningCode, message: string, filePath: string | null = null): WorkspaceDiffWarning {
   return { code, message, path: filePath };
@@ -826,7 +826,7 @@ export function workspaceDiffService() {
       const patchWarnings = files.flatMap((file) => file.warnings);
       return {
         workspaceId: workspace.id,
-        companyId: workspace.companyId,
+        squadId: workspace.squadId,
         view: query.view,
         baseRef,
         defaultBaseRef,

@@ -175,20 +175,20 @@ function normalizeInboxApprovalFilter(value: unknown): InboxApprovalFilter {
   return value === "actionable" || value === "resolved" ? value : "all";
 }
 
-function getInboxFilterPreferencesStorageKey(companyId: string | null | undefined): string | null {
-  if (!companyId) return null;
-  return `${INBOX_FILTER_PREFERENCES_KEY_PREFIX}:${companyId}`;
+function getInboxFilterPreferencesStorageKey(squadId: string | null | undefined): string | null {
+  if (!squadId) return null;
+  return `${INBOX_FILTER_PREFERENCES_KEY_PREFIX}:${squadId}`;
 }
 
-function getInboxCollapsedGroupsStorageKey(companyId: string | null | undefined): string | null {
-  if (!companyId) return null;
-  return `${INBOX_COLLAPSED_GROUPS_KEY_PREFIX}:${companyId}`;
+function getInboxCollapsedGroupsStorageKey(squadId: string | null | undefined): string | null {
+  if (!squadId) return null;
+  return `${INBOX_COLLAPSED_GROUPS_KEY_PREFIX}:${squadId}`;
 }
 
 export function loadInboxFilterPreferences(
-  companyId: string | null | undefined,
+  squadId: string | null | undefined,
 ): InboxFilterPreferences {
-  const storageKey = getInboxFilterPreferencesStorageKey(companyId);
+  const storageKey = getInboxFilterPreferencesStorageKey(squadId);
   if (!storageKey) {
     return {
       ...defaultInboxFilterPreferences,
@@ -219,10 +219,10 @@ export function loadInboxFilterPreferences(
 }
 
 export function saveInboxFilterPreferences(
-  companyId: string | null | undefined,
+  squadId: string | null | undefined,
   preferences: InboxFilterPreferences,
 ) {
-  const storageKey = getInboxFilterPreferencesStorageKey(companyId);
+  const storageKey = getInboxFilterPreferencesStorageKey(squadId);
   if (!storageKey) return;
 
   try {
@@ -240,9 +240,9 @@ export function saveInboxFilterPreferences(
 }
 
 export function loadCollapsedInboxGroupKeys(
-  companyId: string | null | undefined,
+  squadId: string | null | undefined,
 ): Set<string> {
-  const storageKey = getInboxCollapsedGroupsStorageKey(companyId);
+  const storageKey = getInboxCollapsedGroupsStorageKey(squadId);
   if (!storageKey) return new Set();
 
   try {
@@ -256,10 +256,10 @@ export function loadCollapsedInboxGroupKeys(
 }
 
 export function saveCollapsedInboxGroupKeys(
-  companyId: string | null | undefined,
+  squadId: string | null | undefined,
   groupKeys: ReadonlySet<string>,
 ) {
-  const storageKey = getInboxCollapsedGroupsStorageKey(companyId);
+  const storageKey = getInboxCollapsedGroupsStorageKey(squadId);
   if (!storageKey) return;
 
   try {
@@ -656,7 +656,7 @@ export function isMineInboxTab(tab: InboxTab): boolean {
   return tab === "mine";
 }
 
-export function shouldShowCompanyAlerts(tab: InboxTab): boolean {
+export function shouldShowSquadAlerts(tab: InboxTab): boolean {
   return tab === "all";
 }
 
@@ -1257,7 +1257,7 @@ export function computeInboxBadgeData({
   const alerts = Number(showAggregateAgentError) + Number(showBudgetAlert);
 
   return {
-    // The inbox badge reflects personal/actionable work, not company-wide health alerts.
+    // The inbox badge reflects personal/actionable work, not squad-wide health alerts.
     inbox: actionableApprovals + visibleJoinRequests + failedRuns + visibleMineIssues,
     approvals: actionableApprovals,
     failedRuns,

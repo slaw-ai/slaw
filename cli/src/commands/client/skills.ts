@@ -3,15 +3,15 @@ import type {
   Agent,
   AgentSkillSnapshot,
   CatalogSkill,
-  CompanySkill,
-  CompanySkillAuditResult,
-  CompanySkillDetail,
-  CompanySkillFileDetail,
-  CompanySkillImportResult,
-  CompanySkillInstallCatalogResult,
-  CompanySkillListItem,
-  CompanySkillProjectScanResult,
-  CompanySkillUpdateStatus,
+  SquadSkill,
+  SquadSkillAuditResult,
+  SquadSkillDetail,
+  SquadSkillFileDetail,
+  SquadSkillImportResult,
+  SquadSkillInstallCatalogResult,
+  SquadSkillListItem,
+  SquadSkillProjectScanResult,
+  SquadSkillUpdateStatus,
 } from "@slaw/shared";
 import { readFile } from "node:fs/promises";
 import { stdin as input, stdout as output } from "node:process";
@@ -27,7 +27,7 @@ import {
 } from "./common.js";
 
 interface SkillsOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
 }
 
 interface SkillFileOptions extends SkillsOptions {
@@ -71,23 +71,23 @@ interface AgentSkillSyncOptions extends SkillsOptions {
   skill?: string[];
 }
 
-type CompanySkillReferenceTarget = Pick<CompanySkillListItem, "id" | "key" | "slug" | "name">;
+type SquadSkillReferenceTarget = Pick<SquadSkillListItem, "id" | "key" | "slug" | "name">;
 
-export interface CompanySkillCheckRow {
-  skill: CompanySkillReferenceTarget;
-  status: CompanySkillUpdateStatus;
+export interface SquadSkillCheckRow {
+  skill: SquadSkillReferenceTarget;
+  status: SquadSkillUpdateStatus;
 }
 
-export interface CompanySkillUpdateRow {
+export interface SquadSkillUpdateRow {
   skillRef: string;
   action: "updated" | "skipped" | "failed";
-  skill?: CompanySkill;
-  status?: CompanySkillUpdateStatus;
+  skill?: SquadSkill;
+  status?: SquadSkillUpdateStatus;
   reason?: string;
 }
 
 export function registerSkillsCommands(program: Command): void {
-  const skills = program.command("skills").description("Company and agent skill operations");
+  const skills = program.command("skills").description("Squad and agent skill operations");
 
   addCommonClientOptions(
     skills
@@ -156,15 +156,15 @@ export function registerSkillsCommands(program: Command): void {
   addCommonClientOptions(
     skills
       .command("install")
-      .description("Install a catalog skill into the company skill library; does not attach it to agents")
+      .description("Install a catalog skill into the squad skill library; does not attach it to agents")
       .argument("<catalogRef>", "Catalog skill ID, key, or unique slug")
-      .option("--as <slug>", "Company skill slug override")
+      .option("--as <slug>", "Squad skill slug override")
       .option("--force", "Replace a same-key catalog-managed skill when the server allows it", false)
       .action(async (catalogRef: string, opts: CatalogInstallOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.post<CompanySkillInstallCatalogResult>(
-            `/api/companies/${ctx.companyId}/skills/install-catalog`,
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.post<SquadSkillInstallCatalogResult>(
+            `/api/squads/${ctx.squadId}/skills/install-catalog`,
             {
               catalogSkillId: catalogRef,
               slug: opts.as,
@@ -180,62 +180,62 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("list")
-      .description("List company skills")
+      .description("List squad skills")
       .action(async (opts: SkillsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const rows = await listCompanySkills(ctx);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const rows = await listSquadSkills(ctx);
           if (ctx.json) {
             printOutput(rows, { json: true });
             return;
           }
-          printCompanySkillRows(rows);
+          printSquadSkillRows(rows);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("show")
-      .description("Show company skill details")
-      .argument("<skillRef>", "Company skill ID, key, or unique slug")
+      .description("Show squad skill details")
+      .argument("<skillRef>", "Squad skill ID, key, or unique slug")
       .action(async (skillRef: string, opts: SkillsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const skill = await resolveCompanySkill(ctx, skillRef);
-          const detail = await ctx.api.get<CompanySkillDetail>(
-            `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}`,
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const skill = await resolveSquadSkill(ctx, skillRef);
+          const detail = await ctx.api.get<SquadSkillDetail>(
+            `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}`,
           );
           printOutput(detail, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("file")
-      .description("Print a company skill file")
-      .argument("<skillRef>", "Company skill ID, key, or unique slug")
+      .description("Print a squad skill file")
+      .argument("<skillRef>", "Squad skill ID, key, or unique slug")
       .option("--path <path>", "Relative file path", "SKILL.md")
       .action(async (skillRef: string, opts: SkillFileOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const skill = await resolveCompanySkill(ctx, skillRef);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const skill = await resolveSquadSkill(ctx, skillRef);
           const params = new URLSearchParams({ path: opts.path?.trim() || "SKILL.md" });
-          const file = await ctx.api.get<CompanySkillFileDetail>(
-            `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}/files?${params.toString()}`,
+          const file = await ctx.api.get<SquadSkillFileDetail>(
+            `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}/files?${params.toString()}`,
           );
           if (ctx.json) {
             printOutput(file, { json: true });
@@ -249,19 +249,19 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("import")
-      .description("Import company skills from a local path, GitHub, skills.sh, or URL source")
+      .description("Import squad skills from a local path, GitHub, skills.sh, or URL source")
       .argument("<source>", "Skill source")
       .action(async (source: string, opts: SkillsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.post<CompanySkillImportResult>(
-            `/api/companies/${ctx.companyId}/skills/import`,
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.post<SquadSkillImportResult>(
+            `/api/squads/${ctx.squadId}/skills/import`,
             { source },
           );
           if (ctx.json) {
@@ -271,7 +271,7 @@ export function registerSkillsCommands(program: Command): void {
           console.log(
             `Imported ${result?.imported.length ?? 0} skill(s); warnings=${result?.warnings.length ?? 0}`,
           );
-          printCompanySkillRows(result?.imported ?? []);
+          printSquadSkillRows(result?.imported ?? []);
           for (const warning of result?.warnings ?? []) {
             console.log(`warning=${warning}`);
           }
@@ -279,23 +279,23 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("create")
-      .description("Create a managed local company skill")
+      .description("Create a managed local squad skill")
       .requiredOption("--name <name>", "Skill name")
       .option("--slug <slug>", "Skill slug")
       .option("--description <text>", "Skill description")
       .option("--body-file <path>", "Markdown body file; use - to read stdin")
       .action(async (opts: SkillCreateOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const markdown = opts.bodyFile ? await readBodyFile(opts.bodyFile) : undefined;
-          const created = await ctx.api.post<CompanySkill>(
-            `/api/companies/${ctx.companyId}/skills`,
+          const created = await ctx.api.post<SquadSkill>(
+            `/api/squads/${ctx.squadId}/skills`,
             {
               name: opts.name,
               slug: opts.slug,
@@ -312,7 +312,7 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
@@ -323,9 +323,9 @@ export function registerSkillsCommands(program: Command): void {
       .option("--workspace-id <id>", "Workspace ID to scan; may be repeated", collectOptionValue, [] as string[])
       .action(async (opts: SkillScanProjectsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.post<CompanySkillProjectScanResult>(
-            `/api/companies/${ctx.companyId}/skills/scan-projects`,
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.post<SquadSkillProjectScanResult>(
+            `/api/squads/${ctx.squadId}/skills/scan-projects`,
             {
               projectIds: emptyToUndefined(opts.projectId),
               workspaceIds: emptyToUndefined(opts.workspaceId),
@@ -342,93 +342,93 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("check")
-      .description("Check company skill update status")
-      .argument("[skillRef]", "Company skill ID, key, or unique slug")
+      .description("Check squad skill update status")
+      .argument("[skillRef]", "Squad skill ID, key, or unique slug")
       .action(async (skillRef: string | undefined, opts: SkillsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const rows = await checkCompanySkills(ctx, skillRef);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const rows = await checkSquadSkills(ctx, skillRef);
           if (ctx.json) {
             printOutput(rows, { json: true });
             return;
           }
-          printCompanySkillCheckRows(rows);
+          printSquadSkillCheckRows(rows);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("update")
-      .description("Install company skill updates")
-      .argument("[skillRef]", "Company skill ID, key, or unique slug")
+      .description("Install squad skill updates")
+      .argument("[skillRef]", "Squad skill ID, key, or unique slug")
       .option("--all", "Check all skills and install available updates", false)
       .option("--force", "Discard local-modification or soft-audit holds; hard-stop audit findings still fail", false)
       .action(async (skillRef: string | undefined, opts: SkillUpdateOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           if (opts.all && skillRef?.trim()) {
             throw new Error("Use either a skill reference or --all, not both.");
           }
           const rows = opts.all
-            ? await updateAllCompanySkills(ctx, opts)
-            : [await updateOneCompanySkill(ctx, requireSkillRef(skillRef), opts)];
+            ? await updateAllSquadSkills(ctx, opts)
+            : [await updateOneSquadSkill(ctx, requireSkillRef(skillRef), opts)];
           if (ctx.json) {
             printOutput(rows.length === 1 && !opts.all ? rows[0] : rows, { json: true });
             return;
           }
-          printCompanySkillUpdateRows(rows);
+          printSquadSkillUpdateRows(rows);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("audit")
-      .description("Audit installed company skill bytes without executing them")
-      .argument("[skillRef]", "Company skill ID, key, or unique slug")
+      .description("Audit installed squad skill bytes without executing them")
+      .argument("[skillRef]", "Squad skill ID, key, or unique slug")
       .action(async (skillRef: string | undefined, opts: SkillsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const rows = await auditCompanySkills(ctx, skillRef);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const rows = await auditSquadSkills(ctx, skillRef);
           if (ctx.json) {
             printOutput(rows.length === 1 && skillRef ? rows[0]?.audit : rows, { json: true });
             return;
           }
-          printCompanySkillAuditRows(rows);
+          printSquadSkillAuditRows(rows);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("reset")
-      .description("Reset a catalog-managed company skill to its pinned installed origin")
-      .argument("<skillRef>", "Company skill ID, key, or unique slug")
+      .description("Reset a catalog-managed squad skill to its pinned installed origin")
+      .argument("<skillRef>", "Squad skill ID, key, or unique slug")
       .option("--yes", "Confirm reset without prompting", false)
       .option("--force", "Discard local modifications or accept soft audit warnings; hard-stop audit findings still fail", false)
       .action(async (skillRef: string, opts: ConfirmedSkillOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const skill = await resolveCompanySkill(ctx, skillRef);
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const skill = await resolveSquadSkill(ctx, skillRef);
           await confirmDangerousAction(opts.yes, `Reset catalog skill "${skill.name}" (${skill.key}) to its pinned origin?`);
-          const reset = await ctx.api.post<CompanySkill>(
-            `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}/reset`,
+          const reset = await ctx.api.post<SquadSkill>(
+            `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}/reset`,
             { force: opts.force || undefined },
           );
           if (ctx.json) {
@@ -440,22 +440,22 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     skills
       .command("remove")
-      .description("Remove a company skill")
-      .argument("<skillRef>", "Company skill ID, key, or unique slug")
+      .description("Remove a squad skill")
+      .argument("<skillRef>", "Squad skill ID, key, or unique slug")
       .option("--yes", "Confirm removal without prompting", false)
       .action(async (skillRef: string, opts: ConfirmedSkillOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const skill = await resolveCompanySkill(ctx, skillRef);
-          await confirmDangerousAction(opts.yes, `Remove company skill "${skill.name}" (${skill.key})?`);
-          const removed = await ctx.api.delete<CompanySkill>(
-            `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}`,
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const skill = await resolveSquadSkill(ctx, skillRef);
+          await confirmDangerousAction(opts.yes, `Remove squad skill "${skill.name}" (${skill.key})?`);
+          const removed = await ctx.api.delete<SquadSkill>(
+            `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}`,
           );
           if (ctx.json) {
             printOutput(removed, { json: true });
@@ -466,7 +466,7 @@ export function registerSkillsCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   registerAgentSkillCommands(skills);
@@ -482,7 +482,7 @@ function registerAgentSkillCommands(skills: Command): void {
       .argument("<agentRef>", "Agent ID or shortname/url-key")
       .action(async (agentRef: string, opts: SkillsOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const agentRow = await resolveAgent(ctx, agentRef);
           const snapshot = await ctx.api.get<AgentSkillSnapshot>(
             `/api/agents/${encodeURIComponent(agentRow.id)}/skills`,
@@ -496,22 +496,22 @@ function registerAgentSkillCommands(skills: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     agent
       .command("sync")
-      .description("Replace an agent's non-required desired company skills and sync runtime state")
+      .description("Replace an agent's non-required desired squad skills and sync runtime state")
       .argument("<agentRef>", "Agent ID or shortname/url-key")
-      .option("--skill <skillRef>", "Desired company skill ID, key, or slug; may be repeated", collectOptionValue, [] as string[])
+      .option("--skill <skillRef>", "Desired squad skill ID, key, or slug; may be repeated", collectOptionValue, [] as string[])
       .action(async (agentRef: string, opts: AgentSkillSyncOptions) => {
         try {
           const desiredSkills = opts.skill ?? [];
           if (desiredSkills.length === 0) {
             throw new Error("At least one --skill value is required for skills agent sync.");
           }
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const agentRow = await resolveAgent(ctx, agentRef);
           const snapshot = await ctx.api.post<AgentSkillSnapshot>(
             `/api/agents/${encodeURIComponent(agentRow.id)}/skills/sync`,
@@ -522,29 +522,29 @@ function registerAgentSkillCommands(skills: Command): void {
             return;
           }
           console.log(
-            `Desired company skills replaced for ${agentRow.name} (${agentRow.id}); runtime sync returned ${snapshot?.entries.length ?? 0} entrie(s).`,
+            `Desired squad skills replaced for ${agentRow.name} (${agentRow.id}); runtime sync returned ${snapshot?.entries.length ?? 0} entrie(s).`,
           );
           printAgentSkillSnapshot(snapshot, agentRow);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 
   addCommonClientOptions(
     agent
       .command("clear")
-      .description("Clear an agent's non-required desired company skills and sync runtime state")
+      .description("Clear an agent's non-required desired squad skills and sync runtime state")
       .argument("<agentRef>", "Agent ID or shortname/url-key")
       .option("--yes", "Confirm clear without prompting", false)
       .action(async (agentRef: string, opts: ConfirmedSkillOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const agentRow = await resolveAgent(ctx, agentRef);
           await confirmDangerousAction(
             opts.yes,
-            `Clear non-required desired company skills for "${agentRow.name}" (${agentRow.id})?`,
+            `Clear non-required desired squad skills for "${agentRow.name}" (${agentRow.id})?`,
           );
           const snapshot = await ctx.api.post<AgentSkillSnapshot>(
             `/api/agents/${encodeURIComponent(agentRow.id)}/skills/sync`,
@@ -555,19 +555,19 @@ function registerAgentSkillCommands(skills: Command): void {
             return;
           }
           console.log(
-            `Desired company skills cleared for ${agentRow.name} (${agentRow.id}); required Slaw skills remain server-enforced.`,
+            `Desired squad skills cleared for ${agentRow.name} (${agentRow.id}); required Slaw skills remain server-enforced.`,
           );
           printAgentSkillSnapshot(snapshot, agentRow);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: true },
+    { includeSquad: true },
   );
 }
 
-async function listCompanySkills(ctx: ResolvedClientContext): Promise<CompanySkillListItem[]> {
-  return (await ctx.api.get<CompanySkillListItem[]>(`/api/companies/${ctx.companyId}/skills`)) ?? [];
+async function listSquadSkills(ctx: ResolvedClientContext): Promise<SquadSkillListItem[]> {
+  return (await ctx.api.get<SquadSkillListItem[]>(`/api/squads/${ctx.squadId}/skills`)) ?? [];
 }
 
 async function listCatalogSkills(
@@ -594,10 +594,10 @@ async function getCatalogSkill(ctx: ResolvedClientContext, catalogRef: string): 
   return detail;
 }
 
-export function resolveCompanySkillReference(
-  skills: CompanySkillReferenceTarget[],
+export function resolveSquadSkillReference(
+  skills: SquadSkillReferenceTarget[],
   reference: string,
-): CompanySkillReferenceTarget {
+): SquadSkillReferenceTarget {
   const trimmed = reference.trim();
   if (!trimmed) {
     throw new Error("Skill reference is required.");
@@ -619,23 +619,23 @@ export function resolveCompanySkillReference(
   throw new Error(`Skill not found: ${reference}`);
 }
 
-async function resolveCompanySkill(
+async function resolveSquadSkill(
   ctx: ResolvedClientContext,
   reference: string,
-): Promise<CompanySkillReferenceTarget> {
-  return resolveCompanySkillReference(await listCompanySkills(ctx), reference);
+): Promise<SquadSkillReferenceTarget> {
+  return resolveSquadSkillReference(await listSquadSkills(ctx), reference);
 }
 
-async function checkCompanySkills(
+async function checkSquadSkills(
   ctx: ResolvedClientContext,
   skillRef: string | undefined,
-): Promise<CompanySkillCheckRow[]> {
-  const skills = await listCompanySkills(ctx);
-  const selected = skillRef ? [resolveCompanySkillReference(skills, skillRef)] : skills;
-  const rows: CompanySkillCheckRow[] = [];
+): Promise<SquadSkillCheckRow[]> {
+  const skills = await listSquadSkills(ctx);
+  const selected = skillRef ? [resolveSquadSkillReference(skills, skillRef)] : skills;
+  const rows: SquadSkillCheckRow[] = [];
   for (const skill of selected) {
-    const status = await ctx.api.get<CompanySkillUpdateStatus>(
-      `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}/update-status`,
+    const status = await ctx.api.get<SquadSkillUpdateStatus>(
+      `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}/update-status`,
     );
     if (!status) {
       throw new Error(`No update status returned for skill ${skill.key}.`);
@@ -645,14 +645,14 @@ async function checkCompanySkills(
   return rows;
 }
 
-async function updateOneCompanySkill(
+async function updateOneSquadSkill(
   ctx: ResolvedClientContext,
   skillRef: string,
   opts: SkillUpdateOptions = {},
-): Promise<CompanySkillUpdateRow> {
-  const skill = await resolveCompanySkill(ctx, skillRef);
-  const updated = await ctx.api.post<CompanySkill>(
-    `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}/install-update`,
+): Promise<SquadSkillUpdateRow> {
+  const skill = await resolveSquadSkill(ctx, skillRef);
+  const updated = await ctx.api.post<SquadSkill>(
+    `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}/install-update`,
     { force: opts.force || undefined },
   );
   return {
@@ -662,9 +662,9 @@ async function updateOneCompanySkill(
   };
 }
 
-async function updateAllCompanySkills(ctx: ResolvedClientContext, opts: SkillUpdateOptions = {}): Promise<CompanySkillUpdateRow[]> {
-  const checks = await checkCompanySkills(ctx, undefined);
-  const rows: CompanySkillUpdateRow[] = [];
+async function updateAllSquadSkills(ctx: ResolvedClientContext, opts: SkillUpdateOptions = {}): Promise<SquadSkillUpdateRow[]> {
+  const checks = await checkSquadSkills(ctx, undefined);
+  const rows: SquadSkillUpdateRow[] = [];
   for (const row of checks) {
     if (!row.status.supported) {
       rows.push({
@@ -685,8 +685,8 @@ async function updateAllCompanySkills(ctx: ResolvedClientContext, opts: SkillUpd
       continue;
     }
     try {
-      const updated = await ctx.api.post<CompanySkill>(
-        `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(row.skill.id)}/install-update`,
+      const updated = await ctx.api.post<SquadSkill>(
+        `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(row.skill.id)}/install-update`,
         { force: opts.force || undefined },
       );
       rows.push({
@@ -707,16 +707,16 @@ async function updateAllCompanySkills(ctx: ResolvedClientContext, opts: SkillUpd
   return rows;
 }
 
-async function auditCompanySkills(
+async function auditSquadSkills(
   ctx: ResolvedClientContext,
   skillRef: string | undefined,
-): Promise<Array<{ skill: CompanySkillReferenceTarget; audit: CompanySkillAuditResult }>> {
-  const skills = await listCompanySkills(ctx);
-  const selected = skillRef ? [resolveCompanySkillReference(skills, skillRef)] : skills;
-  const rows: Array<{ skill: CompanySkillReferenceTarget; audit: CompanySkillAuditResult }> = [];
+): Promise<Array<{ skill: SquadSkillReferenceTarget; audit: SquadSkillAuditResult }>> {
+  const skills = await listSquadSkills(ctx);
+  const selected = skillRef ? [resolveSquadSkillReference(skills, skillRef)] : skills;
+  const rows: Array<{ skill: SquadSkillReferenceTarget; audit: SquadSkillAuditResult }> = [];
   for (const skill of selected) {
-    const audit = await ctx.api.post<CompanySkillAuditResult>(
-      `/api/companies/${ctx.companyId}/skills/${encodeURIComponent(skill.id)}/audit`,
+    const audit = await ctx.api.post<SquadSkillAuditResult>(
+      `/api/squads/${ctx.squadId}/skills/${encodeURIComponent(skill.id)}/audit`,
       {},
     );
     if (!audit) {
@@ -728,7 +728,7 @@ async function auditCompanySkills(
 }
 
 async function resolveAgent(ctx: ResolvedClientContext, agentRef: string): Promise<Agent> {
-  const params = new URLSearchParams({ companyId: ctx.companyId ?? "" });
+  const params = new URLSearchParams({ squadId: ctx.squadId ?? "" });
   const agent = await ctx.api.get<Agent>(`/api/agents/${encodeURIComponent(agentRef)}?${params.toString()}`);
   if (!agent) {
     throw new Error(`Agent not found: ${agentRef}`);
@@ -736,7 +736,7 @@ async function resolveAgent(ctx: ResolvedClientContext, agentRef: string): Promi
   return agent;
 }
 
-function printCompanySkillRows(rows: Array<CompanySkillListItem | CompanySkill>): void {
+function printSquadSkillRows(rows: Array<SquadSkillListItem | SquadSkill>): void {
   if (rows.length === 0) {
     printOutput([], { json: false });
     return;
@@ -800,13 +800,13 @@ function printCatalogSkillDetail(skill: CatalogSkill): void {
   })));
 }
 
-function printCatalogInstallResult(result: CompanySkillInstallCatalogResult | null): void {
+function printCatalogInstallResult(result: SquadSkillInstallCatalogResult | null): void {
   if (!result) {
     console.log("Catalog install returned no result.");
     return;
   }
   console.log(
-    `Catalog skill ${result.action}: ${result.skill.name} (${result.skill.key}) in company skill library.`,
+    `Catalog skill ${result.action}: ${result.skill.name} (${result.skill.key}) in squad skill library.`,
   );
   console.log(
     "This does not attach the skill to an agent. Use `slaw skills agent sync <agent> --skill <skill>` when you want an agent to use it.",
@@ -816,7 +816,7 @@ function printCatalogInstallResult(result: CompanySkillInstallCatalogResult | nu
   }
 }
 
-function printCompanySkillCheckRows(rows: CompanySkillCheckRow[]): void {
+function printSquadSkillCheckRows(rows: SquadSkillCheckRow[]): void {
   if (rows.length === 0) {
     printOutput([], { json: false });
     return;
@@ -842,7 +842,7 @@ function printCompanySkillCheckRows(rows: CompanySkillCheckRow[]): void {
   }
 }
 
-function printCompanySkillAuditRows(rows: Array<{ skill: CompanySkillReferenceTarget; audit: CompanySkillAuditResult }>): void {
+function printSquadSkillAuditRows(rows: Array<{ skill: SquadSkillReferenceTarget; audit: SquadSkillAuditResult }>): void {
   if (rows.length === 0) {
     printOutput([], { json: false });
     return;
@@ -872,7 +872,7 @@ function printCompanySkillAuditRows(rows: Array<{ skill: CompanySkillReferenceTa
   }
 }
 
-function printCompanySkillUpdateRows(rows: CompanySkillUpdateRow[]): void {
+function printSquadSkillUpdateRows(rows: SquadSkillUpdateRow[]): void {
   for (const row of rows) {
     console.log(
       formatInlineRecord({
@@ -893,7 +893,7 @@ function printAgentSkillSnapshot(snapshot: AgentSkillSnapshot | null, agent: Age
     return;
   }
   console.log(
-    `Agent ${agent.name} (${agent.id}) adapter=${snapshot.adapterType} supported=${snapshot.supported} mode=${snapshot.mode} desiredCompanySkills=${snapshot.desiredSkills.length}`,
+    `Agent ${agent.name} (${agent.id}) adapter=${snapshot.adapterType} supported=${snapshot.supported} mode=${snapshot.mode} desiredSquadSkills=${snapshot.desiredSkills.length}`,
   );
   if (snapshot.warnings.length > 0) {
     for (const warning of snapshot.warnings) {
@@ -920,7 +920,7 @@ function printAgentSkillSnapshot(snapshot: AgentSkillSnapshot | null, agent: Age
   }
 }
 
-function toSkillReferenceTarget(skill: CompanySkillReferenceTarget): CompanySkillReferenceTarget {
+function toSkillReferenceTarget(skill: SquadSkillReferenceTarget): SquadSkillReferenceTarget {
   return {
     id: skill.id,
     key: skill.key,

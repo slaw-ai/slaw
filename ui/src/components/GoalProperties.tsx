@@ -5,7 +5,7 @@ import type { Goal } from "@slaw/shared";
 import { GOAL_STATUSES, GOAL_LEVELS } from "@slaw/shared";
 import { agentsApi } from "../api/agents";
 import { goalsApi } from "../api/goals";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { queryKeys } from "../lib/queryKeys";
 import { StatusBadge } from "./StatusBadge";
 import { formatDate, cn, agentUrl } from "../lib/utils";
@@ -71,18 +71,18 @@ function PickerButton({
 }
 
 export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: allGoals } = useQuery({
-    queryKey: queryKeys.goals.list(selectedCompanyId!),
-    queryFn: () => goalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.goals.list(selectedSquadId!),
+    queryFn: () => goalsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const ownerAgent = goal.ownerAgentId

@@ -36,7 +36,7 @@ function buildResolvedWorkspace(overrides: Partial<ResolvedWorkspaceForRun> = {}
 function buildAgent(adapterType: string, runtimeConfig: Record<string, unknown> = {}) {
   return {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     goalId: null,
     name: "Agent",
@@ -243,7 +243,7 @@ describe("buildRealizedExecutionWorkspaceFromPersisted", () => {
       }),
       workspace: {
         id: "execution-workspace-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         projectId: "project-1",
         projectWorkspaceId: "workspace-1",
         sourceIssueId: "issue-1",

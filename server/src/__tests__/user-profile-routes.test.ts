@@ -6,8 +6,8 @@ import {
   activityLog,
   agents,
   authUsers,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   costEvents,
   createDb,
   issueComments,
@@ -29,10 +29,10 @@ if (!embeddedPostgresSupport.supported) {
   );
 }
 
-describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", () => {
+describeEmbeddedPostgres("GET /squads/:squadId/users/:userSlug/profile", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  let companyId!: string;
+  let squadId!: string;
   let userId!: string;
   let agentId!: string;
 
@@ -52,15 +52,15 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
     ]);
     userProfileRoutes = routes.userProfileRoutes;
     errorHandler = middleware.errorHandler;
-    companyId = randomUUID();
+    squadId = randomUUID();
     userId = randomUUID();
     agentId = randomUUID();
     const now = new Date();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `U${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `U${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(authUsers).values({
@@ -72,8 +72,8 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
       createdAt: now,
       updatedAt: now,
     });
-    await db.insert(companyMemberships).values({
-      companyId,
+    await db.insert(squadMemberships).values({
+      squadId,
       principalType: "user",
       principalId: userId,
       status: "active",
@@ -83,7 +83,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
     });
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "Coder",
       role: "engineer",
       adapterType: "process",
@@ -97,9 +97,9 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
     await db.delete(activityLog);
     await db.delete(issues);
     await db.delete(agents);
-    await db.delete(companyMemberships);
+    await db.delete(squadMemberships);
     await db.delete(authUsers);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -117,7 +117,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
         type: "board",
         source: "local_implicit",
         userId,
-        companyIds: [companyId],
+        squadIds: [squadId],
       };
       next();
     });
@@ -135,7 +135,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
     await db.insert(issues).values([
       {
         id: doneIssueId,
-        companyId,
+        squadId,
         title: "Ship profile page",
         status: "done",
         priority: "high",
@@ -147,7 +147,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
       },
       {
         id: openIssueId,
-        companyId,
+        squadId,
         title: "Review profile copy",
         status: "in_progress",
         priority: "medium",
@@ -158,7 +158,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
       },
     ]);
     await db.insert(issueComments).values({
-      companyId,
+      squadId,
       issueId: openIssueId,
       authorUserId: userId,
       body: "Looks good.",
@@ -166,7 +166,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
       updatedAt: now,
     });
     await db.insert(activityLog).values({
-      companyId,
+      squadId,
       actorType: "user",
       actorId: userId,
       action: "issue.updated",
@@ -175,7 +175,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
       createdAt: now,
     });
     await db.insert(costEvents).values({
-      companyId,
+      squadId,
       agentId,
       issueId: doneIssueId,
       provider: "openai",
@@ -189,7 +189,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
       occurredAt: now,
     });
 
-    const response = await request(createApp()).get(`/api/companies/${companyId}/users/dotta/profile`);
+    const response = await request(createApp()).get(`/api/squads/${squadId}/users/dotta/profile`);
 
     expect(response.status).toBe(200);
     expect(response.body.user.slug).toBe("dotta");

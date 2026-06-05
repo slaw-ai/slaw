@@ -2,5 +2,5 @@ import type { SidebarBadges } from "@slaw/shared";
 import { api } from "./client";
 
 export const sidebarBadgesApi = {
-  get: (companyId: string) => api.get<SidebarBadges>(`/companies/${companyId}/sidebar-badges`),
+  get: (squadId: string) => api.get<SidebarBadges>(`/squads/${squadId}/sidebar-badges`),
 };

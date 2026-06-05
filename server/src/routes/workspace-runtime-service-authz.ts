@@ -3,7 +3,7 @@ import type { Db } from "@slaw/db";
 import { agents, issues } from "@slaw/db";
 import type { Request } from "express";
 import { forbidden } from "../errors.js";
-import { assertCompanyAccess } from "./authz.js";
+import { assertSquadAccess } from "./authz.js";
 
 const WORKSPACE_RUNTIME_ELIGIBLE_ISSUE_STATUSES: string[] = [
   "backlog",
@@ -13,17 +13,17 @@ const WORKSPACE_RUNTIME_ELIGIBLE_ISSUE_STATUSES: string[] = [
   "blocked",
 ];
 
-async function listReportingSubtreeAgentIds(db: Db, companyId: string, actorAgentId: string) {
-  const companyAgents = await db
+async function listReportingSubtreeAgentIds(db: Db, squadId: string, actorAgentId: string) {
+  const squadAgents = await db
     .select({
       id: agents.id,
       reportsTo: agents.reportsTo,
     })
     .from(agents)
-    .where(and(eq(agents.companyId, companyId), ne(agents.status, "terminated")));
+    .where(and(eq(agents.squadId, squadId), ne(agents.status, "terminated")));
 
   const reportsByManager = new Map<string, string[]>();
-  for (const agent of companyAgents) {
+  for (const agent of squadAgents) {
     if (!agent.reportsTo) continue;
     const reports = reportsByManager.get(agent.reportsTo) ?? [];
     reports.push(agent.id);
@@ -50,7 +50,7 @@ async function assertAgentCanManageRuntimeServicesForWorkspace(
   db: Db,
   req: Request,
   input: {
-    companyId: string;
+    squadId: string;
     projectWorkspaceId?: string | null;
     executionWorkspaceId?: string | null;
     sourceIssueId?: string | null;
@@ -63,22 +63,22 @@ async function assertAgentCanManageRuntimeServicesForWorkspace(
   const actorAgent = await db
     .select({
       id: agents.id,
-      companyId: agents.companyId,
+      squadId: agents.squadId,
       role: agents.role,
     })
     .from(agents)
     .where(eq(agents.id, req.actor.agentId))
     .then((rows) => rows[0] ?? null);
 
-  if (!actorAgent || actorAgent.companyId !== input.companyId) {
-    throw forbidden("Agent key cannot access another company");
+  if (!actorAgent || actorAgent.squadId !== input.squadId) {
+    throw forbidden("Agent key cannot access another squad");
   }
 
-  if (actorAgent.role === "ceo") {
+  if (actorAgent.role === "squad_lead") {
     return;
   }
 
-  const eligibleAgentIds = await listReportingSubtreeAgentIds(db, input.companyId, actorAgent.id);
+  const eligibleAgentIds = await listReportingSubtreeAgentIds(db, input.squadId, actorAgent.id);
   const workspaceScopeConditions = [
     input.projectWorkspaceId ? eq(issues.projectWorkspaceId, input.projectWorkspaceId) : null,
     input.executionWorkspaceId ? eq(issues.executionWorkspaceId, input.executionWorkspaceId) : null,
@@ -93,7 +93,7 @@ async function assertAgentCanManageRuntimeServicesForWorkspace(
     .select({ id: issues.id })
     .from(issues)
     .where(and(
-      eq(issues.companyId, input.companyId),
+      eq(issues.squadId, input.squadId),
       isNull(issues.hiddenAt),
       inArray(issues.status, WORKSPACE_RUNTIME_ELIGIBLE_ISSUE_STATUSES),
       inArray(issues.assigneeAgentId, eligibleAgentIds),
@@ -114,11 +114,11 @@ export async function assertCanManageProjectWorkspaceRuntimeServices(
   db: Db,
   req: Request,
   input: {
-    companyId: string;
+    squadId: string;
     projectWorkspaceId: string;
   },
 ) {
-  assertCompanyAccess(req, input.companyId);
+  assertSquadAccess(req, input.squadId);
   if (req.actor.type === "board") return;
   await assertAgentCanManageRuntimeServicesForWorkspace(db, req, input);
 }
@@ -127,12 +127,12 @@ export async function assertCanManageExecutionWorkspaceRuntimeServices(
   db: Db,
   req: Request,
   input: {
-    companyId: string;
+    squadId: string;
     executionWorkspaceId: string;
     sourceIssueId?: string | null;
   },
 ) {
-  assertCompanyAccess(req, input.companyId);
+  assertSquadAccess(req, input.squadId);
   if (req.actor.type === "board") return;
   await assertAgentCanManageRuntimeServicesForWorkspace(db, req, input);
 }

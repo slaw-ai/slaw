@@ -104,7 +104,7 @@ export function isSecretProviderClientError(error: unknown): error is SecretProv
 }
 
 export interface SecretProviderRuntimeContext {
-  companyId: string;
+  squadId: string;
   secretId: string;
   secretKey: string;
   version: number;
@@ -118,7 +118,7 @@ export interface SecretProviderVaultRuntimeConfig {
 }
 
 export interface SecretProviderWriteContext {
-  companyId: string;
+  squadId: string;
   secretKey: string;
   secretName: string;
   version: number;
@@ -157,7 +157,7 @@ export interface SecretProviderModule {
     pageSize?: number;
   }): Promise<RemoteSecretListResult>;
   discoverProviderConfigs?(input: {
-    companyId: string;
+    squadId: string;
     providerConfig: SecretProviderVaultRuntimeConfig;
     query?: string | null;
     nextToken?: string | null;

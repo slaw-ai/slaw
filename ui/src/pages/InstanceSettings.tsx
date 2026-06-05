@@ -23,7 +23,7 @@ function humanize(value: string) {
 }
 
 function buildAgentHref(agent: InstanceSchedulerHeartbeatAgent) {
-  return `/${agent.companyIssuePrefix}/agents/${encodeURIComponent(agent.agentUrlKey)}`;
+  return `/${agent.squadIssuePrefix}/agents/${encodeURIComponent(agent.agentUrlKey)}`;
 }
 
 export function InstanceSettings() {
@@ -46,7 +46,7 @@ export function InstanceSettings() {
 
   const toggleMutation = useMutation({
     mutationFn: async (agentRow: InstanceSchedulerHeartbeatAgent) => {
-      const agent = await agentsApi.get(agentRow.id, agentRow.companyId);
+      const agent = await agentsApi.get(agentRow.id, agentRow.squadId);
       const runtimeConfig = asRecord(agent.runtimeConfig) ?? {};
       const heartbeat = asRecord(runtimeConfig.heartbeat) ?? {};
 
@@ -61,14 +61,14 @@ export function InstanceSettings() {
             },
           },
         },
-        agentRow.companyId,
+        agentRow.squadId,
       );
     },
     onSuccess: async (_, agentRow) => {
       setActionError(null);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.instance.schedulerHeartbeats }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(agentRow.companyId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(agentRow.squadId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentRow.id) }),
       ]);
     },
@@ -84,7 +84,7 @@ export function InstanceSettings() {
 
       const results = await Promise.allSettled(
         enabled.map(async (agentRow) => {
-          const agent = await agentsApi.get(agentRow.id, agentRow.companyId);
+          const agent = await agentsApi.get(agentRow.id, agentRow.squadId);
           const runtimeConfig = asRecord(agent.runtimeConfig) ?? {};
           const heartbeat = asRecord(runtimeConfig.heartbeat) ?? {};
           await agentsApi.update(
@@ -95,7 +95,7 @@ export function InstanceSettings() {
                 heartbeat: { ...heartbeat, enabled: false },
               },
             },
-            agentRow.companyId,
+            agentRow.squadId,
           );
         }),
       );
@@ -114,11 +114,11 @@ export function InstanceSettings() {
     },
     onSuccess: async (updatedRows) => {
       setActionError(null);
-      const companies = new Set(updatedRows.map((row) => row.companyId));
+      const squads = new Set(updatedRows.map((row) => row.squadId));
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.instance.schedulerHeartbeats }),
-        ...Array.from(companies, (companyId) =>
-          queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(companyId) }),
+        ...Array.from(squads, (squadId) =>
+          queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(squadId) }),
         ),
         ...updatedRows.map((row) =>
           queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(row.id) }),
@@ -137,12 +137,12 @@ export function InstanceSettings() {
   const anyEnabled = enabledCount > 0;
 
   const grouped = useMemo(() => {
-    const map = new Map<string, { companyName: string; agents: InstanceSchedulerHeartbeatAgent[] }>();
+    const map = new Map<string, { squadName: string; agents: InstanceSchedulerHeartbeatAgent[] }>();
     for (const agent of agents) {
-      let group = map.get(agent.companyId);
+      let group = map.get(agent.squadId);
       if (!group) {
-        group = { companyName: agent.companyName, agents: [] };
-        map.set(agent.companyId, group);
+        group = { squadName: agent.squadName, agents: [] };
+        map.set(agent.squadId, group);
       }
       group.agents.push(agent);
     }
@@ -171,14 +171,14 @@ export function InstanceSettings() {
           <h1 className="text-lg font-semibold">Scheduler Heartbeats</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Agents with a timer heartbeat enabled across all of your companies.
+          Agents with a timer heartbeat enabled across all of your squads.
         </p>
       </div>
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <span><span className="font-semibold text-foreground">{activeCount}</span> active</span>
         <span><span className="font-semibold text-foreground">{disabledCount}</span> disabled</span>
-        <span><span className="font-semibold text-foreground">{grouped.length}</span> {grouped.length === 1 ? "company" : "companies"}</span>
+        <span><span className="font-semibold text-foreground">{grouped.length}</span> {grouped.length === 1 ? "squad" : "squads"}</span>
         {anyEnabled && (
           <Button
             variant="destructive"
@@ -212,10 +212,10 @@ export function InstanceSettings() {
       ) : (
         <div className="space-y-4">
           {grouped.map((group) => (
-            <Card key={group.companyName}>
+            <Card key={group.squadName}>
               <CardContent className="p-0">
                 <div className="border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {group.companyName}
+                  {group.squadName}
                 </div>
                 <div className="divide-y">
                   {group.agents.map((agent) => {

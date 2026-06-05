@@ -50,7 +50,7 @@ When Slaw is running inside a managed worktree instance (`SLAW_IN_WORKTREE=true`
 For manual local CLI usage outside heartbeat runs (for example running as `codexcoder` directly), use:
 
 ```sh
-pnpm slaw agent local-cli codexcoder --company-id <company-id>
+pnpm slaw agent local-cli codexcoder --squad-id <squad-id>
 ```
 
 This installs any missing skills, creates an agent API key, and prints shell exports to run as that agent.

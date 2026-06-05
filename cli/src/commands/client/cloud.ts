@@ -4,8 +4,8 @@ import { URL } from "node:url";
 import { Command } from "commander";
 import pc from "picocolors";
 import type {
-  CompanyPortabilityExportResult,
-  CompanyPortabilityFileEntry,
+  SquadPortabilityExportResult,
+  SquadPortabilityFileEntry,
   InstanceExperimentalSettings,
 } from "@slaw/shared";
 import { openUrl } from "../../client/board-auth.js";
@@ -48,7 +48,7 @@ interface CloudConnectOptions extends BaseClientOptions {
 }
 
 interface CloudPushOptions extends BaseClientOptions {
-  company?: string;
+  squad?: string;
   remoteUrl?: string;
   dryRun?: boolean;
   maxEntitiesPerChunk?: number;
@@ -60,7 +60,7 @@ interface UpstreamDiscovery {
     id: string;
     slug?: string;
     displayName?: string;
-    companyId: string;
+    squadId: string;
     origin: string;
   };
   auth: {
@@ -121,8 +121,8 @@ export function registerCloudCommands(program: Command): void {
   addCommonClientOptions(
     cloud
       .command("push")
-      .description("Preview or apply a local company push into the connected Slaw Cloud stack")
-      .requiredOption("--company <local-company-id>", "Local company ID to export")
+      .description("Preview or apply a local squad push into the connected Slaw Cloud stack")
+      .requiredOption("--squad <local-squad-id>", "Local squad ID to export")
       .option("--remote-url <remote-url>", "Use a specific stored cloud connection")
       .option("--dry-run", "Preview without applying", false)
       .option("--max-entities-per-chunk <count>", "Chunk size for upstream uploads", (value) => Number(value), 100)
@@ -160,7 +160,7 @@ export async function connectCloud(remoteUrl: string, opts: CloudConnectOptions 
     stackId: discovery.stack.id,
     stackSlug: discovery.stack.slug ?? null,
     stackDisplayName: discovery.stack.displayName ?? null,
-    targetCompanyId: discovery.stack.companyId,
+    targetSquadId: discovery.stack.squadId,
     accessToken: token.accessToken,
     token: token.token,
     privateKeyPem: source.privateKeyPem,
@@ -178,14 +178,14 @@ export async function connectCloud(remoteUrl: string, opts: CloudConnectOptions 
     console.log(pc.bold("Connected to Slaw Cloud"));
     console.log(`stack=${connection.stackDisplayName ?? connection.stackSlug ?? connection.stackId}`);
     console.log(`origin=${connection.targetOrigin}`);
-    console.log(`company=${connection.targetCompanyId}`);
+    console.log(`squad=${connection.targetSquadId}`);
   }
   return connection;
 }
 
 export async function pushCloud(opts: CloudPushOptions): Promise<unknown> {
-  const ctx = resolveCommandContext(opts, { requireCompany: false });
-  const localCompanyId = requiredString(opts.company, "--company");
+  const ctx = resolveCommandContext(opts, { requireSquad: false });
+  const localSquadId = requiredString(opts.squad, "--squad");
   await assertCloudSyncEnabled(ctx.api.get<InstanceExperimentalSettings>("/api/instance/settings/experimental"));
   const connection = getCloudConnection(opts.remoteUrl);
   if (!connection) {
@@ -194,8 +194,8 @@ export async function pushCloud(opts: CloudPushOptions): Promise<unknown> {
 
   const discovery = await discoverUpstream(connection.targetOrigin);
   assertDiscoveryCompatible(discovery);
-  const bundle = await buildBundleFromLocalCompany({
-    localCompanyId,
+  const bundle = await buildBundleFromLocalSquad({
+    localSquadId,
     connection,
     discovery,
     localApi: ctx.api,
@@ -204,7 +204,7 @@ export async function pushCloud(opts: CloudPushOptions): Promise<unknown> {
   });
   const coordinator = new LocalUpstreamPushCoordinator({
     targetOrigin: connection.targetOrigin,
-    slawCompanyId: connection.targetCompanyId,
+    slawSquadId: connection.targetSquadId,
     headers: ({ method, path }) => cloudProofHeaders(connection, method, path),
   });
 
@@ -260,8 +260,8 @@ export function resolveDeviceCodeExpiresAt(expiresAt: string | undefined, nowMs 
   return Number.isFinite(parsed) ? parsed : nowMs + DEVICE_CODE_FALLBACK_EXPIRES_MS;
 }
 
-export async function buildBundleFromLocalCompany(input: {
-  localCompanyId: string;
+export async function buildBundleFromLocalSquad(input: {
+  localSquadId: string;
   connection: CloudConnection;
   discovery: UpstreamDiscovery;
   localApi: {
@@ -270,11 +270,11 @@ export async function buildBundleFromLocalCompany(input: {
   maxEntitiesPerChunk?: number;
   mode: "preview" | "apply";
 }): Promise<LocalUpstreamExportBundle> {
-  const exported = await input.localApi.post<CompanyPortabilityExportResult>(
-    apiPath`/api/companies/${input.localCompanyId}/export`,
+  const exported = await input.localApi.post<SquadPortabilityExportResult>(
+    apiPath`/api/squads/${input.localSquadId}/export`,
     {
       include: {
-        company: true,
+        squad: true,
         agents: true,
         projects: true,
         issues: true,
@@ -283,7 +283,7 @@ export async function buildBundleFromLocalCompany(input: {
       expandReferencedSkills: true,
     },
   );
-  if (!exported) throw new Error("Local company export returned no data.");
+  if (!exported) throw new Error("Local squad export returned no data.");
 
   const sourceHash = normalizedContentHash({
     manifest: exported.manifest,
@@ -291,22 +291,22 @@ export async function buildBundleFromLocalCompany(input: {
   });
   const source: UpstreamTransferManifestSource = {
     sourceInstanceId: input.connection.sourceInstanceId,
-    sourceCompanyId: input.localCompanyId,
+    sourceSquadId: input.localSquadId,
     sourceInstanceKeyFingerprint: input.connection.sourceInstanceFingerprint,
     exporterVersion: "slaw-cli-cloud-v1",
     sourceSchemaVersion: "slaw-local-portability-v1",
   };
   const target: UpstreamTransferManifestTarget = {
     targetStackId: input.discovery.stack.id,
-    targetCompanyId: input.discovery.stack.companyId,
+    targetSquadId: input.discovery.stack.squadId,
     targetOrigin: input.discovery.stack.origin,
     supportedSchemaMajor: input.discovery.transfer.supportedSchemaMajor,
   };
-  const entities = buildEntitiesFromPortableExport(input.localCompanyId, input.connection.sourceInstanceId, exported);
+  const entities = buildEntitiesFromPortableExport(input.localSquadId, input.connection.sourceInstanceId, exported);
   const idempotencyKey = [
     input.mode,
     input.connection.sourceInstanceId,
-    input.localCompanyId,
+    input.localSquadId,
     input.discovery.stack.id,
     sourceHash,
   ].join(":");
@@ -317,7 +317,7 @@ export async function buildBundleFromLocalCompany(input: {
     idempotencyKey,
     entities,
     warnings: exported.warnings.map((message): UpstreamTransferWarning => ({
-      code: "local_company_export_warning",
+      code: "local_squad_export_warning",
       severity: "warning",
       message,
     })),
@@ -436,28 +436,28 @@ async function authorizeWithDeviceCode(
 }
 
 function buildEntitiesFromPortableExport(
-  localCompanyId: string,
+  localSquadId: string,
   sourceInstanceId: string,
-  exported: CompanyPortabilityExportResult,
+  exported: SquadPortabilityExportResult,
 ): LocalUpstreamExportEntityInput[] {
-  const companyKey: SourceEntityKey = {
+  const squadKey: SourceEntityKey = {
     sourceInstanceId,
-    sourceCompanyId: localCompanyId,
-    sourceEntityType: "company",
-    sourceEntityId: localCompanyId,
-    sourceNaturalKey: exported.manifest.company?.name ?? localCompanyId,
+    sourceSquadId: localSquadId,
+    sourceEntityType: "squad",
+    sourceEntityId: localSquadId,
+    sourceNaturalKey: exported.manifest.squad?.name ?? localSquadId,
   };
   const entities: LocalUpstreamExportEntityInput[] = [
     {
-      key: companyKey,
+      key: squadKey,
       body: {
-        kind: "slaw_company_portability_manifest",
+        kind: "slaw_squad_portability_manifest",
         manifest: exported.manifest,
         rootPath: exported.rootPath,
         slawExtensionPath: exported.slawExtensionPath,
         fileCount: Object.keys(exported.files).length,
       },
-      conflictKeys: [`company:${companyKey.sourceNaturalKey ?? localCompanyId}`],
+      conflictKeys: [`squad:${squadKey.sourceNaturalKey ?? localSquadId}`],
     },
   ];
 
@@ -465,8 +465,8 @@ function buildEntitiesFromPortableExport(
     entities.push({
       key: {
         sourceInstanceId,
-        sourceCompanyId: localCompanyId,
-        sourceEntityType: "company_setting",
+        sourceSquadId: localSquadId,
+        sourceEntityType: "squad_setting",
         sourceEntityId: shortHash(filePath),
         sourceNaturalKey: filePath,
       },
@@ -475,14 +475,14 @@ function buildEntitiesFromPortableExport(
         path: filePath,
         entry: normalizePortableFileEntry(entry),
       },
-      dependencies: [companyKey],
+      dependencies: [squadKey],
       conflictKeys: [`portable_file:${filePath}`],
     });
   }
   return entities;
 }
 
-function normalizePortableFileEntry(entry: CompanyPortabilityFileEntry): Record<string, unknown> {
+function normalizePortableFileEntry(entry: SquadPortabilityFileEntry): Record<string, unknown> {
   if (typeof entry === "string") {
     return { encoding: "utf8", data: entry };
   }
@@ -672,7 +672,7 @@ function redactConnection(connection: CloudConnection): Record<string, unknown> 
     remoteUrl: connection.remoteUrl,
     targetOrigin: connection.targetOrigin,
     stackId: connection.stackId,
-    targetCompanyId: connection.targetCompanyId,
+    targetSquadId: connection.targetSquadId,
     scopes: connection.scopes,
     expiresAt: connection.token.expiresAt,
   };

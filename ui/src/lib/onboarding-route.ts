@@ -1,4 +1,4 @@
-type OnboardingRouteCompany = {
+type OnboardingRouteSquad = {
   id: string;
   issuePrefix: string;
 };
@@ -19,33 +19,33 @@ export function isOnboardingPath(pathname: string): boolean {
 
 export function resolveRouteOnboardingOptions(params: {
   pathname: string;
-  companyPrefix?: string;
-  companies: OnboardingRouteCompany[];
-}): { initialStep: 1 | 2; companyId?: string } | null {
-  const { pathname, companyPrefix, companies } = params;
+  squadPrefix?: string;
+  squads: OnboardingRouteSquad[];
+}): { initialStep: 1 | 2; squadId?: string } | null {
+  const { pathname, squadPrefix, squads } = params;
 
   if (!isOnboardingPath(pathname)) return null;
 
-  if (!companyPrefix) {
+  if (!squadPrefix) {
     return { initialStep: 1 };
   }
 
-  const matchedCompany =
-    companies.find(
-      (company) =>
-        company.issuePrefix.toUpperCase() === companyPrefix.toUpperCase(),
+  const matchedSquad =
+    squads.find(
+      (squad) =>
+        squad.issuePrefix.toUpperCase() === squadPrefix.toUpperCase(),
     ) ?? null;
 
-  if (!matchedCompany) {
+  if (!matchedSquad) {
     return { initialStep: 1 };
   }
 
-  return { initialStep: 2, companyId: matchedCompany.id };
+  return { initialStep: 2, squadId: matchedSquad.id };
 }
 
-export function shouldRedirectCompanylessRouteToOnboarding(params: {
+export function shouldRedirectSquadlessRouteToOnboarding(params: {
   pathname: string;
-  hasCompanies: boolean;
+  hasSquads: boolean;
 }): boolean {
-  return !params.hasCompanies && !isOnboardingPath(params.pathname);
+  return !params.hasSquads && !isOnboardingPath(params.pathname);
 }

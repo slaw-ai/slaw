@@ -275,7 +275,7 @@ Three-zone layout defined in `Layout.tsx`:
 └──────────┴──────────────────────────────┴──────────────────────┘
 ```
 
-- Sidebar: `w-60`, collapsible, contains CompanySwitcher + SidebarSections
+- Sidebar: `w-60`, collapsible, contains SquadSwitcher + SidebarSections
 - Properties panel: `w-80`, shown on detail views, hidden on lists
 - Main content: scrollable, `flex-1`
 

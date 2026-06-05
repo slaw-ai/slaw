@@ -66,7 +66,7 @@ function createApp(actorOverrides: Partial<Express.Request["actor"]> = {}) {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: [],
+      squadIds: [],
       source: "local_implicit",
       isInstanceAdmin: false,
       ...actorOverrides,
@@ -290,7 +290,7 @@ describe("adapter routes", () => {
     const app = createApp({
       userId: "outsider-1",
       source: "session",
-      companyIds: [],
+      squadIds: [],
       memberships: [],
       isInstanceAdmin: false,
     });

@@ -4,7 +4,7 @@ export { loadOrCreateState } from "./state.js";
 export {
   trackInstallStarted,
   trackInstallCompleted,
-  trackCompanyImported,
+  trackSquadImported,
   trackProjectCreated,
   trackRoutineCreated,
   trackRoutineRun,

@@ -1,4 +1,4 @@
-import type { CompanyPortabilityFileEntry } from "@slaw/shared";
+import type { SquadPortabilityFileEntry } from "@slaw/shared";
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
@@ -121,7 +121,7 @@ function base64ToBytes(base64: string) {
   return bytes;
 }
 
-function bytesToPortableFileEntry(pathValue: string, bytes: Uint8Array): CompanyPortabilityFileEntry {
+function bytesToPortableFileEntry(pathValue: string, bytes: Uint8Array): SquadPortabilityFileEntry {
   const contentType = inferBinaryContentType(pathValue);
   if (!contentType) return textDecoder.decode(bytes);
   return {
@@ -131,7 +131,7 @@ function bytesToPortableFileEntry(pathValue: string, bytes: Uint8Array): Company
   };
 }
 
-function portableFileEntryToBytes(entry: CompanyPortabilityFileEntry): Uint8Array {
+function portableFileEntryToBytes(entry: SquadPortabilityFileEntry): Uint8Array {
   if (typeof entry === "string") return textEncoder.encode(entry);
   return base64ToBytes(entry.data);
 }
@@ -152,10 +152,10 @@ async function inflateZipEntry(compressionMethod: number, bytes: Uint8Array) {
 
 export async function readZipArchive(source: ArrayBuffer | Uint8Array): Promise<{
   rootPath: string | null;
-  files: Record<string, CompanyPortabilityFileEntry>;
+  files: Record<string, SquadPortabilityFileEntry>;
 }> {
   const bytes = source instanceof Uint8Array ? source : new Uint8Array(source);
-  const entries: Array<{ path: string; body: CompanyPortabilityFileEntry }> = [];
+  const entries: Array<{ path: string; body: SquadPortabilityFileEntry }> = [];
   let offset = 0;
 
   while (offset + 4 <= bytes.length) {
@@ -201,7 +201,7 @@ export async function readZipArchive(source: ArrayBuffer | Uint8Array): Promise<
   }
 
   const rootPath = sharedArchiveRoot(entries.map((entry) => entry.path));
-  const files: Record<string, CompanyPortabilityFileEntry> = {};
+  const files: Record<string, SquadPortabilityFileEntry> = {};
   for (const entry of entries) {
     const normalizedPath =
       rootPath && entry.path.startsWith(`${rootPath}/`)
@@ -214,7 +214,7 @@ export async function readZipArchive(source: ArrayBuffer | Uint8Array): Promise<
   return { rootPath, files };
 }
 
-export function createZipArchive(files: Record<string, CompanyPortabilityFileEntry>, rootPath: string): Uint8Array {
+export function createZipArchive(files: Record<string, SquadPortabilityFileEntry>, rootPath: string): Uint8Array {
   const normalizedRoot = normalizeArchivePath(rootPath);
   const localChunks: Uint8Array[] = [];
   const centralChunks: Uint8Array[] = [];

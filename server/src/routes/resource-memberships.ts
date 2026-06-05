@@ -17,7 +17,7 @@ async function logMembershipChange(
   db: Db,
   req: Request,
   input: {
-    companyId: string;
+    squadId: string;
     userId: string;
     resourceType: "project" | "agent";
     resourceId: string;
@@ -27,7 +27,7 @@ async function logMembershipChange(
 ) {
   const actor = getActorInfo(req);
   await logActivity(db, {
-    companyId: input.companyId,
+    squadId: input.squadId,
     actorType: actor.actorType,
     actorId: actor.actorId,
     agentId: actor.agentId,
@@ -49,23 +49,23 @@ export function resourceMembershipRoutes(db: Db) {
   const router = Router();
   const svc = resourceMembershipService(db);
 
-  router.get("/companies/:companyId/resource-memberships/me", async (req, res) => {
-    const companyId = req.params.companyId as string;
+  router.get("/squads/:squadId/resource-memberships/me", async (req, res) => {
+    const squadId = req.params.squadId as string;
     const userId = requireBoardUserId(req, res);
     if (!userId) return;
-    res.json(await svc.listForUser(companyId, userId, req.actor));
+    res.json(await svc.listForUser(squadId, userId, req.actor));
   });
 
   router.put(
-    "/companies/:companyId/resource-memberships/me/projects/:projectId",
+    "/squads/:squadId/resource-memberships/me/projects/:projectId",
     validate(updateResourceMembershipSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const projectId = req.params.projectId as string;
       const userId = requireBoardUserId(req, res);
       if (!userId) return;
       const result = await svc.updateProject({
-        companyId,
+        squadId,
         projectId,
         userId,
         state: req.body.state,
@@ -73,7 +73,7 @@ export function resourceMembershipRoutes(db: Db) {
       });
       if (result.changed) {
         await logMembershipChange(db, req, {
-          companyId,
+          squadId,
           userId,
           resourceType: "project",
           resourceId: projectId,
@@ -87,15 +87,15 @@ export function resourceMembershipRoutes(db: Db) {
   );
 
   router.put(
-    "/companies/:companyId/resource-memberships/me/agents/:agentId",
+    "/squads/:squadId/resource-memberships/me/agents/:agentId",
     validate(updateResourceMembershipSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
+      const squadId = req.params.squadId as string;
       const agentId = req.params.agentId as string;
       const userId = requireBoardUserId(req, res);
       if (!userId) return;
       const result = await svc.updateAgent({
-        companyId,
+        squadId,
         agentId,
         userId,
         state: req.body.state,
@@ -103,7 +103,7 @@ export function resourceMembershipRoutes(db: Db) {
       });
       if (result.changed) {
         await logMembershipChange(db, req, {
-          companyId,
+          squadId,
           userId,
           resourceType: "agent",
           resourceId: agentId,

@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, integer, index } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { agents } from "./agents.js";
 import { issues } from "./issues.js";
 import { projects } from "./projects.js";
@@ -10,7 +10,7 @@ export const costEvents = pgTable(
   "cost_events",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     agentId: uuid("agent_id").notNull().references(() => agents.id),
     issueId: uuid("issue_id").references(() => issues.id),
     projectId: uuid("project_id").references(() => projects.id),
@@ -29,24 +29,24 @@ export const costEvents = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyOccurredIdx: index("cost_events_company_occurred_idx").on(table.companyId, table.occurredAt),
-    companyAgentOccurredIdx: index("cost_events_company_agent_occurred_idx").on(
-      table.companyId,
+    squadOccurredIdx: index("cost_events_squad_occurred_idx").on(table.squadId, table.occurredAt),
+    squadAgentOccurredIdx: index("cost_events_squad_agent_occurred_idx").on(
+      table.squadId,
       table.agentId,
       table.occurredAt,
     ),
-    companyProviderOccurredIdx: index("cost_events_company_provider_occurred_idx").on(
-      table.companyId,
+    squadProviderOccurredIdx: index("cost_events_squad_provider_occurred_idx").on(
+      table.squadId,
       table.provider,
       table.occurredAt,
     ),
-    companyBillerOccurredIdx: index("cost_events_company_biller_occurred_idx").on(
-      table.companyId,
+    squadBillerOccurredIdx: index("cost_events_squad_biller_occurred_idx").on(
+      table.squadId,
       table.biller,
       table.occurredAt,
     ),
-    companyHeartbeatRunIdx: index("cost_events_company_heartbeat_run_idx").on(
-      table.companyId,
+    squadHeartbeatRunIdx: index("cost_events_squad_heartbeat_run_idx").on(
+      table.squadId,
       table.heartbeatRunId,
     ),
   }),

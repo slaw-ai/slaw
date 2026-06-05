@@ -26,7 +26,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -37,13 +37,13 @@ describe("LiveUpdatesProvider issue invalidation", () => {
     );
 
     expect(invalidations).toContainEqual({
-      queryKey: queryKeys.issues.listMineByMe("company-1"),
+      queryKey: queryKeys.issues.listMineByMe("squad-1"),
     });
     expect(invalidations).toContainEqual({
-      queryKey: queryKeys.issues.listTouchedByMe("company-1"),
+      queryKey: queryKeys.issues.listTouchedByMe("squad-1"),
     });
     expect(invalidations).toContainEqual({
-      queryKey: queryKeys.issues.listUnreadTouchedByMe("company-1"),
+      queryKey: queryKeys.issues.listUnreadTouchedByMe("squad-1"),
     });
     expect(invalidations).toContainEqual({
       queryKey: queryKeys.issues.detail("issue-1"),
@@ -85,7 +85,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -111,7 +111,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -165,7 +165,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -199,7 +199,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -236,7 +236,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -282,7 +282,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -328,7 +328,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -376,7 +376,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 
     __liveUpdatesTestUtils.invalidateActivityQueries(
       queryClient as never,
-      "company-1",
+      "squad-1",
       {
         entityType: "issue",
         entityId: "issue-1",
@@ -547,7 +547,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
   it("hydrates the visible issue comments cache with only the new comment", async () => {
     getCommentMock.mockResolvedValueOnce({
       id: "comment-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorAgentId: "agent-1",
       authorUserId: null,
@@ -570,7 +570,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
           return {
             pages: [[{
               id: "comment-1",
-              companyId: "company-1",
+              squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
               authorUserId: "user-1",
@@ -612,7 +612,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
       pages: [[
         {
           id: "comment-2",
-          companyId: "company-1",
+          squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: "agent-1",
           authorUserId: null,
@@ -622,7 +622,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
         },
         {
           id: "comment-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
           authorUserId: "user-1",
@@ -732,7 +732,7 @@ describe("LiveUpdatesProvider run lifecycle toasts", () => {
         },
         () => "CodexCoder",
         queryClient as never,
-        "company-1",
+        "squad-1",
       ),
     ).toBeNull();
 
@@ -766,7 +766,7 @@ describe("LiveUpdatesProvider run lifecycle toasts", () => {
         },
         () => "CodexCoder",
         queryClient as never,
-        "company-1",
+        "squad-1",
       ),
     ).toMatchObject({
       title: "CodexCoder errored",

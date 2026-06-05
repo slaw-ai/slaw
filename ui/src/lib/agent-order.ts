@@ -33,12 +33,12 @@ function resolveUserId(userId: string | null | undefined): string {
   return trimmed.length > 0 ? trimmed : ANONYMOUS_USER_ID;
 }
 
-export function getAgentOrderStorageKey(companyId: string, userId: string | null | undefined): string {
-  return `${AGENT_ORDER_STORAGE_PREFIX}:${companyId}:${resolveUserId(userId)}`;
+export function getAgentOrderStorageKey(squadId: string, userId: string | null | undefined): string {
+  return `${AGENT_ORDER_STORAGE_PREFIX}:${squadId}:${resolveUserId(userId)}`;
 }
 
-export function getAgentSortModeStorageKey(companyId: string, userId: string | null | undefined): string {
-  return `${AGENT_SORT_MODE_STORAGE_PREFIX}:${companyId}:${resolveUserId(userId)}`;
+export function getAgentSortModeStorageKey(squadId: string, userId: string | null | undefined): string {
+  return `${AGENT_SORT_MODE_STORAGE_PREFIX}:${squadId}:${resolveUserId(userId)}`;
 }
 
 export function readAgentOrder(storageKey: string): string[] {

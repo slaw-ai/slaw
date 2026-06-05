@@ -21,7 +21,7 @@ describe("acpx_local environment diagnostics", () => {
 
     const result = await testEnvironment({
       adapterType: "acpx_local",
-      companyId: "test-company",
+      squadId: "test-squad",
       config: { agent: "claude" },
     });
 

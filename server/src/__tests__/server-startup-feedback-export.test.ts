@@ -86,7 +86,7 @@ function buildTestConfig(overrides: Record<string, unknown> = {}) {
     feedbackExportBackendToken: "telemetry-token",
     heartbeatSchedulerEnabled: false,
     heartbeatSchedulerIntervalMs: 30000,
-    companyDeletionEnabled: false,
+    squadDeletionEnabled: false,
     ...overrides,
   };
 }
@@ -109,8 +109,8 @@ vi.mock("@slaw/db", () => ({
   formatDatabaseBackupResult: vi.fn(() => "ok"),
   runDatabaseBackup: vi.fn(),
   authUsers: {},
-  companies: {},
-  companyMemberships: {},
+  squads: {},
+  squadMemberships: {},
   instanceUserRoles: {},
 }));
 

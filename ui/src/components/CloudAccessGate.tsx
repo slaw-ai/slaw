@@ -11,13 +11,13 @@ function NoBoardAccessPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
-        <h1 className="text-xl font-semibold">No company access</h1>
+        <h1 className="text-xl font-semibold">No squad access</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This account is signed in, but it does not have an active company membership or instance-admin access on
+          This account is signed in, but it does not have an active squad membership or instance-admin access on
           this Slaw instance.
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Use a company invite or sign in with an account that already belongs to this org.
+          Use a squad invite or sign in with an account that already belongs to this org.
         </p>
       </div>
     </div>
@@ -62,8 +62,8 @@ export function CloudAccessGate() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.stats });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.squads.stats });
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
     },
   });
@@ -119,7 +119,7 @@ export function CloudAccessGate() {
     isAuthenticatedMode &&
     sessionQuery.data &&
     !boardAccessQuery.data?.isInstanceAdmin &&
-    (boardAccessQuery.data?.companyIds.length ?? 0) === 0
+    (boardAccessQuery.data?.squadIds.length ?? 0) === 0
   ) {
     return <NoBoardAccessPage />;
   }

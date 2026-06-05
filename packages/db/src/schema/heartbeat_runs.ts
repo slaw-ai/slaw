@@ -1,5 +1,5 @@
 import { type AnyPgColumn, pgTable, uuid, text, timestamp, jsonb, index, integer, bigint, boolean } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { agents } from "./agents.js";
 import { agentWakeupRequests } from "./agent_wakeup_requests.js";
 
@@ -7,7 +7,7 @@ export const heartbeatRuns = pgTable(
   "heartbeat_runs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     agentId: uuid("agent_id").notNull().references(() => agents.id),
     invocationSource: text("invocation_source").notNull().default("on_demand"),
     triggerDetail: text("trigger_detail"),
@@ -58,23 +58,23 @@ export const heartbeatRuns = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyAgentStartedIdx: index("heartbeat_runs_company_agent_started_idx").on(
-      table.companyId,
+    squadAgentStartedIdx: index("heartbeat_runs_squad_agent_started_idx").on(
+      table.squadId,
       table.agentId,
       table.startedAt,
     ),
-    companyLivenessIdx: index("heartbeat_runs_company_liveness_idx").on(
-      table.companyId,
+    squadLivenessIdx: index("heartbeat_runs_squad_liveness_idx").on(
+      table.squadId,
       table.livenessState,
       table.createdAt,
     ),
-    companyStatusLastOutputIdx: index("heartbeat_runs_company_status_last_output_idx").on(
-      table.companyId,
+    squadStatusLastOutputIdx: index("heartbeat_runs_squad_status_last_output_idx").on(
+      table.squadId,
       table.status,
       table.lastOutputAt,
     ),
-    companyStatusProcessStartedIdx: index("heartbeat_runs_company_status_process_started_idx").on(
-      table.companyId,
+    squadStatusProcessStartedIdx: index("heartbeat_runs_squad_status_process_started_idx").on(
+      table.squadId,
       table.status,
       table.processStartedAt,
     ),

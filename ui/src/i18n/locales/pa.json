@@ -1,9 +1,9 @@
 {
   "app": {
-    "noCompanies": {
+    "noSquads": {
       "title": "ਆਪਣੀ ਪਹਿਲੀ ਕੰਪਨੀ ਬਣਾਓ",
       "description": "ਕੰਪਨੀ ਬਣਾਕੇ ਸ਼ੁਰੂ ਕਰੋ।",
-      "newCompany": "ਨਵੀਂ ਕੰਪਨੀ"
+      "newSquad": "ਨਵੀਂ ਕੰਪਨੀ"
     }
   }
 }

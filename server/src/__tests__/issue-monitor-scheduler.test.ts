@@ -6,8 +6,8 @@ import {
   agentRuntimeState,
   agentWakeupRequests,
   agents,
-  companies,
-  companySkills,
+  squads,
+  squadSkills,
   createDb,
   documentRevisions,
   documents,
@@ -112,8 +112,8 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
     await db.delete(agentWakeupRequests);
     await db.delete(agentRuntimeState);
     await db.delete(agents);
-    await db.delete(companySkills);
-    await db.delete(companies);
+    await db.delete(squadSkills);
+    await db.delete(squads);
   }
 
   afterEach(async () => {
@@ -141,11 +141,11 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
     monitorAttemptCount?: number;
     monitor?: Record<string, unknown>;
   }) {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const nextCheckAt = new Date("2026-04-11T12:30:00.000Z");
-    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 
     const monitorAttemptCount = input?.monitorAttemptCount ?? 0;
     const monitor = {
@@ -155,8 +155,8 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
       ...(input?.monitor ?? {}),
     };
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -164,7 +164,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "Monitor Bot",
       role: "engineer",
       status: input?.agentStatus ?? "active",
@@ -186,7 +186,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Watch external deploy",
       status: input?.issueStatus ?? "in_progress",
       priority: "medium",
@@ -231,7 +231,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
       monitorScheduledBy: "assignee",
     });
 
-    return { companyId, agentId, issueId, nextCheckAt };
+    return { squadId, agentId, issueId, nextCheckAt };
   }
 
   it("triggers due issue monitors once and clears the one-shot schedule", async () => {
@@ -386,7 +386,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
   });
 
   it("clears timed-out monitors and creates a visible recovery issue when requested", async () => {
-    const { issueId, companyId } = await seedFixture({
+    const { issueId, squadId } = await seedFixture({
       monitor: {
         timeoutAt: "2026-04-11T12:00:00.000Z",
         recoveryPolicy: "create_recovery_issue",
@@ -411,7 +411,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
       .select()
       .from(issues)
       .where(eq(issues.originId, issueId))
-      .then((rows) => rows.find((row) => row.companyId === companyId && row.originKind === "stranded_issue_recovery") ?? null);
+      .then((rows) => rows.find((row) => row.squadId === squadId && row.originKind === "stranded_issue_recovery") ?? null);
     expect(recoveryIssue).toMatchObject({
       parentId: issueId,
       priority: "high",

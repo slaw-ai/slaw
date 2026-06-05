@@ -97,7 +97,7 @@ Key responsibilities:
 ```ts
 interface AdapterExecutionContext {
   runId: string;
-  agent: { id: string; companyId: string; name: string; adapterConfig: unknown };
+  agent: { id: string; squadId: string; name: string; adapterConfig: unknown };
   runtime: { sessionId: string | null; sessionParams: Record<string, unknown> | null };
   config: Record<string, unknown>;      // agent's adapterConfig
   context: Record<string, unknown>;      // task, wake reason, etc.

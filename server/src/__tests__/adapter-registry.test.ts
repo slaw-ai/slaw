@@ -314,7 +314,7 @@ describe("server adapter registry", () => {
       runId: "run-123",
       agent: {
         id: "agent-123",
-        companyId: "company-123",
+        squadId: "squad-123",
         name: "Hermes Agent",
         role: "engineer",
         adapterType: "hermes_local",
@@ -359,7 +359,7 @@ describe("server adapter registry", () => {
       runId: "run-123",
       agent: {
         id: "agent-123",
-        companyId: "company-123",
+        squadId: "squad-123",
         name: "Hermes Agent",
         role: "engineer",
         adapterType: "hermes_local",
@@ -391,7 +391,7 @@ describe("server adapter registry", () => {
       runId: "run-123",
       agent: {
         id: "agent-123",
-        companyId: "company-123",
+        squadId: "squad-123",
         name: "Hermes Agent",
         role: "engineer",
         adapterType: "hermes_local",
@@ -423,7 +423,7 @@ describe("server adapter registry", () => {
       runId: "run-123",
       agent: {
         id: "agent-123",
-        companyId: "company-123",
+        squadId: "squad-123",
         name: "Hermes Agent",
         role: "engineer",
         adapterType: "hermes_local",
@@ -459,7 +459,7 @@ describe("server adapter registry", () => {
       runId: "run-123",
       agent: {
         id: "agent-123",
-        companyId: "company-123",
+        squadId: "squad-123",
         name: "Hermes Agent",
         role: "engineer",
         adapterType: "hermes_local",

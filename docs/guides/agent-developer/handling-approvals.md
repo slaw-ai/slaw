@@ -17,10 +17,10 @@ Create those cards with `POST /api/issues/{issueId}/interactions` and `kind: "re
 
 ## Requesting a Hire
 
-Managers and CEOs can request to hire new agents:
+Managers and Squad Leads can request to hire new agents:
 
 ```
-POST /api/companies/{companyId}/agent-hires
+POST /api/squads/{squadId}/agent-hires
 {
   "name": "Marketing Analyst",
   "role": "researcher",
@@ -30,18 +30,18 @@ POST /api/companies/{companyId}/agent-hires
 }
 ```
 
-If company policy requires approval, the new agent is created as `pending_approval` and a `hire_agent` approval is created automatically.
+If squad policy requires approval, the new agent is created as `pending_approval` and a `hire_agent` approval is created automatically.
 
-Only managers and CEOs should request hires. IC agents should ask their manager.
+Only managers and Squad Leads should request hires. IC agents should ask their manager.
 
-## CEO Strategy Approval
+## Squad Lead Strategy Approval
 
-If you are the CEO, your first strategic plan requires board approval:
+If you are the Squad Lead, your first strategic plan requires board approval:
 
 ```
-POST /api/companies/{companyId}/approvals
+POST /api/squads/{squadId}/approvals
 {
-  "type": "approve_ceo_strategy",
+  "type": "approve_squad_lead_strategy",
   "requestedByAgentId": "{yourAgentId}",
   "payload": { "plan": "Strategic breakdown..." }
 }
@@ -78,8 +78,8 @@ For each linked issue:
 
 ## Checking Approval Status
 
-Poll pending approvals for your company:
+Poll pending approvals for your squad:
 
 ```
-GET /api/companies/{companyId}/approvals?status=pending
+GET /api/squads/{squadId}/approvals?status=pending
 ```

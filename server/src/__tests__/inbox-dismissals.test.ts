@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
   approvals,
-  companies,
+  squads,
   createDb,
   heartbeatRuns,
   inboxDismissals,
@@ -46,7 +46,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
     await db.delete(heartbeatRuns);
     await db.delete(approvals);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -54,22 +54,22 @@ describeEmbeddedPostgres("inbox dismissals", () => {
   });
 
   it("upserts a single dismissal record per user and inbox item key", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const userId = "board-user";
     const firstDismissedAt = new Date("2026-03-11T01:00:00.000Z");
     const secondDismissedAt = new Date("2026-03-11T02:00:00.000Z");
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
     });
 
-    await dismissalsSvc.dismiss(companyId, userId, "approval:approval-1", firstDismissedAt);
-    await dismissalsSvc.dismiss(companyId, userId, "approval:approval-1", secondDismissedAt);
+    await dismissalsSvc.dismiss(squadId, userId, "approval:approval-1", firstDismissedAt);
+    await dismissalsSvc.dismiss(squadId, userId, "approval:approval-1", secondDismissedAt);
 
-    const dismissals = await dismissalsSvc.list(companyId, userId);
+    const dismissals = await dismissalsSvc.list(squadId, userId);
 
     expect(dismissals).toHaveLength(1);
     expect(dismissals[0]?.itemKey).toBe("approval:approval-1");
@@ -77,7 +77,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
   });
 
   it("honors dismissal timestamps and resurfaces approvals with newer activity", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const userId = "board-user";
     const primaryAgentId = randomUUID();
     const secondaryAgentId = randomUUID();
@@ -88,8 +88,8 @@ describeEmbeddedPostgres("inbox dismissals", () => {
     const hiddenRunId = randomUUID();
     const visibleRunId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
       requireBoardApprovalForNewAgents: false,
@@ -98,7 +98,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
     await db.insert(agents).values([
       {
         id: primaryAgentId,
-        companyId,
+        squadId,
         name: "Primary",
         role: "engineer",
         status: "active",
@@ -109,7 +109,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
       },
       {
         id: secondaryAgentId,
-        companyId,
+        squadId,
         name: "Secondary",
         role: "engineer",
         status: "active",
@@ -123,7 +123,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
     await db.insert(approvals).values([
       {
         id: hiddenApprovalId,
-        companyId,
+        squadId,
         type: "hire_agent",
         status: "pending",
         payload: {},
@@ -131,7 +131,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
       },
       {
         id: resurfacedApprovalId,
-        companyId,
+        squadId,
         type: "hire_agent",
         status: "revision_requested",
         payload: {},
@@ -141,8 +141,8 @@ describeEmbeddedPostgres("inbox dismissals", () => {
 
     await db.insert(invites).values({
       id: inviteId,
-      companyId,
-      inviteType: "company_join",
+      squadId,
+      inviteType: "squad_join",
       tokenHash: "hash-1",
       allowedJoinTypes: "both",
       expiresAt: new Date("2026-03-12T00:00:00.000Z"),
@@ -151,7 +151,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
     await db.insert(joinRequests).values({
       id: hiddenJoinRequestId,
       inviteId,
-      companyId,
+      squadId,
       requestType: "human",
       status: "pending_approval",
       requestIp: "127.0.0.1",
@@ -162,7 +162,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
     await db.insert(heartbeatRuns).values([
       {
         id: hiddenRunId,
-        companyId,
+        squadId,
         agentId: primaryAgentId,
         invocationSource: "assignment",
         status: "failed",
@@ -171,7 +171,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
       },
       {
         id: visibleRunId,
-        companyId,
+        squadId,
         agentId: secondaryAgentId,
         invocationSource: "assignment",
         status: "timed_out",
@@ -180,19 +180,19 @@ describeEmbeddedPostgres("inbox dismissals", () => {
       },
     ]);
 
-    await dismissalsSvc.dismiss(companyId, userId, `approval:${hiddenApprovalId}`, new Date("2026-03-11T02:00:00.000Z"));
-    await dismissalsSvc.dismiss(companyId, userId, `approval:${resurfacedApprovalId}`, new Date("2026-03-11T02:00:00.000Z"));
-    await dismissalsSvc.dismiss(companyId, userId, `join:${hiddenJoinRequestId}`, new Date("2026-03-11T02:00:00.000Z"));
-    await dismissalsSvc.dismiss(companyId, userId, `run:${hiddenRunId}`, new Date("2026-03-11T02:00:00.000Z"));
+    await dismissalsSvc.dismiss(squadId, userId, `approval:${hiddenApprovalId}`, new Date("2026-03-11T02:00:00.000Z"));
+    await dismissalsSvc.dismiss(squadId, userId, `approval:${resurfacedApprovalId}`, new Date("2026-03-11T02:00:00.000Z"));
+    await dismissalsSvc.dismiss(squadId, userId, `join:${hiddenJoinRequestId}`, new Date("2026-03-11T02:00:00.000Z"));
+    await dismissalsSvc.dismiss(squadId, userId, `run:${hiddenRunId}`, new Date("2026-03-11T02:00:00.000Z"));
 
     const dismissedAtByKey = new Map(
-      (await dismissalsSvc.list(companyId, userId)).map((dismissal) => [
+      (await dismissalsSvc.list(squadId, userId)).map((dismissal) => [
         dismissal.itemKey,
         new Date(dismissal.dismissedAt).getTime(),
       ]),
     );
 
-    const badges = await badgesSvc.get(companyId, {
+    const badges = await badgesSvc.get(squadId, {
       dismissals: dismissedAtByKey,
       joinRequests: [{
         id: hiddenJoinRequestId,

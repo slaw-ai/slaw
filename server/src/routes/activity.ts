@@ -4,7 +4,7 @@ import type { Db } from "@slaw/db";
 import { normalizeIssueIdentifier } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { activityService, normalizeActivityLimit } from "../services/activity.js";
-import { assertAuthenticated, assertBoard, assertCompanyAccess } from "./authz.js";
+import { assertAuthenticated, assertBoard, assertSquadAccess } from "./authz.js";
 import { heartbeatService, issueService } from "../services/index.js";
 import { sanitizeRecord } from "../redaction.js";
 
@@ -32,12 +32,12 @@ export function activityRoutes(db: Db) {
     return issueSvc.getById(rawId);
   }
 
-  router.get("/companies/:companyId/activity", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+  router.get("/squads/:squadId/activity", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
 
     const filters = {
-      companyId,
+      squadId,
       agentId: req.query.agentId as string | undefined,
       entityType: req.query.entityType as string | undefined,
       entityId: req.query.entityId as string | undefined,
@@ -47,12 +47,12 @@ export function activityRoutes(db: Db) {
     res.json(result);
   });
 
-  router.post("/companies/:companyId/activity", validate(createActivitySchema), async (req, res) => {
+  router.post("/squads/:squadId/activity", validate(createActivitySchema), async (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     const event = await svc.create({
-      companyId,
+      squadId,
       ...req.body,
       details: req.body.details ? sanitizeRecord(req.body.details) : null,
     });
@@ -66,7 +66,7 @@ export function activityRoutes(db: Db) {
       res.status(404).json({ error: "Issue not found" });
       return;
     }
-    assertCompanyAccess(req, issue.companyId);
+    assertSquadAccess(req, issue.squadId);
     const result = await svc.forIssue(issue.id);
     res.json(result);
   });
@@ -78,8 +78,8 @@ export function activityRoutes(db: Db) {
       res.status(404).json({ error: "Issue not found" });
       return;
     }
-    assertCompanyAccess(req, issue.companyId);
-    const result = await svc.runsForIssue(issue.companyId, issue.id);
+    assertSquadAccess(req, issue.squadId);
+    const result = await svc.runsForIssue(issue.squadId, issue.id);
     res.json(result);
   });
 
@@ -91,7 +91,7 @@ export function activityRoutes(db: Db) {
       res.json([]);
       return;
     }
-    assertCompanyAccess(req, run.companyId);
+    assertSquadAccess(req, run.squadId);
     const result = await svc.issuesForRun(runId);
     res.json(result);
   });

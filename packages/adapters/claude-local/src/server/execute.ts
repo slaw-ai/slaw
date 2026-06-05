@@ -456,7 +456,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     }
   }
   const promptBundle = await prepareClaudePromptBundle({
-    companyId: agent.companyId,
+    squadId: agent.squadId,
     skills: claudeSkillEntries.filter((entry) => desiredSkillNames.has(entry.key)),
     instructionsContents: combinedInstructionsContents,
     onLog,
@@ -466,7 +466,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     adapterExecutionTargetUsesManagedHome(executionTarget) &&
     !hasExplicitClaudeConfigDir;
   const claudeConfigSeedDir = useManagedRemoteClaudeConfig
-    ? await prepareClaudeConfigSeed(process.env, onLog, agent.companyId)
+    ? await prepareClaudeConfigSeed(process.env, onLog, agent.squadId)
     : null;
   const preparedExecutionTargetRuntime = executionTargetIsRemote
     ? await (async () => {
@@ -640,9 +640,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
   const templateData = {
     agentId: agent.id,
-    companyId: agent.companyId,
+    squadId: agent.squadId,
     runId,
-    company: { id: agent.companyId },
+    squad: { id: agent.squadId },
     agent,
     run: { id: runId, source: "on_demand" },
     context,

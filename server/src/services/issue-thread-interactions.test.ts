@@ -83,7 +83,7 @@ describe("issueThreadInteractionService", () => {
 
     const existingRow = {
       id: "interaction-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "11111111-1111-4111-8111-111111111111",
       kind: "suggest_tasks",
       status: "pending",
@@ -116,7 +116,7 @@ describe("issueThreadInteractionService", () => {
     const svc = issueThreadInteractionService(db as never);
     const created = await svc.create({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
     }, {
       kind: "suggest_tasks",
       idempotencyKey: "run-1:suggest",
@@ -142,7 +142,7 @@ describe("issueThreadInteractionService", () => {
 
     const interactionRow = {
       id: "interaction-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "11111111-1111-4111-8111-111111111111",
       kind: "ask_user_questions",
       status: "pending",
@@ -189,7 +189,7 @@ describe("issueThreadInteractionService", () => {
 
     const result = await svc.answerQuestions({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
     }, "interaction-2", {
       answers: [
         { questionId: "scope", optionIds: ["phase-1"] },

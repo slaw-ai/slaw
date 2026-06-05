@@ -67,7 +67,7 @@ An audit trail of every review/approval action:
 ```ts
 interface IssueExecutionDecision {
   id: string;
-  companyId: string;
+  squadId: string;
   issueId: string;
   stageId: string;
   stageType: "review" | "approval";
@@ -179,7 +179,7 @@ This prevents silent completions where an agent finishes work but leaves no trac
 ### Setting an execution policy on issue creation
 
 ```bash
-POST /api/companies/{companyId}/issues
+POST /api/squads/{squadId}/issues
 {
   "title": "Implement feature X",
   "assigneeAgentId": "coder-agent-id",

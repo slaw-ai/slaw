@@ -1,7 +1,7 @@
-export { companyService } from "./companies.js";
-export { companySearchService } from "./company-search.js";
+export { squadService } from "./squads.js";
+export { squadSearchService } from "./squad-search.js";
 export { feedbackService } from "./feedback.js";
-export { companySkillService } from "./company-skills.js";
+export { squadSkillService } from "./squad-skills.js";
 export { agentService, deduplicateAgentName } from "./agents.js";
 export { agentInstructionsService, syncInstructionsBundleConfigFromFilePath } from "./agent-instructions.js";
 export { assetService } from "./assets.js";
@@ -62,13 +62,13 @@ export type {
 export { boardAuthService } from "./board-auth.js";
 export { instanceSettingsService } from "./instance-settings.js";
 export { cloudUpstreamService, reconcileCloudUpstreamRunsOnStartup } from "./cloud-upstreams.js";
-export { companyPortabilityService } from "./company-portability.js";
+export { squadPortabilityService } from "./squad-portability.js";
 export { environmentService } from "./environments.js";
 export { executionWorkspaceService } from "./execution-workspaces.js";
 export { workspaceOperationService } from "./workspace-operations.js";
 export { workProductService } from "./work-products.js";
 export { logActivity, type LogActivityInput } from "./activity-log.js";
 export { notifyHireApproved, type NotifyHireApprovedInput } from "./hire-hook.js";
-export { publishLiveEvent, subscribeCompanyLiveEvents } from "./live-events.js";
+export { publishLiveEvent, subscribeSquadLiveEvents } from "./live-events.js";
 export { reconcilePersistedRuntimeServicesOnStartup, restartDesiredRuntimeServicesOnStartup } from "./workspace-runtime.js";
 export { createStorageServiceFromConfig, getStorageService } from "../storage/index.js";

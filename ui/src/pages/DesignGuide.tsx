@@ -142,7 +142,7 @@ function sampleOutput(
   const contentPath = `/api/attachments/${attachmentId}/content`;
   return {
     id,
-    companyId: "demo-company",
+    squadId: "demo-squad",
     projectId: null,
     issueId: "demo-issue",
     executionWorkspaceId: null,
@@ -1090,7 +1090,7 @@ export function DesignGuide() {
 
         <SubSection title="Initials derivation">
           <div className="flex flex-col gap-2">
-            <Identity name="CEO Agent" size="sm" />
+            <Identity name="Squad Lead Agent" size="sm" />
             <Identity name="Alpha" size="sm" />
             <Identity name="Quality Assurance Lead" size="sm" />
           </div>

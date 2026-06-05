@@ -21,12 +21,12 @@ Every new-role `AGENTS.md` should cover these sections in order. Remove a sectio
 
 ### 1. Identity and reporting line
 
-One or two sentences. Name the agent, its role, and its company. State the reporting line. Point at the Slaw heartbeat skill as the source of truth for the wake procedure.
+One or two sentences. Name the agent, its role, and its squad. State the reporting line. Point at the Slaw heartbeat skill as the source of truth for the wake procedure.
 
 Reference phrasing:
 
 ```md
-You are agent {{agentName}} ({{roleTitle}}) at {{companyName}}.
+You are agent {{agentName}} ({{roleTitle}}) at {{squadName}}.
 
 When you wake up, follow the Slaw skill - it contains the full heartbeat procedure.
 
@@ -38,7 +38,7 @@ You report to {{managerTitle}}.
 A short paragraph plus a bullet list. Answer:
 
 - What does this agent own end-to-end?
-- What problem does it solve for the company?
+- What problem does it solve for the squad?
 - What is explicitly out of scope? What should it decline, hand off, or escalate?
 
 A good charter lets the agent say no to work that is not its job. Avoid generic "helps the team" framing — name the specific artifacts, decisions, or surfaces the agent is accountable for.
@@ -56,7 +56,7 @@ How the agent runs a single heartbeat end-to-end. Cover:
 
 Include this line verbatim for any execution-heavy role:
 
-> Start actionable work in the same heartbeat; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action. Use child issues for long or parallel delegated work instead of polling. Mark blocked work with owner and action. Respect budget, pause/cancel, approval gates, and company boundaries.
+> Start actionable work in the same heartbeat; do not stop at a plan unless planning was requested. Leave durable progress with a clear next action. Use child issues for long or parallel delegated work instead of polling. Mark blocked work with owner and action. Respect budget, pause/cancel, approval gates, and squad boundaries.
 
 ### 4. Domain lenses
 
@@ -121,7 +121,7 @@ How the agent verifies its own work before marking an issue done or handing it t
 - **Secrets in agent config.** Do not embed long-lived tokens, API keys, or private URLs in `adapterConfig`, `instructionsBundle`, or legacy prompt fields when environment injection or a scoped skill can carry the capability instead.
 - **Silent timer heartbeats.** A timer heartbeat burns budget every interval. If the role has no scheduled work, leave it off.
 - **Bypassing governance.** Never skip `sourceIssueId`, reporting line, icon, or approval flow to ship faster. Hires without these are hard to audit and hard to hand off.
-- **Copying another company's prompt verbatim.** Placeholders like `{{companyName}}`, `{{managerTitle}}`, and `{{issuePrefix}}` must be replaced with this company's values before submitting the hire.
+- **Copying another squad's prompt verbatim.** Placeholders like `{{squadName}}`, `{{managerTitle}}`, and `{{issuePrefix}}` must be replaced with this squad's values before submitting the hire.
 
 ---
 
@@ -130,7 +130,7 @@ How the agent verifies its own work before marking an issue done or handing it t
 Copy this scaffold into your draft and fill each section. Delete the comments (`<!-- -->`) once each section is specific.
 
 ```md
-You are agent {{agentName}} ({{roleTitle}}) at {{companyName}}.
+You are agent {{agentName}} ({{roleTitle}}) at {{squadName}}.
 
 When you wake up, follow the Slaw skill. It contains the full heartbeat procedure.
 

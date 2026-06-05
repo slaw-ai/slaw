@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   activityLog,
   agents,
-  companies,
+  squads,
   createDb,
   documentRevisions,
   documents,
@@ -32,14 +32,14 @@ if (!embeddedPostgresSupport.supported) {
 
 async function waitForIssueRun(
   service: ActivityService,
-  companyId: string,
+  squadId: string,
   issueId: string,
   predicate: (run: IssueRun) => boolean,
 ) {
   const deadline = Date.now() + 2_000;
   let latestRuns: IssueRun[] = [];
   while (Date.now() < deadline) {
-    latestRuns = await service.runsForIssue(companyId, issueId);
+    latestRuns = await service.runsForIssue(squadId, issueId);
     const run = latestRuns.find(predicate);
     if (run) return { run, runs: latestRuns };
     await new Promise((resolve) => setTimeout(resolve, 25));
@@ -65,74 +65,74 @@ describeEmbeddedPostgres("activity service", () => {
     await db.delete(issues);
     await db.delete(heartbeatRuns);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
     await tempDb?.cleanup();
   });
 
-  it("limits company activity lists", async () => {
-    const companyId = randomUUID();
+  it("limits squad activity lists", async () => {
+    const squadId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(activityLog).values([
       {
-        companyId,
+        squadId,
         actorType: "system",
         actorId: "system",
         action: "test.oldest",
-        entityType: "company",
-        entityId: companyId,
+        entityType: "squad",
+        entityId: squadId,
         createdAt: new Date("2026-04-21T10:00:00.000Z"),
       },
       {
-        companyId,
+        squadId,
         actorType: "system",
         actorId: "system",
         action: "test.middle",
-        entityType: "company",
-        entityId: companyId,
+        entityType: "squad",
+        entityId: squadId,
         createdAt: new Date("2026-04-21T11:00:00.000Z"),
       },
       {
-        companyId,
+        squadId,
         actorType: "system",
         actorId: "system",
         action: "test.newest",
-        entityType: "company",
-        entityId: companyId,
+        entityType: "squad",
+        entityId: squadId,
         createdAt: new Date("2026-04-21T12:00:00.000Z"),
       },
     ]);
 
-    const result = await activityService(db).list({ companyId, limit: 2 });
+    const result = await activityService(db).list({ squadId, limit: 2 });
 
     expect(result.map((event) => event.action)).toEqual(["test.newest", "test.middle"]);
   });
 
   it("returns compact usage and result summaries for issue runs", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "running",
@@ -144,7 +144,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       status: "succeeded",
@@ -173,7 +173,7 @@ describeEmbeddedPostgres("activity service", () => {
       nextAction: "Review the completed output.",
     });
 
-    const runs = await activityService(db).runsForIssue(companyId, issueId);
+    const runs = await activityService(db).runsForIssue(squadId, issueId);
 
     expect(runs).toHaveLength(1);
     expect(runs[0]).toMatchObject({
@@ -215,22 +215,22 @@ describeEmbeddedPostgres("activity service", () => {
   });
 
   it("backfills missing liveness for completed issue runs before returning the ledger", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
     const completedAt = new Date("2026-04-18T20:04:00.000Z");
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
@@ -242,7 +242,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Fix run ledger",
       description: "Make the run ledger answer whether a run advanced.",
       status: "done",
@@ -253,7 +253,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       status: "succeeded",
@@ -270,7 +270,7 @@ describeEmbeddedPostgres("activity service", () => {
     });
 
     await db.insert(issueComments).values({
-      companyId,
+      squadId,
       issueId,
       authorAgentId: agentId,
       createdByRunId: runId,
@@ -281,7 +281,7 @@ describeEmbeddedPostgres("activity service", () => {
     const service = activityService(db);
     const { run, runs } = await waitForIssueRun(
       service,
-      companyId,
+      squadId,
       issueId,
       (entry) => entry.runId === runId && entry.livenessState === "completed",
     );
@@ -306,7 +306,7 @@ describeEmbeddedPostgres("activity service", () => {
   });
 
   it("does not backfill document evidence from a different run", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
@@ -315,16 +315,16 @@ describeEmbeddedPostgres("activity service", () => {
     const revisionId = randomUUID();
     const createdAt = new Date("2026-04-18T20:08:00.000Z");
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
@@ -336,7 +336,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Fix run ledger",
       description: "Make the run ledger answer whether a run advanced.",
       status: "in_progress",
@@ -347,7 +347,7 @@ describeEmbeddedPostgres("activity service", () => {
     await db.insert(heartbeatRuns).values([
       {
         id: runId,
-        companyId,
+        squadId,
         agentId,
         invocationSource: "assignment",
         status: "succeeded",
@@ -362,7 +362,7 @@ describeEmbeddedPostgres("activity service", () => {
       },
       {
         id: otherRunId,
-        companyId,
+        squadId,
         agentId,
         invocationSource: "assignment",
         status: "succeeded",
@@ -379,7 +379,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(documents).values({
       id: documentId,
-      companyId,
+      squadId,
       title: "Plan",
       format: "markdown",
       latestBody: "# Plan\n\n- Inspect files",
@@ -393,7 +393,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(documentRevisions).values({
       id: revisionId,
-      companyId,
+      squadId,
       documentId,
       revisionNumber: 1,
       title: "Plan",
@@ -405,7 +405,7 @@ describeEmbeddedPostgres("activity service", () => {
     });
 
     await db.insert(issueDocuments).values({
-      companyId,
+      squadId,
       issueId,
       documentId,
       key: "plan",
@@ -416,7 +416,7 @@ describeEmbeddedPostgres("activity service", () => {
     const service = activityService(db);
     const { run: backfilledRun } = await waitForIssueRun(
       service,
-      companyId,
+      squadId,
       issueId,
       (entry) => entry.runId === runId && entry.livenessState === "plan_only",
     );
@@ -430,7 +430,7 @@ describeEmbeddedPostgres("activity service", () => {
   });
 
   it("does not treat continuation summary revisions as concrete backfill evidence", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
@@ -438,16 +438,16 @@ describeEmbeddedPostgres("activity service", () => {
     const revisionId = randomUUID();
     const createdAt = new Date("2026-04-18T20:12:00.000Z");
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
@@ -459,7 +459,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Fix run ledger",
       description: "Make the run ledger answer whether a run advanced.",
       status: "in_progress",
@@ -469,7 +469,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       status: "succeeded",
@@ -485,7 +485,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(documents).values({
       id: documentId,
-      companyId,
+      squadId,
       title: "Continuation Summary",
       format: "markdown",
       latestBody: "# Continuation Summary",
@@ -499,7 +499,7 @@ describeEmbeddedPostgres("activity service", () => {
 
     await db.insert(documentRevisions).values({
       id: revisionId,
-      companyId,
+      squadId,
       documentId,
       revisionNumber: 1,
       title: "Continuation Summary",
@@ -511,7 +511,7 @@ describeEmbeddedPostgres("activity service", () => {
     });
 
     await db.insert(issueDocuments).values({
-      companyId,
+      squadId,
       issueId,
       documentId,
       key: ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
@@ -522,7 +522,7 @@ describeEmbeddedPostgres("activity service", () => {
     const service = activityService(db);
     const { run: backfilledRun } = await waitForIssueRun(
       service,
-      companyId,
+      squadId,
       issueId,
       (entry) => entry.runId === runId && entry.livenessState === "plan_only",
     );

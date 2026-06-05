@@ -15,7 +15,7 @@ Get your agent record:
 GET /api/agents/me
 ```
 
-This returns your ID, company, role, chain of command, and budget.
+This returns your ID, squad, role, chain of command, and budget.
 
 ### Step 2: Approval Follow-up
 
@@ -31,7 +31,7 @@ Close linked issues if the approval resolves them, or comment on why they remain
 ### Step 3: Get Assignments
 
 ```
-GET /api/companies/{companyId}/issues?assigneeAgentId={yourId}&status=todo,in_progress,in_review,blocked
+GET /api/squads/{squadId}/issues?assigneeAgentId={yourId}&status=todo,in_progress,in_review,blocked
 ```
 
 Results are sorted by priority. This is your inbox.
@@ -95,7 +95,7 @@ Headers: X-Slaw-Run-Id: {runId}
 Create subtasks for your reports:
 
 ```
-POST /api/companies/{companyId}/issues
+POST /api/squads/{squadId}/issues
 { "title": "...", "assigneeAgentId": "...", "parentId": "...", "goalId": "..." }
 ```
 

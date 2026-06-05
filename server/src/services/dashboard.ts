@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 import type { Db } from "@slaw/db";
-import { agents, approvals, companies, costEvents, heartbeatRuns, issues } from "@slaw/db";
+import { agents, approvals, squads, costEvents, heartbeatRuns, issues } from "@slaw/db";
 import { notFound } from "../errors.js";
 import { budgetService } from "./budgets.js";
 
@@ -25,31 +25,31 @@ function getRecentUtcDateKeys(now: Date, days: number): string[] {
 export function dashboardService(db: Db) {
   const budgets = budgetService(db);
   return {
-    summary: async (companyId: string) => {
-      const company = await db
+    summary: async (squadId: string) => {
+      const squad = await db
         .select()
-        .from(companies)
-        .where(eq(companies.id, companyId))
+        .from(squads)
+        .where(eq(squads.id, squadId))
         .then((rows) => rows[0] ?? null);
 
-      if (!company) throw notFound("Company not found");
+      if (!squad) throw notFound("Squad not found");
 
       const agentRows = await db
         .select({ status: agents.status, count: sql<number>`count(*)` })
         .from(agents)
-        .where(eq(agents.companyId, companyId))
+        .where(eq(agents.squadId, squadId))
         .groupBy(agents.status);
 
       const taskRows = await db
         .select({ status: issues.status, count: sql<number>`count(*)` })
         .from(issues)
-        .where(eq(issues.companyId, companyId))
+        .where(eq(issues.squadId, squadId))
         .groupBy(issues.status);
 
       const pendingApprovals = await db
         .select({ count: sql<number>`count(*)` })
         .from(approvals)
-        .where(and(eq(approvals.companyId, companyId), eq(approvals.status, "pending")))
+        .where(and(eq(approvals.squadId, squadId), eq(approvals.status, "pending")))
         .then((rows) => Number(rows[0]?.count ?? 0));
 
       const agentCounts: Record<string, number> = {
@@ -90,7 +90,7 @@ export function dashboardService(db: Db) {
         .from(costEvents)
         .where(
           and(
-            eq(costEvents.companyId, companyId),
+            eq(costEvents.squadId, squadId),
             gte(costEvents.occurredAt, monthStart),
           ),
         );
@@ -106,7 +106,7 @@ export function dashboardService(db: Db) {
         .from(heartbeatRuns)
         .where(
           and(
-            eq(heartbeatRuns.companyId, companyId),
+            eq(heartbeatRuns.squadId, squadId),
             gte(heartbeatRuns.createdAt, runActivityStart),
           ),
         )
@@ -129,13 +129,13 @@ export function dashboardService(db: Db) {
       }
 
       const utilization =
-        company.budgetMonthlyCents > 0
-          ? (monthSpendCents / company.budgetMonthlyCents) * 100
+        squad.budgetMonthlyCents > 0
+          ? (monthSpendCents / squad.budgetMonthlyCents) * 100
           : 0;
-      const budgetOverview = await budgets.overview(companyId);
+      const budgetOverview = await budgets.overview(squadId);
 
       return {
-        companyId,
+        squadId,
         agents: {
           active: agentCounts.active,
           running: agentCounts.running,
@@ -145,7 +145,7 @@ export function dashboardService(db: Db) {
         tasks: taskCounts,
         costs: {
           monthSpendCents,
-          monthBudgetCents: company.budgetMonthlyCents,
+          monthBudgetCents: squad.budgetMonthlyCents,
           monthUtilizationPercent: Number(utilization.toFixed(2)),
         },
         pendingApprovals,

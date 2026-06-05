@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseIssuePathIdFromPath, parseIssueReferenceFromHref } from "./issue-reference";
 
 describe("issue-reference", () => {
-  it("extracts issue ids from company-scoped issue paths", () => {
+  it("extracts issue ids from squad-scoped issue paths", () => {
     expect(parseIssuePathIdFromPath("/PAP/issues/PAP-1271")).toBe("PAP-1271");
     expect(parseIssuePathIdFromPath("/PAP/issues/pap-1272")).toBe("PAP-1272");
     expect(parseIssuePathIdFromPath("/issues/pc1a2-7")).toBe("PC1A2-7");

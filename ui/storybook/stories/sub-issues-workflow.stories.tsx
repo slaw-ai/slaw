@@ -8,12 +8,12 @@ import {
   createIssue,
   storybookAgents,
   storybookAuthSession,
-  storybookCompanies,
+  storybookSquads,
   storybookIssueLabels,
   storybookProjects,
 } from "../fixtures/slawData";
 
-const companyId = "company-storybook";
+const squadId = "squad-storybook";
 const parentId = "issue-pap-1953";
 
 type BlockerRef = NonNullable<Issue["blockedBy"]>[number];
@@ -169,16 +169,16 @@ const subIssues: Issue[] = [
 ];
 
 const viewStateKey = "storybook:sub-issues-workflow:list";
-const scopedKey = `${viewStateKey}:${companyId}`;
+const scopedKey = `${viewStateKey}:${squadId}`;
 
 function hydrateQueries(client: ReturnType<typeof useQueryClient>) {
-  client.setQueryData(queryKeys.companies.all, { companies: storybookCompanies, unauthorized: false });
+  client.setQueryData(queryKeys.squads.all, { squads: storybookSquads, unauthorized: false });
   client.setQueryData(queryKeys.auth.session, storybookAuthSession);
-  client.setQueryData(queryKeys.agents.list(companyId), storybookAgents);
-  client.setQueryData(queryKeys.projects.list(companyId), storybookProjects);
-  client.setQueryData(queryKeys.issues.labels(companyId), storybookIssueLabels);
-  client.setQueryData(queryKeys.issues.list(companyId), subIssues);
-  client.setQueryData(queryKeys.access.companyUserDirectory(companyId), {
+  client.setQueryData(queryKeys.agents.list(squadId), storybookAgents);
+  client.setQueryData(queryKeys.projects.list(squadId), storybookProjects);
+  client.setQueryData(queryKeys.issues.labels(squadId), storybookIssueLabels);
+  client.setQueryData(queryKeys.issues.list(squadId), subIssues);
+  client.setQueryData(queryKeys.access.squadUserDirectory(squadId), {
     users: [
       {
         principalId: "user-board",

@@ -5,7 +5,7 @@ import {
   agents,
   agentRuntimeState,
   agentWakeupRequests,
-  companies,
+  squads,
   createDb,
   heartbeatRunEvents,
   heartbeatRuns,
@@ -40,7 +40,7 @@ describeEmbeddedPostgres("heartbeat runtime state deduplication", () => {
     await db.delete(agentWakeupRequests);
     await db.delete(agentRuntimeState);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -48,12 +48,12 @@ describeEmbeddedPostgres("heartbeat runtime state deduplication", () => {
   });
 
   it("deduplicates concurrent runtime-state creation", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
-    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -61,7 +61,7 @@ describeEmbeddedPostgres("heartbeat runtime state deduplication", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
@@ -80,7 +80,7 @@ describeEmbeddedPostgres("heartbeat runtime state deduplication", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
       agentId,
-      companyId,
+      squadId,
       adapterType: "codex_local",
       stateJson: {},
     });

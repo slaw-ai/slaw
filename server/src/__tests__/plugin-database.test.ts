@@ -5,7 +5,7 @@ import path from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  companies,
+  squads,
   createDb,
   issueRelations,
   issues,
@@ -205,7 +205,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     await db.delete(plugins);
     await db.delete(issueRelations);
     await db.delete(issues);
-    await db.delete(companies);
+    await db.delete(squads);
     await Promise.all(packageRoots.map((root) => rm(root, { recursive: true, force: true })));
     packageRoots = [];
   });
@@ -241,7 +241,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       database: {
         namespaceSlug: "llm_wiki",
         migrationsDir: "migrations",
-        coreReadTables: ["companies", "issues", "projects", "agents"],
+        coreReadTables: ["squads", "issues", "projects", "agents"],
       },
     };
   }
@@ -373,20 +373,20 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     );
     expect(constraints).toEqual(
       expect.arrayContaining([
-        "wiki_pages_company_wiki_space_path_key",
-        "distillation_cursors_company_wiki_space_scope_key",
-        "distillation_work_items_company_wiki_space_idempotency_key",
-        "page_bindings_company_wiki_space_page_path_key",
+        "wiki_pages_squad_wiki_space_path_key",
+        "distillation_cursors_squad_wiki_space_scope_key",
+        "distillation_work_items_squad_wiki_space_idempotency_key",
+        "page_bindings_squad_wiki_space_page_path_key",
       ]),
     );
-    expect(constraints).not.toContain("wiki_pages_company_id_wiki_id_path_key");
-    expect(constraints).not.toContain("slaw_distillation_cursor_company_id_wiki_id_source_sco_key");
-    expect(constraints).not.toContain("slaw_distillation_work_i_company_id_wiki_id_idempotenc_key");
-    expect(constraints).not.toContain("slaw_page_bindings_company_id_wiki_id_page_path_key");
-    expect(uniqueColumnSets).not.toContain("wiki_pages:company_id,wiki_id,path");
-    expect(uniqueColumnSets).not.toContain("slaw_distillation_cursors:company_id,wiki_id,source_scope,scope_key,source_kind");
-    expect(uniqueColumnSets).not.toContain("slaw_distillation_work_items:company_id,wiki_id,idempotency_key");
-    expect(uniqueColumnSets).not.toContain("slaw_page_bindings:company_id,wiki_id,page_path");
+    expect(constraints).not.toContain("wiki_pages_squad_id_wiki_id_path_key");
+    expect(constraints).not.toContain("slaw_distillation_cursor_squad_id_wiki_id_source_sco_key");
+    expect(constraints).not.toContain("slaw_distillation_work_i_squad_id_wiki_id_idempotenc_key");
+    expect(constraints).not.toContain("slaw_page_bindings_squad_id_wiki_id_page_path_key");
+    expect(uniqueColumnSets).not.toContain("wiki_pages:squad_id,wiki_id,path");
+    expect(uniqueColumnSets).not.toContain("slaw_distillation_cursors:squad_id,wiki_id,source_scope,scope_key,source_kind");
+    expect(uniqueColumnSets).not.toContain("slaw_distillation_work_items:squad_id,wiki_id,idempotency_key");
+    expect(uniqueColumnSets).not.toContain("slaw_page_bindings:squad_id,wiki_id,page_path");
   });
 
   it("applies migrations once and allows whitelisted core joins at runtime", async () => {
@@ -403,17 +403,17 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       `,
     );
     const pluginId = await installPluginRecord(pluginManifest);
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const issueId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix: "TST",
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Joined issue",
       status: "todo",
       priority: "medium",
@@ -523,7 +523,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       capabilities: [...staleManifest.capabilities, "agent.tools.register"],
       database: {
         ...staleManifest.database!,
-        coreReadTables: ["companies"],
+        coreReadTables: ["squads"],
       },
       tools: [
         {
@@ -538,9 +538,9 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     const packageRoot = await createInstallablePluginPackage(
       refreshedManifest,
       `
-      CREATE TABLE ${namespace}.company_refs (
+      CREATE TABLE ${namespace}.squad_refs (
         id uuid PRIMARY KEY,
-        company_id uuid NOT NULL REFERENCES public.companies(id)
+        squad_id uuid NOT NULL REFERENCES public.squads(id)
       );
       `,
     );
@@ -601,7 +601,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
           SLAW_DEPLOYMENT_EXPOSURE: "public",
         },
         manifest: expect.objectContaining({
-          database: expect.objectContaining({ coreReadTables: ["companies"] }),
+          database: expect.objectContaining({ coreReadTables: ["squads"] }),
         }),
       }),
     );
@@ -616,7 +616,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       .select()
       .from(plugins)
       .where(eq(plugins.id, pluginId));
-    expect(plugin?.manifestJson.database?.coreReadTables).toEqual(["companies"]);
+    expect(plugin?.manifestJson.database?.coreReadTables).toEqual(["squads"]);
   });
 
   it("rejects checksum changes for already applied migrations", async () => {

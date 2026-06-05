@@ -19,10 +19,10 @@ const ROLLING_WINDOWS = ["5h", "24h", "7d"] as const;
 interface ProviderQuotaCardProps {
   provider: string;
   rows: CostByProviderModel[];
-  /** company monthly budget in cents (0 means unlimited) */
+  /** squad monthly budget in cents (0 means unlimited) */
   budgetMonthlyCents: number;
-  /** total company spend in this period in cents, all providers */
-  totalCompanySpendCents: number;
+  /** total squad spend in this period in cents, all providers */
+  totalSquadSpendCents: number;
   /** spend in the current calendar week in cents, this provider only */
   weekSpendCents: number;
   /** rolling window rows for this provider: 5h, 24h, 7d */
@@ -39,7 +39,7 @@ export function ProviderQuotaCard({
   provider,
   rows,
   budgetMonthlyCents,
-  totalCompanySpendCents,
+  totalSquadSpendCents,
   weekSpendCents,
   windowRows,
   showDeficitNotch,
@@ -96,10 +96,10 @@ export function ProviderQuotaCard({
 
   // budget bars: use this provider's own spend vs its pro-rata share of budget
   // pro-rata: if a provider is 40% of total spend, it gets 40% of the budget allocated.
-  // falls back to raw provider spend vs total budget when totalCompanySpend is 0.
+  // falls back to raw provider spend vs total budget when totalSquadSpend is 0.
   const providerBudgetShare =
-    budgetMonthlyCents > 0 && totalCompanySpendCents > 0
-      ? (totalCostCents / totalCompanySpendCents) * budgetMonthlyCents
+    budgetMonthlyCents > 0 && totalSquadSpendCents > 0
+      ? (totalCostCents / totalSquadSpendCents) * budgetMonthlyCents
       : budgetMonthlyCents;
 
   const budgetPct =

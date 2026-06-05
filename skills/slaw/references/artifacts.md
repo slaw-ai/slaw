@@ -10,13 +10,13 @@ scripts/slaw-upload-artifact.sh path/to/output.webm \
   --summary "Rendered walkthrough for review"
 ```
 
-The helper uses `SLAW_API_URL`, `SLAW_API_KEY`, `SLAW_COMPANY_ID`, `SLAW_TASK_ID`, and `SLAW_RUN_ID`. It uploads the file as an issue attachment, creates an attachment-backed artifact work product by default, and prints issue-safe markdown links for your final comment.
+The helper uses `SLAW_API_URL`, `SLAW_API_KEY`, `SLAW_SQUAD_ID`, `SLAW_TASK_ID`, and `SLAW_RUN_ID`. It uploads the file as an issue attachment, creates an attachment-backed artifact work product by default, and prints issue-safe markdown links for your final comment.
 
 If the helper is unavailable, use the Slaw API directly:
 
 ```bash
 curl -sS -X POST \
-  "$SLAW_API_URL/api/companies/$SLAW_COMPANY_ID/issues/$SLAW_TASK_ID/attachments" \
+  "$SLAW_API_URL/api/squads/$SLAW_SQUAD_ID/issues/$SLAW_TASK_ID/attachments" \
   -H "Authorization: Bearer $SLAW_API_KEY" \
   -H "X-Slaw-Run-Id: $SLAW_RUN_ID" \
   -F 'file=@"path/to/output.webm";type=video/webm'

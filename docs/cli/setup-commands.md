@@ -83,11 +83,11 @@ pnpm slaw configure --section storage
 ```
 
 `--section secrets` updates the deployment-level provider used as the fallback
-for secrets that do not target a specific company vault. Per-company provider
+for secrets that do not target a specific squad vault. Per-squad provider
 vaults (named instances, default vault selection, multiple vaults per provider,
 coming-soon GCP/Vault) live in the board UI under
-`Company Settings → Secrets → Provider vaults` and the
-`/api/companies/{companyId}/secret-provider-configs` API.
+`Squad Settings → Secrets → Provider vaults` and the
+`/api/squads/{squadId}/secret-provider-configs` API.
 
 ## `slaw env`
 

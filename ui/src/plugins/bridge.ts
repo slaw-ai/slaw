@@ -37,7 +37,7 @@ import { pluginsApi } from "@/api/plugins";
 import { ApiError } from "@/api/client";
 import { useToastActions, type ToastInput } from "@/context/ToastContext";
 import { useSidebar } from "@/context/SidebarContext";
-import { isGlobalPath, normalizeCompanyPrefix } from "@/lib/company-routes";
+import { isGlobalPath, normalizeSquadPrefix } from "@/lib/squad-routes";
 
 // ---------------------------------------------------------------------------
 // Bridge error type (mirrors the SDK's PluginBridgeError)
@@ -101,8 +101,8 @@ export interface HostLocation {
 // ---------------------------------------------------------------------------
 
 export interface PluginHostContext {
-  companyId: string | null;
-  companyPrefix: string | null;
+  squadId: string | null;
+  squadPrefix: string | null;
   projectId: string | null;
   entityId: string | null;
   entityType: string | null;
@@ -276,34 +276,34 @@ function sameOriginPathFromHref(href: string): string | null {
   }
 }
 
-function hasCompanyPrefix(pathname: string, companyPrefix: string): boolean {
+function hasSquadPrefix(pathname: string, squadPrefix: string): boolean {
   const [firstSegment] = pathname.split("/").filter(Boolean);
-  return firstSegment?.toUpperCase() === normalizeCompanyPrefix(companyPrefix);
+  return firstSegment?.toUpperCase() === normalizeSquadPrefix(squadPrefix);
 }
 
 /**
- * Resolve a plugin-provided Slaw path to the active company scope.
+ * Resolve a plugin-provided Slaw path to the active squad scope.
  *
  * This intentionally handles plugin page roots such as `/wiki`, which cannot
  * be listed in the host router's static board-route table ahead of time.
  */
 export function resolveHostNavigationHref(
   to: string,
-  companyPrefix: string | null | undefined,
+  squadPrefix: string | null | undefined,
 ): string {
   const sameOriginPath = sameOriginPathFromHref(to);
   if (sameOriginPath === null) return to;
 
   const { pathname, search, hash } = splitPath(sameOriginPath);
-  if (!pathname.startsWith("/") || isGlobalPath(pathname) || !companyPrefix) {
+  if (!pathname.startsWith("/") || isGlobalPath(pathname) || !squadPrefix) {
     return sameOriginPath;
   }
 
-  if (hasCompanyPrefix(pathname, companyPrefix)) {
+  if (hasSquadPrefix(pathname, squadPrefix)) {
     return sameOriginPath;
   }
 
-  return `/${normalizeCompanyPrefix(companyPrefix)}${pathname}${search}${hash}`;
+  return `/${normalizeSquadPrefix(squadPrefix)}${pathname}${search}${hash}`;
 }
 
 function isPlainLeftClick(event: ReactMouseEvent<HTMLAnchorElement>): boolean {
@@ -342,7 +342,7 @@ export function usePluginData<T = unknown>(
   params?: Record<string, unknown>,
 ): PluginDataResult<T> {
   const { pluginId, hostContext } = usePluginBridgeContext();
-  const companyId = hostContext.companyId;
+  const squadId = hostContext.squadId;
   const renderEnvironmentSnapshot = serializeRenderEnvironment(hostContext.renderEnvironment);
   const renderEnvironmentKey = serializeRenderEnvironmentSnapshot(renderEnvironmentSnapshot);
 
@@ -367,7 +367,7 @@ export function usePluginData<T = unknown>(
           pluginId,
           key,
           params,
-          companyId,
+          squadId,
           renderEnvironmentSnapshot,
         )
         .then((response) => {
@@ -403,7 +403,7 @@ export function usePluginData<T = unknown>(
       if (retryTimer) clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pluginId, key, paramsKey, refreshCounter, companyId, renderEnvironmentKey]);
+  }, [pluginId, key, paramsKey, refreshCounter, squadId, renderEnvironmentKey]);
 
   const refresh = useCallback(() => {
     setRefreshCounter((c) => c + 1);
@@ -437,7 +437,7 @@ export function usePluginAction(key: string): PluginActionFn {
   return useCallback(
     async (params?: Record<string, unknown>): Promise<unknown> => {
       const { pluginId, hostContext } = contextRef.current;
-      const companyId = hostContext.companyId;
+      const squadId = hostContext.squadId;
       const renderEnvironment = serializeRenderEnvironment(hostContext.renderEnvironment);
 
       try {
@@ -445,7 +445,7 @@ export function usePluginAction(key: string): PluginActionFn {
           pluginId,
           key,
           params,
-          companyId,
+          squadId,
           renderEnvironment,
         );
         return response.data;
@@ -464,7 +464,7 @@ export function usePluginAction(key: string): PluginActionFn {
 /**
  * Concrete implementation of `useHostContext()`.
  *
- * Returns the current host context (company, project, entity, user)
+ * Returns the current host context (squad, project, entity, user)
  * from the enclosing `PluginBridgeContext.Provider`.
  */
 export function useHostContext(): PluginHostContext {
@@ -480,11 +480,11 @@ export function useHostNavigation(): HostNavigation {
   const { hostContext } = usePluginBridgeContext();
   const routerNavigate = useRouterNavigate();
   const { isMobile, setSidebarOpen } = useSidebar();
-  const companyPrefix = hostContext.companyPrefix;
+  const squadPrefix = hostContext.squadPrefix;
 
   const resolveHref = useCallback(
-    (to: string) => resolveHostNavigationHref(to, companyPrefix),
-    [companyPrefix],
+    (to: string) => resolveHostNavigationHref(to, squadPrefix),
+    [squadPrefix],
   );
 
   const navigate = useCallback(
@@ -574,13 +574,13 @@ export interface PluginStreamResult<T = unknown> {
 
 export function usePluginStream<T = unknown>(
   channel: string,
-  options?: { companyId?: string },
+  options?: { squadId?: string },
 ): PluginStreamResult<T> {
   const { pluginId, hostContext } = usePluginBridgeContext();
-  const effectiveCompanyId = options?.companyId ?? hostContext.companyId ?? undefined;
+  const effectiveSquadId = options?.squadId ?? hostContext.squadId ?? undefined;
   const [events, setEvents] = useState<T[]>([]);
   const [lastEvent, setLastEvent] = useState<T | null>(null);
-  const [connecting, setConnecting] = useState<boolean>(Boolean(effectiveCompanyId));
+  const [connecting, setConnecting] = useState<boolean>(Boolean(effectiveSquadId));
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
@@ -597,12 +597,12 @@ export function usePluginStream<T = unknown>(
     setLastEvent(null);
     setError(null);
 
-    if (!effectiveCompanyId) {
+    if (!effectiveSquadId) {
       close();
       return;
     }
 
-    const params = new URLSearchParams({ companyId: effectiveCompanyId });
+    const params = new URLSearchParams({ squadId: effectiveSquadId });
     const source = new EventSource(
       `/api/plugins/${encodeURIComponent(pluginId)}/bridge/stream/${encodeURIComponent(channel)}?${params.toString()}`,
       { withCredentials: true },
@@ -652,7 +652,7 @@ export function usePluginStream<T = unknown>(
         sourceRef.current = null;
       }
     };
-  }, [channel, close, effectiveCompanyId, pluginId]);
+  }, [channel, close, effectiveSquadId, pluginId]);
 
   return { events, lastEvent, connecting, connected, error, close };
 }

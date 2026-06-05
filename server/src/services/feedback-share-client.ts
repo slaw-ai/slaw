@@ -8,7 +8,7 @@ function buildFeedbackShareObjectKey(bundle: FeedbackTraceBundle, exportedAt: Da
   const year = String(exportedAt.getUTCFullYear());
   const month = String(exportedAt.getUTCMonth() + 1).padStart(2, "0");
   const day = String(exportedAt.getUTCDate()).padStart(2, "0");
-  return `feedback-traces/${bundle.companyId}/${year}/${month}/${day}/${bundle.exportId ?? bundle.traceId}.json`;
+  return `feedback-traces/${bundle.squadId}/${year}/${month}/${day}/${bundle.exportId ?? bundle.traceId}.json`;
 }
 
 export interface FeedbackTraceShareClient {

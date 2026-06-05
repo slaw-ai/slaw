@@ -19,7 +19,7 @@ vi.mock("../services/hire-hook.js", () => ({
 
 type ApprovalRecord = {
   id: string;
-  companyId: string;
+  squadId: string;
   type: string;
   status: string;
   payload: Record<string, unknown>;
@@ -29,7 +29,7 @@ type ApprovalRecord = {
 function createApproval(status: string): ApprovalRecord {
   return {
     id: "approval-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     type: "hire_agent",
     status,
     payload: { agentId: "agent-1" },

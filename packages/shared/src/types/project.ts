@@ -16,7 +16,7 @@ export interface ProjectGoalRef {
 
 export interface ProjectWorkspace {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string;
   name: string;
   sourceType: ProjectWorkspaceSourceType;
@@ -66,7 +66,7 @@ export interface ProjectManagedByPlugin {
 
 export interface Project {
   id: string;
-  companyId: string;
+  squadId: string;
   urlKey: string;
   /** @deprecated Use goalIds / goals instead */
   goalId: string | null;

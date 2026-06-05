@@ -470,8 +470,26 @@ const hermesLocalAdapter: ServerAdapterModule = {
   },
   testEnvironment: (ctx) => hermesTestEnvironment(normalizeHermesConfig(ctx) as never),
   sessionCodec: hermesSessionCodec,
-  listSkills: hermesListSkills,
-  syncSkills: hermesSyncSkills,
+  // The external hermes-paperclip-adapter still uses the upstream paperclip
+  // context shape ({ companyId }), while SLAW uses { squadId }. Translate at
+  // the boundary so the external package keeps working unmodified.
+  listSkills: async (ctx) =>
+    (await hermesListSkills({
+      agentId: ctx.agentId,
+      companyId: ctx.squadId,
+      adapterType: ctx.adapterType,
+      config: ctx.config,
+    })) as Awaited<ReturnType<NonNullable<ServerAdapterModule["listSkills"]>>>,
+  syncSkills: async (ctx, desiredSkills) =>
+    (await hermesSyncSkills(
+      {
+        agentId: ctx.agentId,
+        companyId: ctx.squadId,
+        adapterType: ctx.adapterType,
+        config: ctx.config,
+      },
+      desiredSkills,
+    )) as Awaited<ReturnType<NonNullable<ServerAdapterModule["syncSkills"]>>>,
   models: hermesModels,
   supportsLocalAgentJwt: true,
   supportsInstructionsBundle: false,

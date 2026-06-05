@@ -12,11 +12,11 @@ import {
 } from "./common.js";
 
 interface GoalListOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
 }
 
 interface GoalCreateOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   title: string;
   description?: string;
   level?: string;
@@ -44,12 +44,12 @@ export function registerGoalCommands(program: Command): void {
   addCommonClientOptions(
     goal
       .command("list")
-      .description("List goals for a company")
-      .option("-C, --company-id <id>", "Company ID")
+      .description("List goals for a squad")
+      .option("-C, --squad-id <id>", "Squad ID")
       .action(async (opts: GoalListOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const rows = (await ctx.api.get<Goal[]>(apiPath`/api/companies/${ctx.companyId}/goals`)) ?? [];
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const rows = (await ctx.api.get<Goal[]>(apiPath`/api/squads/${ctx.squadId}/goals`)) ?? [];
           if (ctx.json) {
             printOutput(rows, { json: true });
             return;
@@ -72,7 +72,7 @@ export function registerGoalCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -95,7 +95,7 @@ export function registerGoalCommands(program: Command): void {
     goal
       .command("create")
       .description("Create a goal")
-      .requiredOption("-C, --company-id <id>", "Company ID")
+      .requiredOption("-C, --squad-id <id>", "Squad ID")
       .requiredOption("--title <title>", "Goal title")
       .option("--description <text>", "Goal description")
       .option("--level <level>", "Goal level")
@@ -104,7 +104,7 @@ export function registerGoalCommands(program: Command): void {
       .option("--owner-agent-id <id>", "Owner agent ID")
       .action(async (opts: GoalCreateOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const payload = createGoalSchema.parse({
             title: opts.title,
             description: opts.description,
@@ -113,13 +113,13 @@ export function registerGoalCommands(program: Command): void {
             parentId: parseNullableString(opts.parentId),
             ownerAgentId: parseNullableString(opts.ownerAgentId),
           });
-          const created = await ctx.api.post<Goal>(apiPath`/api/companies/${ctx.companyId}/goals`, payload);
+          const created = await ctx.api.post<Goal>(apiPath`/api/squads/${ctx.squadId}/goals`, payload);
           printOutput(created, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(

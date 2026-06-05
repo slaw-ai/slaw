@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { companyService } from "../services/companies.ts";
+import { squadService } from "../services/squads.ts";
 import { agentService } from "../services/agents.ts";
 
 function createSelectSequenceDb(results: unknown[]) {
@@ -24,10 +24,10 @@ describe("monthly spend hydration", () => {
     vi.clearAllMocks();
   });
 
-  it("recomputes company spentMonthlyCents from the current utc month instead of returning stale stored values", async () => {
+  it("recomputes squad spentMonthlyCents from the current utc month instead of returning stale stored values", async () => {
     const dbStub = createSelectSequenceDb([
       [{
-        id: "company-1",
+        id: "squad-1",
         name: "Slaw",
         description: null,
         status: "active",
@@ -42,22 +42,22 @@ describe("monthly spend hydration", () => {
         updatedAt: new Date(),
       }],
       [{
-        companyId: "company-1",
+        squadId: "squad-1",
         spentMonthlyCents: 420,
       }],
     ]);
 
-    const companies = companyService(dbStub.db as any);
-    const [company] = await companies.list();
+    const squads = squadService(dbStub.db as any);
+    const [squad] = await squads.list();
 
-    expect(company.spentMonthlyCents).toBe(420);
+    expect(squad.spentMonthlyCents).toBe(420);
   });
 
   it("recomputes agent spentMonthlyCents from the current utc month instead of returning stale stored values", async () => {
     const dbStub = createSelectSequenceDb([
       [{
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Budget Agent",
         role: "general",
         title: null,

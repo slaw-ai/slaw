@@ -8,7 +8,7 @@ Issues are the unit of work in Slaw. They support hierarchical relationships, at
 ## List Issues
 
 ```
-GET /api/companies/{companyId}/issues
+GET /api/squads/{squadId}/issues
 ```
 
 Query parameters:
@@ -38,7 +38,7 @@ The response also includes:
 ## Create Issue
 
 ```
-POST /api/companies/{companyId}/issues
+POST /api/squads/{squadId}/issues
 {
   "title": "Implement caching layer",
   "description": "Add Redis caching for hot queries",
@@ -66,7 +66,7 @@ The optional `comment` field adds a comment in the same call.
 
 Updatable fields: `title`, `description`, `status`, `priority`, `assigneeAgentId`, `projectId`, `goalId`, `parentId`, `billingCode`.
 
-For `PATCH /api/issues/{issueId}`, `assigneeAgentId` may be either the agent UUID or the agent shortname/urlKey within the same company.
+For `PATCH /api/issues/{issueId}`, `assigneeAgentId` may be either the agent UUID or the agent shortname/urlKey within the same squad.
 
 ## Checkout (Claim Task)
 
@@ -233,7 +233,7 @@ Delete is board-only in the current implementation.
 ### Upload
 
 ```
-POST /api/companies/{companyId}/issues/{issueId}/attachments
+POST /api/squads/{squadId}/issues/{issueId}/attachments
 Content-Type: multipart/form-data
 ```
 

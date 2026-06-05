@@ -36,7 +36,7 @@ import {
   resolveDefaultLogsDir,
   resolveSlawInstanceId,
 } from "../config/home.js";
-import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
+import { bootstrapSquadLeadInvite } from "./auth-bootstrap-squad-lead.js";
 import { printSlawCliBanner } from "../utils/banner.js";
 import {
   getTelemetryClient,
@@ -656,8 +656,8 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   );
 
   if (canCreateBootstrapInviteImmediately({ database, server })) {
-    p.log.step("Generating bootstrap CEO invite");
-    await bootstrapCeoInvite({ config: configPath });
+    p.log.step("Generating bootstrap Squad Lead invite");
+    await bootstrapSquadLeadInvite({ config: configPath });
   }
 
   let shouldRunNow = opts.run === true || opts.yes === true;
@@ -681,9 +681,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   if (server.deploymentMode === "authenticated" && database.mode === "embedded-postgres") {
     p.log.info(
       [
-        "Bootstrap CEO invite will be created after the server starts.",
+        "Bootstrap Squad Lead invite will be created after the server starts.",
         `Next: ${pc.cyan("slaw run")}`,
-        `Then: ${pc.cyan("slaw auth bootstrap-ceo")}`,
+        `Then: ${pc.cyan("slaw auth bootstrap-squad-lead")}`,
       ].join("\n"),
     );
   }

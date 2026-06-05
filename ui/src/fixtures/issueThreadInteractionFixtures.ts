@@ -11,7 +11,7 @@ import type {
 } from "../lib/issue-thread-interactions";
 
 export const issueThreadInteractionFixtureMeta = {
-  companyId: "company-storybook",
+  squadId: "squad-storybook",
   projectId: "project-board-ui",
   issueId: "issue-thread-interactions",
   currentUserId: "user-board",
@@ -21,7 +21,7 @@ function createComment(overrides: Partial<IssueChatComment>): IssueChatComment {
   const createdAt = overrides.createdAt ?? new Date("2026-04-20T14:00:00.000Z");
   return {
     id: "comment-default",
-    companyId: issueThreadInteractionFixtureMeta.companyId,
+    squadId: issueThreadInteractionFixtureMeta.squadId,
     issueId: issueThreadInteractionFixtureMeta.issueId,
     authorType: overrides.authorAgentId ? "agent" : "user",
     authorAgentId: null,
@@ -40,7 +40,7 @@ function createSuggestTasksInteraction(
 ): SuggestTasksInteraction {
   return {
     id: "interaction-suggest-default",
-    companyId: issueThreadInteractionFixtureMeta.companyId,
+    squadId: issueThreadInteractionFixtureMeta.squadId,
     issueId: issueThreadInteractionFixtureMeta.issueId,
     kind: "suggest_tasks",
     title: "Suggested issue tree for the first interaction pass",
@@ -110,7 +110,7 @@ function createAskUserQuestionsInteraction(
 ): AskUserQuestionsInteraction {
   return {
     id: "interaction-questions-default",
-    companyId: issueThreadInteractionFixtureMeta.companyId,
+    squadId: issueThreadInteractionFixtureMeta.squadId,
     issueId: issueThreadInteractionFixtureMeta.issueId,
     kind: "ask_user_questions",
     title: "Resolve open UX decisions before Phase 1",
@@ -186,7 +186,7 @@ function createRequestConfirmationInteraction(
 ): RequestConfirmationInteraction {
   return {
     id: "interaction-confirmation-default",
-    companyId: issueThreadInteractionFixtureMeta.companyId,
+    squadId: issueThreadInteractionFixtureMeta.squadId,
     issueId: issueThreadInteractionFixtureMeta.issueId,
     kind: "request_confirmation",
     title: "Approve the proposed plan",

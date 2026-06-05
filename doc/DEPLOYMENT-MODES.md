@@ -108,7 +108,7 @@ Required integration points:
 
 - real user row in `authUsers` for Board identity
 - `instance_user_roles` entry for Board admin authority
-- `company_memberships` integration for user-level task assignment and access
+- `squad_memberships` integration for user-level task assignment and access
 
 This is required because user assignment paths validate active membership for `assigneeUserId`.
 
@@ -121,7 +121,7 @@ When running `authenticated` mode, if the only instance admin is `local-board`, 
 - claim action:
   - promotes current signed-in user to `instance_admin`
   - demotes `local-board` admin role
-  - ensures active owner membership for the claiming user across existing companies
+  - ensures active owner membership for the claiming user across existing squads
 
 This prevents lockout when a user migrates from long-running local trusted usage to authenticated mode.
 
@@ -145,7 +145,7 @@ rejected.
 The CLI fallback remains supported in all authenticated setup states:
 
 ```sh
-pnpm slaw auth bootstrap-ceo
+pnpm slaw auth bootstrap-squad-lead
 ```
 
 That command prints a one-time first-admin invite URL. Browser claim and
@@ -161,7 +161,7 @@ future public-hosted setup design explicitly changes this policy.
 - runtime values are `local_trusted | authenticated`
 - `authenticated` uses Better Auth sessions and bootstrap invite flow
 - `local_trusted` ensures a real local Board user principal in `authUsers` with `instance_user_roles` admin access
-- company creation ensures creator membership in `company_memberships` so user assignment/access flows remain consistent
+- squad creation ensures creator membership in `squad_memberships` so user assignment/access flows remain consistent
 
 ## 10. Naming and Compatibility Policy
 

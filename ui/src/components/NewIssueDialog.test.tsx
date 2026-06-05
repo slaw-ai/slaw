@@ -20,19 +20,19 @@ const dialogContentState = vi.hoisted(() => ({
   }) => void),
 }));
 
-const companyState = vi.hoisted(() => ({
-  companies: [
+const squadState = vi.hoisted(() => ({
+  squads: [
     {
-      id: "company-1",
+      id: "squad-1",
       name: "Slaw",
       status: "active",
       brandColor: "#123456",
       issuePrefix: "PAP",
     },
   ],
-  selectedCompanyId: "company-1",
-  selectedCompany: {
-    id: "company-1",
+  selectedSquadId: "squad-1",
+  selectedSquad: {
+    id: "squad-1",
     name: "Slaw",
     status: "active",
     brandColor: "#123456",
@@ -80,8 +80,8 @@ vi.mock("../context/DialogContext", () => ({
   useDialog: () => dialogState,
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => companyState,
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => squadState,
 }));
 
 vi.mock("../context/ToastContext", () => ({
@@ -331,7 +331,7 @@ describe("NewIssueDialog", () => {
     localStorage.clear();
     mockIssuesApi.create.mockResolvedValue({
       id: "issue-2",
-      companyId: "company-1",
+      squadId: "squad-1",
       identifier: "PAP-2",
     });
   });
@@ -412,7 +412,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     await waitForAssertion(() => {
-      expect(mockExecutionWorkspacesApi.listSummaries).toHaveBeenCalledWith("company-1", {
+      expect(mockExecutionWorkspacesApi.listSummaries).toHaveBeenCalledWith("squad-1", {
         projectId: "project-1",
         projectWorkspaceId: undefined,
         reuseEligible: true,
@@ -433,7 +433,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title: "Child issue",
         parentId: "issue-1",
@@ -472,7 +472,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title: "Planned from defaults",
         workMode: "planning",
@@ -547,7 +547,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title: "Follow-up issue",
         projectId: "project-1",
@@ -613,7 +613,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title: "Typed issue",
         description: "Typed description",
@@ -656,7 +656,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title,
         description,
@@ -695,7 +695,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title: "Plan this first",
         workMode: "planning",
@@ -729,7 +729,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     expect(mockIssuesApi.create).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       expect.objectContaining({
         title: "Child issue",
         parentId: "issue-1",

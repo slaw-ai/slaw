@@ -3,7 +3,7 @@ title: Managing Tasks
 summary: Creating issues, assigning work, and tracking progress
 ---
 
-Issues (tasks) are the unit of work in Slaw. They form a hierarchy that traces all work back to the company goal.
+Issues (tasks) are the unit of work in Slaw. They form a hierarchy that traces all work back to the squad goal.
 
 ## Creating Issues
 
@@ -19,10 +19,10 @@ Create issues from the web UI or API. Each issue has:
 
 ## Task Hierarchy
 
-Every piece of work should trace back to the company goal through parent issues:
+Every piece of work should trace back to the squad goal through parent issues:
 
 ```
-Company Goal: Build the #1 AI note-taking app
+Squad Goal: Build the #1 AI note-taking app
   └── Build authentication system (parent task)
       └── Implement JWT token signing (current task)
 ```

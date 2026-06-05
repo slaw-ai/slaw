@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import {
   agents,
-  companies,
+  squads,
   createDb,
   projects,
   routines,
@@ -104,7 +104,7 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
     await db.delete(routines);
     await db.delete(projects);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -114,9 +114,9 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
     }
   });
 
-  it("pauses only non-archived routines for the selected company", async () => {
-    const companyId = randomUUID();
-    const otherCompanyId = randomUUID();
+  it("pauses only non-archived routines for the selected squad", async () => {
+    const squadId = randomUUID();
+    const otherSquadId = randomUUID();
     const projectId = randomUUID();
     const otherProjectId = randomUUID();
     const agentId = randomUUID();
@@ -124,19 +124,19 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
     const activeRoutineId = randomUUID();
     const pausedRoutineId = randomUUID();
     const archivedRoutineId = randomUUID();
-    const otherCompanyRoutineId = randomUUID();
+    const otherSquadRoutineId = randomUUID();
 
-    await db.insert(companies).values([
+    await db.insert(squads).values([
       {
-        id: companyId,
+        id: squadId,
         name: "Slaw",
-        issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       },
       {
-        id: otherCompanyId,
-        name: "Other company",
-        issuePrefix: `T${otherCompanyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        id: otherSquadId,
+        name: "Other squad",
+        issuePrefix: `T${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       },
     ]);
@@ -144,7 +144,7 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
     await db.insert(agents).values([
       {
         id: agentId,
-        companyId,
+        squadId,
         name: "Coder",
         adapterType: "process",
         adapterConfig: {},
@@ -153,7 +153,7 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
       },
       {
         id: otherAgentId,
-        companyId: otherCompanyId,
+        squadId: otherSquadId,
         name: "Other coder",
         adapterType: "process",
         adapterConfig: {},
@@ -165,13 +165,13 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
     await db.insert(projects).values([
       {
         id: projectId,
-        companyId,
+        squadId,
         name: "Project",
         status: "in_progress",
       },
       {
         id: otherProjectId,
-        companyId: otherCompanyId,
+        squadId: otherSquadId,
         name: "Other project",
         status: "in_progress",
       },
@@ -180,7 +180,7 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
     await db.insert(routines).values([
       {
         id: activeRoutineId,
-        companyId,
+        squadId,
         projectId,
         assigneeAgentId: agentId,
         title: "Active routine",
@@ -188,7 +188,7 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
       },
       {
         id: pausedRoutineId,
-        companyId,
+        squadId,
         projectId,
         assigneeAgentId: agentId,
         title: "Paused routine",
@@ -196,54 +196,54 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
       },
       {
         id: archivedRoutineId,
-        companyId,
+        squadId,
         projectId,
         assigneeAgentId: agentId,
         title: "Archived routine",
         status: "archived",
       },
       {
-        id: otherCompanyRoutineId,
-        companyId: otherCompanyId,
+        id: otherSquadRoutineId,
+        squadId: otherSquadId,
         projectId: otherProjectId,
         assigneeAgentId: otherAgentId,
-        title: "Other company routine",
+        title: "Other squad routine",
         status: "active",
       },
     ]);
 
     const result = await disableAllRoutinesInConfig({
       config: configPath,
-      companyId,
+      squadId,
     });
 
     expect(result).toMatchObject({
-      companyId,
+      squadId,
       totalRoutines: 3,
       pausedCount: 1,
       alreadyPausedCount: 1,
       archivedCount: 1,
     });
 
-    const companyRoutines = await db
+    const squadRoutines = await db
       .select({
         id: routines.id,
         status: routines.status,
       })
       .from(routines)
-      .where(eq(routines.companyId, companyId));
-    const statusById = new Map(companyRoutines.map((routine) => [routine.id, routine.status]));
+      .where(eq(routines.squadId, squadId));
+    const statusById = new Map(squadRoutines.map((routine) => [routine.id, routine.status]));
 
     expect(statusById.get(activeRoutineId)).toBe("paused");
     expect(statusById.get(pausedRoutineId)).toBe("paused");
     expect(statusById.get(archivedRoutineId)).toBe("archived");
 
-    const otherCompanyRoutine = await db
+    const otherSquadRoutine = await db
       .select({
         status: routines.status,
       })
       .from(routines)
-      .where(eq(routines.id, otherCompanyRoutineId));
-    expect(otherCompanyRoutine[0]?.status).toBe("active");
+      .where(eq(routines.id, otherSquadRoutineId));
+    expect(otherSquadRoutine[0]?.status).toBe("active");
   });
 });

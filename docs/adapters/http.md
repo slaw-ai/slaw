@@ -39,7 +39,7 @@ The webhook receives a JSON payload with:
 {
   "runId": "...",
   "agentId": "...",
-  "companyId": "...",
+  "squadId": "...",
   "context": {
     "taskId": "...",
     "wakeReason": "...",

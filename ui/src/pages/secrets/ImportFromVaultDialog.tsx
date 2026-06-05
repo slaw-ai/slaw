@@ -16,8 +16,8 @@ import {
   XCircle,
 } from "lucide-react";
 import type {
-  CompanySecret,
-  CompanySecretProviderConfig,
+  SquadSecret,
+  SquadSecretProviderConfig,
   RemoteSecretImportCandidate,
   RemoteSecretImportPreviewResult,
   RemoteSecretImportResult,
@@ -57,9 +57,9 @@ type Step = "select" | "review" | "result";
 interface ImportFromVaultDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string;
-  providerConfigs: CompanySecretProviderConfig[];
-  existingSecrets: CompanySecret[];
+  squadId: string;
+  providerConfigs: SquadSecretProviderConfig[];
+  existingSecrets: SquadSecret[];
   onImportComplete?: (result: RemoteSecretImportResult) => void;
   onManageVaults?: () => void;
 }
@@ -74,22 +74,22 @@ interface DraftSelection {
 const KEY_PATTERN = /^[a-z0-9_.-]+$/;
 const PAGE_SIZE = 50;
 
-function isAwsSelectable(config: CompanySecretProviderConfig) {
+function isAwsSelectable(config: SquadSecretProviderConfig) {
   if (config.provider !== "aws_secrets_manager") return false;
   return config.status === "ready" || config.status === "warning";
 }
 
-function eligibleVaults(configs: CompanySecretProviderConfig[]): CompanySecretProviderConfig[] {
+function eligibleVaults(configs: SquadSecretProviderConfig[]): SquadSecretProviderConfig[] {
   return configs.filter(isAwsSelectable);
 }
 
-function pickDefaultVault(configs: CompanySecretProviderConfig[]): string | null {
+function pickDefaultVault(configs: SquadSecretProviderConfig[]): string | null {
   const eligible = eligibleVaults(configs);
   if (eligible.length === 0) return null;
   return (eligible.find((vault) => vault.isDefault) ?? eligible[0]).id;
 }
 
-function awsVaultOptions(configs: CompanySecretProviderConfig[]): CompanySecretProviderConfig[] {
+function awsVaultOptions(configs: SquadSecretProviderConfig[]): SquadSecretProviderConfig[] {
   return configs.filter((vault) => vault.provider === "aws_secrets_manager");
 }
 
@@ -260,7 +260,7 @@ function safeImportProviderMetadata(
 
 function validateDraftRow(
   draft: DraftSelection,
-  existing: CompanySecret[],
+  existing: SquadSecret[],
   otherDrafts: DraftSelection[],
 ): string | null {
   if (!draft.name.trim()) return "Name is required.";
@@ -324,7 +324,7 @@ const EMPTY_PREVIEW: PreviewState = { candidates: [], nextToken: null };
 export function ImportFromVaultDialog({
   open,
   onOpenChange,
-  companyId,
+  squadId,
   providerConfigs,
   existingSecrets,
   onImportComplete,
@@ -378,7 +378,7 @@ export function ImportFromVaultDialog({
     setPreviewError(null);
     setPreview(EMPTY_PREVIEW);
     secretsApi
-      .remoteImportPreview(companyId, {
+      .remoteImportPreview(squadId, {
         providerConfigId: vaultId,
         query: debouncedQuery || null,
         nextToken: null,
@@ -402,7 +402,7 @@ export function ImportFromVaultDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, step, vaultId, debouncedQuery, companyId]);
+  }, [open, step, vaultId, debouncedQuery, squadId]);
 
   // When the vault changes, drop any selection (they're scoped to a vault).
   useEffect(() => {
@@ -459,11 +459,11 @@ export function ImportFromVaultDialog({
   const readyReviewCount = draftList.length - blockedReviewCount;
 
   const importMutation = useMutation({
-    mutationFn: (input: RemoteImportInput) => secretsApi.remoteImport(companyId, input),
+    mutationFn: (input: RemoteImportInput) => secretsApi.remoteImport(squadId, input),
     onSuccess: (result) => {
       setImportResult(result);
       setStep("result");
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(squadId) });
       onImportComplete?.(result);
       const vaultName =
         awsVaults.find((vault) => vault.id === vaultId)?.displayName ?? "AWS";
@@ -502,7 +502,7 @@ export function ImportFromVaultDialog({
     setPreviewLoading(true);
     setPreviewError(null);
     secretsApi
-      .remoteImportPreview(companyId, {
+      .remoteImportPreview(squadId, {
         providerConfigId: vaultId,
         query: debouncedQuery || null,
         nextToken: null,
@@ -526,7 +526,7 @@ export function ImportFromVaultDialog({
     if (!vaultId || !preview.nextToken || pageLoading) return;
     setPageLoading(true);
     secretsApi
-      .remoteImportPreview(companyId, {
+      .remoteImportPreview(squadId, {
         providerConfigId: vaultId,
         query: debouncedQuery || null,
         nextToken: preview.nextToken,
@@ -815,8 +815,8 @@ function Stepper({ step }: { step: Step }) {
 }
 
 interface SelectStepProps {
-  awsVaults: CompanySecretProviderConfig[];
-  eligible: CompanySecretProviderConfig[];
+  awsVaults: SquadSecretProviderConfig[];
+  eligible: SquadSecretProviderConfig[];
   vaultId: string | null;
   onVaultChange: (id: string) => void;
   searchInput: string;

@@ -32,11 +32,11 @@ import {
 } from "./common.js";
 
 interface AgentListOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
 }
 
 interface AgentLocalCliOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   keyName?: string;
   installSkills?: boolean;
 }
@@ -47,7 +47,7 @@ interface AgentInboxMineOptions extends BaseClientOptions {
 }
 
 interface AgentWakeOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   source?: string;
   trigger?: string;
   reason?: string;
@@ -57,7 +57,7 @@ interface AgentWakeOptions extends BaseClientOptions {
 }
 
 interface AgentJsonPayloadOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   payloadJson: string;
 }
 
@@ -200,14 +200,14 @@ async function installSkillsForTarget(
 
 function buildAgentEnvExports(input: {
   apiBase: string;
-  companyId: string;
+  squadId: string;
   agentId: string;
   apiKey: string;
 }): string {
   const escaped = (value: string) => value.replace(/'/g, "'\"'\"'");
   return [
     `export SLAW_API_URL='${escaped(input.apiBase)}'`,
-    `export SLAW_COMPANY_ID='${escaped(input.companyId)}'`,
+    `export SLAW_SQUAD_ID='${escaped(input.squadId)}'`,
     `export SLAW_AGENT_ID='${escaped(input.agentId)}'`,
     `export SLAW_API_KEY='${escaped(input.apiKey)}'`,
   ].join("\n");
@@ -282,12 +282,12 @@ export function registerAgentCommands(program: Command): void {
   addCommonClientOptions(
     agent
       .command("list")
-      .description("List agents for a company")
-      .requiredOption("-C, --company-id <id>", "Company ID")
+      .description("List agents for a squad")
+      .requiredOption("-C, --squad-id <id>", "Squad ID")
       .action(async (opts: AgentListOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const rows = (await ctx.api.get<Agent[]>(apiPath`/api/companies/${ctx.companyId}/agents`)) ?? [];
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const rows = (await ctx.api.get<Agent[]>(apiPath`/api/squads/${ctx.squadId}/agents`)) ?? [];
 
           if (ctx.json) {
             printOutput(rows, { json: true });
@@ -316,7 +316,7 @@ export function registerAgentCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -339,37 +339,37 @@ export function registerAgentCommands(program: Command): void {
     agent
       .command("create")
       .description("Create an agent from a JSON payload")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .requiredOption("--payload-json <json>", "CreateAgent JSON payload")
       .action(async (opts: AgentJsonPayloadOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const payload = createAgentSchema.parse(parseJson(opts.payloadJson));
-          const created = await ctx.api.post<Agent>(apiPath`/api/companies/${ctx.companyId}/agents`, payload);
+          const created = await ctx.api.post<Agent>(apiPath`/api/squads/${ctx.squadId}/agents`, payload);
           printOutput(created, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
     agent
       .command("hire")
       .description("Create an agent hire request")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .requiredOption("--payload-json <json>", "CreateAgentHire JSON payload")
       .action(async (opts: AgentJsonPayloadOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const result = await ctx.api.post(apiPath`/api/companies/${ctx.companyId}/agent-hires`, parseJson(opts.payloadJson));
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const result = await ctx.api.post(apiPath`/api/squads/${ctx.squadId}/agent-hires`, parseJson(opts.payloadJson));
           printOutput(result, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -720,7 +720,7 @@ export function registerAgentCommands(program: Command): void {
       .command("wake")
       .description("Request a heartbeat wakeup for an agent")
       .argument("<agentRef>", "Agent ID or shortname/url-key")
-      .option("-C, --company-id <id>", "Company ID for shortname/url-key lookup")
+      .option("-C, --squad-id <id>", "Squad ID for shortname/url-key lookup")
       .option("--source <source>", "Invocation source (timer, assignment, on_demand, automation)", "on_demand")
       .option("--trigger <trigger>", "Trigger detail (manual, ping, callback, system)", "manual")
       .option("--reason <text>", "Wakeup reason")
@@ -730,7 +730,7 @@ export function registerAgentCommands(program: Command): void {
       .action(async (agentRef: string, opts: AgentWakeOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          const query = opts.companyId ? `?${new URLSearchParams({ companyId: opts.companyId }).toString()}` : "";
+          const query = opts.squadId ? `?${new URLSearchParams({ squadId: opts.squadId }).toString()}` : "";
           const agentRow = await ctx.api.get<Agent>(`${apiPath`/api/agents/${agentRef}`}${query}`);
           if (!agentRow) {
             throw new Error(`Agent not found: ${agentRef}`);
@@ -749,7 +749,7 @@ export function registerAgentCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -759,7 +759,7 @@ export function registerAgentCommands(program: Command): void {
         "Create an agent API key, install local Slaw skills for Codex/Claude, and print shell exports",
       )
       .argument("<agentRef>", "Agent ID or shortname/url-key")
-      .requiredOption("-C, --company-id <id>", "Company ID")
+      .requiredOption("-C, --squad-id <id>", "Squad ID")
       .option("--key-name <name>", "API key label", "local-cli")
       .option(
         "--no-install-skills",
@@ -767,8 +767,8 @@ export function registerAgentCommands(program: Command): void {
       )
       .action(async (agentRef: string, opts: AgentLocalCliOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          const query = new URLSearchParams({ companyId: ctx.companyId ?? "" });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          const query = new URLSearchParams({ squadId: ctx.squadId ?? "" });
           const agentRow = await ctx.api.get<Agent>(
             `${apiPath`/api/agents/${agentRef}`}?${query.toString()}`,
           );
@@ -800,7 +800,7 @@ export function registerAgentCommands(program: Command): void {
 
           const exportsText = buildAgentEnvExports({
             apiBase: ctx.api.apiBase,
-            companyId: agentRow.companyId,
+            squadId: agentRow.squadId,
             agentId: agentRow.id,
             apiKey: key.token,
           });
@@ -812,7 +812,7 @@ export function registerAgentCommands(program: Command): void {
                   id: agentRow.id,
                   name: agentRow.name,
                   urlKey: agentRow.urlKey,
-                  companyId: agentRow.companyId,
+                  squadId: agentRow.squadId,
                 },
                 key: {
                   id: key.id,
@@ -847,7 +847,7 @@ export function registerAgentCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 

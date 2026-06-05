@@ -14,8 +14,8 @@ const getSessionMock = vi.hoisted(() => vi.fn());
 const signInEmailMock = vi.hoisted(() => vi.fn());
 const signUpEmailMock = vi.hoisted(() => vi.fn());
 const healthGetMock = vi.hoisted(() => vi.fn());
-const listCompaniesMock = vi.hoisted(() => vi.fn());
-const setSelectedCompanyIdMock = vi.hoisted(() => vi.fn());
+const listSquadsMock = vi.hoisted(() => vi.fn());
+const setSelectedSquadIdMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../api/access", () => ({
   accessApi: {
@@ -38,23 +38,23 @@ vi.mock("../api/health", () => ({
   },
 }));
 
-vi.mock("../api/companies", () => ({
-  companiesApi: {
-    list: () => listCompaniesMock(),
+vi.mock("../api/squads", () => ({
+  squadsApi: {
+    list: () => listSquadsMock(),
   },
 }));
 
-vi.mock("@/context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompany: null,
-    selectedCompanyId: null,
-    companies: [],
+vi.mock("@/context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquad: null,
+    selectedSquadId: null,
+    squads: [],
     selectionSource: "manual",
     loading: false,
     error: null,
-    setSelectedCompanyId: setSelectedCompanyIdMock,
-    reloadCompanies: vi.fn(),
-    createCompany: vi.fn(),
+    setSelectedSquadId: setSelectedSquadIdMock,
+    reloadSquads: vi.fn(),
+    createSquad: vi.fn(),
   }),
 }));
 
@@ -92,11 +92,11 @@ describe("InviteLandingPage", () => {
 
     getInviteMock.mockResolvedValue({
       id: "invite-1",
-      companyId: "company-1",
-      companyName: "Acme Robotics",
-      companyLogoUrl: "/api/invites/pcp_invite_test/logo",
-      companyBrandColor: "#114488",
-      inviteType: "company_join",
+      squadId: "squad-1",
+      squadName: "Acme Robotics",
+      squadLogoUrl: "/api/invites/pcp_invite_test/logo",
+      squadBrandColor: "#114488",
+      inviteType: "squad_join",
       allowedJoinTypes: "both",
       humanRole: "operator",
       expiresAt: "2027-03-07T00:10:00.000Z",
@@ -107,11 +107,11 @@ describe("InviteLandingPage", () => {
       status: "ok",
       deploymentMode: "authenticated",
     });
-    listCompaniesMock.mockResolvedValue([]);
+    listSquadsMock.mockResolvedValue([]);
     getSessionMock.mockResolvedValue(null);
     signInEmailMock.mockResolvedValue(undefined);
     signUpEmailMock.mockResolvedValue(undefined);
-    setSelectedCompanyIdMock.mockReset();
+    setSelectedSquadIdMock.mockReset();
   });
 
   afterEach(() => {
@@ -220,7 +220,7 @@ describe("InviteLandingPage", () => {
     queryClient.setQueryData(queryKeys.access.currentBoardAccess, {
       userId: "user-1",
       isInstanceAdmin: false,
-      companyIds: [],
+      squadIds: [],
     });
 
     await act(async () => {
@@ -286,7 +286,7 @@ describe("InviteLandingPage", () => {
     });
   });
 
-  it("auto-accepts the invite after account creation and redirects into the company", async () => {
+  it("auto-accepts the invite after account creation and redirects into the squad", async () => {
     getSessionMock.mockResolvedValueOnce(null);
     getSessionMock.mockResolvedValue({
       session: { id: "session-1", userId: "user-1" },
@@ -299,7 +299,7 @@ describe("InviteLandingPage", () => {
     });
     acceptInviteMock.mockResolvedValue({
       id: "join-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       requestType: "human",
       status: "approved",
     });
@@ -311,7 +311,7 @@ describe("InviteLandingPage", () => {
     queryClient.setQueryData(queryKeys.access.currentBoardAccess, {
       userId: "user-1",
       isInstanceAdmin: false,
-      companyIds: [],
+      squadIds: [],
     });
 
     await act(async () => {
@@ -364,10 +364,10 @@ describe("InviteLandingPage", () => {
       password: "supersecret",
     });
     expect(acceptInviteMock).toHaveBeenCalledWith("pcp_invite_test", { requestType: "human" });
-    expect(setSelectedCompanyIdMock).toHaveBeenCalledWith("company-1", { source: "manual" });
+    expect(setSelectedSquadIdMock).toHaveBeenCalledWith("squad-1", { source: "manual" });
     expect(queryClient.getQueryState(queryKeys.access.currentBoardAccess)?.isInvalidated).toBe(true);
-    expect(queryClient.getQueryData(queryKeys.companies.all)).toMatchObject({
-      companies: [],
+    expect(queryClient.getQueryData(queryKeys.squads.all)).toMatchObject({
+      squads: [],
       unauthorized: false,
     });
     expect(localStorage.getItem("slaw:pending-invite-token")).toBeNull();
@@ -377,10 +377,10 @@ describe("InviteLandingPage", () => {
     });
   });
 
-  it("shows the pending approval page with the company icon and linked access instructions", async () => {
+  it("shows the pending approval page with the squad icon and linked access instructions", async () => {
     acceptInviteMock.mockResolvedValue({
       id: "join-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       requestType: "human",
       status: "pending_approval",
     });
@@ -417,18 +417,18 @@ describe("InviteLandingPage", () => {
 
     expect(acceptInviteMock).toHaveBeenCalledWith("pcp_invite_test", { requestType: "human" });
     expect(container.textContent).toContain("Request to join Acme Robotics");
-    expect(container.textContent).toContain("A company admin must approve your request to join.");
+    expect(container.textContent).toContain("A squad admin must approve your request to join.");
     expect(container.textContent).toContain(
-      "Ask them to visit Company Settings → Members to approve your request.",
+      "Ask them to visit Squad Settings → Members to approve your request.",
     );
     expect(container.querySelector('img[alt="Acme Robotics logo"]')).not.toBeNull();
-    expect(container.textContent).not.toContain("http://localhost/company/settings/members");
+    expect(container.textContent).not.toContain("http://localhost/squad/settings/members");
 
     const approvalLinks = Array.from(container.querySelectorAll("a")).filter(
-      (link) => link.textContent === "Company Settings → Members",
+      (link) => link.textContent === "Squad Settings → Members",
     );
     expect(approvalLinks).toHaveLength(2);
-    const expectedApprovalUrl = `${window.location.origin}/company/settings/members`;
+    const expectedApprovalUrl = `${window.location.origin}/squad/settings/members`;
     for (const link of approvalLinks) {
       expect(link.getAttribute("href")).toBe(expectedApprovalUrl);
     }
@@ -441,11 +441,11 @@ describe("InviteLandingPage", () => {
   it("auto-completes a previously accepted human invite after sign-in", async () => {
     getInviteMock.mockResolvedValue({
       id: "invite-1",
-      companyId: "company-1",
-      companyName: "Acme Robotics",
-      companyLogoUrl: "/api/invites/pcp_invite_test/logo",
-      companyBrandColor: "#114488",
-      inviteType: "company_join",
+      squadId: "squad-1",
+      squadName: "Acme Robotics",
+      squadLogoUrl: "/api/invites/pcp_invite_test/logo",
+      squadBrandColor: "#114488",
+      inviteType: "squad_join",
       allowedJoinTypes: "both",
       humanRole: "operator",
       expiresAt: "2027-03-07T00:10:00.000Z",
@@ -455,7 +455,7 @@ describe("InviteLandingPage", () => {
     });
     acceptInviteMock.mockResolvedValue({
       id: "join-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       requestType: "human",
       status: "approved",
     });
@@ -476,7 +476,7 @@ describe("InviteLandingPage", () => {
     queryClient.setQueryData(queryKeys.access.currentBoardAccess, {
       userId: "user-1",
       isInstanceAdmin: false,
-      companyIds: [],
+      squadIds: [],
     });
 
     await act(async () => {
@@ -496,7 +496,7 @@ describe("InviteLandingPage", () => {
     await flushReact();
 
     expect(acceptInviteMock).toHaveBeenCalledWith("pcp_invite_test", { requestType: "human" });
-    expect(setSelectedCompanyIdMock).toHaveBeenCalledWith("company-1", { source: "manual" });
+    expect(setSelectedSquadIdMock).toHaveBeenCalledWith("squad-1", { source: "manual" });
     expect(queryClient.getQueryState(queryKeys.access.currentBoardAccess)?.isInvalidated).toBe(true);
     expect(localStorage.getItem("slaw:pending-invite-token")).toBeNull();
 
@@ -508,11 +508,11 @@ describe("InviteLandingPage", () => {
   it("asks unauthenticated users to sign in before completing an accepted human invite", async () => {
     getInviteMock.mockResolvedValue({
       id: "invite-1",
-      companyId: "company-1",
-      companyName: "Acme Robotics",
-      companyLogoUrl: "/api/invites/pcp_invite_test/logo",
-      companyBrandColor: "#114488",
-      inviteType: "company_join",
+      squadId: "squad-1",
+      squadName: "Acme Robotics",
+      squadLogoUrl: "/api/invites/pcp_invite_test/logo",
+      squadBrandColor: "#114488",
+      inviteType: "squad_join",
       allowedJoinTypes: "human",
       humanRole: "operator",
       expiresAt: "2027-03-07T00:10:00.000Z",
@@ -550,7 +550,7 @@ describe("InviteLandingPage", () => {
     });
   });
 
-  it("redirects straight to the company after sign-in when the user already has access", async () => {
+  it("redirects straight to the squad after sign-in when the user already has access", async () => {
     getSessionMock.mockResolvedValueOnce(null);
     getSessionMock.mockResolvedValue({
       session: { id: "session-1", userId: "user-1" },
@@ -561,7 +561,7 @@ describe("InviteLandingPage", () => {
         image: null,
       },
     });
-    listCompaniesMock.mockResolvedValue([{ id: "company-1", name: "Acme Robotics" }]);
+    listSquadsMock.mockResolvedValue([{ id: "squad-1", name: "Acme Robotics" }]);
 
     const root = createRoot(container);
     const queryClient = new QueryClient({
@@ -621,9 +621,9 @@ describe("InviteLandingPage", () => {
       password: "supersecret",
     });
     expect(acceptInviteMock).not.toHaveBeenCalled();
-    expect(setSelectedCompanyIdMock).toHaveBeenCalledWith("company-1", { source: "manual" });
-    expect(queryClient.getQueryData(queryKeys.companies.all)).toMatchObject({
-      companies: [{ id: "company-1", name: "Acme Robotics" }],
+    expect(setSelectedSquadIdMock).toHaveBeenCalledWith("squad-1", { source: "manual" });
+    expect(queryClient.getQueryData(queryKeys.squads.all)).toMatchObject({
+      squads: [{ id: "squad-1", name: "Acme Robotics" }],
       unauthorized: false,
     });
     expect(localStorage.getItem("slaw:pending-invite-token")).toBeNull();
@@ -643,7 +643,7 @@ describe("InviteLandingPage", () => {
         image: null,
       },
     });
-    listCompaniesMock.mockResolvedValue([{ id: "company-1", name: "Acme Robotics" }]);
+    listSquadsMock.mockResolvedValue([{ id: "squad-1", name: "Acme Robotics" }]);
 
     const root = createRoot(container);
     const queryClient = new QueryClient({
@@ -665,12 +665,12 @@ describe("InviteLandingPage", () => {
     await flushReact();
 
     expect(container.textContent).toContain("Join Acme Robotics");
-    expect(container.textContent).toContain("Already in this company");
+    expect(container.textContent).toContain("Already in this squad");
     expect(container.textContent).toContain("This account already belongs to Acme Robotics.");
     expect(acceptInviteMock).not.toHaveBeenCalled();
 
     const openButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "Open company",
+      (button) => button.textContent === "Open squad",
     );
     expect(openButton).not.toBeNull();
 
@@ -679,14 +679,14 @@ describe("InviteLandingPage", () => {
     });
     await flushReact();
 
-    expect(setSelectedCompanyIdMock).toHaveBeenCalledWith("company-1", { source: "manual" });
+    expect(setSelectedSquadIdMock).toHaveBeenCalledWith("squad-1", { source: "manual" });
 
     await act(async () => {
       root.unmount();
     });
   });
 
-  it("falls back to the generated company icon when the invite logo fails to load", async () => {
+  it("falls back to the generated squad icon when the invite logo fails to load", async () => {
     const root = createRoot(container);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -722,10 +722,10 @@ describe("InviteLandingPage", () => {
     });
   });
 
-  it("normalizes the shared company cache envelope before checking membership", async () => {
+  it("normalizes the shared squad cache envelope before checking membership", async () => {
     acceptInviteMock.mockResolvedValue({
       id: "join-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       requestType: "human",
       status: "pending_approval",
     });
@@ -743,8 +743,8 @@ describe("InviteLandingPage", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    queryClient.setQueryData(queryKeys.companies.all, {
-      companies: [],
+    queryClient.setQueryData(queryKeys.squads.all, {
+      squads: [],
       unauthorized: false,
     });
 
@@ -772,17 +772,17 @@ describe("InviteLandingPage", () => {
   });
 
   it("waits for the membership check before showing invite acceptance to signed-in users", async () => {
-    let resolveCompanies: ((value: Array<{ id: string; name: string }>) => void) | null = null;
+    let resolveSquads: ((value: Array<{ id: string; name: string }>) => void) | null = null;
     acceptInviteMock.mockResolvedValue({
       id: "join-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       requestType: "human",
       status: "pending_approval",
     });
-    listCompaniesMock.mockImplementation(
+    listSquadsMock.mockImplementation(
       () =>
         new Promise<Array<{ id: string; name: string }>>((resolve) => {
-          resolveCompanies = resolve;
+          resolveSquads = resolve;
         }),
     );
     getSessionMock.mockResolvedValue({
@@ -814,11 +814,11 @@ describe("InviteLandingPage", () => {
     await flushReact();
 
     expect(container.textContent).toContain("Checking your access...");
-    expect(container.textContent).not.toContain("Accept company invite");
+    expect(container.textContent).not.toContain("Accept squad invite");
     expect(acceptInviteMock).not.toHaveBeenCalled();
 
     await act(async () => {
-      resolveCompanies?.([]);
+      resolveSquads?.([]);
     });
     await flushReact();
     await flushReact();

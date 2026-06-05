@@ -36,7 +36,7 @@ If this document conflicts with prior exploratory notes, this document wins for 
 
 5. Invites:
 - copy-link only (no outbound email sending in V1)
-- unified `company_join` link that supports human or agent path
+- unified `squad_join` link that supports human or agent path
 - acceptance creates `pending_approval` join request
 - no access until admin approval
 
@@ -59,7 +59,7 @@ If this document conflicts with prior exploratory notes, this document wins for 
 Current baseline (repo as of this doc):
 
 - server actor model defaults to `board` in `server/src/middleware/auth.ts`
-- authorization is mostly `assertBoard` + company check in `server/src/routes/authz.ts`
+- authorization is mostly `assertBoard` + squad check in `server/src/routes/authz.ts`
 - no human auth/session tables in local schema
 - no principal membership or grants tables
 - no invite or join-request lifecycle
@@ -108,7 +108,7 @@ Implementation note:
 
 Authorization input tuple:
 
-- `(company_id, principal_type, principal_id, permission_key, scope_payload)`
+- `(squad_id, principal_type, principal_id, permission_key, scope_payload)`
 
 Principal types:
 
@@ -118,13 +118,13 @@ Principal types:
 Role layers:
 
 - `instance_admin` (instance-wide)
-- company-scoped grants via `principal_permission_grants`
+- squad-scoped grants via `principal_permission_grants`
 
 Evaluation order:
 
 1. resolve principal from actor
 2. resolve instance role (`instance_admin` short-circuit for admin-only actions)
-3. resolve company membership (`active` required for company access)
+3. resolve squad membership (`active` required for squad access)
 4. resolve grant + scope for requested action
 
 ## 5. Data model
@@ -152,38 +152,38 @@ Note:
 - `created_at`, `updated_at`
 - unique index: `(user_id, role)`
 
-2. `company_memberships`
+2. `squad_memberships`
 
 - `id` uuid pk
-- `company_id` uuid fk `companies.id` not null
+- `squad_id` uuid fk `squads.id` not null
 - `principal_type` text not null (`user | agent`)
 - `principal_id` text not null
 - `status` text not null (`pending | active | suspended`)
 - `membership_role` text null
 - `created_at`, `updated_at`
-- unique index: `(company_id, principal_type, principal_id)`
+- unique index: `(squad_id, principal_type, principal_id)`
 - index: `(principal_type, principal_id, status)`
 
 3. `principal_permission_grants`
 
 - `id` uuid pk
-- `company_id` uuid fk `companies.id` not null
+- `squad_id` uuid fk `squads.id` not null
 - `principal_type` text not null (`user | agent`)
 - `principal_id` text not null
 - `permission_key` text not null
 - `scope` jsonb null
 - `granted_by_user_id` text null
 - `created_at`, `updated_at`
-- unique index: `(company_id, principal_type, principal_id, permission_key)`
-- index: `(company_id, permission_key)`
+- unique index: `(squad_id, principal_type, principal_id, permission_key)`
+- index: `(squad_id, permission_key)`
 
 4. `invites`
 
 - `id` uuid pk
-- `company_id` uuid fk `companies.id` not null
-- `invite_type` text not null (`company_join | bootstrap_ceo`)
+- `squad_id` uuid fk `squads.id` not null
+- `invite_type` text not null (`squad_join | bootstrap_squad_lead`)
 - `token_hash` text not null
-- `allowed_join_types` text not null (`human | agent | both`) for `company_join`
+- `allowed_join_types` text not null (`human | agent | both`) for `squad_join`
 - `defaults_payload` jsonb null
 - `expires_at` timestamptz not null
 - `invited_by_user_id` text null
@@ -191,13 +191,13 @@ Note:
 - `accepted_at` timestamptz null
 - `created_at` timestamptz not null default now()
 - unique index: `(token_hash)`
-- index: `(company_id, invite_type, revoked_at, expires_at)`
+- index: `(squad_id, invite_type, revoked_at, expires_at)`
 
 5. `join_requests`
 
 - `id` uuid pk
 - `invite_id` uuid fk `invites.id` not null
-- `company_id` uuid fk `companies.id` not null
+- `squad_id` uuid fk `squads.id` not null
 - `request_type` text not null (`human | agent`)
 - `status` text not null (`pending_approval | approved | rejected`)
 - `request_ip` text not null
@@ -213,7 +213,7 @@ Note:
 - `rejected_by_user_id` text null
 - `rejected_at` timestamptz null
 - `created_at`, `updated_at`
-- index: `(company_id, status, request_type, created_at desc)`
+- index: `(squad_id, status, request_type, created_at desc)`
 - unique index: `(invite_id)` to enforce one request per consumed invite
 
 ## 5.3 Existing table changes
@@ -254,8 +254,8 @@ All under `/api`.
 
 ## 6.2 Invites
 
-1. `POST /api/companies/:companyId/invites`
-- create `company_join` invite
+1. `POST /api/squads/:squadId/invites`
+- create `squad_join` invite
 - copy-link value returned once
 
 2. `GET /api/invites/:token`
@@ -276,11 +276,11 @@ All under `/api`.
 
 ## 6.3 Join requests
 
-1. `GET /api/companies/:companyId/join-requests?status=pending_approval&requestType=...`
+1. `GET /api/squads/:squadId/join-requests?status=pending_approval&requestType=...`
 
-2. `POST /api/companies/:companyId/join-requests/:requestId/approve`
+2. `POST /api/squads/:squadId/join-requests/:requestId/approve`
 - human:
-  - create/activate `company_memberships`
+  - create/activate `squad_memberships`
   - apply default grants
 - agent:
   - create `agents` row
@@ -288,7 +288,7 @@ All under `/api`.
   - create/activate agent membership
   - apply default grants
 
-3. `POST /api/companies/:companyId/join-requests/:requestId/reject`
+3. `POST /api/squads/:squadId/join-requests/:requestId/reject`
 
 4. `POST /api/join-requests/:requestId/claim-api-key`
 - approved agent request only
@@ -297,16 +297,16 @@ All under `/api`.
 
 ## 6.4 Membership and grants
 
-1. `GET /api/companies/:companyId/members`
+1. `GET /api/squads/:squadId/members`
 - returns both principal types
 
-2. `PATCH /api/companies/:companyId/members/:memberId/permissions`
+2. `PATCH /api/squads/:squadId/members/:memberId/permissions`
 - upsert/remove grants
 
-3. `PUT /api/admin/users/:userId/company-access`
+3. `PUT /api/admin/users/:userId/squad-access`
 - instance admin only
 
-4. `GET /api/admin/users/:userId/company-access`
+4. `GET /api/admin/users/:userId/squad-access`
 
 5. `POST /api/admin/users/:userId/promote-instance-admin`
 
@@ -314,7 +314,7 @@ All under `/api`.
 
 ## 6.5 Inbox
 
-`GET /api/companies/:companyId/inbox` additions:
+`GET /api/squads/:squadId/inbox` additions:
 
 - pending join request alert items when actor can `joins:approve`
 - each item includes inline action metadata:
@@ -371,8 +371,8 @@ Changes:
 - preserve agent bearer path
 - replace `assertBoard` with permission-oriented helpers:
   - `requireInstanceAdmin(req)`
-  - `requireCompanyAccess(req, companyId)`
-  - `requireCompanyPermission(req, companyId, permissionKey, scope?)`
+  - `requireSquadAccess(req, squadId)`
+  - `requireSquadPermission(req, squadId, permissionKey, scope?)`
 
 ## 7.4 Authorization services
 
@@ -406,7 +406,7 @@ Files:
 Changes:
 
 - add new endpoints listed above
-- apply company and permission checks consistently
+- apply squad and permission checks consistently
 - log all mutations through activity log service
 
 ## 7.6 Activity log and audit
@@ -455,7 +455,7 @@ Files:
 
 Commands:
 
-1. `slaw auth bootstrap-ceo`
+1. `slaw auth bootstrap-squad-lead`
 - create bootstrap invite
 - print one-time URL
 
@@ -480,7 +480,7 @@ Files:
   - `InviteLanding` page
   - `InstanceSettings` page
   - join approval components in `Inbox`
-  - member/grant management in company settings
+  - member/grant management in squad settings
 
 Required UX:
 
@@ -568,7 +568,7 @@ Required UX:
 - invite accept -> pending join -> no access
 - join approve (human) -> membership/grants active
 - join approve (agent) -> key claim once
-- cross-company access denied for user and agent principals
+- cross-squad access denied for user and agent principals
 - local mode non-loopback bind -> startup failure
 
 ## 12.3 UI tests
@@ -597,7 +597,7 @@ Required UX:
 
 - add membership/grants/invite/join tables
 - add permission service and helpers
-- wire company/member/instance admin checks
+- wire squad/member/instance admin checks
 
 ## Phase C: Invite + join backend
 

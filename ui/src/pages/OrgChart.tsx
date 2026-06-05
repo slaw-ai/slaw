@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { agentUrl } from "../lib/utils";
@@ -171,20 +171,20 @@ const defaultDotColor = "#a3a3a3";
 // ── Main component ──────────────────────────────────────────────────────
 
 export function OrgChart() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
 
   const { data: orgTree, isLoading } = useQuery({
-    queryKey: queryKeys.org(selectedCompanyId!),
-    queryFn: () => agentsApi.org(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.org(selectedSquadId!),
+    queryFn: () => agentsApi.org(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const agentMap = useMemo(() => {
@@ -428,8 +428,8 @@ export function OrgChart() {
     };
   }, [pan, zoom]);
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={Network} message="Select a company to view the org chart." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={Network} message="Select a squad to view the org chart." />;
   }
 
   if (isLoading) {
@@ -443,16 +443,16 @@ export function OrgChart() {
   return (
     <div className="flex h-[calc(100dvh-9rem)] min-h-[420px] flex-col md:h-full md:min-h-0">
       <div className="mb-2 flex shrink-0 flex-wrap items-center justify-start gap-2">
-        <Link to="/company/import">
+        <Link to="/squad/import">
           <Button variant="outline" size="sm">
             <Upload className="mr-1.5 h-3.5 w-3.5" />
-            Import company
+            Import squad
           </Button>
         </Link>
-        <Link to="/company/export">
+        <Link to="/squad/export">
           <Button variant="outline" size="sm">
             <Download className="mr-1.5 h-3.5 w-3.5" />
-            Export company
+            Export squad
           </Button>
         </Link>
       </div>

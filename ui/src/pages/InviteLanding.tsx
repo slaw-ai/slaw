@@ -3,12 +3,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AGENT_ADAPTER_TYPES } from "@slaw/shared";
 import type { AgentAdapterType, JoinRequest } from "@slaw/shared";
 import { Button } from "@/components/ui/button";
-import { CompanyPatternIcon } from "@/components/CompanyPatternIcon";
-import { useCompany } from "@/context/CompanyContext";
+import { SquadPatternIcon } from "@/components/SquadPatternIcon";
+import { useSquad } from "@/context/SquadContext";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
-import { companiesListQueryOptions } from "../api/companies-query";
+import { squadsListQueryOptions } from "../api/squads-query";
 import { healthApi } from "../api/health";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 import { clearPendingInviteToken, rememberPendingInviteToken } from "../lib/invite-memory";
@@ -120,31 +120,31 @@ function isApprovedHumanJoinPayload(payload: unknown, showsAgentForm: boolean) {
 }
 
 type AwaitingJoinApprovalPanelProps = {
-  companyDisplayName: string;
-  companyLogoUrl: string | null;
-  companyBrandColor: string | null;
+  squadDisplayName: string;
+  squadLogoUrl: string | null;
+  squadBrandColor: string | null;
   invitedByUserName: string | null;
   claimSecret?: string | null;
   claimApiKeyPath?: string | null;
   onboardingTextUrl?: string | null;
 };
 
-function InviteCompanyLogo({
-  companyDisplayName,
-  companyLogoUrl,
-  companyBrandColor,
+function InviteSquadLogo({
+  squadDisplayName,
+  squadLogoUrl,
+  squadBrandColor,
   className,
 }: {
-  companyDisplayName: string;
-  companyLogoUrl: string | null;
-  companyBrandColor: string | null;
+  squadDisplayName: string;
+  squadLogoUrl: string | null;
+  squadBrandColor: string | null;
   className?: string;
 }) {
   return (
-    <CompanyPatternIcon
-      companyName={companyDisplayName}
-      logoUrl={companyLogoUrl}
-      brandColor={companyBrandColor}
+    <SquadPatternIcon
+      squadName={squadDisplayName}
+      logoUrl={squadLogoUrl}
+      brandColor={squadBrandColor}
       logoFit="contain"
       className={className}
     />
@@ -152,28 +152,28 @@ function InviteCompanyLogo({
 }
 
 function AwaitingJoinApprovalPanel({
-  companyDisplayName,
-  companyLogoUrl,
-  companyBrandColor,
+  squadDisplayName,
+  squadLogoUrl,
+  squadBrandColor,
   invitedByUserName,
   claimSecret = null,
   claimApiKeyPath = null,
   onboardingTextUrl = null,
 }: AwaitingJoinApprovalPanelProps) {
-  const approvalUrl = `${window.location.origin}/company/settings/members`;
-  const approverLabel = invitedByUserName ?? "A company admin";
+  const approvalUrl = `${window.location.origin}/squad/settings/members`;
+  const approverLabel = invitedByUserName ?? "A squad admin";
 
   return (
     <div className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
       <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6" data-testid="invite-pending-approval">
         <div className="flex items-center gap-3">
-          <InviteCompanyLogo
-            companyDisplayName={companyDisplayName}
-            companyLogoUrl={companyLogoUrl}
-            companyBrandColor={companyBrandColor}
+          <InviteSquadLogo
+            squadDisplayName={squadDisplayName}
+            squadLogoUrl={squadLogoUrl}
+            squadBrandColor={squadBrandColor}
             className="h-12 w-12 border border-zinc-800 rounded-none"
           />
-          <h1 className="text-lg font-semibold">Request to join {companyDisplayName}</h1>
+          <h1 className="text-lg font-semibold">Request to join {squadDisplayName}</h1>
         </div>
         <div className="mt-4 space-y-3">
           <p className="text-sm text-zinc-400">
@@ -185,11 +185,11 @@ function AwaitingJoinApprovalPanel({
               href={approvalUrl}
               className="text-sm text-zinc-200 underline underline-offset-2 hover:text-zinc-100"
             >
-              Company Settings → Members
+              Squad Settings → Members
             </a>
           </div>
           <p className="text-sm text-zinc-400">
-            Ask them to visit <a href={approvalUrl} className="text-zinc-200 underline underline-offset-2 hover:text-zinc-100">Company Settings → Members</a> to approve your request.
+            Ask them to visit <a href={approvalUrl} className="text-zinc-200 underline underline-offset-2 hover:text-zinc-100">Squad Settings → Members</a> to approve your request.
           </p>
           <p className="text-xs text-zinc-500">
             Refresh this page after you've been approved — you'll be redirected automatically.
@@ -215,7 +215,7 @@ function AwaitingJoinApprovalPanel({
 export function InviteLandingPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { setSelectedCompanyId } = useCompany();
+  const { setSelectedSquadId } = useSquad();
   const params = useParams();
   const token = (params.token ?? "").trim();
   const [authMode, setAuthMode] = useState<AuthMode>("sign_up");
@@ -247,11 +247,11 @@ export function InviteLandingPage() {
     retry: false,
   });
 
-  const companiesQuery = useQuery({
-    ...companiesListQueryOptions,
-    enabled: !!sessionQuery.data && !!inviteQuery.data?.companyId,
+  const squadsQuery = useQuery({
+    ...squadsListQueryOptions,
+    enabled: !!sessionQuery.data && !!inviteQuery.data?.squadId,
   });
-  const companyList = companiesQuery.data?.companies ?? [];
+  const squadList = squadsQuery.data?.squads ?? [];
 
   useEffect(() => {
     if (token) rememberPendingInviteToken(token);
@@ -262,25 +262,25 @@ export function InviteLandingPage() {
   }, [token]);
 
   useEffect(() => {
-    const list = companiesQuery.data?.companies;
-    if (!list || !inviteQuery.data?.companyId) return;
-    if (list.some((c) => c.id === inviteQuery.data!.companyId)) {
+    const list = squadsQuery.data?.squads;
+    if (!list || !inviteQuery.data?.squadId) return;
+    if (list.some((c) => c.id === inviteQuery.data!.squadId)) {
       clearPendingInviteToken(token);
     }
-  }, [companiesQuery.data, inviteQuery.data, token]);
+  }, [squadsQuery.data, inviteQuery.data, token]);
 
   const invite = inviteQuery.data;
   const isCheckingExistingMembership =
     Boolean(sessionQuery.data) &&
-    Boolean(invite?.companyId) &&
-    companiesQuery.isLoading;
+    Boolean(invite?.squadId) &&
+    squadsQuery.isLoading;
   const isCurrentMember =
-    Boolean(invite?.companyId) &&
-    companyList.some((company) => company.id === invite?.companyId);
-  const companyName = invite?.companyName?.trim() || null;
-  const companyDisplayName = companyName || "this Slaw company";
-  const companyLogoUrl = invite?.companyLogoUrl?.trim() || null;
-  const companyBrandColor = invite?.companyBrandColor?.trim() || null;
+    Boolean(invite?.squadId) &&
+    squadList.some((squad) => squad.id === invite?.squadId);
+  const squadName = invite?.squadName?.trim() || null;
+  const squadDisplayName = squadName || "this Slaw squad";
+  const squadLogoUrl = invite?.squadLogoUrl?.trim() || null;
+  const squadBrandColor = invite?.squadBrandColor?.trim() || null;
   const invitedByUserName = invite?.invitedByUserName?.trim() || null;
   const inviteMessage = invite?.inviteMessage?.trim() || null;
   const requestedHumanRole = formatHumanRole(invite?.humanRole);
@@ -293,11 +293,11 @@ export function InviteLandingPage() {
     healthQuery.data?.deploymentMode === "authenticated" &&
     !sessionQuery.data &&
     invite?.allowedJoinTypes !== "agent";
-  const showsAgentForm = invite?.inviteType !== "bootstrap_ceo" && invite?.allowedJoinTypes === "agent";
+  const showsAgentForm = invite?.inviteType !== "bootstrap_squad_lead" && invite?.allowedJoinTypes === "agent";
   const shouldAutoAcceptHumanInvite =
     Boolean(sessionQuery.data) &&
     !showsAgentForm &&
-    invite?.inviteType !== "bootstrap_ceo" &&
+    invite?.inviteType !== "bootstrap_squad_lead" &&
     (!inviteJoinRequestStatus || canCompleteAcceptedHumanInvite) &&
     !isCheckingExistingMembership &&
     !isCurrentMember &&
@@ -317,12 +317,12 @@ export function InviteLandingPage() {
     mutationFn: async () => {
       if (!invite) throw new Error("Invite not found");
       if (isCheckingExistingMembership) {
-        throw new Error("Checking your company access. Try again in a moment.");
+        throw new Error("Checking your squad access. Try again in a moment.");
       }
       if (isCurrentMember) {
-        throw new Error("This account already belongs to the company.");
+        throw new Error("This account already belongs to the squad.");
       }
-      if (invite.inviteType === "bootstrap_ceo" || invite.allowedJoinTypes !== "agent") {
+      if (invite.inviteType === "bootstrap_squad_lead" || invite.allowedJoinTypes !== "agent") {
         return accessApi.acceptInvite(token, { requestType: "human" });
       }
       return accessApi.acceptInvite(token, {
@@ -339,9 +339,9 @@ export function InviteLandingPage() {
       setResult({ kind: asBootstrap ? "bootstrap" : "join", payload });
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-      if (invite?.companyId && isApprovedHumanJoinPayload(payload, showsAgentForm)) {
-        setSelectedCompanyId(invite.companyId, { source: "manual" });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
+      if (invite?.squadId && isApprovedHumanJoinPayload(payload, showsAgentForm)) {
+        setSelectedSquadId(invite.squadId, { source: "manual" });
         navigate("/", { replace: true });
       }
     },
@@ -374,16 +374,16 @@ export function InviteLandingPage() {
       rememberPendingInviteToken(token);
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
-      const { companies: freshCompanies } = await queryClient.fetchQuery(companiesListQueryOptions);
+      const { squads: freshSquads } = await queryClient.fetchQuery(squadsListQueryOptions);
 
-      if (invite?.companyId && freshCompanies.some((company) => company.id === invite.companyId)) {
+      if (invite?.squadId && freshSquads.some((squad) => squad.id === invite.squadId)) {
         clearPendingInviteToken(token);
-        setSelectedCompanyId(invite.companyId, { source: "manual" });
+        setSelectedSquadId(invite.squadId, { source: "manual" });
         navigate("/", { replace: true });
         return;
       }
 
-      if (!invite || invite.inviteType !== "bootstrap_ceo") {
+      if (!invite || invite.inviteType !== "bootstrap_squad_lead") {
         return;
       }
 
@@ -408,8 +408,8 @@ export function InviteLandingPage() {
 
   const joinButtonLabel = useMemo(() => {
     if (!invite) return "Continue";
-    if (isCurrentMember) return "Open company";
-    if (invite.inviteType === "bootstrap_ceo") return "Accept invite";
+    if (isCurrentMember) return "Open squad";
+    if (invite.inviteType === "bootstrap_squad_lead") return "Accept invite";
     if (showsAgentForm) return "Submit request";
     return sessionQuery.data ? "Accept invite" : "Continue";
   }, [invite, isCurrentMember, sessionQuery.data, showsAgentForm]);
@@ -444,15 +444,15 @@ export function InviteLandingPage() {
     inviteJoinRequestType === "human" &&
     isCurrentMember
   ) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Opening company...</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Opening squad...</div>;
   }
 
   if (inviteJoinRequestStatus === "pending_approval" && !canCompleteAcceptedHumanInvite) {
     return (
       <AwaitingJoinApprovalPanel
-        companyDisplayName={companyDisplayName}
-        companyLogoUrl={companyLogoUrl}
-        companyBrandColor={companyBrandColor}
+        squadDisplayName={squadDisplayName}
+        squadLogoUrl={squadLogoUrl}
+        squadBrandColor={squadBrandColor}
         invitedByUserName={invitedByUserName}
       />
     );
@@ -504,13 +504,13 @@ export function InviteLandingPage() {
         <div className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
           <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6">
             <div className="flex items-center gap-3">
-              <InviteCompanyLogo
-                companyDisplayName={companyDisplayName}
-                companyLogoUrl={companyLogoUrl}
-                companyBrandColor={companyBrandColor}
+              <InviteSquadLogo
+                squadDisplayName={squadDisplayName}
+                squadLogoUrl={squadLogoUrl}
+                squadBrandColor={squadBrandColor}
                 className="h-12 w-12 border border-zinc-800 rounded-none"
               />
-              <h1 className="text-lg font-semibold">You joined the company</h1>
+              <h1 className="text-lg font-semibold">You joined the squad</h1>
             </div>
             <div className="mt-4">
               <Button asChild className="w-full rounded-none">
@@ -521,9 +521,9 @@ export function InviteLandingPage() {
         </div>
       ) : (
         <AwaitingJoinApprovalPanel
-          companyDisplayName={companyDisplayName}
-          companyLogoUrl={companyLogoUrl}
-          companyBrandColor={companyBrandColor}
+          squadDisplayName={squadDisplayName}
+          squadLogoUrl={squadLogoUrl}
+          squadBrandColor={squadBrandColor}
           invitedByUserName={invitedByUserName}
           claimSecret={claimSecret}
           claimApiKeyPath={claimApiKeyPath}
@@ -539,10 +539,10 @@ export function InviteLandingPage() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
           <section className={`${panelClassName} space-y-6`}>
             <div className="flex items-start gap-4">
-              <InviteCompanyLogo
-                companyDisplayName={companyDisplayName}
-                companyLogoUrl={companyLogoUrl}
-                companyBrandColor={companyBrandColor}
+              <InviteSquadLogo
+                squadDisplayName={squadDisplayName}
+                squadLogoUrl={squadLogoUrl}
+                squadBrandColor={squadBrandColor}
                 className="h-16 w-16 rounded-none border border-zinc-800"
               />
               <div className="min-w-0">
@@ -550,7 +550,7 @@ export function InviteLandingPage() {
                   You&apos;ve been invited to join Slaw
                 </p>
                 <h1 className="mt-2 text-2xl font-semibold">
-                  {invite.inviteType === "bootstrap_ceo" ? "Set up Slaw" : `Join ${companyDisplayName}`}
+                  {invite.inviteType === "bootstrap_squad_lead" ? "Set up Slaw" : `Join ${squadDisplayName}`}
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">
                   {showsAgentForm
@@ -564,8 +564,8 @@ export function InviteLandingPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="border border-zinc-800 p-3">
-                <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Company</div>
-                <div className="mt-1 text-sm text-zinc-100">{companyDisplayName}</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Squad</div>
+                <div className="mt-1 text-sm text-zinc-100">{squadDisplayName}</div>
               </div>
               <div className="border border-zinc-800 p-3">
                 <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Invited by</div>
@@ -574,7 +574,7 @@ export function InviteLandingPage() {
               <div className="border border-zinc-800 p-3">
                 <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Requested access</div>
                 <div className="mt-1 text-sm text-zinc-100">
-                  {showsAgentForm ? "Agent join request" : requestedHumanRole ?? "Company access"}
+                  {showsAgentForm ? "Agent join request" : requestedHumanRole ?? "Squad access"}
                 </div>
               </div>
               <div className="border border-zinc-800 p-3">
@@ -603,7 +603,7 @@ export function InviteLandingPage() {
                 <div>
                   <h2 className="text-lg font-semibold">Submit agent details</h2>
                   <p className="mt-1 text-sm text-zinc-400">
-                    This invite will create an approval request for a new agent in {companyDisplayName}.
+                    This invite will create an approval request for a new agent in {squadDisplayName}.
                   </p>
                 </div>
                 <label className="block text-sm">
@@ -654,7 +654,7 @@ export function InviteLandingPage() {
                   </h2>
                   <p className="mt-1 text-sm text-zinc-400">
                     {authMode === "sign_up"
-                      ? `Start with a Slaw account. After that, you'll come right back here to accept the invite for ${companyDisplayName}.`
+                      ? `Start with a Slaw account. After that, you'll come right back here to accept the invite for ${squadDisplayName}.`
                       : "Use the Slaw account that already matches this invite. If you do not have one yet, switch back to create account."}
                   </p>
                 </div>
@@ -784,20 +784,20 @@ export function InviteLandingPage() {
                 <div>
                   <h2 className="text-lg font-semibold">
                     {isCurrentMember
-                      ? "Already in this company"
+                      ? "Already in this squad"
                       : shouldAutoAcceptHumanInvite
-                      ? "Completing company access"
-                      : invite.inviteType === "bootstrap_ceo"
+                      ? "Completing squad access"
+                      : invite.inviteType === "bootstrap_squad_lead"
                         ? "Accept bootstrap invite"
-                        : "Accept company invite"}
+                        : "Accept squad invite"}
                   </h2>
                   <p className="mt-1 text-sm text-zinc-400">
                     {shouldAutoAcceptHumanInvite
-                      ? `Granting your access to ${companyDisplayName}.`
+                      ? `Granting your access to ${squadDisplayName}.`
                       : isCurrentMember
-                      ? `This account already belongs to ${companyDisplayName}.`
+                      ? `This account already belongs to ${squadDisplayName}.`
                       : `This will ${
-                          invite.inviteType === "bootstrap_ceo" ? "finish setting up Slaw" : `grant or complete your access to ${companyDisplayName}`
+                          invite.inviteType === "bootstrap_squad_lead" ? "finish setting up Slaw" : `grant or complete your access to ${squadDisplayName}`
                         }.`}
                   </p>
                 </div>
@@ -811,9 +811,9 @@ export function InviteLandingPage() {
                     className="w-full rounded-none"
                     disabled={acceptMutation.isPending}
                     onClick={() => {
-                      if (isCurrentMember && invite.companyId) {
+                      if (isCurrentMember && invite.squadId) {
                         clearPendingInviteToken(token);
-                        setSelectedCompanyId(invite.companyId, { source: "manual" });
+                        setSelectedSquadId(invite.squadId, { source: "manual" });
                         navigate("/", { replace: true });
                         return;
                       }

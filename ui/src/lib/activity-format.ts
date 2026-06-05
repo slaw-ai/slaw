@@ -1,5 +1,5 @@
 import type { Agent } from "@slaw/shared";
-import type { CompanyUserProfile } from "./company-members";
+import type { SquadUserProfile } from "./squad-members";
 
 type ActivityDetails = Record<string, unknown> | null | undefined;
 
@@ -17,7 +17,7 @@ type ActivityIssueReference = {
 
 interface ActivityFormatOptions {
   agentMap?: Map<string, Agent>;
-  userProfileMap?: Map<string, CompanyUserProfile>;
+  userProfileMap?: Map<string, SquadUserProfile>;
   currentUserId?: string | null;
 }
 
@@ -75,10 +75,10 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "goal.deleted": "deleted",
   "cost.reported": "reported cost for",
   "cost.recorded": "recorded cost for",
-  "company.created": "created company",
-  "company.updated": "updated company",
-  "company.archived": "archived",
-  "company.budget_updated": "updated budget for",
+  "squad.created": "created squad",
+  "squad.updated": "updated squad",
+  "squad.archived": "archived",
+  "squad.budget_updated": "updated budget for",
 };
 
 const ISSUE_ACTIVITY_LABELS: Record<string, string> = {

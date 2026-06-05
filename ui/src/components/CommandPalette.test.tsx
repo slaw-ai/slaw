@@ -7,8 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CommandPalette } from "./CommandPalette";
 
-const companyState = vi.hoisted(() => ({
-  selectedCompanyId: "company-1",
+const squadState = vi.hoisted(() => ({
+  selectedSquadId: "squad-1",
 }));
 
 const dialogState = vi.hoisted(() => ({
@@ -33,8 +33,8 @@ const mockProjectsApi = vi.hoisted(() => ({
   list: vi.fn(),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => companyState,
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => squadState,
 }));
 
 vi.mock("../context/DialogContext", () => ({
@@ -191,7 +191,7 @@ describe("CommandPalette", () => {
     });
 
     await waitForAssertion(() => {
-      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", {
         q: "pull/3303",
         limit: 10,
         includeRoutineExecutions: true,

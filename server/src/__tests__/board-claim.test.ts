@@ -3,8 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   authUsers,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   createDb,
   instanceUserRoles,
   principalPermissionGrants,
@@ -35,8 +35,8 @@ describeEmbeddedPostgres("board claim", () => {
   afterEach(async () => {
     await initializeBoardClaimChallenge(db, { deploymentMode: "local_trusted" });
     await db.delete(principalPermissionGrants);
-    await db.delete(companyMemberships);
-    await db.delete(companies);
+    await db.delete(squadMemberships);
+    await db.delete(squads);
     await db.delete(instanceUserRoles);
     await db.delete(authUsers);
   });
@@ -48,8 +48,8 @@ describeEmbeddedPostgres("board claim", () => {
   it("lets a signed-in user claim a local-board-only authenticated instance", async () => {
     const now = new Date();
     const userId = `claim-user-${randomUUID()}`;
-    const company = await db
-      .insert(companies)
+    const squad = await db
+      .insert(squads)
       .values({
         name: "Board Claim Co",
         issuePrefix: `BC${randomUUID().slice(0, 6).toUpperCase()}`,
@@ -106,12 +106,12 @@ describeEmbeddedPostgres("board claim", () => {
     await expect(
       db
         .select()
-        .from(companyMemberships)
+        .from(squadMemberships)
         .where(
           and(
-            eq(companyMemberships.companyId, company.id),
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, userId),
+            eq(squadMemberships.squadId, squad.id),
+            eq(squadMemberships.principalType, "user"),
+            eq(squadMemberships.principalId, userId),
           ),
         ),
     ).resolves.toMatchObject([

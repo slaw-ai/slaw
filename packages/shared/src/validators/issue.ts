@@ -236,7 +236,7 @@ export const issueExecutionStateSchema = z.object({
 
 export const issueRecoveryActionReadModelSchema = z.object({
   id: z.string().uuid(),
-  companyId: z.string().uuid(),
+  squadId: z.string().uuid(),
   sourceIssueId: z.string().uuid(),
   recoveryIssueId: z.string().uuid().nullable(),
   kind: z.enum(ISSUE_RECOVERY_ACTION_KINDS),

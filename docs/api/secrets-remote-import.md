@@ -7,9 +7,9 @@ Remote import lets the board link existing AWS Secrets Manager entries as
 Slaw `external_reference` secrets without copying plaintext into
 Slaw.
 
-Both routes are board-only and company-scoped. The selected provider vault must
-belong to the company, use `aws_secrets_manager`, and have a selectable status
-(`ready` or `warning`). Disabled, coming-soon, or cross-company vaults are
+Both routes are board-only and squad-scoped. The selected provider vault must
+belong to the squad, use `aws_secrets_manager`, and have a selectable status
+(`ready` or `warning`). Disabled, coming-soon, or cross-squad vaults are
 rejected.
 
 Remote import is an inventory and metadata workflow. Preview calls AWS
@@ -21,7 +21,7 @@ remote metadata, or copies secret plaintext into Slaw.
 ## Preview Remote AWS Secrets
 
 ```
-POST /api/companies/{companyId}/secrets/remote-import/preview
+POST /api/squads/{squadId}/secrets/remote-import/preview
 {
   "providerConfigId": "<aws-vault-uuid>",
   "query": "stripe",
@@ -69,13 +69,13 @@ Candidate `status` values:
 
 Conflict `type` values are `exact_reference`, `name`, `key`, and
 `provider_guardrail`. AWS refs under Slaw's own managed namespace are
-blocked as external references so one company cannot import another company's
+blocked as external references so one squad cannot import another squad's
 Slaw-managed AWS secret through a broad runtime role.
 
 ## Import Remote AWS Secret References
 
 ```
-POST /api/companies/{companyId}/secrets/remote-import
+POST /api/squads/{squadId}/secrets/remote-import
 {
   "providerConfigId": "<aws-vault-uuid>",
   "secrets": [

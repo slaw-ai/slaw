@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Link, Navigate, useParams } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { pluginsApi } from "@/api/plugins";
 import { queryKeys } from "@/lib/queryKeys";
@@ -15,46 +15,46 @@ import { ArrowLeft } from "lucide-react";
 import { NotFoundPage } from "./NotFound";
 
 /**
- * Company-context plugin page. Renders a plugin's `page` slot at
- * `/:companyPrefix/plugins/:pluginId` when the plugin declares a page slot
- * and is enabled for that company.
+ * Squad-context plugin page. Renders a plugin's `page` slot at
+ * `/:squadPrefix/plugins/:pluginId` when the plugin declares a page slot
+ * and is enabled for that squad.
  *
- * @see doc/plugins/PLUGIN_SPEC.md §19.2 — Company-Context Routes
- * @see doc/plugins/PLUGIN_SPEC.md §24.4 — Company-Context Plugin Page
+ * @see doc/plugins/PLUGIN_SPEC.md §19.2 — Squad-Context Routes
+ * @see doc/plugins/PLUGIN_SPEC.md §24.4 — Squad-Context Plugin Page
  */
 export function PluginPage() {
   const params = useParams<{
-    companyPrefix?: string;
+    squadPrefix?: string;
     pluginId?: string;
     pluginRoutePath?: string;
     "*": string | undefined;
   }>();
-  const { companyPrefix: routeCompanyPrefix, pluginId, pluginRoutePath } = params;
+  const { squadPrefix: routeSquadPrefix, pluginId, pluginRoutePath } = params;
   const pluginRouteSplat = params["*"];
-  const { companies, selectedCompanyId } = useCompany();
+  const { squads, selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const routeCompany = useMemo(() => {
-    if (!routeCompanyPrefix) return null;
-    const requested = routeCompanyPrefix.toUpperCase();
-    return companies.find((c) => c.issuePrefix.toUpperCase() === requested) ?? null;
-  }, [companies, routeCompanyPrefix]);
-  const hasInvalidCompanyPrefix = Boolean(routeCompanyPrefix) && !routeCompany;
+  const routeSquad = useMemo(() => {
+    if (!routeSquadPrefix) return null;
+    const requested = routeSquadPrefix.toUpperCase();
+    return squads.find((c) => c.issuePrefix.toUpperCase() === requested) ?? null;
+  }, [squads, routeSquadPrefix]);
+  const hasInvalidSquadPrefix = Boolean(routeSquadPrefix) && !routeSquad;
 
-  const resolvedCompanyId = useMemo(() => {
-    if (routeCompany) return routeCompany.id;
-    if (routeCompanyPrefix) return null;
-    return selectedCompanyId ?? null;
-  }, [routeCompany, routeCompanyPrefix, selectedCompanyId]);
+  const resolvedSquadId = useMemo(() => {
+    if (routeSquad) return routeSquad.id;
+    if (routeSquadPrefix) return null;
+    return selectedSquadId ?? null;
+  }, [routeSquad, routeSquadPrefix, selectedSquadId]);
 
-  const companyPrefix = useMemo(
-    () => (resolvedCompanyId ? companies.find((c) => c.id === resolvedCompanyId)?.issuePrefix ?? null : null),
-    [companies, resolvedCompanyId],
+  const squadPrefix = useMemo(
+    () => (resolvedSquadId ? squads.find((c) => c.id === resolvedSquadId)?.issuePrefix ?? null : null),
+    [squads, resolvedSquadId],
   );
 
   const { data: contributions } = useQuery({
     queryKey: queryKeys.plugins.uiContributions,
     queryFn: () => pluginsApi.listUiContributions(),
-    enabled: !!resolvedCompanyId && (!!pluginId || !!pluginRoutePath),
+    enabled: !!resolvedSquadId && (!!pluginId || !!pluginRoutePath),
   });
 
   const pageSlot = useMemo(() => {
@@ -90,10 +90,10 @@ export function PluginPage() {
 
   const context = useMemo(
     () => ({
-      companyId: resolvedCompanyId ?? null,
-      companyPrefix,
+      squadId: resolvedSquadId ?? null,
+      squadPrefix,
     }),
-    [resolvedCompanyId, companyPrefix],
+    [resolvedSquadId, squadPrefix],
   );
 
   // When the active route has a routeSidebar slot, the sidebar provides the
@@ -124,13 +124,13 @@ export function PluginPage() {
     ]);
   }, [pageSlot, pluginRouteSplat, setBreadcrumbs, routeSidebarActive]);
 
-  if (!resolvedCompanyId) {
-    if (hasInvalidCompanyPrefix) {
-      return <NotFoundPage scope="invalid_company_prefix" requestedPrefix={routeCompanyPrefix} />;
+  if (!resolvedSquadId) {
+    if (hasInvalidSquadPrefix) {
+      return <NotFoundPage scope="invalid_squad_prefix" requestedPrefix={routeSquadPrefix} />;
     }
     return (
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">Select a company to view this page.</p>
+        <p className="text-sm text-muted-foreground">Select a squad to view this page.</p>
       </div>
     );
   }
@@ -166,7 +166,7 @@ export function PluginPage() {
       {!routeSidebarActive && (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
-            <Link to={companyPrefix ? `/${companyPrefix}/dashboard` : "/dashboard"}>
+            <Link to={squadPrefix ? `/${squadPrefix}/dashboard` : "/dashboard"}>
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back
             </Link>

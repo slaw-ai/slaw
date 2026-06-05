@@ -72,7 +72,7 @@ describe("isWorkerEntrypoint", () => {
 });
 
 describe("worker performAction context", () => {
-  it("does not derive context companyId from caller params without host actor context", async () => {
+  it("does not derive context squadId from caller params without host actor context", async () => {
     const hostToWorker = new PassThrough();
     const workerToHost = new PassThrough();
     const hostReadline = createInterface({ input: workerToHost });
@@ -81,9 +81,9 @@ describe("worker performAction context", () => {
     const plugin = definePlugin({
       async setup(ctx) {
         ctx.actions.register("inspect", async (params, context) => ({
-          paramsCompanyId: params.companyId,
+          paramsSquadId: params.squadId,
           actor: context.actor,
-          companyId: context.companyId,
+          squadId: context.squadId,
         }));
       },
     });
@@ -134,17 +134,17 @@ describe("worker performAction context", () => {
 
       await expect(callWorker("performAction", {
         key: "inspect",
-        params: { companyId: "spoofed-company" },
+        params: { squadId: "spoofed-squad" },
       })).resolves.toEqual({
-        paramsCompanyId: "spoofed-company",
+        paramsSquadId: "spoofed-squad",
         actor: {
           type: "system",
           userId: null,
           agentId: null,
           runId: null,
-          companyId: null,
+          squadId: null,
         },
-        companyId: null,
+        squadId: null,
       });
     } finally {
       worker.stop();
@@ -156,17 +156,17 @@ describe("worker performAction context", () => {
 });
 
 describe("worker invocation scope propagation", () => {
-  it("keeps overlapping company scopes local to each getData invocation", async () => {
+  it("keeps overlapping squad scopes local to each getData invocation", async () => {
     const hostToWorker = new PassThrough();
     const workerToHost = new PassThrough();
     const hostReadline = createInterface({ input: workerToHost });
     const pending = new Map<string, (response: JsonRpcResponse) => void>();
     const nestedInvocationIds: string[] = [];
-    const invocationCompanies = new Map([
-      ["invocation-a", "company-a"],
-      ["invocation-b", "company-b"],
+    const invocationSquads = new Map([
+      ["invocation-a", "squad-a"],
+      ["invocation-b", "squad-b"],
     ]);
-    let releaseCompanyA: (() => void) | null = null;
+    let releaseSquadA: (() => void) | null = null;
     let nextRequestId = 1;
 
     const plugin = definePlugin({
@@ -174,11 +174,11 @@ describe("worker invocation scope propagation", () => {
         ctx.data.register("probe", async (params) => {
           if (params.label === "a") {
             await new Promise<void>((resolve) => {
-              releaseCompanyA = resolve;
+              releaseSquadA = resolve;
             });
           }
-          const company = await ctx.companies.get(String(params.requestedCompanyId));
-          return { label: params.label, company };
+          const squad = await ctx.squads.get(String(params.requestedSquadId));
+          return { label: params.label, squad };
         });
       },
     });
@@ -217,27 +217,27 @@ describe("worker invocation scope propagation", () => {
       }
 
       if (!isJsonRpcRequest(message)) return;
-      if (message.method !== "companies.get") return;
+      if (message.method !== "squads.get") return;
 
       const invocationId = (message as { slawInvocationId?: string }).slawInvocationId ?? "";
-      const requestedCompanyId = (message.params as { companyId?: string }).companyId;
-      const allowedCompanyId = invocationCompanies.get(invocationId);
+      const requestedSquadId = (message.params as { squadId?: string }).squadId;
+      const allowedSquadId = invocationSquads.get(invocationId);
       nestedInvocationIds.push(invocationId);
-      if (requestedCompanyId !== allowedCompanyId) {
+      if (requestedSquadId !== allowedSquadId) {
         hostToWorker.write(serializeMessage(createErrorResponse(
           message.id,
           PLUGIN_RPC_ERROR_CODES.CAPABILITY_DENIED,
-          `requested company "${requestedCompanyId}" but invocation "${invocationId}" is scoped to "${allowedCompanyId}"`,
+          `requested squad "${requestedSquadId}" but invocation "${invocationId}" is scoped to "${allowedSquadId}"`,
         )));
         return;
       }
 
       hostToWorker.write(serializeMessage(createSuccessResponse(message.id, {
-        id: requestedCompanyId,
+        id: requestedSquadId,
       })));
 
       if (invocationId === "invocation-b") {
-        releaseCompanyA?.();
+        releaseSquadA?.();
       }
     });
 
@@ -251,7 +251,7 @@ describe("worker invocation scope propagation", () => {
           description: "Scope test",
           author: "Slaw",
           categories: ["automation"],
-          capabilities: ["companies.read"],
+          capabilities: ["squads.read"],
           entrypoints: { worker: "dist/worker.js" },
         },
         config: {},
@@ -259,33 +259,33 @@ describe("worker invocation scope propagation", () => {
         apiVersion: 1,
       });
 
-      const companyARequest = callWorker(
+      const squadARequest = callWorker(
         "getData",
         {
           key: "probe",
-          companyId: "company-a",
-          params: { label: "a", requestedCompanyId: "company-b" },
+          squadId: "squad-a",
+          params: { label: "a", requestedSquadId: "squad-b" },
         },
-        { id: "invocation-a", scope: { companyId: "company-a" } },
+        { id: "invocation-a", scope: { squadId: "squad-a" } },
       );
-      const companyAExpectation = expect(companyARequest).rejects.toThrow(
-        /requested company "company-b"/,
+      const squadAExpectation = expect(squadARequest).rejects.toThrow(
+        /requested squad "squad-b"/,
       );
-      const companyBRequest = callWorker(
+      const squadBRequest = callWorker(
         "getData",
         {
           key: "probe",
-          companyId: "company-b",
-          params: { label: "b", requestedCompanyId: "company-b" },
+          squadId: "squad-b",
+          params: { label: "b", requestedSquadId: "squad-b" },
         },
-        { id: "invocation-b", scope: { companyId: "company-b" } },
+        { id: "invocation-b", scope: { squadId: "squad-b" } },
       );
 
-      await expect(companyBRequest).resolves.toEqual({
+      await expect(squadBRequest).resolves.toEqual({
         label: "b",
-        company: { id: "company-b" },
+        squad: { id: "squad-b" },
       });
-      await companyAExpectation;
+      await squadAExpectation;
 
       expect(nestedInvocationIds).toEqual(["invocation-b", "invocation-a"]);
     } finally {

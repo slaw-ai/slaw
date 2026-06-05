@@ -19,47 +19,47 @@ describe("issuesApi.list", () => {
     mockApi.post.mockResolvedValue({});
   });
 
-  it("passes parentId through to the company issues endpoint", async () => {
-    await issuesApi.list("company-1", { parentId: "issue-parent-1", limit: 25 });
+  it("passes parentId through to the squad issues endpoint", async () => {
+    await issuesApi.list("squad-1", { parentId: "issue-parent-1", limit: 25 });
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/companies/company-1/issues?parentId=issue-parent-1&limit=25",
+      "/squads/squad-1/issues?parentId=issue-parent-1&limit=25",
     );
   });
 
-  it("passes descendantOf through to the company issues endpoint", async () => {
-    await issuesApi.list("company-1", { descendantOf: "issue-root-1", includeBlockedBy: true, limit: 25 });
+  it("passes descendantOf through to the squad issues endpoint", async () => {
+    await issuesApi.list("squad-1", { descendantOf: "issue-root-1", includeBlockedBy: true, limit: 25 });
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/companies/company-1/issues?descendantOf=issue-root-1&includeBlockedBy=true&limit=25",
+      "/squads/squad-1/issues?descendantOf=issue-root-1&includeBlockedBy=true&limit=25",
     );
   });
 
-  it("passes generic workspaceId filters through to the company issues endpoint", async () => {
-    await issuesApi.list("company-1", { workspaceId: "workspace-1", limit: 1000 });
+  it("passes generic workspaceId filters through to the squad issues endpoint", async () => {
+    await issuesApi.list("squad-1", { workspaceId: "workspace-1", limit: 1000 });
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/companies/company-1/issues?workspaceId=workspace-1&limit=1000",
+      "/squads/squad-1/issues?workspaceId=workspace-1&limit=1000",
     );
   });
 
-  it("passes pagination offsets through to the company issues endpoint", async () => {
-    await issuesApi.list("company-1", { limit: 500, offset: 1500 });
+  it("passes pagination offsets through to the squad issues endpoint", async () => {
+    await issuesApi.list("squad-1", { limit: 500, offset: 1500 });
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/companies/company-1/issues?limit=500&offset=1500",
+      "/squads/squad-1/issues?limit=500&offset=1500",
     );
   });
 
-  it("passes issue list sort options through to the company issues endpoint", async () => {
-    await issuesApi.list("company-1", {
+  it("passes issue list sort options through to the squad issues endpoint", async () => {
+    await issuesApi.list("squad-1", {
       limit: 500,
       sortField: "updated",
       sortDir: "desc",
     });
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/companies/company-1/issues?limit=500&sortField=updated&sortDir=desc",
+      "/squads/squad-1/issues?limit=500&sortField=updated&sortDir=desc",
     );
   });
 

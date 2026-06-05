@@ -36,7 +36,7 @@ function render(ui: ReactNode) {
 function createRun(overrides: Partial<HeartbeatRun> = {}): HeartbeatRun {
   return {
     id: "run-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     agentId: "agent-1",
     invocationSource: "on_demand",
     triggerDetail: "manual",

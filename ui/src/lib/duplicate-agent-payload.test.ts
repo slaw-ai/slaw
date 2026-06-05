@@ -5,7 +5,7 @@ import type { AgentDetail } from "@slaw/shared";
 
 const baseAgent: AgentDetail = {
   id: "agent-1",
-  companyId: "company-1",
+  squadId: "squad-1",
   name: "Senior Product Engineer",
   urlKey: "senior-product-engineer",
   role: "engineer",

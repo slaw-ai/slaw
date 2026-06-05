@@ -11,12 +11,12 @@ export function trackInstallCompleted(
   client.track("install.completed", { adapter_type: dims.adapterType });
 }
 
-export function trackCompanyImported(
+export function trackSquadImported(
   client: TelemetryClient,
   dims: { sourceType: string; sourceRef: string; isPrivate: boolean },
 ): void {
   const ref = dims.isPrivate ? client.hashPrivateRef(dims.sourceRef) : dims.sourceRef;
-  client.track("company.imported", {
+  client.track("squad.imported", {
     source_type: dims.sourceType,
     source_ref: ref,
     source_ref_hashed: dims.isPrivate,

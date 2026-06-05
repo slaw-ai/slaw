@@ -92,7 +92,7 @@ Built-in adapters: `claude_local`, `codex_local`, `process`, `http`. You can cre
 ## Key Design Decisions
 
 - **Control plane, not execution plane** — Slaw orchestrates agents; it doesn't run them
-- **Company-scoped** — all entities belong to exactly one company; strict data boundaries
+- **Squad-scoped** — all entities belong to exactly one squad; strict data boundaries
 - **Single-assignee tasks** — atomic checkout prevents concurrent work on the same task
 - **Adapter-agnostic** — any runtime that can call an HTTP API works as an agent
 - **Embedded by default** — zero-config local mode with embedded PostgreSQL

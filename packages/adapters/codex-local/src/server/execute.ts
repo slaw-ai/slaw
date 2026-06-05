@@ -342,10 +342,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const preparedManagedCodexHome =
     configuredCodexHome
       ? null
-      : await prepareManagedCodexHome(process.env, onLog, agent.companyId, {
+      : await prepareManagedCodexHome(process.env, onLog, agent.squadId, {
           apiKey: configuredOpenAiApiKey,
         });
-  const defaultCodexHome = resolveManagedCodexHomeDir(process.env, agent.companyId);
+  const defaultCodexHome = resolveManagedCodexHomeDir(process.env, agent.squadId);
   const effectiveCodexHome = configuredCodexHome ?? preparedManagedCodexHome ?? defaultCodexHome;
   await fs.mkdir(effectiveCodexHome, { recursive: true });
   // Inject skills into the same CODEX_HOME that Codex will actually run with
@@ -577,9 +577,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
   const templateData = {
     agentId: agent.id,
-    companyId: agent.companyId,
+    squadId: agent.squadId,
     runId,
-    company: { id: agent.companyId },
+    squad: { id: agent.squadId },
     agent,
     run: { id: runId, source: "on_demand" },
     context,

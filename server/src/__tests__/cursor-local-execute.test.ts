@@ -134,7 +134,7 @@ describe("cursor execute", () => {
         runId: "run-1",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},
@@ -174,7 +174,7 @@ describe("cursor execute", () => {
           "SLAW_AGENT_ID",
           "SLAW_API_KEY",
           "SLAW_API_URL",
-          "SLAW_COMPANY_ID",
+          "SLAW_SQUAD_ID",
           "SLAW_RUN_ID",
         ]),
       );
@@ -208,7 +208,7 @@ describe("cursor execute", () => {
         runId: "run-2",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},
@@ -250,7 +250,7 @@ describe("cursor execute", () => {
     }
   });
 
-  it("injects company-library runtime skills into the Cursor skills home before execution", async () => {
+  it("injects squad-library runtime skills into the Cursor skills home before execution", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "slaw-cursor-execute-runtime-skill-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
@@ -269,7 +269,7 @@ describe("cursor execute", () => {
         runId: "run-3",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},
@@ -342,7 +342,7 @@ describe("cursor execute", () => {
         runId: "run-sandbox-1",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},
@@ -408,7 +408,7 @@ describe("cursor execute", () => {
         runId: "run-sandbox-2",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},

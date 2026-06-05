@@ -9,7 +9,7 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { StatusBadge } from "../components/StatusBadge";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { queryKeys } from "../lib/queryKeys";
 import {
   formatCents,
@@ -22,7 +22,7 @@ import {
   relativeTime,
 } from "../lib/utils";
 
-const NO_COMPANY = "__none__";
+const NO_SQUAD = "__none__";
 
 function initials(name: string | null | undefined) {
   const value = name?.trim() || "User";
@@ -196,14 +196,14 @@ function UsageList({
 
 export function UserProfile() {
   const { userSlug = "" } = useParams<{ userSlug: string }>();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const companyId = selectedCompanyId ?? NO_COMPANY;
+  const squadId = selectedSquadId ?? NO_SQUAD;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.userProfile(companyId, userSlug),
-    queryFn: () => userProfilesApi.get(companyId, userSlug),
-    enabled: !!selectedCompanyId && !!userSlug,
+    queryKey: queryKeys.userProfile(squadId, userSlug),
+    queryFn: () => userProfilesApi.get(squadId, userSlug),
+    enabled: !!selectedSquadId && !!userSlug,
   });
 
   useEffect(() => {
@@ -242,8 +242,8 @@ export function UserProfile() {
     [data?.topProviders],
   );
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={UserRound} message="Select a company to view user profiles." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={UserRound} message="Select a squad to view user profiles." />;
   }
 
   if (isLoading) {
@@ -251,7 +251,7 @@ export function UserProfile() {
   }
 
   if (error || !data) {
-    return <EmptyState icon={AlertCircle} message="User profile not found for this company." />;
+    return <EmptyState icon={AlertCircle} message="User profile not found for this squad." />;
   }
 
   const allTimeTokens = allTime ? totalTokens(allTime) : 0;

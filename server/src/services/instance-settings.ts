@@ -1,5 +1,5 @@
 import type { Db } from "@slaw/db";
-import { companies, instanceSettings } from "@slaw/db";
+import { squads, instanceSettings } from "@slaw/db";
 import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_BACKUP_RETENTION,
@@ -162,10 +162,10 @@ export function instanceSettingsService(db: Db) {
       return toInstanceSettings(updated ?? current);
     },
 
-    listCompanyIds: async (): Promise<string[]> =>
+    listSquadIds: async (): Promise<string[]> =>
       db
-        .select({ id: companies.id })
-        .from(companies)
+        .select({ id: squads.id })
+        .from(squads)
         .then((rows) => rows.map((row) => row.id)),
   };
 }

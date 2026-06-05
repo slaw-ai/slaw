@@ -17,13 +17,13 @@ describe("executionWorkspacesApi.listSummaries", () => {
   });
 
   it("requests the lightweight summary payload", async () => {
-    await executionWorkspacesApi.listSummaries("company-1", {
+    await executionWorkspacesApi.listSummaries("squad-1", {
       projectId: "project-1",
       reuseEligible: true,
     });
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/companies/company-1/execution-workspaces?projectId=project-1&reuseEligible=true&summary=true",
+      "/squads/squad-1/execution-workspaces?projectId=project-1&reuseEligible=true&summary=true",
     );
   });
 

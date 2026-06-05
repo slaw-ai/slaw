@@ -6,7 +6,7 @@ import type {
 } from "@slaw/shared";
 import { index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { documentRevisions } from "./document_revisions.js";
 import { documents } from "./documents.js";
 import { issues } from "./issues.js";
@@ -15,7 +15,7 @@ export const documentAnnotationThreads = pgTable(
   "document_annotation_threads",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     issueId: uuid("issue_id").notNull().references(() => issues.id, { onDelete: "cascade" }),
     documentId: uuid("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
     documentKey: text("document_key").notNull(),
@@ -46,24 +46,24 @@ export const documentAnnotationThreads = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyDocumentStatusIdx: index("document_annotation_threads_company_document_status_idx").on(
-      table.companyId,
+    squadDocumentStatusIdx: index("document_annotation_threads_squad_document_status_idx").on(
+      table.squadId,
       table.documentId,
       table.status,
     ),
-    companyIssueStatusIdx: index("document_annotation_threads_company_issue_status_idx").on(
-      table.companyId,
+    squadIssueStatusIdx: index("document_annotation_threads_squad_issue_status_idx").on(
+      table.squadId,
       table.issueId,
       table.status,
     ),
-    companyCurrentRevisionOpenIdx: index("document_annotation_threads_company_current_revision_open_idx").on(
-      table.companyId,
+    squadCurrentRevisionOpenIdx: index("document_annotation_threads_squad_current_revision_open_idx").on(
+      table.squadId,
       table.documentId,
       table.currentRevisionId,
       table.status,
     ),
-    companyAnchorStateIdx: index("document_annotation_threads_company_anchor_state_idx").on(
-      table.companyId,
+    squadAnchorStateIdx: index("document_annotation_threads_squad_anchor_state_idx").on(
+      table.squadId,
       table.anchorState,
     ),
   }),

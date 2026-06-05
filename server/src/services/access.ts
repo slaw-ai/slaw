@@ -2,7 +2,7 @@ import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import type { Db } from "@slaw/db";
 import {
   agents,
-  companyMemberships,
+  squadMemberships,
   instanceUserRoles,
   issues,
   principalPermissionGrants,
@@ -12,7 +12,7 @@ import { conflict } from "../errors.js";
 import { authorizationService, type AuthorizationActor, type AuthorizationResource } from "./authorization.js";
 import { ensureHumanRoleDefaultGrants } from "./principal-access-compatibility.js";
 
-type MembershipRow = typeof companyMemberships.$inferSelect;
+type MembershipRow = typeof squadMemberships.$inferSelect;
 type GrantInput = {
   permissionKey: PermissionKey;
   scope?: Record<string, unknown> | null;
@@ -39,31 +39,31 @@ export function accessService(db: Db) {
   }
 
   async function getMembership(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
   ): Promise<MembershipRow | null> {
     return db
       .select()
-      .from(companyMemberships)
+      .from(squadMemberships)
       .where(
         and(
-          eq(companyMemberships.companyId, companyId),
-          eq(companyMemberships.principalType, principalType),
-          eq(companyMemberships.principalId, principalId),
+          eq(squadMemberships.squadId, squadId),
+          eq(squadMemberships.principalType, principalType),
+          eq(squadMemberships.principalId, principalId),
         ),
       )
       .then((rows) => rows[0] ?? null);
   }
 
   async function hasPermission(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
     permissionKey: PermissionKey,
   ): Promise<boolean> {
     return authorization.decidePrincipalGrant({
-      companyId,
+      squadId,
       principalType,
       principalId,
       permissionKey,
@@ -72,14 +72,14 @@ export function accessService(db: Db) {
   }
 
   async function canUser(
-    companyId: string,
+    squadId: string,
     userId: string | null | undefined,
     permissionKey: PermissionKey,
   ): Promise<boolean> {
     return authorization.decide({
       actor: { type: "board", userId },
       action: permissionKey,
-      resource: { type: "company", companyId },
+      resource: { type: "squad", squadId },
     }).then((decision) => decision.allowed);
   }
 
@@ -92,43 +92,43 @@ export function accessService(db: Db) {
     return authorization.decide(input);
   }
 
-  async function listMembers(companyId: string) {
+  async function listMembers(squadId: string) {
     return db
       .select()
-      .from(companyMemberships)
-      .where(eq(companyMemberships.companyId, companyId))
-      .orderBy(sql`${companyMemberships.createdAt} desc`);
+      .from(squadMemberships)
+      .where(eq(squadMemberships.squadId, squadId))
+      .orderBy(sql`${squadMemberships.createdAt} desc`);
   }
 
-  async function getMemberById(companyId: string, memberId: string) {
+  async function getMemberById(squadId: string, memberId: string) {
     return db
       .select()
-      .from(companyMemberships)
-      .where(and(eq(companyMemberships.companyId, companyId), eq(companyMemberships.id, memberId)))
+      .from(squadMemberships)
+      .where(and(eq(squadMemberships.squadId, squadId), eq(squadMemberships.id, memberId)))
       .then((rows) => rows[0] ?? null);
   }
 
-  async function listActiveUserMemberships(companyId: string) {
+  async function listActiveUserMemberships(squadId: string) {
     return db
       .select()
-      .from(companyMemberships)
+      .from(squadMemberships)
       .where(
         and(
-          eq(companyMemberships.companyId, companyId),
-          eq(companyMemberships.principalType, "user"),
-          eq(companyMemberships.status, "active"),
+          eq(squadMemberships.squadId, squadId),
+          eq(squadMemberships.principalType, "user"),
+          eq(squadMemberships.status, "active"),
         ),
       )
-      .orderBy(sql`${companyMemberships.createdAt} asc`);
+      .orderBy(sql`${squadMemberships.createdAt} asc`);
   }
 
   async function setMemberPermissions(
-    companyId: string,
+    squadId: string,
     memberId: string,
     grants: GrantInput[],
     grantedByUserId: string | null,
   ) {
-    const member = await getMemberById(companyId, memberId);
+    const member = await getMemberById(squadId, memberId);
     if (!member) return null;
 
     await db.transaction(async (tx) => {
@@ -136,7 +136,7 @@ export function accessService(db: Db) {
         .delete(principalPermissionGrants)
         .where(
           and(
-            eq(principalPermissionGrants.companyId, companyId),
+            eq(principalPermissionGrants.squadId, squadId),
             eq(principalPermissionGrants.principalType, member.principalType),
             eq(principalPermissionGrants.principalId, member.principalId),
           ),
@@ -144,7 +144,7 @@ export function accessService(db: Db) {
       if (grants.length > 0) {
         await tx.insert(principalPermissionGrants).values(
           grants.map((grant) => ({
-            companyId,
+            squadId,
             principalType: member.principalType,
             principalId: member.principalId,
             permissionKey: grant.permissionKey,
@@ -161,7 +161,7 @@ export function accessService(db: Db) {
   }
 
   async function updateMemberAndPermissions(
-    companyId: string,
+    squadId: string,
     memberId: string,
     data: {
       membershipRole?: string | null;
@@ -172,19 +172,19 @@ export function accessService(db: Db) {
   ) {
     return db.transaction(async (tx) => {
       await tx.execute(sql`
-        select ${companyMemberships.id}
-        from ${companyMemberships}
-        where ${companyMemberships.companyId} = ${companyId}
-          and ${companyMemberships.principalType} = 'user'
-          and ${companyMemberships.status} = 'active'
-          and ${companyMemberships.membershipRole} = 'owner'
+        select ${squadMemberships.id}
+        from ${squadMemberships}
+        where ${squadMemberships.squadId} = ${squadId}
+          and ${squadMemberships.principalType} = 'user'
+          and ${squadMemberships.status} = 'active'
+          and ${squadMemberships.membershipRole} = 'owner'
         for update
       `);
 
       const existing = await tx
         .select()
-        .from(companyMemberships)
-        .where(and(eq(companyMemberships.companyId, companyId), eq(companyMemberships.id, memberId)))
+        .from(squadMemberships)
+        .where(and(eq(squadMemberships.squadId, squadId), eq(squadMemberships.id, memberId)))
         .then((rows) => rows[0] ?? null);
       if (!existing) return null;
 
@@ -199,14 +199,14 @@ export function accessService(db: Db) {
         (nextStatus !== "active" || nextMembershipRole !== "owner")
       ) {
         const activeOwnerCount = await tx
-          .select({ id: companyMemberships.id })
-          .from(companyMemberships)
+          .select({ id: squadMemberships.id })
+          .from(squadMemberships)
           .where(
             and(
-              eq(companyMemberships.companyId, companyId),
-              eq(companyMemberships.principalType, "user"),
-              eq(companyMemberships.status, "active"),
-              eq(companyMemberships.membershipRole, "owner"),
+              eq(squadMemberships.squadId, squadId),
+              eq(squadMemberships.principalType, "user"),
+              eq(squadMemberships.status, "active"),
+              eq(squadMemberships.membershipRole, "owner"),
             ),
           )
           .then((rows) => rows.length);
@@ -217,13 +217,13 @@ export function accessService(db: Db) {
 
       const now = new Date();
       const updated = await tx
-        .update(companyMemberships)
+        .update(squadMemberships)
         .set({
           membershipRole: nextMembershipRole,
           status: nextStatus,
           updatedAt: now,
         })
-        .where(eq(companyMemberships.id, existing.id))
+        .where(eq(squadMemberships.id, existing.id))
         .returning()
         .then((rows) => rows[0] ?? existing);
 
@@ -231,7 +231,7 @@ export function accessService(db: Db) {
         .delete(principalPermissionGrants)
         .where(
           and(
-            eq(principalPermissionGrants.companyId, companyId),
+            eq(principalPermissionGrants.squadId, squadId),
             eq(principalPermissionGrants.principalType, existing.principalType),
             eq(principalPermissionGrants.principalId, existing.principalId),
           ),
@@ -239,7 +239,7 @@ export function accessService(db: Db) {
       if (data.grants.length > 0) {
         await tx.insert(principalPermissionGrants).values(
           data.grants.map((grant) => ({
-            companyId,
+            squadId,
             principalType: existing.principalType,
             principalId: existing.principalId,
             permissionKey: grant.permissionKey,
@@ -256,7 +256,7 @@ export function accessService(db: Db) {
   }
 
   async function assertCanRemoveActiveOwner(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     status: string,
     membershipRole: string | null,
@@ -271,14 +271,14 @@ export function accessService(db: Db) {
     }
 
     const activeOwnerCount = await tx
-      .select({ id: companyMemberships.id })
-      .from(companyMemberships)
+      .select({ id: squadMemberships.id })
+      .from(squadMemberships)
       .where(
         and(
-          eq(companyMemberships.companyId, companyId),
-          eq(companyMemberships.principalType, "user"),
-          eq(companyMemberships.status, "active"),
-          eq(companyMemberships.membershipRole, "owner"),
+          eq(squadMemberships.squadId, squadId),
+          eq(squadMemberships.principalType, "user"),
+          eq(squadMemberships.status, "active"),
+          eq(squadMemberships.membershipRole, "owner"),
         ),
       )
       .then((rows) => rows.length);
@@ -288,7 +288,7 @@ export function accessService(db: Db) {
   }
 
   async function assertAssignableArchiveTarget(
-    companyId: string,
+    squadId: string,
     input: MemberArchiveInput["reassignment"],
     tx: Pick<Db, "select">,
   ) {
@@ -298,19 +298,19 @@ export function accessService(db: Db) {
     }
     if (input.assigneeUserId) {
       const membership = await tx
-        .select({ id: companyMemberships.id })
-        .from(companyMemberships)
+        .select({ id: squadMemberships.id })
+        .from(squadMemberships)
         .where(
           and(
-            eq(companyMemberships.companyId, companyId),
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, input.assigneeUserId),
-            eq(companyMemberships.status, "active"),
+            eq(squadMemberships.squadId, squadId),
+            eq(squadMemberships.principalType, "user"),
+            eq(squadMemberships.principalId, input.assigneeUserId),
+            eq(squadMemberships.status, "active"),
           ),
         )
         .then((rows) => rows[0] ?? null);
       if (!membership) {
-        throw conflict("Replacement user must be an active company member");
+        throw conflict("Replacement user must be an active squad member");
       }
       return;
     }
@@ -318,40 +318,40 @@ export function accessService(db: Db) {
     const agent = await tx
       .select({
         id: agents.id,
-        companyId: agents.companyId,
+        squadId: agents.squadId,
         status: agents.status,
       })
       .from(agents)
       .where(eq(agents.id, input.assigneeAgentId!))
       .then((rows) => rows[0] ?? null);
-    if (!agent || agent.companyId !== companyId) {
-      throw conflict("Replacement agent must belong to the same company");
+    if (!agent || agent.squadId !== squadId) {
+      throw conflict("Replacement agent must belong to the same squad");
     }
     if (agent.status === "pending_approval" || agent.status === "terminated") {
       throw conflict("Replacement agent must be assignable");
     }
   }
 
-  async function archiveMember(companyId: string, memberId: string, input: MemberArchiveInput = {}) {
+  async function archiveMember(squadId: string, memberId: string, input: MemberArchiveInput = {}) {
     return db.transaction(async (tx) => {
       await tx.execute(sql`
-        select ${companyMemberships.id}
-        from ${companyMemberships}
-        where ${companyMemberships.companyId} = ${companyId}
-          and ${companyMemberships.principalType} = 'user'
-          and ${companyMemberships.status} = 'active'
-          and ${companyMemberships.membershipRole} = 'owner'
+        select ${squadMemberships.id}
+        from ${squadMemberships}
+        where ${squadMemberships.squadId} = ${squadId}
+          and ${squadMemberships.principalType} = 'user'
+          and ${squadMemberships.status} = 'active'
+          and ${squadMemberships.membershipRole} = 'owner'
         for update
       `);
 
       const existing = await tx
         .select()
-        .from(companyMemberships)
-        .where(and(eq(companyMemberships.companyId, companyId), eq(companyMemberships.id, memberId)))
+        .from(squadMemberships)
+        .where(and(eq(squadMemberships.squadId, squadId), eq(squadMemberships.id, memberId)))
         .then((rows) => rows[0] ?? null);
       if (!existing) return null;
       if (existing.principalType !== "user") {
-        throw conflict("Only human company members can be archived");
+        throw conflict("Only human squad members can be archived");
       }
       if (existing.status === "archived") {
         return { member: existing, reassignedIssueCount: 0 };
@@ -361,13 +361,13 @@ export function accessService(db: Db) {
       }
 
       await assertCanRemoveActiveOwner(
-        companyId,
+        squadId,
         existing.principalType,
         existing.status,
         existing.membershipRole,
         tx,
       );
-      await assertAssignableArchiveTarget(companyId, input.reassignment, tx);
+      await assertAssignableArchiveTarget(squadId, input.reassignment, tx);
 
       const now = new Date();
       const assignmentPatch = {
@@ -376,7 +376,7 @@ export function accessService(db: Db) {
         updatedAt: now,
       };
       const assignedOpenIssueWhere = and(
-        eq(issues.companyId, companyId),
+        eq(issues.squadId, squadId),
         eq(issues.assigneeUserId, existing.principalId),
         sql`${issues.status} not in ('done', 'cancelled')`,
       );
@@ -402,19 +402,19 @@ export function accessService(db: Db) {
         .delete(principalPermissionGrants)
         .where(
           and(
-            eq(principalPermissionGrants.companyId, companyId),
+            eq(principalPermissionGrants.squadId, squadId),
             eq(principalPermissionGrants.principalType, existing.principalType),
             eq(principalPermissionGrants.principalId, existing.principalId),
           ),
         );
 
       const archived = await tx
-        .update(companyMemberships)
+        .update(squadMemberships)
         .set({
           status: "archived",
           updatedAt: now,
         })
-        .where(eq(companyMemberships.id, existing.id))
+        .where(eq(squadMemberships.id, existing.id))
         .returning()
         .then((rows) => rows[0] ?? existing);
 
@@ -450,53 +450,53 @@ export function accessService(db: Db) {
       .then((rows) => rows[0] ?? null);
   }
 
-  async function listUserCompanyAccess(userId: string) {
+  async function listUserSquadAccess(userId: string) {
     return db
       .select()
-      .from(companyMemberships)
-      .where(and(eq(companyMemberships.principalType, "user"), eq(companyMemberships.principalId, userId)))
-      .orderBy(sql`${companyMemberships.createdAt} desc`);
+      .from(squadMemberships)
+      .where(and(eq(squadMemberships.principalType, "user"), eq(squadMemberships.principalId, userId)))
+      .orderBy(sql`${squadMemberships.createdAt} desc`);
   }
 
-  async function setUserCompanyAccess(
+  async function setUserSquadAccess(
     userId: string,
-    companyIds: string[],
+    squadIds: string[],
     options: { actorUserId?: string | null } = {},
   ) {
-    const existing = await listUserCompanyAccess(userId);
-    const existingByCompany = new Map(existing.map((row) => [row.companyId, row]));
-    const target = new Set(companyIds);
+    const existing = await listUserSquadAccess(userId);
+    const existingBySquad = new Map(existing.map((row) => [row.squadId, row]));
+    const target = new Set(squadIds);
 
     await db.transaction(async (tx) => {
-      const toArchive = existing.filter((row) => !target.has(row.companyId) && row.status !== "archived");
+      const toArchive = existing.filter((row) => !target.has(row.squadId) && row.status !== "archived");
       if (toArchive.length > 0 && options.actorUserId && options.actorUserId === userId) {
         throw conflict("You cannot remove yourself");
       }
       if (toArchive.length > 0 && (await isInstanceAdmin(userId))) {
-        throw conflict("Instance admins cannot be removed from company access");
+        throw conflict("Instance admins cannot be removed from squad access");
       }
       const protectedArchives = toArchive.filter((row) => row.membershipRole === "owner" || row.membershipRole === "admin");
       if (protectedArchives.length > 0) {
-        throw conflict("Owners and admins cannot be removed from company access");
+        throw conflict("Owners and admins cannot be removed from squad access");
       }
       const activeOwnerArchives = toArchive.filter(
         (row) => row.status === "active" && row.membershipRole === "owner",
       );
       if (activeOwnerArchives.length > 0) {
         const activeOwnerRows = await tx
-          .select({ companyId: companyMemberships.companyId, id: companyMemberships.id })
-          .from(companyMemberships)
+          .select({ squadId: squadMemberships.squadId, id: squadMemberships.id })
+          .from(squadMemberships)
           .where(
             and(
-              eq(companyMemberships.principalType, "user"),
-              eq(companyMemberships.status, "active"),
-              eq(companyMemberships.membershipRole, "owner"),
-              inArray(companyMemberships.companyId, activeOwnerArchives.map((row) => row.companyId)),
+              eq(squadMemberships.principalType, "user"),
+              eq(squadMemberships.status, "active"),
+              eq(squadMemberships.membershipRole, "owner"),
+              inArray(squadMemberships.squadId, activeOwnerArchives.map((row) => row.squadId)),
             ),
           );
         for (const row of activeOwnerArchives) {
           const remainingOwners =
-            activeOwnerRows.filter((owner) => owner.companyId === row.companyId).length - 1;
+            activeOwnerRows.filter((owner) => owner.squadId === row.squadId).length - 1;
           if (remainingOwners <= 0) {
             throw conflict("Cannot remove the last active owner");
           }
@@ -504,37 +504,37 @@ export function accessService(db: Db) {
       }
       if (toArchive.length > 0) {
         await tx
-          .update(companyMemberships)
+          .update(squadMemberships)
           .set({ status: "archived", updatedAt: new Date() })
-          .where(inArray(companyMemberships.id, toArchive.map((row) => row.id)));
+          .where(inArray(squadMemberships.id, toArchive.map((row) => row.id)));
         await tx
           .delete(principalPermissionGrants)
           .where(
             and(
               eq(principalPermissionGrants.principalType, "user"),
               eq(principalPermissionGrants.principalId, userId),
-              inArray(principalPermissionGrants.companyId, toArchive.map((row) => row.companyId)),
+              inArray(principalPermissionGrants.squadId, toArchive.map((row) => row.squadId)),
             ),
           );
       }
 
-      for (const companyId of target) {
-        const existingMembership = existingByCompany.get(companyId);
+      for (const squadId of target) {
+        const existingMembership = existingBySquad.get(squadId);
         if (existingMembership) {
           if (existingMembership.status !== "active") {
             await tx
-              .update(companyMemberships)
+              .update(squadMemberships)
               .set({
                 status: "active",
                 membershipRole: existingMembership.membershipRole ?? "operator",
                 updatedAt: new Date(),
               })
-              .where(eq(companyMemberships.id, existingMembership.id));
+              .where(eq(squadMemberships.id, existingMembership.id));
           }
           continue;
         }
-        await tx.insert(companyMemberships).values({
-          companyId,
+        await tx.insert(squadMemberships).values({
+          squadId,
           principalType: "user",
           principalId: userId,
           status: "active",
@@ -543,23 +543,23 @@ export function accessService(db: Db) {
       }
     });
 
-    return listUserCompanyAccess(userId);
+    return listUserSquadAccess(userId);
   }
 
   async function ensureMembership(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
     membershipRole: string | null = "member",
     status: "pending" | "active" | "suspended" = "active",
   ) {
-    const existing = await getMembership(companyId, principalType, principalId);
+    const existing = await getMembership(squadId, principalType, principalId);
     if (existing) {
       if (existing.status !== status || existing.membershipRole !== membershipRole) {
         const updated = await db
-          .update(companyMemberships)
+          .update(squadMemberships)
           .set({ status, membershipRole, updatedAt: new Date() })
-          .where(eq(companyMemberships.id, existing.id))
+          .where(eq(squadMemberships.id, existing.id))
           .returning()
           .then((rows) => rows[0] ?? null);
         return updated ?? existing;
@@ -568,9 +568,9 @@ export function accessService(db: Db) {
     }
 
     return db
-      .insert(companyMemberships)
+      .insert(squadMemberships)
       .values({
-        companyId,
+        squadId,
         principalType,
         principalId,
         status,
@@ -581,7 +581,7 @@ export function accessService(db: Db) {
   }
 
   async function setPrincipalGrants(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
     grants: GrantInput[],
@@ -592,7 +592,7 @@ export function accessService(db: Db) {
         .delete(principalPermissionGrants)
         .where(
           and(
-            eq(principalPermissionGrants.companyId, companyId),
+            eq(principalPermissionGrants.squadId, squadId),
             eq(principalPermissionGrants.principalType, principalType),
             eq(principalPermissionGrants.principalId, principalId),
           ),
@@ -600,7 +600,7 @@ export function accessService(db: Db) {
       if (grants.length === 0) return;
       await tx.insert(principalPermissionGrants).values(
         grants.map((grant) => ({
-          companyId,
+          squadId,
           principalType,
           principalId,
           permissionKey: grant.permissionKey,
@@ -613,18 +613,18 @@ export function accessService(db: Db) {
     });
   }
 
-  async function copyActiveUserMemberships(sourceCompanyId: string, targetCompanyId: string) {
-    const sourceMemberships = await listActiveUserMemberships(sourceCompanyId);
+  async function copyActiveUserMemberships(sourceSquadId: string, targetSquadId: string) {
+    const sourceMemberships = await listActiveUserMemberships(sourceSquadId);
     for (const membership of sourceMemberships) {
       await ensureMembership(
-        targetCompanyId,
+        targetSquadId,
         "user",
         membership.principalId,
         membership.membershipRole,
         "active",
       );
       await ensureHumanRoleDefaultGrants(db, {
-        companyId: targetCompanyId,
+        squadId: targetSquadId,
         principalId: membership.principalId,
         membershipRole: membership.membershipRole,
         grantedByUserId: null,
@@ -634,13 +634,13 @@ export function accessService(db: Db) {
   }
 
   async function ensureRoleDefaultGrants(
-    companyId: string,
+    squadId: string,
     principalId: string,
     membershipRole: string | null | undefined,
     grantedByUserId: string | null,
   ) {
     return ensureHumanRoleDefaultGrants(db, {
-      companyId,
+      squadId,
       principalId,
       membershipRole,
       grantedByUserId,
@@ -648,7 +648,7 @@ export function accessService(db: Db) {
   }
 
   async function listPrincipalGrants(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
   ) {
@@ -657,7 +657,7 @@ export function accessService(db: Db) {
       .from(principalPermissionGrants)
       .where(
         and(
-          eq(principalPermissionGrants.companyId, companyId),
+          eq(principalPermissionGrants.squadId, squadId),
           eq(principalPermissionGrants.principalType, principalType),
           eq(principalPermissionGrants.principalId, principalId),
         ),
@@ -666,7 +666,7 @@ export function accessService(db: Db) {
   }
 
   async function setPrincipalPermission(
-    companyId: string,
+    squadId: string,
     principalType: PrincipalType,
     principalId: string,
     permissionKey: PermissionKey,
@@ -679,7 +679,7 @@ export function accessService(db: Db) {
         .delete(principalPermissionGrants)
         .where(
           and(
-            eq(principalPermissionGrants.companyId, companyId),
+            eq(principalPermissionGrants.squadId, squadId),
             eq(principalPermissionGrants.principalType, principalType),
             eq(principalPermissionGrants.principalId, principalId),
             eq(principalPermissionGrants.permissionKey, permissionKey),
@@ -688,14 +688,14 @@ export function accessService(db: Db) {
       return;
     }
 
-    await ensureMembership(companyId, principalType, principalId, "member", "active");
+    await ensureMembership(squadId, principalType, principalId, "member", "active");
 
     const existing = await db
       .select()
       .from(principalPermissionGrants)
       .where(
         and(
-          eq(principalPermissionGrants.companyId, companyId),
+          eq(principalPermissionGrants.squadId, squadId),
           eq(principalPermissionGrants.principalType, principalType),
           eq(principalPermissionGrants.principalId, principalId),
           eq(principalPermissionGrants.permissionKey, permissionKey),
@@ -716,7 +716,7 @@ export function accessService(db: Db) {
     }
 
     await db.insert(principalPermissionGrants).values({
-      companyId,
+      squadId,
       principalType,
       principalId,
       permissionKey,
@@ -728,7 +728,7 @@ export function accessService(db: Db) {
   }
 
   async function updateMember(
-    companyId: string,
+    squadId: string,
     memberId: string,
     data: {
       membershipRole?: string | null;
@@ -737,19 +737,19 @@ export function accessService(db: Db) {
   ) {
     return db.transaction(async (tx) => {
       await tx.execute(sql`
-        select ${companyMemberships.id}
-        from ${companyMemberships}
-        where ${companyMemberships.companyId} = ${companyId}
-          and ${companyMemberships.principalType} = 'user'
-          and ${companyMemberships.status} = 'active'
-          and ${companyMemberships.membershipRole} = 'owner'
+        select ${squadMemberships.id}
+        from ${squadMemberships}
+        where ${squadMemberships.squadId} = ${squadId}
+          and ${squadMemberships.principalType} = 'user'
+          and ${squadMemberships.status} = 'active'
+          and ${squadMemberships.membershipRole} = 'owner'
         for update
       `);
 
       const existing = await tx
         .select()
-        .from(companyMemberships)
-        .where(and(eq(companyMemberships.companyId, companyId), eq(companyMemberships.id, memberId)))
+        .from(squadMemberships)
+        .where(and(eq(squadMemberships.squadId, squadId), eq(squadMemberships.id, memberId)))
         .then((rows) => rows[0] ?? null);
       if (!existing) return null;
 
@@ -764,14 +764,14 @@ export function accessService(db: Db) {
         (nextStatus !== "active" || nextMembershipRole !== "owner")
       ) {
         const activeOwnerCount = await tx
-          .select({ id: companyMemberships.id })
-          .from(companyMemberships)
+          .select({ id: squadMemberships.id })
+          .from(squadMemberships)
           .where(
             and(
-              eq(companyMemberships.companyId, companyId),
-              eq(companyMemberships.principalType, "user"),
-              eq(companyMemberships.status, "active"),
-              eq(companyMemberships.membershipRole, "owner"),
+              eq(squadMemberships.squadId, squadId),
+              eq(squadMemberships.principalType, "user"),
+              eq(squadMemberships.status, "active"),
+              eq(squadMemberships.membershipRole, "owner"),
             ),
           )
           .then((rows) => rows.length);
@@ -781,13 +781,13 @@ export function accessService(db: Db) {
       }
 
       return tx
-        .update(companyMemberships)
+        .update(squadMemberships)
         .set({
           membershipRole: nextMembershipRole,
           status: nextStatus,
           updatedAt: new Date(),
         })
-        .where(eq(companyMemberships.id, existing.id))
+        .where(eq(squadMemberships.id, existing.id))
         .returning()
         .then((rows) => rows[0] ?? existing);
     });
@@ -810,8 +810,8 @@ export function accessService(db: Db) {
     updateMemberAndPermissions,
     promoteInstanceAdmin,
     demoteInstanceAdmin,
-    listUserCompanyAccess,
-    setUserCompanyAccess,
+    listUserSquadAccess,
+    setUserSquadAccess,
     setPrincipalGrants,
     listPrincipalGrants,
     setPrincipalPermission,

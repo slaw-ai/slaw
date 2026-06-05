@@ -199,7 +199,7 @@ export function adapterRoutes() {
    */
   router.get("/adapters", async (_req, res) => {
     // Adapter inventory is needed by ordinary board members when creating or
-    // editing company agents. Mutating adapter management routes below remain
+    // editing squad agents. Mutating adapter management routes below remain
     // instance-admin only because they affect the whole server runtime.
     assertBoardOrgAccess(_req);
 

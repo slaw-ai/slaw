@@ -14,7 +14,7 @@ function buildDecomposition(
 ): AcceptedPlanDecompositionSummary {
   return {
     id: "decomposition-story-1",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     sourceIssueId: issueId,
     acceptedPlanRevisionId: "revision-story-1",
     acceptedInteractionId: "interaction-story-1",

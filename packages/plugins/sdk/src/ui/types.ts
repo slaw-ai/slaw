@@ -54,7 +54,7 @@ export type {
  * Error codes:
  * - `WORKER_UNAVAILABLE` — plugin worker is not running
  * - `CAPABILITY_DENIED` — plugin lacks the required capability
- * - `INVOCATION_SCOPE_DENIED` — plugin call escaped the invocation company scope
+ * - `INVOCATION_SCOPE_DENIED` — plugin call escaped the invocation squad scope
  * - `WORKER_ERROR` — worker returned an error from its handler
  * - `TIMEOUT` — worker did not respond within the configured timeout
  * - `UNKNOWN` — unexpected bridge-level failure
@@ -80,16 +80,16 @@ export interface PluginBridgeError {
 /**
  * Read-only host context passed to every plugin component via `useHostContext()`.
  *
- * Plugin components use this to know which company, project, or entity is
+ * Plugin components use this to know which squad, project, or entity is
  * currently active so they can scope their data requests accordingly.
  *
  * @see PLUGIN_SPEC.md §19 — UI Extension Model
  */
 export interface PluginHostContext {
-  /** UUID of the currently active company, if any. */
-  companyId: string | null;
-  /** URL prefix for the current company (e.g. `"my-company"`). */
-  companyPrefix: string | null;
+  /** UUID of the currently active squad, if any. */
+  squadId: string | null;
+  /** URL prefix for the current squad (e.g. `"my-squad"`). */
+  squadPrefix: string | null;
   /** UUID of the currently active project, if any. */
   projectId: string | null;
   /** UUID of the current entity (for detail tab contexts), if any. */
@@ -195,9 +195,9 @@ export interface HostLocation {
  */
 export interface HostNavigation {
   /**
-   * Resolve a Slaw-internal path using the active company prefix.
+   * Resolve a Slaw-internal path using the active squad prefix.
    *
-   * For example, in company `PAP`, `resolveHref("/wiki")` returns
+   * For example, in squad `PAP`, `resolveHref("/wiki")` returns
    * `"/PAP/wiki"`, while `resolveHref("/PAP/wiki")` stays unchanged.
    */
   resolveHref(to: string): string;
@@ -220,10 +220,10 @@ export interface HostNavigation {
 /**
  * Props passed to a plugin page component.
  *
- * A page is a full-page extension at `/plugins/:pluginId` or `/:company/plugins/:pluginId`.
+ * A page is a full-page extension at `/plugins/:pluginId` or `/:squad/plugins/:pluginId`.
  *
  * @see PLUGIN_SPEC.md §19.1 — Global Operator Routes
- * @see PLUGIN_SPEC.md §19.2 — Company-Context Routes
+ * @see PLUGIN_SPEC.md §19.2 — Squad-Context Routes
  */
 export interface PluginPageProps {
   /** The current host context. */
@@ -231,14 +231,14 @@ export interface PluginPageProps {
 }
 
 /**
- * Props passed to a plugin company settings page component.
+ * Props passed to a plugin squad settings page component.
  *
- * A company settings page is mounted at
- * `/:companyPrefix/company/settings/:routePath` and always receives the active
- * company id and prefix when available.
+ * A squad settings page is mounted at
+ * `/:squadPrefix/squad/settings/:routePath` and always receives the active
+ * squad id and prefix when available.
  */
-export interface PluginCompanySettingsPageProps {
-  /** The current host context, including company id and prefix. */
+export interface PluginSquadSettingsPageProps {
+  /** The current host context, including squad id and prefix. */
   context: PluginHostContext;
 }
 
@@ -285,7 +285,7 @@ export interface PluginSidebarProps {
 /**
  * Props passed to a plugin route sidebar component.
  *
- * A route sidebar replaces the normal company sidebar while the user is on a
+ * A route sidebar replaces the normal squad sidebar while the user is on a
  * matching plugin page route declared with the same `routePath`.
  *
  * @see PLUGIN_SPEC.md §19.5 — Sidebar Entries
@@ -480,7 +480,7 @@ export interface PluginStreamResult<T = unknown> {
  * @example
  * ```tsx
  * const resync = usePluginAction("resync");
- * <button onClick={() => resync({ companyId }).catch(err => console.error(err))}>
+ * <button onClick={() => resync({ squadId }).catch(err => console.error(err))}>
  *   Resync Now
  * </button>
  * ```

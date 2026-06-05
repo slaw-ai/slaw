@@ -32,8 +32,8 @@ import { SettingsPage, SidebarLink, WikiPage, WikiRouteSidebar } from "../src/ui
 import plugin from "../src/worker.js";
 import { OPERATION_ORIGIN_KIND, type WikiSkillResource } from "../src/wiki.js";
 
-const COMPANY_ID = "11111111-1111-4111-8111-111111111111";
-const OTHER_COMPANY_ID = "99999999-9999-4999-8999-999999999999";
+const SQUAD_ID = "11111111-1111-4111-8111-111111111111";
+const OTHER_SQUAD_ID = "99999999-9999-4999-8999-999999999999";
 const ORIGINAL_DEPLOYMENT_MODE = process.env.SLAW_DEPLOYMENT_MODE;
 const ORIGINAL_DEPLOYMENT_EXPOSURE = process.env.SLAW_DEPLOYMENT_EXPOSURE;
 type TestBridgeGlobal = typeof globalThis & {
@@ -53,13 +53,13 @@ const DEFAULT_MANAGED_SKILL = {
   details: {
     name: "LLM Wiki Maintainer",
     key: WIKI_MAINTAINER_SKILL_CANONICAL_KEY,
-    description: "Use the LLM Wiki plugin tools to maintain a cited local company wiki.",
+    description: "Use the LLM Wiki plugin tools to maintain a cited local squad wiki.",
   },
   skill: {
     id: "skill-1",
     name: "LLM Wiki Maintainer",
     key: WIKI_MAINTAINER_SKILL_CANONICAL_KEY,
-    description: "Use the LLM Wiki plugin tools to maintain a cited local company wiki.",
+    description: "Use the LLM Wiki plugin tools to maintain a cited local squad wiki.",
   },
 };
 const DEFAULT_MANAGED_SKILLS = WIKI_MANAGED_SKILL_KEYS.map((skillKey, index) => ({
@@ -133,8 +133,8 @@ beforeEach(() => {
               wikiId: "default",
               folder: mockOverviewFolder ?? {
                 configured: true,
-                path: "/tmp/company-wiki",
-                realPath: "/tmp/company-wiki",
+                path: "/tmp/squad-wiki",
+                realPath: "/tmp/squad-wiki",
                 access: "readWrite",
                 readable: true,
                 writable: true,
@@ -170,7 +170,7 @@ beforeEach(() => {
               spaces: [
                 {
                   id: "space-default",
-                  companyId: COMPANY_ID,
+                  squadId: SQUAD_ID,
                   wikiId: "default",
                   slug: "default",
                   displayName: "default",
@@ -233,8 +233,8 @@ beforeEach(() => {
               wikiId: "default",
               folder: mockSettingsFolder ?? {
                 configured: true,
-                path: "/tmp/company-wiki",
-                realPath: "/tmp/company-wiki",
+                path: "/tmp/squad-wiki",
+                realPath: "/tmp/squad-wiki",
                 access: "readWrite",
                 readable: true,
                 writable: true,
@@ -270,7 +270,7 @@ beforeEach(() => {
           return {
             data: {
               id: "space-default",
-              companyId: COMPANY_ID,
+              squadId: SQUAD_ID,
               wikiId: "default",
               slug: "default",
               displayName: "default",
@@ -290,8 +290,8 @@ beforeEach(() => {
               relativeRoot: "",
               folder: {
                 configured: true,
-                path: "/tmp/company-wiki",
-                realPath: "/tmp/company-wiki",
+                path: "/tmp/squad-wiki",
+                realPath: "/tmp/squad-wiki",
                 access: "readWrite",
                 readable: true,
                 writable: true,
@@ -476,7 +476,7 @@ function wikiMaintainerAgent(): Agent {
   const now = new Date();
   return {
     id: "22222222-2222-4222-8222-222222222222",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     name: "Wiki Maintainer",
     urlKey: "wiki-maintainer",
     role: "general",
@@ -521,7 +521,7 @@ function existingProject(): Project {
   const now = new Date();
   return {
     id: "55555555-5555-4555-8555-555555555555",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     urlKey: "existing-wiki-project",
     goalId: null,
     goalIds: [],
@@ -560,7 +560,7 @@ function slawIssue(overrides: Partial<Issue> = {}): Issue {
   const now = new Date();
   return {
     id: "66666666-6666-4666-8666-666666666666",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,
@@ -604,7 +604,7 @@ function slawIssue(overrides: Partial<Issue> = {}): Issue {
 function wikiSpaceRow(space: Record<string, unknown>) {
   return {
     id: space.id,
-    company_id: space.companyId ?? COMPANY_ID,
+    squad_id: space.squadId ?? SQUAD_ID,
     wiki_id: space.wikiId ?? "default",
     slug: space.slug,
     display_name: space.displayName,
@@ -627,7 +627,7 @@ function wikiSpaceRow(space: Record<string, unknown>) {
 function defaultWikiSpaceRow() {
   return wikiSpaceRow({
     id: "77777777-7777-4777-8777-7777777777d0",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     wikiId: "default",
     slug: "default",
     displayName: "default",
@@ -736,7 +736,7 @@ describe("LLM Wiki plugin scaffold", () => {
 
   it("renders a host-aligned sidebar link with an open-book icon", () => {
     const markup = renderToStaticMarkup(createElement(SidebarLink, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain('href="/PAP/wiki"');
@@ -778,7 +778,7 @@ describe("LLM Wiki plugin scaffold", () => {
 
   it("renders the route-scoped Wiki sidebar with tool actions, page navigation, and a back link", () => {
     const markup = renderToStaticMarkup(createElement(WikiRouteSidebar, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain('href="/PAP/dashboard"');
@@ -810,7 +810,7 @@ describe("LLM Wiki plugin scaffold", () => {
   it("routes legacy Wiki operations URLs to the History issue table", () => {
     mockPathname = "/PAP/wiki/operations";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Issues table · project-1 · plugin:slaw.plugin-llm-wiki:operation");
@@ -821,7 +821,7 @@ describe("LLM Wiki plugin scaffold", () => {
   it("loads AGENTS.md from the Wiki page and exposes an edit affordance", () => {
     mockPathname = "/PAP/wiki/page/templates/AGENTS.md";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("AGENTS");
@@ -847,7 +847,7 @@ describe("LLM Wiki plugin scaffold", () => {
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Current project state.");
@@ -874,7 +874,7 @@ Route sidebar state stays attached to the selected wiki page.
 `;
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("<summary");
@@ -914,7 +914,7 @@ Duplicate headings receive stable suffixes.
 `;
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain('aria-label="On this page"');
@@ -955,7 +955,7 @@ Duplicate headings receive stable suffixes.
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Repair wiki root folder");
@@ -969,7 +969,7 @@ Duplicate headings receive stable suffixes.
   it("serializes root template pages as regular path segments", () => {
     mockAutoSelectFile = "AGENTS.md";
     renderToStaticMarkup(createElement(WikiRouteSidebar, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(mockNavigatedTo).toBe("/wiki/page/AGENTS.md");
@@ -978,7 +978,7 @@ Duplicate headings receive stable suffixes.
   it("highlights Settings for legacy lint links after lint moved under Settings", () => {
     mockPathname = "/PAP/wiki/lint";
     const markup = renderToStaticMarkup(createElement(WikiRouteSidebar, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).not.toContain('href="/PAP/wiki/lint"');
@@ -993,7 +993,7 @@ Duplicate headings receive stable suffixes.
   it("renders the maintainer settings without plugin metadata or inline AGENTS.md editing", () => {
     mockPathname = "/PAP/wiki/settings/maintainer";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Wiki Maintainer");
@@ -1020,7 +1020,7 @@ Duplicate headings receive stable suffixes.
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("pending approval");
@@ -1031,7 +1031,7 @@ Duplicate headings receive stable suffixes.
   it("renders root settings as a compact health checklist with the shared path picker", () => {
     mockPathname = "/PAP/wiki/settings";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain(">Setup</");
@@ -1085,8 +1085,8 @@ Duplicate headings receive stable suffixes.
     mockPathname = "/PAP/wiki/settings";
     mockSettingsFolder = {
       configured: true,
-      path: "/tmp/company-wiki",
-      realPath: "/tmp/company-wiki",
+      path: "/tmp/squad-wiki",
+      realPath: "/tmp/squad-wiki",
       access: "readWrite",
       readable: true,
       writable: true,
@@ -1103,7 +1103,7 @@ Duplicate headings receive stable suffixes.
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("configuration errors detected, fix them all?");
@@ -1128,12 +1128,12 @@ Duplicate headings receive stable suffixes.
     }];
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Managed Skills");
     expect(markup).toContain("skill issue(s) need attention");
-    expect(markup).toContain("LLM Wiki Maintainer is not installed in the company skill library.");
+    expect(markup).toContain("LLM Wiki Maintainer is not installed in the squad skill library.");
     expect(markup).toContain("Re-sync skills");
   });
 
@@ -1152,7 +1152,7 @@ Duplicate headings receive stable suffixes.
     }];
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("skill issue(s) need attention");
@@ -1162,7 +1162,7 @@ Duplicate headings receive stable suffixes.
 
   it("renders host settings directly as the Setup page without an extra plugin heading", () => {
     const markup = renderToStaticMarkup(createElement(SettingsPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain(">Setup</h1>");
@@ -1174,7 +1174,7 @@ Duplicate headings receive stable suffixes.
   it("renders project settings as a project picker without managed-resource metadata", () => {
     mockPathname = "/PAP/wiki/settings/project";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Use existing project");
@@ -1195,7 +1195,7 @@ Duplicate headings receive stable suffixes.
     mockPathname = "/PAP/wiki/settings/spaces/default";
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Space folder health checklist");
@@ -1227,7 +1227,7 @@ Duplicate headings receive stable suffixes.
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Agent execution");
@@ -1263,7 +1263,7 @@ Duplicate headings receive stable suffixes.
       details: { cronExpression: "0 3 * * *" },
     }];
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Run LLM Wiki lint");
@@ -1297,7 +1297,7 @@ Duplicate headings receive stable suffixes.
     }];
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Routine defaults changed");
@@ -1317,7 +1317,7 @@ Duplicate headings receive stable suffixes.
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Wiki Maintainer instructions differ from the plugin default: AGENTS.md.");
@@ -1342,7 +1342,7 @@ Duplicate headings receive stable suffixes.
     }];
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Routine setup needs repair");
@@ -1356,7 +1356,7 @@ Duplicate headings receive stable suffixes.
   it("renders legacy lint routes inside the Wiki settings section", () => {
     mockPathname = "/PAP/wiki/lint";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("Run lint now");
@@ -1367,7 +1367,7 @@ Duplicate headings receive stable suffixes.
   it("does not expose IDEA.md pattern editing as a settings section", () => {
     mockPathname = "/PAP/wiki/settings";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("LLM Wiki settings sections");
@@ -1379,7 +1379,7 @@ Duplicate headings receive stable suffixes.
   it("does not expose plugin capabilities as a settings section", () => {
     mockPathname = "/PAP/wiki/settings";
     const markup = renderToStaticMarkup(createElement(WikiPage, {
-      context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
+      context: { squadId: SQUAD_ID, squadPrefix: "PAP" },
     } as never));
 
     expect(markup).toContain("LLM Wiki settings sections");
@@ -1390,15 +1390,15 @@ Duplicate headings receive stable suffixes.
   it("reconciles managed maintenance routines through stable agent and project refs", async () => {
     const harness = createTestHarness({ manifest });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
 
     const missing = await harness.performAction<PluginManagedRoutineResolution>("reconcile-managed-routine", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       routineKey: NIGHTLY_LINT_ROUTINE_KEY,
     });
     expect(missing.status).toBe("missing_refs");
@@ -1407,11 +1407,11 @@ Duplicate headings receive stable suffixes.
       expect.objectContaining({ resourceKind: "project", resourceKey: WIKI_PROJECT_KEY }),
     ]);
 
-    await harness.performAction("bootstrap-root", { companyId: COMPANY_ID, path: "/tmp/company-wiki" });
+    await harness.performAction("bootstrap-root", { squadId: SQUAD_ID, path: "/tmp/squad-wiki" });
     const reconciled = await Promise.all(
       WIKI_MAINTENANCE_ROUTINE_KEYS.map((routineKey) =>
         harness.performAction<PluginManagedRoutineResolution>("reconcile-managed-routine", {
-          companyId: COMPANY_ID,
+          squadId: SQUAD_ID,
           routineKey,
         })),
     );
@@ -1441,18 +1441,18 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     await expect(harness.performAction("reconcile-managed-routine", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
     })).rejects.toThrow("routineKey is required");
   });
 
   it("repairs all managed maintenance routines through one action", async () => {
     const harness = createTestHarness({ manifest });
     await plugin.definition.setup(harness.ctx);
-    await harness.performAction("bootstrap-root", { companyId: COMPANY_ID, path: "/tmp/company-wiki" });
+    await harness.performAction("bootstrap-root", { squadId: SQUAD_ID, path: "/tmp/squad-wiki" });
 
     const repaired = await harness.performAction<{
       managedRoutines: PluginManagedRoutineResolution[];
-    }>("reconcile-managed-routines", { companyId: COMPANY_ID });
+    }>("reconcile-managed-routines", { squadId: SQUAD_ID });
 
     expect(repaired.managedRoutines).toHaveLength(WIKI_MAINTENANCE_ROUTINE_KEYS.length);
     expect(repaired.managedRoutines.map((routine) => routine.resourceKey)).toEqual([...WIKI_MAINTENANCE_ROUTINE_KEYS]);
@@ -1465,12 +1465,12 @@ Duplicate headings receive stable suffixes.
     }
   });
 
-  it("installs and resets managed company skills through setup actions", async () => {
+  it("installs and resets managed squad skills through setup actions", async () => {
     const harness = createTestHarness({ manifest });
     await plugin.definition.setup(harness.ctx);
 
     const before = await harness.getData<{ managedSkills: WikiSkillResource[] }>("settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
     });
     expect(before.managedSkills.map((skill) => skill.resourceKey)).toEqual([...WIKI_MANAGED_SKILL_KEYS]);
     expect(before.managedSkills[0]).toMatchObject({
@@ -1480,7 +1480,7 @@ Duplicate headings receive stable suffixes.
 
     const repaired = await harness.performAction<{
       managedSkills: WikiSkillResource[];
-    }>("reconcile-managed-skills", { companyId: COMPANY_ID });
+    }>("reconcile-managed-skills", { squadId: SQUAD_ID });
     expect(repaired.managedSkills).toHaveLength(WIKI_MANAGED_SKILL_KEYS.length);
     expect(repaired.managedSkills[0]).toMatchObject({
       status: "created",
@@ -1493,7 +1493,7 @@ Duplicate headings receive stable suffixes.
     });
 
     const resolved = await harness.getData<{ managedSkills: WikiSkillResource[] }>("settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
     });
     expect(resolved.managedSkills[0]).toMatchObject({
       status: "resolved",
@@ -1503,7 +1503,7 @@ Duplicate headings receive stable suffixes.
 
     const reset = await harness.performAction<{
       managedSkills: WikiSkillResource[];
-    }>("reset-managed-skills", { companyId: COMPANY_ID });
+    }>("reset-managed-skills", { squadId: SQUAD_ID });
     expect(reset.managedSkills[0]).toMatchObject({
       status: "reset",
       skillId: expect.any(String),
@@ -1516,14 +1516,14 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     const overview = await harness.getData<{ status: string; operationCount: number; eventIngestion: { enabled: boolean } }>("overview", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
     });
     expect(overview.status).toBe("ok");
     expect(overview.operationCount).toBe(0);
     expect(overview.eventIngestion.enabled).toBe(false);
 
     const pages = await harness.executeTool<{ content?: string }>("wiki_list_pages", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
     });
     expect(pages.content).toBe("No pages indexed yet.");
@@ -1536,7 +1536,7 @@ Duplicate headings receive stable suffixes.
       ["raw/live-source.md", "# Live Source\n"],
     ]);
     const now = new Date().toISOString();
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const contents = files.get(relativePath);
       if (contents == null) throw new Error(`missing ${relativePath}`);
       return contents;
@@ -1593,7 +1593,7 @@ Duplicate headings receive stable suffixes.
       pages: Array<{ path: string }>;
       sources: Array<{ rawPath: string }>;
     }>("pages", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       includeRaw: true,
     });
@@ -1605,7 +1605,7 @@ Duplicate headings receive stable suffixes.
   it("includes local wiki files in browse data before metadata is indexed", async () => {
     const harness = createTestHarness({ manifest });
     const modifiedAt = new Date().toISOString();
-    harness.ctx.localFolders.list = async (_companyId, folderKey, options) => ({
+    harness.ctx.localFolders.list = async (_squadId, folderKey, options) => ({
       folderKey,
       relativePath: options?.relativePath ?? null,
       truncated: false,
@@ -1629,7 +1629,7 @@ Duplicate headings receive stable suffixes.
       pages: Array<{ path: string; title: string | null }>;
       sources: Array<{ rawPath: string; title: string | null }>;
     }>("pages", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       includeRaw: true,
     });
@@ -1649,14 +1649,14 @@ Duplicate headings receive stable suffixes.
     const issue = slawIssue();
     harness.seed({ issues: [issue] });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     await harness.emit("issue.created", { identifier: issue.identifier }, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-disabled-issue-created",
@@ -1672,16 +1672,16 @@ Duplicate headings receive stable suffixes.
     const issue = slawIssue();
     harness.seed({ issues: [issue] });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     const policy = await harness.performAction<{ enabled: boolean; sources: { issues: boolean; comments: boolean; documents: boolean } }>(
       "update-event-ingestion-settings",
       {
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         enabled: true,
         sources: { issues: true, comments: false, documents: false },
       },
@@ -1689,7 +1689,7 @@ Duplicate headings receive stable suffixes.
     expect(policy).toMatchObject({ enabled: true, sources: { issues: true, comments: false, documents: false } });
 
     await harness.emit("issue.created", { identifier: issue.identifier }, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-enabled-issue-created",
@@ -1697,7 +1697,7 @@ Duplicate headings receive stable suffixes.
 
     expect(writes).toHaveLength(0);
     const operations = await harness.ctx.issues.list({
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       originKindPrefix: String(OPERATION_ORIGIN_KIND),
     });
     expect(operations).toHaveLength(0);
@@ -1705,9 +1705,9 @@ Duplicate headings receive stable suffixes.
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("wiki_operations"))).toBe(false);
     const cursorUpsert = harness.dbExecutes.find((execute) => execute.sql.includes("slaw_distillation_cursors"));
     expect(cursorUpsert?.params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "default",
-      "company",
+      "squad",
       null,
       null,
     ]));
@@ -1718,7 +1718,7 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     await harness.performAction("update-event-ingestion-settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       enabled: true,
       sources: { issues: true, comments: true, documents: true },
     });
@@ -1727,7 +1727,7 @@ Duplicate headings receive stable suffixes.
       enabled: boolean;
       sources: { issues: boolean; comments: boolean; documents: boolean };
     }>("update-event-ingestion-settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       enabled: false,
     });
     expect(disabled).toMatchObject({
@@ -1739,7 +1739,7 @@ Duplicate headings receive stable suffixes.
       enabled: boolean;
       sources: { issues: boolean; comments: boolean; documents: boolean };
     }>("update-event-ingestion-settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       enabled: true,
     });
     expect(reenabled).toMatchObject({
@@ -1748,12 +1748,12 @@ Duplicate headings receive stable suffixes.
     });
   });
 
-  it("keeps Slaw event cursor observations company scoped and ignores plugin-operation issues", async () => {
+  it("keeps Slaw event cursor observations squad scoped and ignores plugin-operation issues", async () => {
     const harness = createTestHarness({ manifest });
     const visibleIssue = slawIssue({ projectId: "77777777-7777-4777-8777-777777777777" });
-    const otherCompanyIssue = slawIssue({
+    const otherSquadIssue = slawIssue({
       id: "77777777-7777-4777-8777-777777777778",
-      companyId: OTHER_COMPANY_ID,
+      squadId: OTHER_SQUAD_ID,
       projectId: "77777777-7777-4777-8777-777777777779",
       identifier: "PAP-9999",
     });
@@ -1761,29 +1761,29 @@ Duplicate headings receive stable suffixes.
       id: "77777777-7777-4777-8777-777777777780",
       originKind: `${OPERATION_ORIGIN_KIND}:ingest`,
     });
-    harness.seed({ issues: [visibleIssue, otherCompanyIssue, operationIssue] });
+    harness.seed({ issues: [visibleIssue, otherSquadIssue, operationIssue] });
 
     await plugin.definition.setup(harness.ctx);
     await harness.performAction("update-event-ingestion-settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       enabled: true,
       sources: { issues: true, comments: true, documents: true },
     });
 
     await harness.emit("issue.updated", {}, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: visibleIssue.id,
       entityType: "issue",
       eventId: "event-visible",
     });
     await harness.emit("issue.updated", {}, {
-      companyId: OTHER_COMPANY_ID,
-      entityId: otherCompanyIssue.id,
+      squadId: OTHER_SQUAD_ID,
+      entityId: otherSquadIssue.id,
       entityType: "issue",
-      eventId: "event-other-company",
+      eventId: "event-other-squad",
     });
     await harness.emit("issue.updated", {}, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: operationIssue.id,
       entityType: "issue",
       eventId: "event-plugin-operation",
@@ -1792,7 +1792,7 @@ Duplicate headings receive stable suffixes.
     const cursorWrites = harness.dbExecutes.filter((execute) => execute.sql.includes("slaw_distillation_cursors"));
     expect(cursorWrites).toHaveLength(1);
     expect(cursorWrites[0].params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "default",
       "project",
       visibleIssue.projectId,
@@ -1808,29 +1808,29 @@ Duplicate headings receive stable suffixes.
     const created = await harness.performAction<{
       space: { id: string; slug: string };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Team Research",
     });
     await harness.performAction("update-event-ingestion-settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       enabled: true,
       sources: { issues: true, comments: true, documents: true },
     });
 
     await harness.emit("issue.created", {}, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-default-issue-created",
     });
     await harness.emit("issue.comment.created", { commentId: "comment-1" }, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-default-comment-created",
     });
     await harness.emit("issue.document.updated", { key: "plan", revisionId: "revision-1" }, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-default-document-updated",
@@ -1855,7 +1855,7 @@ Duplicate headings receive stable suffixes.
     const created = await harness.performAction<{
       space: { id: string; slug: string };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Engineering Wiki",
       accessScope: "shared",
     });
@@ -1869,14 +1869,14 @@ Duplicate headings receive stable suffixes.
       backfill: { requireManualQueue: true },
     };
     await harness.performAction("update-slaw-ingestion-profile", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
       profile: enabledProfile,
     });
     mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { slawIngestion: enabledProfile } });
 
     await harness.emit("issue.created", {}, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-non-default-enabled",
@@ -1896,7 +1896,7 @@ Duplicate headings receive stable suffixes.
     const created = await harness.performAction<{
       space: { id: string; slug: string };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Support Wiki",
       accessScope: "shared",
     });
@@ -1910,25 +1910,25 @@ Duplicate headings receive stable suffixes.
       backfill: { requireManualQueue: true },
     };
     await harness.performAction("update-slaw-ingestion-profile", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
       profile: enabledProfile,
     });
     mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { slawIngestion: enabledProfile } });
     await harness.emit("issue.created", {}, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-before-disable",
     });
     await harness.performAction("update-slaw-ingestion-profile", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
       profile: { ...enabledProfile, enabled: false },
     });
     mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { slawIngestion: { ...enabledProfile, enabled: false } } });
     await harness.emit("issue.updated", {}, {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       entityId: issue.id,
       entityType: "issue",
       eventId: "event-after-disable",
@@ -1961,7 +1961,7 @@ Duplicate headings receive stable suffixes.
       issues: [root, child],
       issueComments: [{
         id: "77777777-7777-4777-8777-777777777783",
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         issueId: child.id,
         authorType: "user",
         authorAgentId: null,
@@ -1976,7 +1976,7 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     await harness.ctx.issues.documents.upsert({
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       issueId: child.id,
       key: "plan",
       title: "Plan",
@@ -1989,12 +1989,12 @@ Duplicate headings receive stable suffixes.
       sourceHash: string;
       sourceWindowEnd: string | null;
     }>("assemble-slaw-source-bundle", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       rootIssueId: root.id,
       maxCharacters: 20000,
     });
     const second = await harness.performAction<typeof first>("assemble-slaw-source-bundle", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       rootIssueId: root.id,
       maxCharacters: 20000,
     });
@@ -2026,7 +2026,7 @@ Duplicate headings receive stable suffixes.
       issues: [issue],
       issueComments: [{
         id: "77777777-7777-4777-8777-777777777785",
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         issueId: issue.id,
         authorType: "user",
         authorAgentId: null,
@@ -2041,7 +2041,7 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     await harness.ctx.issues.documents.upsert({
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       issueId: issue.id,
       key: "plan",
       title: "Plan",
@@ -2055,7 +2055,7 @@ Duplicate headings receive stable suffixes.
         sourceRefs: Array<Record<string, unknown>>;
       };
     }>("create-slaw-distillation-run", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: issue.projectId,
       maxCharacters: 20000,
     });
@@ -2096,14 +2096,14 @@ Duplicate headings receive stable suffixes.
       snapshotId: string;
       bundle: { sourceHash: string; sourceWindowEnd: string };
     }>("create-slaw-distillation-run", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: issue.projectId,
     });
     expect(run.snapshotId).toEqual(expect.any(String));
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("slaw_source_snapshots"))).toBe(true);
 
     const failed = await harness.performAction<{ cursorAdvanced: boolean }>("record-slaw-distillation-outcome", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       runId: run.runId,
       cursorId: run.cursorId,
       status: "failed",
@@ -2117,7 +2117,7 @@ Duplicate headings receive stable suffixes.
     expect(cursorUpdatesAfterFailure).toHaveLength(0);
 
     const succeeded = await harness.performAction<{ cursorAdvanced: boolean }>("record-slaw-distillation-outcome", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       runId: run.runId,
       cursorId: run.cursorId,
       status: "succeeded",
@@ -2128,7 +2128,7 @@ Duplicate headings receive stable suffixes.
     const cursorSuccessUpdate = harness.dbExecutes.find((execute) =>
       execute.sql.trim().startsWith("UPDATE") && execute.sql.includes("slaw_distillation_cursors"));
     expect(cursorSuccessUpdate?.params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "default",
       run.runId,
       run.bundle.sourceWindowEnd,
@@ -2159,7 +2159,7 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     const result = await harness.performAction<{ cursorId: string }>("create-slaw-distillation-run", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
     });
 
@@ -2174,20 +2174,20 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     await harness.performAction("create-slaw-distillation-work-item", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       kind: "manual",
       projectId: "77777777-7777-4777-8777-777777777777",
       idempotencyKey: "manual:project:77777777-7777-4777-8777-777777777777",
     });
     await harness.performAction("create-slaw-distillation-work-item", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       kind: "retry",
       rootIssueId: "77777777-7777-4777-8777-777777777781",
       priority: "high",
       idempotencyKey: "retry:run:1",
     });
     await harness.performAction("create-slaw-distillation-work-item", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       kind: "backfill",
       projectId: "77777777-7777-4777-8777-777777777777",
       priority: "low",
@@ -2203,10 +2203,10 @@ Duplicate headings receive stable suffixes.
     expect(String(workItemWrites[2].params?.[9])).toContain('"sourceScope":"project"');
 
     await expect(harness.performAction("create-slaw-distillation-work-item", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       kind: "backfill",
-      idempotencyKey: "backfill:company",
-    })).rejects.toThrow("whole-company backfill is not allowed");
+      idempotencyKey: "backfill:squad",
+    })).rejects.toThrow("whole-squad backfill is not allowed");
   });
 
   it("records estimated Slaw distillation cost without refusing on legacy cost config", async () => {
@@ -2236,7 +2236,7 @@ Duplicate headings receive stable suffixes.
       estimatedCostCents: number;
       snapshotId: string | null;
     }>("create-slaw-distillation-run", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       routineRun: true,
     });
@@ -2247,7 +2247,7 @@ Duplicate headings receive stable suffixes.
     const readyRun = harness.dbExecutes.find((execute) =>
       execute.sql.includes("slaw_distillation_runs") && execute.sql.includes("'source_ready'"));
     expect(readyRun?.params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "default",
       expect.any(String),
       expect.any(String),
@@ -2258,7 +2258,7 @@ Duplicate headings receive stable suffixes.
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("refused_cost_cap"))).toBe(false);
   });
 
-  it("queues visible manual distill operation issues for a company-wide stale cursor scan", async () => {
+  it("queues visible manual distill operation issues for a squad-wide stale cursor scan", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
     const issue = slawIssue({
@@ -2277,7 +2277,7 @@ Duplicate headings receive stable suffixes.
       operation: { issue: { originKind: string; billingCode: string | null; assigneeAgentId: string | null; assigneeAdapterOverrides: { modelProfile?: string } | null; description: string | null } };
       workItem: { kind: string; workItemId: string };
     }>("distill-slaw-now", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       autoApply: false,
       useCheapModelProfile: true,
       includeSupportingPages: false,
@@ -2296,7 +2296,7 @@ Duplicate headings receive stable suffixes.
     const workItemInsert = harness.dbExecutes.find((execute) =>
       execute.sql.includes("slaw_distillation_work_items") && execute.params?.[3] === "manual");
     expect(workItemInsert?.params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "default",
       "manual",
       "medium",
@@ -2363,7 +2363,7 @@ Duplicate headings receive stable suffixes.
       selectedProjects: Array<{ id: string; observedAt: string | null }>;
       eventIngestion: { enabled: boolean; sources: { issues: boolean; comments: boolean; documents: boolean } };
     }>("enable-slaw-distillation-active-projects", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       limit: 2,
     });
 
@@ -2418,7 +2418,7 @@ Duplicate headings receive stable suffixes.
       workItem: { kind: string };
       operation: { issue: { originKind: string } };
     }>("backfill-slaw-distillation", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       backfillStartAt: "2026-04-01T00:00:00Z",
       backfillEndAt: "2026-04-30T23:59:59Z",
@@ -2456,15 +2456,15 @@ Duplicate headings receive stable suffixes.
     ]);
     const writes: Array<{ path: string; contents: string }> = [];
     harness.seed({ projects: [project], issues: [issue] });
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const contents = files.get(relativePath);
       if (contents == null) throw new Error(`missing ${relativePath}`);
       return contents;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
@@ -2473,7 +2473,7 @@ Duplicate headings receive stable suffixes.
       patches: Array<{ pagePath: string; operationType: string; currentHash: string | null; proposedContents: string; sourceRefs: Array<{ issueIdentifier: string | null }> }>;
       warnings: string[];
     }>("distill-slaw-project-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       autoApply: false,
       maxCharacters: 20000,
@@ -2525,7 +2525,7 @@ Duplicate headings receive stable suffixes.
       issues: [issue],
       issueComments: [{
         id: "77777777-7777-4777-8777-777777777797",
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         issueId: issue.id,
         authorType: "user",
         authorAgentId: null,
@@ -2537,19 +2537,19 @@ Duplicate headings receive stable suffixes.
         updatedAt: new Date("2026-05-04T11:00:00Z"),
       }],
     });
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const contents = files.get(relativePath);
       if (contents == null) throw new Error(`missing ${relativePath}`);
       return contents;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     await harness.ctx.issues.documents.upsert({
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       issueId: issue.id,
       key: "plan",
       title: "Plan",
@@ -2560,7 +2560,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       patches: Array<{ operationType: string; proposedContents: string }>;
     }>("distill-slaw-project-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       maxCharacters: 20000,
       includeSupportingPages: false,
@@ -2591,14 +2591,14 @@ Duplicate headings receive stable suffixes.
       ["wiki/log.md", DEFAULT_LOG],
     ]);
     harness.seed({ projects: [project], issues: [issue] });
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const contents = files.get(relativePath);
       if (contents == null) throw new Error(`missing ${relativePath}`);
       return contents;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
@@ -2607,7 +2607,7 @@ Duplicate headings receive stable suffixes.
       appliedPages: string[];
       patches: Array<{ pagePath: string; sourceHash: string }>;
     }>("distill-slaw-project-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       autoApply: true,
       maxCharacters: 20000,
@@ -2629,7 +2629,7 @@ Duplicate headings receive stable suffixes.
     const bindingWrites = harness.dbExecutes.filter((execute) => execute.sql.includes("slaw_page_bindings"));
     expect(bindingWrites).toHaveLength(4);
     expect(bindingWrites[0].params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "default",
       project.id,
       null,
@@ -2658,15 +2658,15 @@ Duplicate headings receive stable suffixes.
     ]);
     const writes: string[] = [];
     harness.seed({ projects: [project], issues: [issue] });
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const contents = files.get(relativePath);
       if (contents == null) throw new Error(`missing ${relativePath}`);
       return contents;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push(relativePath);
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
@@ -2675,7 +2675,7 @@ Duplicate headings receive stable suffixes.
       appliedPages: string[];
       warnings: string[];
     }>("distill-slaw-project-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       autoApply: true,
       maxCharacters: 20000,
@@ -2708,20 +2708,20 @@ Duplicate headings receive stable suffixes.
     ]);
     const writes: string[] = [];
     harness.seed({ projects: [project], issues: [issue] });
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const contents = files.get(relativePath);
       if (contents == null) throw new Error(`missing ${relativePath}`);
       return contents;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push(relativePath);
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     await expect(harness.performAction("distill-slaw-project-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       autoApply: true,
       expectedProjectPageHash: "stale",
@@ -2743,14 +2743,14 @@ Duplicate headings receive stable suffixes.
     });
     const writes: string[] = [];
     harness.seed({ projects: [project], issues: [issue] });
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push(relativePath);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     const result = await harness.performAction<{ status: string; reason: string; patches: unknown[] }>("distill-slaw-project-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
       maxCharacters: 20000,
     });
@@ -2764,15 +2764,15 @@ Duplicate headings receive stable suffixes.
   it("bootstraps required local wiki files through the local folder API", async () => {
     const harness = createTestHarness({ manifest });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     const result = await harness.performAction<{ writtenFiles: string[]; managedSkills: WikiSkillResource[] }>("bootstrap-root", {
-      companyId: COMPANY_ID,
-      path: "/tmp/company-wiki",
+      squadId: SQUAD_ID,
+      path: "/tmp/squad-wiki",
     });
 
     expect(result.writtenFiles).toContain("AGENTS.md");
@@ -2803,21 +2803,21 @@ Duplicate headings receive stable suffixes.
   it("creates a managed space with an immediately readable baseline skeleton", async () => {
     const harness = createTestHarness({ manifest });
     const files = new Map<string, string>();
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const value = files.get(relativePath);
       if (value == null) throw new Error(`missing ${relativePath}`);
       return value;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     const created = await harness.performAction<{
       space: { slug: string; pathPrefix: string | null };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "QA Space",
     });
 
@@ -2826,7 +2826,7 @@ Duplicate headings receive stable suffixes.
       pathPrefix: "spaces/qa-space",
     });
     await expect(harness.ctx.localFolders.readText(
-      COMPANY_ID,
+      SQUAD_ID,
       "wiki-root",
       "spaces/qa-space/AGENTS.md",
     )).resolves.toContain("LLM Wiki Schema");
@@ -2842,7 +2842,7 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     await expect(harness.performAction("update-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: "default",
       status: "archived",
     })).rejects.toThrow("The default LLM Wiki space cannot be archived.");
@@ -2885,7 +2885,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       space: { slug: string; displayName: string; status: string; settings: Record<string, unknown> };
     }>("update-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: "qa-space",
       displayName: "Archived QA",
       settings: { archivedBy: "test" },
@@ -2935,7 +2935,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       space: { slug: string; status: string };
     }>("update-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: "qa-space",
       status: "active",
     });
@@ -2953,7 +2953,7 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     await expect(harness.performAction("update-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: "default",
       status: "suspended",
     })).rejects.toThrow("LLM Wiki space status must be active or archived.");
@@ -2994,7 +2994,7 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     const result = await harness.getData<{ spaces: Array<{ slug: string }> }>("spaces", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
     });
 
@@ -3005,14 +3005,14 @@ Duplicate headings receive stable suffixes.
   it("captures raw sources into local files and plugin metadata", async () => {
     const harness = createTestHarness({ manifest });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     const result = await harness.performAction<{ rawPath: string; hash: string }>("capture-source", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       title: "Plugin Boundaries",
       contents: "# Plugin Boundaries\n\nKeep wiki logic in the plugin.",
@@ -3027,9 +3027,9 @@ Duplicate headings receive stable suffixes.
   it("preserves manual source ingest for non-default spaces while refusing Slaw distillation there", async () => {
     const harness = createTestHarness({ manifest });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
     harness.seed({
       agents: [wikiMaintainerAgent()],
@@ -3047,14 +3047,14 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     const created = await harness.performAction<{
-      space: { id: string; companyId: string; wikiId: string; slug: string; displayName: string; pathPrefix: string | null };
+      space: { id: string; squadId: string; wikiId: string; slug: string; displayName: string; pathPrefix: string | null };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Team Research",
     });
     spaces.set(created.space.slug, {
       id: created.space.id,
-      company_id: created.space.companyId,
+      squad_id: created.space.squadId,
       wiki_id: created.space.wikiId,
       slug: created.space.slug,
       display_name: created.space.displayName,
@@ -3074,7 +3074,7 @@ Duplicate headings receive stable suffixes.
     });
 
     const source = await harness.performAction<{ rawPath: string; spaceSlug: string }>("capture-source", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
       title: "Team notes",
       contents: "# Team notes\n\nManual source ingest still belongs to the selected space.",
@@ -3083,7 +3083,7 @@ Duplicate headings receive stable suffixes.
     expect(source.spaceSlug).toBe(created.space.slug);
     expect(writes.map((write) => write.path)).toContain(`spaces/${created.space.slug}/${source.rawPath}`);
     await expect(harness.performAction("distill-slaw-now", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
       projectId: existingProject().id,
     })).rejects.toThrow("Slaw ingestion policy denied queue");
@@ -3100,7 +3100,7 @@ Duplicate headings receive stable suffixes.
     const created = await harness.performAction<{
       space: { slug: string; accessScope: string };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Private Notes",
       accessScope: "personal",
     });
@@ -3111,7 +3111,7 @@ Duplicate headings receive stable suffixes.
       if (sql.includes("wiki_spaces") && params?.[2] === created.space.slug) {
         return [{
           id: "77777777-7777-4777-8777-7777777777b2",
-          company_id: COMPANY_ID,
+          squad_id: SQUAD_ID,
           wiki_id: "default",
           slug: created.space.slug,
           display_name: "Private Notes",
@@ -3133,13 +3133,13 @@ Duplicate headings receive stable suffixes.
       return originalQuery<T>(sql, params);
     };
     await expect(harness.performAction("distill-slaw-now", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
       projectId: existingProject().id,
     })).rejects.toThrow("Slaw ingestion policy denied queue");
 
     const operations = await harness.ctx.issues.list({
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       originKindPrefix: String(OPERATION_ORIGIN_KIND),
     });
     expect(operations).toHaveLength(0);
@@ -3161,7 +3161,7 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     const queued = await harness.performAction<{ status: string }>("distill-slaw-now", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
     });
     expect(queued.status).toBe("queued");
@@ -3171,7 +3171,7 @@ Duplicate headings receive stable suffixes.
       if (sql.includes("wiki_spaces") && sql.includes("slug = 'default'")) {
         return [{
           id: "77777777-7777-4777-8777-7777777777b1",
-          company_id: COMPANY_ID,
+          squad_id: SQUAD_ID,
           wiki_id: "default",
           slug: "default",
           display_name: "default",
@@ -3194,7 +3194,7 @@ Duplicate headings receive stable suffixes.
     };
 
     await expect(harness.performAction("create-slaw-distillation-run", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
     })).rejects.toThrow("personal spaces cannot ingest Slaw sources");
     expect(harness.dbExecutes.some((execute) =>
@@ -3211,7 +3211,7 @@ Duplicate headings receive stable suffixes.
       issueId: string;
       workItems: Array<{ workItemId: string; issueId: string; projectId: string | null; rootIssueId: string | null }>;
     }>("queue-slaw-ingestion-backfill", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       sourceScope: {
         kind: "selected_projects",
         projectIds: [
@@ -3239,25 +3239,25 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     await expect(harness.performAction("update-event-ingestion-settings", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       enabled: true,
       maxCharacters: 20001,
       sources: { issues: true },
     })).rejects.toThrow("maxCharacters exceeds the hard Slaw ingestion cap");
 
     await expect(harness.performAction("enable-slaw-distillation-active-projects", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       limit: 26,
     })).rejects.toThrow("fan-out exceeds the hard cap");
 
     await expect(harness.performAction("assemble-slaw-source-bundle", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: "77777777-7777-4777-8777-777777777777",
       rootIssueId: "77777777-7777-4777-8777-777777777778",
     })).rejects.toThrow("either projectId or rootIssueId");
 
     await expect(harness.performAction("assemble-slaw-source-bundle", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: "77777777-7777-4777-8777-777777777777",
       maxCharacters: 60001,
     })).rejects.toThrow("maxCharacters exceeds the hard Slaw ingestion cap");
@@ -3267,15 +3267,15 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({ manifest });
     const files = new Map<string, string>();
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const value = files.get(relativePath);
       if (value == null) throw new Error(`missing ${relativePath}`);
       return value;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
     const spaces = new Map<string, Record<string, unknown>>();
     const originalQuery = harness.ctx.db.query.bind(harness.ctx.db);
@@ -3289,14 +3289,14 @@ Duplicate headings receive stable suffixes.
 
     await plugin.definition.setup(harness.ctx);
     const created = await harness.performAction<{
-      space: { id: string; companyId: string; wikiId: string; slug: string; displayName: string; pathPrefix: string | null };
+      space: { id: string; squadId: string; wikiId: string; slug: string; displayName: string; pathPrefix: string | null };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Research Space",
     });
     spaces.set(created.space.slug, {
       id: created.space.id,
-      company_id: created.space.companyId,
+      squad_id: created.space.squadId,
       wiki_id: created.space.wikiId,
       slug: created.space.slug,
       display_name: created.space.displayName,
@@ -3315,31 +3315,31 @@ Duplicate headings receive stable suffixes.
       updated_at: null,
     });
     await harness.performAction("bootstrap-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       spaceSlug: created.space.slug,
     });
     await harness.performAction("write-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       path: "wiki/concepts/shared.md",
       contents: "# Default Shared\n",
     });
     await harness.performAction("write-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       spaceSlug: created.space.slug,
       path: "wiki/concepts/shared.md",
       contents: "# Space Shared\n",
     });
     await harness.performAction("capture-source", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       rawPath: "raw/shared.md",
       title: "Shared Source",
       contents: "# Default Raw\n",
     });
     await harness.performAction("capture-source", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       spaceSlug: created.space.slug,
       rawPath: "raw/shared.md",
@@ -3367,9 +3367,9 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({ manifest });
     harness.seed({ agents: [wikiMaintainerAgent()] });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
@@ -3377,7 +3377,7 @@ Duplicate headings receive stable suffixes.
       source: { rawPath: string; title: string; hash: string };
       operation: { operationId: string; issue: { originKind: string; originId: string | null; billingCode: string | null; assigneeAgentId: string | null } };
     }>("ingest-source", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "engineering",
       sourceType: "url",
       title: "Standalone Plugin Notes",
@@ -3403,7 +3403,7 @@ Duplicate headings receive stable suffixes.
 
     const sourceInsert = harness.dbExecutes.find((execute) => execute.sql.includes("wiki_sources"));
     expect(sourceInsert?.params).toEqual(expect.arrayContaining([
-      COMPANY_ID,
+      SQUAD_ID,
       "engineering",
       "url",
       "Standalone Plugin Notes",
@@ -3414,7 +3414,7 @@ Duplicate headings receive stable suffixes.
     const operationInsert = harness.dbExecutes.find((execute) => execute.sql.includes("wiki_operations"));
     expect(operationInsert?.params).toEqual(expect.arrayContaining([
       result.operation.operationId,
-      COMPANY_ID,
+      SQUAD_ID,
       "engineering",
       "ingest",
       "queued",
@@ -3425,14 +3425,14 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({ manifest, config: { maxSourceBytes: 16 } });
     harness.seed({ agents: [wikiMaintainerAgent()] });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     await expect(harness.performAction("ingest-source", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       sourceType: "text",
       title: "Oversized source",
@@ -3443,7 +3443,7 @@ Duplicate headings receive stable suffixes.
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("wiki_sources"))).toBe(false);
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("wiki_operations"))).toBe(false);
     const operations = await harness.ctx.issues.list({
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       originKindPrefix: String(OPERATION_ORIGIN_KIND),
     });
     expect(operations).toHaveLength(0);
@@ -3454,19 +3454,19 @@ Duplicate headings receive stable suffixes.
     const files = new Map<string, string>([
       ["wiki/concepts/plugin-boundaries.md", "# Old Title\n"],
     ]);
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const value = files.get(relativePath);
       if (value == null) throw new Error("missing");
       return value;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
     const staleWrite = harness.executeTool("wiki_write_page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       path: "wiki/concepts/plugin-boundaries.md",
       contents: "# New Title\n",
@@ -3475,7 +3475,7 @@ Duplicate headings receive stable suffixes.
     await expect(staleWrite).rejects.toThrow("Refusing to overwrite");
 
     const result = await harness.executeTool<{ data?: { hash: string } }>("wiki_write_page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       path: "wiki/concepts/plugin-boundaries.md",
       contents: "# Plugin Boundaries\n\nSee [Knowledge](wiki/areas/knowledge.md).",
@@ -3492,27 +3492,27 @@ Duplicate headings receive stable suffixes.
     const files = new Map<string, string>([
       ["AGENTS.md", "# LLM Wiki Maintainer\n\nOriginal instructions.\n"],
     ]);
-    harness.ctx.localFolders.readText = async (_companyId, _folderKey, relativePath) => {
+    harness.ctx.localFolders.readText = async (_squadId, _folderKey, relativePath) => {
       const value = files.get(relativePath);
       if (value == null) throw new Error("missing");
       return value;
     };
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       files.set(relativePath, contents);
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
 
     await plugin.definition.setup(harness.ctx);
 
     await expect(harness.executeTool("wiki_write_page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       path: "AGENTS.md",
       contents: "# LLM Wiki Maintainer\n\nCompromised instructions.\n",
     })).rejects.toThrow("Refusing to overwrite protected wiki control file AGENTS.md");
 
     const result = await harness.performAction<{ hash: string }>("write-page", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       wikiId: "default",
       path: "AGENTS.md",
       contents: "# LLM Wiki Maintainer\n\nBoard-updated instructions.\n",
@@ -3530,7 +3530,7 @@ Duplicate headings receive stable suffixes.
     const result = await harness.performAction<{ issue: { originKind: string; billingCode: string | null } }>(
       "create-operation",
       {
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         operationType: "query",
         title: "Ask the wiki about plugin boundaries",
         prompt: "Which files own wiki behavior?",
@@ -3558,14 +3558,14 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     const created = await harness.performAction<{
-      space: { id: string; companyId: string; wikiId: string; slug: string; displayName: string; pathPrefix: string | null };
+      space: { id: string; squadId: string; wikiId: string; slug: string; displayName: string; pathPrefix: string | null };
     }>("create-space", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       displayName: "Research Space",
     });
     spaces.set(created.space.slug, {
       id: created.space.id,
-      company_id: created.space.companyId,
+      squad_id: created.space.squadId,
       wiki_id: created.space.wikiId,
       slug: created.space.slug,
       display_name: created.space.displayName,
@@ -3588,7 +3588,7 @@ Duplicate headings receive stable suffixes.
       operationId: string;
       issue: { title: string; description: string | null; billingCode: string | null; originId: string | null };
     }>("create-operation", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       operationType: "lint",
       title: "Run LLM Wiki lint",
       prompt: "Audit wiki structure.",
@@ -3625,11 +3625,11 @@ Duplicate headings receive stable suffixes.
     await plugin.definition.setup(harness.ctx);
 
     const selectedAgent = await harness.performAction<{ source: string; agentId: string }>("select-managed-agent", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       agentId: agent.id,
     });
     const selectedProject = await harness.performAction<{ source: string; projectId: string }>("select-managed-project", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: project.id,
     });
 
@@ -3652,7 +3652,7 @@ Duplicate headings receive stable suffixes.
     const result = await harness.performAction<{
       issue: { assigneeAgentId: string | null; projectId: string | null };
     }>("create-operation", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       operationType: "lint",
       title: "Lint selected wiki",
     });
@@ -3677,7 +3677,7 @@ Duplicate headings receive stable suffixes.
       runId: string;
       channel: string;
     }>("start-query", {
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       question: "Which files own wiki behavior?",
     });
 
@@ -3718,16 +3718,16 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({ manifest });
     harness.seed({ agents: [wikiMaintainerAgent()] });
     const writes: Array<{ path: string; contents: string }> = [];
-    harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
+    harness.ctx.localFolders.writeTextAtomic = async (_squadId, _folderKey, relativePath, contents) => {
       writes.push({ path: relativePath, contents });
-      return harness.ctx.localFolders.status(COMPANY_ID, "wiki-root");
+      return harness.ctx.localFolders.status(SQUAD_ID, "wiki-root");
     };
     await plugin.definition.setup(harness.ctx);
 
     const result = await harness.performAction<{ path: string; operationId: string; page: { revisionId: string } }>(
       "file-as-page",
       {
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         querySessionId: "33333333-3333-4333-8333-333333333333",
         question: "Where should wiki code live?",
         answer: "Wiki-specific code lives in the standalone plugin package.",

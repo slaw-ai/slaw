@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   AGENT_ADAPTER_TYPES,
-  HUMAN_COMPANY_MEMBERSHIP_ROLES,
+  HUMAN_SQUAD_MEMBERSHIP_ROLES,
   INVITE_JOIN_TYPES,
   JOIN_REQUEST_STATUSES,
   JOIN_REQUEST_TYPES,
@@ -9,14 +9,14 @@ import {
 } from "../constants.js";
 import { optionalAgentAdapterTypeSchema } from "../adapter-type.js";
 
-export const createCompanyInviteSchema = z.object({
+export const createSquadInviteSchema = z.object({
   allowedJoinTypes: z.enum(INVITE_JOIN_TYPES).default("both"),
-  humanRole: z.enum(HUMAN_COMPANY_MEMBERSHIP_ROLES).optional().nullable(),
+  humanRole: z.enum(HUMAN_SQUAD_MEMBERSHIP_ROLES).optional().nullable(),
   defaultsPayload: z.record(z.string(), z.unknown()).optional().nullable(),
   agentMessage: z.string().max(4000).optional().nullable(),
 });
 
-export type CreateCompanyInvite = z.infer<typeof createCompanyInviteSchema>;
+export type CreateSquadInvite = z.infer<typeof createSquadInviteSchema>;
 
 export const acceptInviteSchema = z.object({
   requestType: z.enum(JOIN_REQUEST_TYPES),
@@ -36,13 +36,13 @@ export const listJoinRequestsQuerySchema = z.object({
 
 export type ListJoinRequestsQuery = z.infer<typeof listJoinRequestsQuerySchema>;
 
-export const listCompanyInvitesQuerySchema = z.object({
+export const listSquadInvitesQuerySchema = z.object({
   state: z.enum(["active", "revoked", "accepted", "expired"]).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
   offset: z.coerce.number().int().min(0).optional().default(0),
 });
 
-export type ListCompanyInvitesQuery = z.infer<typeof listCompanyInvitesQuerySchema>;
+export type ListSquadInvitesQuery = z.infer<typeof listSquadInvitesQuerySchema>;
 
 export const claimJoinRequestApiKeySchema = z.object({
   claimSecret: z.string().min(16).max(256),
@@ -61,7 +61,7 @@ export const createCliAuthChallengeSchema = z.object({
   command: z.string().min(1).max(240),
   clientName: z.string().max(120).optional().nullable(),
   requestedAccess: boardCliAuthAccessLevelSchema.default("board"),
-  requestedCompanyId: z.string().uuid().optional().nullable(),
+  requestedSquadId: z.string().uuid().optional().nullable(),
 });
 
 export type CreateCliAuthChallenge = z.infer<typeof createCliAuthChallengeSchema>;
@@ -75,7 +75,7 @@ export type ResolveCliAuthChallenge = z.infer<typeof resolveCliAuthChallengeSche
 export const createBoardApiKeySchema = z.object({
   name: z.string().trim().min(1).max(120).default("slaw cli"),
   expiresAt: z.coerce.date().optional().nullable(),
-  requestedCompanyId: z.string().uuid().optional().nullable(),
+  requestedSquadId: z.string().uuid().optional().nullable(),
 });
 
 export type CreateBoardApiKey = z.infer<typeof createBoardApiKeySchema>;
@@ -93,26 +93,26 @@ export type UpdateMemberPermissions = z.infer<typeof updateMemberPermissionsSche
 
 const editableMembershipStatuses = ["pending", "active", "suspended"] as const;
 
-export const updateCompanyMemberSchema = z.object({
-  membershipRole: z.enum(HUMAN_COMPANY_MEMBERSHIP_ROLES).optional().nullable(),
+export const updateSquadMemberSchema = z.object({
+  membershipRole: z.enum(HUMAN_SQUAD_MEMBERSHIP_ROLES).optional().nullable(),
   status: z.enum(editableMembershipStatuses).optional(),
 }).refine((value) => value.membershipRole !== undefined || value.status !== undefined, {
   message: "membershipRole or status is required",
 });
 
-export type UpdateCompanyMember = z.infer<typeof updateCompanyMemberSchema>;
+export type UpdateSquadMember = z.infer<typeof updateSquadMemberSchema>;
 
-export const updateCompanyMemberWithPermissionsSchema = z.object({
-  membershipRole: z.enum(HUMAN_COMPANY_MEMBERSHIP_ROLES).optional().nullable(),
+export const updateSquadMemberWithPermissionsSchema = z.object({
+  membershipRole: z.enum(HUMAN_SQUAD_MEMBERSHIP_ROLES).optional().nullable(),
   status: z.enum(editableMembershipStatuses).optional(),
   grants: updateMemberPermissionsSchema.shape.grants.default([]),
 }).refine((value) => value.membershipRole !== undefined || value.status !== undefined, {
   message: "membershipRole or status is required",
 });
 
-export type UpdateCompanyMemberWithPermissions = z.infer<typeof updateCompanyMemberWithPermissionsSchema>;
+export type UpdateSquadMemberWithPermissions = z.infer<typeof updateSquadMemberWithPermissionsSchema>;
 
-export const archiveCompanyMemberSchema = z.object({
+export const archiveSquadMemberSchema = z.object({
   reassignment: z
     .object({
       assigneeAgentId: z.string().uuid().optional().nullable(),
@@ -130,13 +130,13 @@ export const archiveCompanyMemberSchema = z.object({
   }
 });
 
-export type ArchiveCompanyMember = z.infer<typeof archiveCompanyMemberSchema>;
+export type ArchiveSquadMember = z.infer<typeof archiveSquadMemberSchema>;
 
-export const updateUserCompanyAccessSchema = z.object({
-  companyIds: z.array(z.string().uuid()).default([]),
+export const updateUserSquadAccessSchema = z.object({
+  squadIds: z.array(z.string().uuid()).default([]),
 });
 
-export type UpdateUserCompanyAccess = z.infer<typeof updateUserCompanyAccessSchema>;
+export type UpdateUserSquadAccess = z.infer<typeof updateUserSquadAccessSchema>;
 
 export const searchAdminUsersQuerySchema = z.object({
   query: z.string().trim().max(120).optional().default(""),

@@ -78,36 +78,36 @@ The properties panel slides in when you click into a detail view and slides out 
 
 The sidebar is the primary navigation. It is grouped into logical sections with collapsible headers.
 
-### 3.1 Company Header
+### 3.1 Squad Header
 
 Top of sidebar. Always visible.
 
 ```
 ┌─────────────────────────┐
-│ [icon] Acme Corp      ▼ │  ← Company switcher dropdown
+│ [icon] Acme Corp      ▼ │  ← Squad switcher dropdown
 ├─────────────────────────┤
 │ [🔍]  [✏️]              │  ← Search + New Issue
 └─────────────────────────┘
 ```
 
-**Company switcher** is a dropdown button that occupies the full width of the sidebar header. It shows:
-- Company icon (first letter avatar with company color, or uploaded icon)
-- Company name (truncated with ellipsis if long)
+**Squad switcher** is a dropdown button that occupies the full width of the sidebar header. It shows:
+- Squad icon (first letter avatar with squad color, or uploaded icon)
+- Squad name (truncated with ellipsis if long)
 - Chevron-down icon
 
 Clicking opens a dropdown with:
-- List of all companies (with status dot: green=active, yellow=paused, gray=archived)
-- Search field at top of dropdown (for users with many companies)
+- List of all squads (with status dot: green=active, yellow=paused, gray=archived)
+- Search field at top of dropdown (for users with many squads)
 - Divider
-- `+ Create company` action at the bottom
+- `+ Create squad` action at the bottom
 
-Below the company name, a row of icon buttons:
+Below the squad name, a row of icon buttons:
 - **Search** (magnifying glass icon) — opens Cmd+K search modal
-- **New Issue** (pencil/square-pen icon) — opens new issue modal in the current company context
+- **New Issue** (pencil/square-pen icon) — opens new issue modal in the current squad context
 
 ### 3.2 Personal Section
 
-No section header — these are always at the top, below the company header.
+No section header — these are always at the top, below the squad header.
 
 ```
   Inbox                    3
@@ -129,17 +129,17 @@ Section header: **Work** (collapsible, with a chevron toggle)
     Views
 ```
 
-- **Issues** — main task list for the selected company. This is the workhorse view.
+- **Issues** — main task list for the selected squad. This is the workhorse view.
 - **Projects** — project list. Projects group issues and link to goals.
-- **Goals** — company goal hierarchy.
-- **Views** — saved filter/sort configurations (e.g., "Critical bugs", "Unassigned tasks", "CEO's tasks"). Users can create, name, and pin custom views here.
+- **Goals** — squad goal hierarchy.
+- **Views** — saved filter/sort configurations (e.g., "Critical bugs", "Unassigned tasks", "Squad Lead's tasks"). Users can create, name, and pin custom views here.
 
-### 3.4 Company Section
+### 3.4 Squad Section
 
-Section header: **Company** (collapsible)
+Section header: **Squad** (collapsible)
 
 ```
-  Company                  ▼
+  Squad                  ▼
     Dashboard
     Org Chart
     Agents
@@ -147,7 +147,7 @@ Section header: **Company** (collapsible)
     Activity
 ```
 
-- **Dashboard** — company health overview: agent statuses, task velocity, cost burn, pending approvals count.
+- **Dashboard** — squad health overview: agent statuses, task velocity, cost burn, pending approvals count.
 - **Org Chart** — interactive tree visualization of the agent reporting hierarchy.
 - **Agents** — flat list of all agents with status, role, last heartbeat, spend.
 - **Costs** — cost dashboard with breakdowns by agent, project, model, time.
@@ -268,7 +268,7 @@ The issue list is the default view when clicking "Issues" in the sidebar.
 Each row contains, left to right:
 1. **Checkbox** — for bulk selection. Hidden by default, appears on hover (left of priority).
 2. **Priority indicator** — icon representing critical/high/medium/low (see Color System above). Always visible.
-3. **Issue key** — e.g., `CLIP-5`. Monospace, muted color. The prefix is derived from the project (or company if no project).
+3. **Issue key** — e.g., `CLIP-5`. Monospace, muted color. The prefix is derived from the project (or squad if no project).
 4. **Status circle** — clickable to open status change dropdown (same as reference screenshot). The circle's fill/color reflects current status.
 5. **Title** — primary text, truncated with ellipsis if too long.
 6. **Assignee** — avatar (agent icon) + agent name, right-aligned. If unassigned, shows a dashed circle placeholder.
@@ -422,7 +422,7 @@ Triggered by the sidebar pencil icon, keyboard shortcut `C`, or the `+` buttons 
 ```
 
 **Top bar:**
-- Breadcrumb showing context: project key (or company key) `›` "New issue".
+- Breadcrumb showing context: project key (or squad key) `›` "New issue".
 - "Save as draft" button.
 - Expand icon (open as full page instead of modal).
 - Close `×`.
@@ -516,7 +516,7 @@ Goals are displayed as a hierarchical tree, since goals have parent-child relati
 ┌─────────────────────────────────────────────────────────┐
 │ Goals                                    [+ New goal]   │
 ├─────────────────────────────────────────────────────────┤
-│ ▼ 🎯 Build the #1 AI note-taking app    Company  Active│
+│ ▼ 🎯 Build the #1 AI note-taking app    Squad  Active│
 │   ▼ 🎯 Grow signups to 10k              Team     Active│
 │       🎯 Launch marketing campaign       Agent  Planned │
 │       🎯 Optimize onboarding funnel      Agent  Planned │
@@ -526,7 +526,7 @@ Goals are displayed as a hierarchical tree, since goals have parent-child relati
 └─────────────────────────────────────────────────────────┘
 ```
 
-Each row: expand chevron (if has children), target icon, title, level badge (Company/Team/Agent/Task), status badge.
+Each row: expand chevron (if has children), target icon, title, level badge (Squad/Team/Agent/Task), status badge.
 
 Indentation reflects hierarchy. Clicking a goal opens its detail view.
 
@@ -538,7 +538,7 @@ Three-pane layout. Middle pane shows title, description, child goals, and linked
 
 ## 8. Dashboard
 
-The dashboard is the company health overview. Shown when clicking "Dashboard" in the Company section.
+The dashboard is the squad health overview. Shown when clicking "Dashboard" in the Squad section.
 
 ### 8.1 Layout
 
@@ -583,7 +583,7 @@ Interactive visualization of the agent reporting hierarchy.
 
 ```
                     ┌─────────┐
-                    │ CEO     │
+                    │ Squad Lead     │
                     │ running │
                     └────┬────┘
             ┌────────────┼────────────┐
@@ -622,7 +622,7 @@ Nodes are clickable to navigate to agent detail.
 ┌─────────────────────────────────────────────────────────────────┐
 │ Agents                                          [+ New agent]   │
 ├─────────────────────────────────────────────────────────────────┤
-│ [🤖] CEO           ceo        ● Running   $45.20/$100   2m ago │
+│ [🤖] Squad Lead           squad_lead        ● Running   $45.20/$100   2m ago │
 │ [🤖] CTO           cto        ● Active    $23.10/$100   5m ago │
 │ [🤖] Dev-1         engineer   ○ Idle      $12.40/$50   15m ago │
 │ [🤖] CMO           marketing  ○ Idle      $8.30/$50    30m ago │
@@ -660,7 +660,7 @@ Clicking a row navigates to agent detail.
 
 ## 11. Approvals (Contextual, Not Standalone)
 
-Approvals are governance gates — decisions the board must make (hire an agent, approve a CEO strategy). They are NOT work items. Their data model stays separate from issues (different status machine, side-effect triggers, unstructured payload). But they don't need their own top-level nav entry.
+Approvals are governance gates — decisions the board must make (hire an agent, approve a Squad Lead strategy). They are NOT work items. Their data model stays separate from issues (different status machine, side-effect triggers, unstructured payload). But they don't need their own top-level nav entry.
 
 ### 11.1 Where Approvals Surface
 
@@ -669,8 +669,8 @@ Approvals are governance gates — decisions the board must make (hire an agent,
 **2. Dashboard metric card.** The "Pending Approvals" card shows the count and links to the full approvals list.
 
 **3. Inline on entity pages.** When an entity was created via an approval, the detail page shows a contextual banner:
-- Agent detail page: `"Hired via approval — requested by CEO on Feb 15"` with a link to the approval record.
-- An agent in `pending` status (not yet created) could show: `"Pending approval — requested by CEO"` with approve/reject actions inline.
+- Agent detail page: `"Hired via approval — requested by Squad Lead on Feb 15"` with a link to the approval record.
+- An agent in `pending` status (not yet created) could show: `"Pending approval — requested by Squad Lead"` with approve/reject actions inline.
 
 **4. Activity log.** Approval events (created, approved, rejected) appear in the activity timeline like any other event.
 
@@ -682,8 +682,8 @@ This page still exists — it's the "See all" destination from Inbox and Dashboa
 ┌─────────────────────────────────────────────────────────┐
 │ Approvals    [Pending] [Approved] [Rejected] [All]      │
 ├─────────────────────────────────────────────────────────┤
-│ 🟡 Hire Agent: "Marketing Analyst"    CEO    2h ago     │
-│ 🟡 CEO Strategy: "Q2 Growth Plan"    CEO    4h ago     │
+│ 🟡 Hire Agent: "Marketing Analyst"    Squad Lead    2h ago     │
+│ 🟡 Squad Lead Strategy: "Q2 Growth Plan"    Squad Lead    4h ago     │
 │ 🟢 Hire Agent: "DevOps Engineer"     CTO    1d ago     │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -696,7 +696,7 @@ Three-pane layout. Middle pane renders the approval payload nicely based on type
 
 **`hire_agent` type:** Shows proposed agent name, role, title, reports-to, capabilities, adapter config, budget. Essentially a preview of the agent that will be created.
 
-**`approve_ceo_strategy` type:** Shows the strategy text, proposed goal breakdown, initial task structure.
+**`approve_squad_lead_strategy` type:** Shows the strategy text, proposed goal breakdown, initial task structure.
 
 For pending approvals, prominent action buttons at the top of the middle pane:
 ```
@@ -734,7 +734,7 @@ Right pane: Type, Status, Requested by, Requested at, Decided by, Decided at, De
 │                                                         │
 │ By Agent                              By Project        │
 │ ┌──────────────────────┐  ┌──────────────────────┐      │
-│ │ CEO        $45.20    │  │ Auth       $67.30    │      │
+│ │ Squad Lead        $45.20    │  │ Auth       $67.30    │      │
 │ │ CTO        $23.10    │  │ Marketing  $34.50    │      │
 │ │ Dev-1      $12.40    │  │ API v2     $12.00    │      │
 │ │ ...                  │  │ ...                  │      │
@@ -742,13 +742,13 @@ Right pane: Type, Status, Requested by, Requested at, Decided by, Decided at, De
 │                                                         │
 │ Recent Cost Events                                      │
 │ ┌──────────────────────────────────────────────────────┐│
-│ │ CEO  openai/gpt-5  1,234 in / 567 out  $0.89  2m ago│
+│ │ Squad Lead  openai/gpt-5  1,234 in / 567 out  $0.89  2m ago│
 │ │ ...                                                   │
 │ └──────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────┘
 ```
 
-Top: company-wide budget progress bar (large, prominent).
+Top: squad-wide budget progress bar (large, prominent).
 
 Two side-by-side tables: breakdown by agent and by project. Each row shows entity name and spend amount.
 
@@ -764,7 +764,7 @@ A chronological, filterable audit trail.
 ┌─────────────────────────────────────────────────────────┐
 │ Activity                            [Filter by type ▼]  │
 ├─────────────────────────────────────────────────────────┤
-│ 🤖 CEO created issue CLIP-12 "Fix auth"      2 min ago │
+│ 🤖 Squad Lead created issue CLIP-12 "Fix auth"      2 min ago │
 │ 👤 Board approved hire "Marketing Analyst"    5 min ago │
 │ 🤖 CTO changed CLIP-8 status → In Progress  10 min ago │
 │ ⚙  System paused agent DevOps (budget limit) 15 min ago│
@@ -793,17 +793,17 @@ The inbox is the board operator's primary action center. It aggregates everythin
 ├─────────────────────────────────────────────────────────┤
 │ APPROVALS                        See all approvals →    │
 │ ● 🛡 Hire Agent: "Marketing Analyst"                    │
-│ │  Requested by CEO · 2h ago                            │
+│ │  Requested by Squad Lead · 2h ago                            │
 │ │  Role: marketing · Reports to: CMO · Budget: $100/mo  │
 │ │  [✕ Reject]  [✓ Approve]                              │
 │ │                                                       │
-│ ● 🛡 CEO Strategy: "Q2 Growth Plan"                     │
-│ │  Requested by CEO · 4h ago                            │
+│ ● 🛡 Squad Lead Strategy: "Q2 Growth Plan"                     │
+│ │  Requested by Squad Lead · 4h ago                            │
 │ │  [View details →]                                     │
 │                                                         │
 │ ALERTS                                                  │
 │ ● 🔴 Agent Error: DevOps heartbeat failed       1h ago  │
-│ ● ⚠  Budget Alert: CEO at 80% monthly budget   3h ago  │
+│ ● ⚠  Budget Alert: Squad Lead at 80% monthly budget   3h ago  │
 │                                                         │
 │ STALE WORK                                              │
 │   ⏰ CLIP-3 "Set up CI pipeline" — no update in 24h     │
@@ -820,10 +820,10 @@ Items are grouped by category, with the most actionable items first:
 - Requester + relative timestamp
 - Key payload summary (1 line — agent name/role for hires, plan title for strategies)
 - Inline **[Approve]** and **[Reject]** buttons for simple approvals (hire_agent). Clicking Approve/Reject shows a brief confirmation with an optional decision note field.
-- **[View details →]** link for complex approvals (approve_ceo_strategy) that need full review before deciding.
+- **[View details →]** link for complex approvals (approve_squad_lead_strategy) that need full review before deciding.
 - "See all approvals →" link in the category header navigates to `/approvals`.
 
-**Alerts.** Agent errors (failed heartbeats, error status) and budget alerts (agents or company approaching 80% or 100% limits). Each links to the relevant agent or cost page.
+**Alerts.** Agent errors (failed heartbeats, error status) and budget alerts (agents or squad approaching 80% or 100% limits). Each links to the relevant agent or cost page.
 
 **Stale work.** Tasks in `in_progress` or `todo` with no activity (no comments, no status changes) beyond a configurable threshold (default: 24h). Each shows issue key, title, and time since last activity. Clicking navigates to the issue.
 
@@ -848,7 +848,7 @@ Global search accessible via `Cmd+K` or the sidebar search icon.
 ├─────────────────────────────────────────────────────────┤
 │ Recent                                                  │
 │   📋 CLIP-42 Fix user authentication bug                │
-│   🤖 CEO                                                │
+│   🤖 Squad Lead                                                │
 │   📁 Auth project                                       │
 ├─────────────────────────────────────────────────────────┤
 │ Actions                                                 │
@@ -900,8 +900,8 @@ The properties panel is always dismissible — it should never block the main co
 Every list view should have a thoughtful empty state:
 
 - **No issues:** "No issues yet. Create your first issue to start tracking work." with a `[Create issue]` button.
-- **No agents:** "No agents in this company. Create an agent to start building your team." with a `[Create agent]` button.
-- **No company selected:** "Select a company to get started." with a company switcher or `[Create company]` button.
+- **No agents:** "No agents in this squad. Create an agent to start building your team." with a `[Create agent]` button.
+- **No squad selected:** "Select a squad to get started." with a squad switcher or `[Create squad]` button.
 
 Empty states should use a muted illustration (simple line art, not cartoons) and a single call-to-action.
 
@@ -936,11 +936,11 @@ Build on top of shadcn/ui components with these customizations:
 
 ## 21. URL Structure
 
-All routes are company-scoped after company selection (company context stored in React context, not URL):
+All routes are squad-scoped after squad selection (squad context stored in React context, not URL):
 
 ```
 /                           → redirects to /dashboard
-/dashboard                  → company dashboard
+/dashboard                  → squad dashboard
 /inbox                      → inbox / attention items
 /my-issues                  → board operator's issues
 /issues                     → issue list
@@ -957,8 +957,8 @@ All routes are company-scoped after company selection (company context stored in
 /approvals/:approvalId      → approval detail
 /costs                      → cost dashboard
 /activity                   → activity log
-/companies                  → company management (list/create)
-/settings                   → company settings
+/squads                  → squad management (list/create)
+/settings                   → squad settings
 ```
 
 ---
@@ -966,7 +966,7 @@ All routes are company-scoped after company selection (company context stored in
 ## 22. Implementation Priority
 
 ### Phase 1: Shell and Navigation
-1. Sidebar redesign (grouped sections, icons, company switcher, badges)
+1. Sidebar redesign (grouped sections, icons, squad switcher, badges)
 2. Breadcrumb bar component
 3. Three-pane layout system
 4. Cmd+K search modal
@@ -985,7 +985,7 @@ All routes are company-scoped after company selection (company context stored in
 13. Goal hierarchy view
 14. Agent list + detail view
 
-### Phase 4: Company-Level Views
+### Phase 4: Squad-Level Views
 15. Inbox with inline approval actions (primary approval UX)
 16. Dashboard redesign with metric cards
 17. Org chart interactive visualization

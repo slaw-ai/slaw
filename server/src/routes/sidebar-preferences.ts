@@ -3,7 +3,7 @@ import type { Db } from "@slaw/db";
 import { upsertSidebarOrderPreferenceSchema } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { logActivity, sidebarPreferenceService } from "../services/index.js";
-import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertSquadAccess, getActorInfo } from "./authz.js";
 
 function requireBoardUserId(req: Request, res: Response): string | null {
   assertBoard(req);
@@ -21,43 +21,43 @@ export function sidebarPreferenceRoutes(db: Db) {
   router.get("/sidebar-preferences/me", async (req, res) => {
     const userId = requireBoardUserId(req, res);
     if (!userId) return;
-    res.json(await svc.getCompanyOrder(userId));
+    res.json(await svc.getSquadOrder(userId));
   });
 
   router.put("/sidebar-preferences/me", validate(upsertSidebarOrderPreferenceSchema), async (req, res) => {
     const userId = requireBoardUserId(req, res);
     if (!userId) return;
-    res.json(await svc.upsertCompanyOrder(userId, req.body.orderedIds));
+    res.json(await svc.upsertSquadOrder(userId, req.body.orderedIds));
   });
 
-  router.get("/companies/:companyId/sidebar-preferences/me", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+  router.get("/squads/:squadId/sidebar-preferences/me", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     const userId = requireBoardUserId(req, res);
     if (!userId) return;
-    res.json(await svc.getProjectOrder(companyId, userId));
+    res.json(await svc.getProjectOrder(squadId, userId));
   });
 
   router.put(
-    "/companies/:companyId/sidebar-preferences/me",
+    "/squads/:squadId/sidebar-preferences/me",
     validate(upsertSidebarOrderPreferenceSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
-      assertCompanyAccess(req, companyId);
+      const squadId = req.params.squadId as string;
+      assertSquadAccess(req, squadId);
       const userId = requireBoardUserId(req, res);
       if (!userId) return;
 
-      const result = await svc.upsertProjectOrder(companyId, userId, req.body.orderedIds);
+      const result = await svc.upsertProjectOrder(squadId, userId, req.body.orderedIds);
       const actor = getActorInfo(req);
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: actor.actorType,
         actorId: actor.actorId,
         agentId: actor.agentId,
         runId: actor.runId,
         action: "sidebar_preferences.project_order_updated",
-        entityType: "company",
-        entityId: companyId,
+        entityType: "squad",
+        entityId: squadId,
         details: {
           userId,
           orderedIds: result.orderedIds,

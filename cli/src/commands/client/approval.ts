@@ -18,7 +18,7 @@ import {
 } from "./common.js";
 
 interface ApprovalListOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   status?: string;
 }
 
@@ -28,7 +28,7 @@ interface ApprovalDecisionOptions extends BaseClientOptions {
 }
 
 interface ApprovalCreateOptions extends BaseClientOptions {
-  companyId?: string;
+  squadId?: string;
   type: string;
   requestedByAgentId?: string;
   payload: string;
@@ -49,18 +49,18 @@ export function registerApprovalCommands(program: Command): void {
   addCommonClientOptions(
     approval
       .command("list")
-      .description("List approvals for a company")
-      .requiredOption("-C, --company-id <id>", "Company ID")
+      .description("List approvals for a squad")
+      .requiredOption("-C, --squad-id <id>", "Squad ID")
       .option("--status <status>", "Status filter")
       .action(async (opts: ApprovalListOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const params = new URLSearchParams();
           if (opts.status) params.set("status", opts.status);
           const query = params.toString();
           const rows =
             (await ctx.api.get<Approval[]>(
-              `${apiPath`/api/companies/${ctx.companyId}/approvals`}${query ? `?${query}` : ""}`,
+              `${apiPath`/api/squads/${ctx.squadId}/approvals`}${query ? `?${query}` : ""}`,
             )) ?? [];
 
           if (ctx.json) {
@@ -88,7 +88,7 @@ export function registerApprovalCommands(program: Command): void {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
@@ -111,14 +111,14 @@ export function registerApprovalCommands(program: Command): void {
     approval
       .command("create")
       .description("Create an approval request")
-      .requiredOption("-C, --company-id <id>", "Company ID")
-      .requiredOption("--type <type>", "Approval type (hire_agent|approve_ceo_strategy)")
+      .requiredOption("-C, --squad-id <id>", "Squad ID")
+      .requiredOption("--type <type>", "Approval type (hire_agent|approve_squad_lead_strategy)")
       .requiredOption("--payload <json>", "Approval payload as JSON object")
       .option("--requested-by-agent-id <id>", "Requesting agent ID")
       .option("--issue-ids <csv>", "Comma-separated linked issue IDs")
       .action(async (opts: ApprovalCreateOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const payloadJson = parseJsonObject(opts.payload, "payload");
           const payload = createApprovalSchema.parse({
             type: opts.type,
@@ -126,13 +126,13 @@ export function registerApprovalCommands(program: Command): void {
             requestedByAgentId: opts.requestedByAgentId,
             issueIds: parseCsv(opts.issueIds),
           });
-          const created = await ctx.api.post<Approval>(apiPath`/api/companies/${ctx.companyId}/approvals`, payload);
+          const created = await ctx.api.post<Approval>(apiPath`/api/squads/${ctx.squadId}/approvals`, payload);
           printOutput(created, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(

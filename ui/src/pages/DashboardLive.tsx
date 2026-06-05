@@ -4,12 +4,12 @@ import { Link } from "@/lib/router";
 import { ActiveAgentsPanel } from "../components/ActiveAgentsPanel";
 import { EmptyState } from "../components/EmptyState";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 
 const DASHBOARD_LIVE_RUN_LIMIT = 50;
 
 export function DashboardLive() {
-  const { selectedCompanyId, companies } = useCompany();
+  const { selectedSquadId, squads } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
@@ -19,11 +19,11 @@ export function DashboardLive() {
     ]);
   }, [setBreadcrumbs]);
 
-  if (!selectedCompanyId) {
+  if (!selectedSquadId) {
     return (
       <EmptyState
         icon={RadioTower}
-        message={companies.length === 0 ? "Create a company to view live runs." : "Select a company to view live runs."}
+        message={squads.length === 0 ? "Create a squad to view live runs." : "Select a squad to view live runs."}
       />
     );
   }
@@ -48,7 +48,7 @@ export function DashboardLive() {
       </div>
 
       <ActiveAgentsPanel
-        companyId={selectedCompanyId}
+        squadId={selectedSquadId}
         title="Active / recent"
         minRunCount={DASHBOARD_LIVE_RUN_LIMIT}
         fetchLimit={DASHBOARD_LIVE_RUN_LIMIT}

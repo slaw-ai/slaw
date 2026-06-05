@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   agents,
   authUsers,
-  companies,
+  squads,
   createDb,
   issueComments,
   issues,
@@ -276,8 +276,8 @@ describe("worktree helpers", () => {
             getObject: vi.fn().mockResolvedValue(expected),
           },
         ],
-        "company-1",
-        "company-1/issues/issue-1/missing.png",
+        "squad-1",
+        "squad-1/issues/issue-1/missing.png",
       ),
     ).resolves.toEqual(expected);
   });
@@ -294,8 +294,8 @@ describe("worktree helpers", () => {
             getObject: vi.fn().mockRejectedValue(Object.assign(new Error("missing"), { status: 404 })),
           },
         ],
-        "company-1",
-        "company-1/issues/issue-1/missing.png",
+        "squad-1",
+        "squad-1/issues/issue-1/missing.png",
       ),
     ).resolves.toBeNull();
   });
@@ -321,7 +321,7 @@ describe("worktree helpers", () => {
   itEmbeddedPostgres("quarantines copied live execution state in seeded worktree databases", async () => {
     const tempDb = await startEmbeddedPostgresTestDatabase("slaw-worktree-quarantine-");
     const db = createDb(tempDb.connectionString);
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const idleAgentId = randomUUID();
     const inProgressIssueId = randomUUID();
@@ -330,8 +330,8 @@ describe("worktree helpers", () => {
     const userIssueId = randomUUID();
 
     try {
-      await db.insert(companies).values({
-        id: companyId,
+      await db.insert(squads).values({
+        id: squadId,
         name: "Slaw",
         issuePrefix: "WTQ",
         requireBoardApprovalForNewAgents: false,
@@ -339,7 +339,7 @@ describe("worktree helpers", () => {
       await db.insert(agents).values([
         {
           id: agentId,
-          companyId,
+          squadId,
           name: "CodexCoder",
           role: "engineer",
           status: "running",
@@ -353,7 +353,7 @@ describe("worktree helpers", () => {
         },
         {
           id: idleAgentId,
-          companyId,
+          squadId,
           name: "Reviewer",
           role: "reviewer",
           status: "idle",
@@ -366,7 +366,7 @@ describe("worktree helpers", () => {
       await db.insert(issues).values([
         {
           id: inProgressIssueId,
-          companyId,
+          squadId,
           title: "Copied in-flight issue",
           status: "in_progress",
           priority: "medium",
@@ -378,7 +378,7 @@ describe("worktree helpers", () => {
         },
         {
           id: todoIssueId,
-          companyId,
+          squadId,
           title: "Copied assigned todo issue",
           status: "todo",
           priority: "medium",
@@ -388,7 +388,7 @@ describe("worktree helpers", () => {
         },
         {
           id: reviewIssueId,
-          companyId,
+          squadId,
           title: "Copied assigned review issue",
           status: "in_review",
           priority: "medium",
@@ -398,7 +398,7 @@ describe("worktree helpers", () => {
         },
         {
           id: userIssueId,
-          companyId,
+          squadId,
           title: "Copied user issue",
           status: "todo",
           priority: "medium",
@@ -1258,7 +1258,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
   it("pauses only routines with enabled schedule triggers", async () => {
     const tempDb = await startEmbeddedPostgresTestDatabase("slaw-worktree-routines-");
     const db = createDb(tempDb.connectionString);
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const projectId = randomUUID();
     const agentId = randomUUID();
     const activeScheduledRoutineId = randomUUID();
@@ -1268,15 +1268,15 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
     const disabledScheduleRoutineId = randomUUID();
 
     try {
-      await db.insert(companies).values({
-        id: companyId,
+      await db.insert(squads).values({
+        id: squadId,
         name: "Slaw",
-        issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       });
       await db.insert(agents).values({
         id: agentId,
-        companyId,
+        squadId,
         name: "Coder",
         adapterType: "process",
         adapterConfig: {},
@@ -1285,14 +1285,14 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
       });
       await db.insert(projects).values({
         id: projectId,
-        companyId,
+        squadId,
         name: "Project",
         status: "in_progress",
       });
       await db.insert(routines).values([
         {
           id: activeScheduledRoutineId,
-          companyId,
+          squadId,
           projectId,
           assigneeAgentId: agentId,
           title: "Active scheduled",
@@ -1300,7 +1300,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
         },
         {
           id: activeApiRoutineId,
-          companyId,
+          squadId,
           projectId,
           assigneeAgentId: agentId,
           title: "Active API",
@@ -1308,7 +1308,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
         },
         {
           id: pausedScheduledRoutineId,
-          companyId,
+          squadId,
           projectId,
           assigneeAgentId: agentId,
           title: "Paused scheduled",
@@ -1316,7 +1316,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
         },
         {
           id: archivedScheduledRoutineId,
-          companyId,
+          squadId,
           projectId,
           assigneeAgentId: agentId,
           title: "Archived scheduled",
@@ -1324,7 +1324,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
         },
         {
           id: disabledScheduleRoutineId,
-          companyId,
+          squadId,
           projectId,
           assigneeAgentId: agentId,
           title: "Disabled schedule",
@@ -1333,7 +1333,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
       ]);
       await db.insert(routineTriggers).values([
         {
-          companyId,
+          squadId,
           routineId: activeScheduledRoutineId,
           kind: "schedule",
           enabled: true,
@@ -1341,13 +1341,13 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
           timezone: "UTC",
         },
         {
-          companyId,
+          squadId,
           routineId: activeApiRoutineId,
           kind: "api",
           enabled: true,
         },
         {
-          companyId,
+          squadId,
           routineId: pausedScheduledRoutineId,
           kind: "schedule",
           enabled: true,
@@ -1355,7 +1355,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
           timezone: "UTC",
         },
         {
-          companyId,
+          squadId,
           routineId: archivedScheduledRoutineId,
           kind: "schedule",
           enabled: true,
@@ -1363,7 +1363,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
           timezone: "UTC",
         },
         {
-          companyId,
+          squadId,
           routineId: disabledScheduleRoutineId,
           kind: "schedule",
           enabled: false,

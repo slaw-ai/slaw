@@ -4,8 +4,8 @@ import type { ActivityEvent, Agent } from "@slaw/shared";
 import { activityApi } from "../api/activity";
 import { accessApi } from "../api/access";
 import { agentsApi } from "../api/agents";
-import { buildCompanyUserProfileMap } from "../lib/company-members";
-import { useCompany } from "../context/CompanyContext";
+import { buildSquadUserProfileMap } from "../lib/squad-members";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { EmptyState } from "../components/EmptyState";
@@ -44,7 +44,7 @@ function activityEntityTitle(event: ActivityEvent) {
 }
 
 export function Activity() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [filter, setFilter] = useState("all");
 
@@ -53,26 +53,26 @@ export function Activity() {
   }, [setBreadcrumbs]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [...queryKeys.activity(selectedCompanyId!), { limit: ACTIVITY_PAGE_LIMIT }],
-    queryFn: () => activityApi.list(selectedCompanyId!, { limit: ACTIVITY_PAGE_LIMIT }),
-    enabled: !!selectedCompanyId,
+    queryKey: [...queryKeys.activity(selectedSquadId!), { limit: ACTIVITY_PAGE_LIMIT }],
+    queryFn: () => activityApi.list(selectedSquadId!, { limit: ACTIVITY_PAGE_LIMIT }),
+    enabled: !!selectedSquadId,
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const userProfileMap = useMemo(
-    () => buildCompanyUserProfileMap(companyMembers?.users),
-    [companyMembers?.users],
+    () => buildSquadUserProfileMap(squadMembers?.users),
+    [squadMembers?.users],
   );
 
   const agentMap = useMemo(() => {
@@ -100,8 +100,8 @@ export function Activity() {
     return map;
   }, [data]);
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select a company to view activity." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={History} message="Select a squad to view activity." />;
   }
 
   if (isLoading) {

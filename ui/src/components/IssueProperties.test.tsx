@@ -36,9 +36,9 @@ const mockAuthApi = vi.hoisted(() => ({
   getSession: vi.fn(),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
   }),
 }));
 
@@ -140,7 +140,7 @@ async function waitForAssertion(assertion: () => void, attempts = 20) {
 function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,
@@ -183,7 +183,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
 function createLabel(overrides: Partial<IssueLabel> = {}): IssueLabel {
   return {
     id: "label-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Bug",
     color: "#ef4444",
     createdAt: new Date("2026-04-06T12:00:00.000Z"),
@@ -195,7 +195,7 @@ function createLabel(overrides: Partial<IssueLabel> = {}): IssueLabel {
 function createRuntimeService(overrides: Partial<WorkspaceRuntimeService> = {}): WorkspaceRuntimeService {
   return {
     id: "service-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: "workspace-main",
     executionWorkspaceId: "workspace-1",
@@ -228,7 +228,7 @@ function createRuntimeService(overrides: Partial<WorkspaceRuntimeService> = {}):
 function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): ExecutionWorkspace {
   return {
     id: "workspace-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: "workspace-main",
     sourceIssueId: "issue-1",
@@ -260,7 +260,7 @@ function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): 
 function createProject(overrides: Partial<Project> = {}): Project {
   const primaryWorkspace = {
     id: "workspace-main",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     name: "Main",
     sourceType: "local_path" as const,
@@ -283,7 +283,7 @@ function createProject(overrides: Partial<Project> = {}): Project {
   };
   return {
     id: "project-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     urlKey: "project-1",
     goalId: null,
     goalIds: [],
@@ -492,11 +492,11 @@ describe("IssueProperties", () => {
     act(() => root.unmount());
   });
 
-  it("searches all company issues when adding a blocker", async () => {
+  it("searches all squad issues when adding a blocker", async () => {
     const onUpdate = vi.fn();
     const loadedIssue = createIssue({ id: "issue-3", identifier: "PAP-3", title: "Loaded issue", status: "todo" });
     const remoteIssue = createIssue({ id: "issue-99", identifier: "PAP-99", title: "Remote blocker", status: "in_progress" });
-    mockIssuesApi.list.mockImplementation((_companyId: string, filters?: { q?: string; limit?: number }) => {
+    mockIssuesApi.list.mockImplementation((_squadId: string, filters?: { q?: string; limit?: number }) => {
       if (filters?.q === "remote") return Promise.resolve([remoteIssue]);
       return Promise.resolve([loadedIssue]);
     });
@@ -528,7 +528,7 @@ describe("IssueProperties", () => {
     });
 
     await waitForAssertion(() => {
-      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", { q: "remote", limit: 50 });
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("squad-1", { q: "remote", limit: 50 });
       expect(container.textContent).toContain("PAP-99 Remote blocker");
       expect(container.textContent).not.toContain("PAP-3 Loaded issue");
     });
@@ -825,7 +825,7 @@ describe("IssueProperties", () => {
   it("shows an add-label button when labels already exist and opens the picker", async () => {
     const root = renderProperties(container, {
       issue: createIssue({
-        labels: [{ id: "label-1", companyId: "company-1", name: "Bug", color: "#ef4444", createdAt: new Date("2026-04-06T12:00:00.000Z"), updatedAt: new Date("2026-04-06T12:00:00.000Z") }],
+        labels: [{ id: "label-1", squadId: "squad-1", name: "Bug", color: "#ef4444", createdAt: new Date("2026-04-06T12:00:00.000Z"), updatedAt: new Date("2026-04-06T12:00:00.000Z") }],
         labelIds: ["label-1"],
       }),
       childIssues: [],

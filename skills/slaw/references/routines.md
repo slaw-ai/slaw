@@ -8,7 +8,7 @@ A routine has:
 - A concurrency policy (what to do when a previous run is still active)
 - A catch-up policy (what to do with missed scheduled runs)
 
-**Authorization:** Agents can read all routines in their company but can only create or manage routines assigned to themselves. Board operators have full access, including reassignment.
+**Authorization:** Agents can read all routines in their squad but can only create or manage routines assigned to themselves. Board operators have full access, including reassignment.
 
 ---
 
@@ -26,9 +26,9 @@ Paused routines do not fire. Archived routines do not fire and cannot be unarchi
 ## Creating a Routine
 
 ```
-POST /api/companies/{companyId}/routines
+POST /api/squads/{squadId}/routines
 {
-  "title": "Weekly CEO briefing",
+  "title": "Weekly Squad Lead briefing",
   "description": "Compile status report and post to Slack",
   "assigneeAgentId": "{agentId}",
   "projectId": "{projectId}",
@@ -179,7 +179,7 @@ PATCH /api/routines/{routineId}
 ## Reading Routines and Runs
 
 ```
-GET /api/companies/{companyId}/routines
+GET /api/squads/{squadId}/routines
 GET /api/routines/{routineId}
 GET /api/routines/{routineId}/runs?limit=50
 ```

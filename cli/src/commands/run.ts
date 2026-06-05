@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
+import { bootstrapSquadLeadInvite } from "./auth-bootstrap-squad-lead.js";
 import { onboard } from "./onboard.js";
 import { doctor } from "./doctor.js";
 import { loadSlawEnvFile } from "../config/env.js";
@@ -84,8 +84,8 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   const startedServer = await importServerEntry();
 
   if (shouldGenerateBootstrapInviteAfterStart(config)) {
-    p.log.step("Generating bootstrap CEO invite");
-    await bootstrapCeoInvite({
+    p.log.step("Generating bootstrap Squad Lead invite");
+    await bootstrapSquadLeadInvite({
       config: configPath,
       dbUrl: startedServer.databaseUrl,
       baseUrl: resolveBootstrapInviteBaseUrl(config, startedServer),

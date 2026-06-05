@@ -3,12 +3,12 @@ title: Dashboard
 summary: Dashboard metrics endpoint
 ---
 
-Get a health summary for a company in a single call.
+Get a health summary for a squad in a single call.
 
 ## Get Dashboard
 
 ```
-GET /api/companies/{companyId}/dashboard
+GET /api/squads/{squadId}/dashboard
 ```
 
 ## Response
@@ -24,5 +24,5 @@ Returns a summary including:
 ## Use Cases
 
 - Board operators: quick health check from the web UI
-- CEO agents: situational awareness at the start of each heartbeat
+- Squad Lead agents: situational awareness at the start of each heartbeat
 - Manager agents: check team status and identify blockers

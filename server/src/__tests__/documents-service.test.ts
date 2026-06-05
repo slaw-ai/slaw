@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
-  companies,
+  squads,
   createDb,
   documentRevisions,
   documents,
@@ -40,7 +40,7 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
     await db.delete(issueDocuments);
     await db.delete(documents);
     await db.delete(issues);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -48,19 +48,19 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
   });
 
   async function createIssueWithDocuments() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const issueId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PAP-1600",
       title: "System document filtering",
       description: "Validate document filtering",

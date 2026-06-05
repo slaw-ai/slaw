@@ -29,7 +29,7 @@ const PROVIDER_CONFIG_DISCOVERY_CANDIDATE_LIMIT = 6;
 const AWS_RUNTIME_CREDENTIAL_WARNING =
   "AWS bootstrap credentials must be available to the Slaw server runtime through the AWS SDK default credential provider chain: IAM role/workload identity, AWS_PROFILE/SSO/shared credentials, web identity, container/instance metadata, or short-lived shell credentials.";
 const AWS_CREDENTIAL_CUSTODY_WARNING =
-  "Do not store AWS root credentials or long-lived IAM user access keys in Slaw company_secrets; the AWS provider bootstrap belongs in deployment infrastructure, the process environment, an AWS profile, or the orchestrator secret store.";
+  "Do not store AWS root credentials or long-lived IAM user access keys in Slaw squad_secrets; the AWS provider bootstrap belongs in deployment infrastructure, the process environment, an AWS profile, or the orchestrator secret store.";
 
 interface AwsSecretsManagerMaterial extends StoredSecretVersionMaterial {
   scheme: typeof AWS_SECRETS_MANAGER_SCHEME;
@@ -79,7 +79,7 @@ interface CachedAwsCredentialProvider {
   pending: Promise<AwsCredentialIdentity> | null;
 }
 
-type ManagedSecretNamespaceContext = Pick<SecretProviderWriteContext, "companyId" | "secretKey">;
+type ManagedSecretNamespaceContext = Pick<SecretProviderWriteContext, "squadId" | "secretKey">;
 
 const awsCredentialProviders = new Map<string, CachedAwsCredentialProvider>();
 
@@ -444,7 +444,7 @@ function buildManagedSecretName(
   return [
     sanitizePathSegment(config.prefix),
     sanitizePathSegment(config.deploymentId),
-    sanitizePathSegment(context.companyId),
+    sanitizePathSegment(context.squadId),
     sanitizePathSegment(context.secretKey),
   ]
     .filter(Boolean)
@@ -521,7 +521,7 @@ function resolveManagedSecretRef(input: {
   }
   if (sawNonEmptyExternalRef) {
     throw unprocessable(
-      "AWS Secrets Manager managed secret ref drifted outside the derived deployment/company scope",
+      "AWS Secrets Manager managed secret ref drifted outside the derived deployment/squad scope",
     );
   }
   return buildManagedSecretId(input.config, input.context);
@@ -536,7 +536,7 @@ function buildManagedSecretTags(
     { Key: "slaw:managed-by", Value: "slaw" },
     { Key: "slaw:provider-owner", Value: config.providerOwnerTag },
     { Key: "slaw:deployment-id", Value: config.deploymentId },
-    { Key: "slaw:company-id", Value: context.companyId },
+    { Key: "slaw:squad-id", Value: context.squadId },
     { Key: "slaw:secret-key", Value: context.secretKey },
     { Key: "slaw:environment", Value: config.environmentTag },
   ];
@@ -667,7 +667,7 @@ function discoveryDisplayName(input: {
 }
 
 function discoverAwsProviderConfigCandidates(input: {
-  companyId: string;
+  squadId: string;
   config: AwsSecretsManagerConfig;
   draftConfig: Record<string, unknown>;
   entries: AwsSecretsManagerListSecretEntry[];
@@ -683,7 +683,7 @@ function discoverAwsProviderConfigCandidates(input: {
     ownerTag: string | null;
     kmsKeyId: string | null;
     slawManaged: boolean;
-    slawCompanyId: string | null;
+    slawSquadId: string | null;
   };
 
   const skippedWarnings: string[] = [];
@@ -695,8 +695,8 @@ function discoverAwsProviderConfigCandidates(input: {
     if (!name) continue;
     const tags = normalizeAwsTags(entry.Tags);
     const slawManaged = tagValue(tags, ["slaw:managed-by"])?.toLowerCase() === "slaw";
-    const slawCompanyId = tagValue(tags, ["slaw:company-id"]);
-    if (slawManaged && slawCompanyId !== input.companyId) {
+    const slawSquadId = tagValue(tags, ["slaw:squad-id"]);
+    if (slawManaged && slawSquadId !== input.squadId) {
       skippedForeignSlawSampleCount += 1;
       continue;
     }
@@ -711,13 +711,13 @@ function discoverAwsProviderConfigCandidates(input: {
       ownerTag: tagValue(tags, ["slaw:provider-owner", "owner", "team", "service", "application"]),
       kmsKeyId: asOptionalNonEmptyString(entry.KmsKeyId),
       slawManaged,
-      slawCompanyId,
+      slawSquadId,
     });
   }
 
   if (skippedForeignSlawSampleCount > 0) {
     skippedWarnings.push(
-      `Skipped ${skippedForeignSlawSampleCount} Slaw-managed AWS secret sample(s) that were not tagged for this company.`,
+      `Skipped ${skippedForeignSlawSampleCount} Slaw-managed AWS secret sample(s) that were not tagged for this squad.`,
     );
   }
 
@@ -761,8 +761,8 @@ function discoverAwsProviderConfigCandidates(input: {
       if (kmsKeys.length > 1 && !draftKmsKeyId) {
         candidateWarnings.push("Sampled AWS secrets use multiple KMS keys; choose the intended KMS key before saving.");
       }
-      if (group.some((sample) => sample.slawManaged && sample.slawCompanyId === input.companyId)) {
-        candidateWarnings.push("Sample includes Slaw-managed secrets for this company; do not import them as external references.");
+      if (group.some((sample) => sample.slawManaged && sample.slawSquadId === input.squadId)) {
+        candidateWarnings.push("Sample includes Slaw-managed secrets for this squad; do not import them as external references.");
       }
 
       return {
@@ -1233,7 +1233,7 @@ export function createAwsSecretsManagerProvider(
           Filters: query ? [{ Key: "all", Values: [query] }] : undefined,
         });
         return discoverAwsProviderConfigCandidates({
-          companyId: input.companyId,
+          squadId: input.squadId,
           config,
           draftConfig: input.providerConfig.config,
           entries: listed.SecretList ?? [],

@@ -117,7 +117,7 @@ describe("pi remote execution", () => {
       runId: "run-1",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Pi Builder",
         adapterType: "pi_local",
         adapterConfig: {},
@@ -243,7 +243,7 @@ describe("pi remote execution", () => {
       runId: "run-ssh-resume",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Pi Builder",
         adapterType: "pi_local",
         adapterConfig: {},
@@ -320,7 +320,7 @@ describe("pi remote execution", () => {
       runId: "run-ssh-stale-session",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Pi Builder",
         adapterType: "pi_local",
         adapterConfig: {},
@@ -393,7 +393,7 @@ describe("pi remote execution", () => {
       runId: "run-ssh-empty-header",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Pi Builder",
         adapterType: "pi_local",
         adapterConfig: {},
@@ -462,7 +462,7 @@ describe("pi remote execution", () => {
       runId: "run-ssh-head-failure",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Pi Builder",
         adapterType: "pi_local",
         adapterConfig: {},

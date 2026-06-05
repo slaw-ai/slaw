@@ -36,7 +36,7 @@ async function createApp(
   actor: Record<string, unknown> = {
     type: "board",
     userId: "user-1",
-    companyIds: ["company-1"],
+    squadIds: ["squad-1"],
     source: "session",
     isInstanceAdmin: false,
   },
@@ -51,7 +51,7 @@ async function createApp(
   app.use((req, _res, next) => {
     (req as any).actor = {
       ...actor,
-      companyIds: Array.isArray(actor.companyIds) ? [...actor.companyIds] : actor.companyIds,
+      squadIds: Array.isArray(actor.squadIds) ? [...actor.squadIds] : actor.squadIds,
     };
     next();
   });
@@ -94,15 +94,15 @@ describe.sequential("activity routes", () => {
     for (const mock of Object.values(mockIssueService)) mock.mockReset();
   });
 
-  it("limits company activity lists by default", async () => {
+  it("limits squad activity lists by default", async () => {
     mockActivityService.list.mockResolvedValue([]);
 
     const app = await createApp();
-    const res = await requestApp(app, (baseUrl) => request(baseUrl).get("/api/companies/company-1/activity"));
+    const res = await requestApp(app, (baseUrl) => request(baseUrl).get("/api/squads/squad-1/activity"));
 
     expect(res.status).toBe(200);
     expect(mockActivityService.list).toHaveBeenCalledWith({
-      companyId: "company-1",
+      squadId: "squad-1",
       agentId: undefined,
       entityType: undefined,
       entityId: undefined,
@@ -110,17 +110,17 @@ describe.sequential("activity routes", () => {
     });
   });
 
-  it("caps requested company activity list limits", async () => {
+  it("caps requested squad activity list limits", async () => {
     mockActivityService.list.mockResolvedValue([]);
 
     const app = await createApp();
     const res = await requestApp(app, (baseUrl) =>
-      request(baseUrl).get("/api/companies/company-1/activity?limit=5000&entityType=issue"),
+      request(baseUrl).get("/api/squads/squad-1/activity?limit=5000&entityType=issue"),
     );
 
     expect(res.status).toBe(200);
     expect(mockActivityService.list).toHaveBeenCalledWith({
-      companyId: "company-1",
+      squadId: "squad-1",
       agentId: undefined,
       entityType: "issue",
       entityId: undefined,
@@ -131,7 +131,7 @@ describe.sequential("activity routes", () => {
   it("resolves alphanumeric issue identifiers before loading runs", async () => {
     mockIssueService.getByIdentifier.mockResolvedValue({
       id: "issue-uuid-1",
-      companyId: "company-1",
+      squadId: "squad-1",
     });
     mockActivityService.runsForIssue.mockResolvedValue([
       {
@@ -146,14 +146,14 @@ describe.sequential("activity routes", () => {
     expect(res.status).toBe(200);
     expect(mockIssueService.getByIdentifier).toHaveBeenCalledWith("PC1A2-475");
     expect(mockIssueService.getById).not.toHaveBeenCalled();
-    expect(mockActivityService.runsForIssue).toHaveBeenCalledWith("company-1", "issue-uuid-1");
+    expect(mockActivityService.runsForIssue).toHaveBeenCalledWith("squad-1", "issue-uuid-1");
     expect(res.body).toEqual([{ runId: "run-1", adapterType: "codex_local" }]);
   });
 
-  it("requires company access before creating activity events", async () => {
+  it("requires squad access before creating activity events", async () => {
     const app = await createApp();
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post("/api/companies/company-2/activity")
+      .post("/api/squads/squad-2/activity")
       .send({
         actorId: "user-1",
         action: "test.event",
@@ -165,10 +165,10 @@ describe.sequential("activity routes", () => {
     expect(mockActivityService.create).not.toHaveBeenCalled();
   });
 
-  it("requires company access before listing issues for another company's run", async () => {
+  it("requires squad access before listing issues for another squad's run", async () => {
     mockHeartbeatService.getRun.mockResolvedValue({
       id: "run-2",
-      companyId: "company-2",
+      squadId: "squad-2",
     });
 
     const app = await createApp();

@@ -20,7 +20,7 @@ import { plugins } from "./plugins.js";
  *
  * Scope kinds determine the granularity of isolation:
  * - `instance` — one value shared across the whole Slaw instance
- * - `company` — one value per company
+ * - `squad` — one value per squad
  * - `project` — one value per project
  * - `project_workspace` — one value per project workspace
  * - `agent` — one value per agent

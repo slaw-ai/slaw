@@ -32,7 +32,7 @@ function StoryFrame({ title, description, children }: { title: string; descripti
 function buildAction(overrides: Partial<IssueRecoveryAction> = {}): IssueRecoveryAction {
   return {
     id: "00000000-0000-0000-0000-0000000000aa",
-    companyId: "company-storybook",
+    squadId: "squad-storybook",
     sourceIssueId: "00000000-0000-0000-0000-0000000000ff",
     recoveryIssueId: null,
     kind: "missing_disposition",
@@ -139,7 +139,7 @@ function buildBlocker(
   return {
     id: "blocker-1",
     identifier: "PAP-9065",
-    title: "Add full company search page",
+    title: "Add full squad search page",
     status: "in_progress",
     priority: "medium",
     assigneeAgentId: claudeAgent.id,
@@ -267,7 +267,7 @@ function ActiveRunPanel() {
     <div className="grid gap-4 sm:grid-cols-2">
       <ActiveRunCardMock
         identifier="PAP-9065"
-        title="Add full company search page"
+        title="Add full squad search page"
         recoveryState="needed"
       />
       <ActiveRunCardMock
@@ -297,7 +297,7 @@ function InboxRowPanel() {
         issue={{
           ...baseIssue,
           identifier: "PAP-9065",
-          title: "Add full company search page",
+          title: "Add full squad search page",
           status: "in_progress",
           activeRecoveryAction: buildAction(),
         }}

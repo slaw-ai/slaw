@@ -86,8 +86,8 @@ Notes:
 - Prompts are piped via stdin (Codex receives "-" prompt argument).
 - If instructionsFilePath is configured, Slaw prepends that file's contents to the stdin prompt on every run.
 - Codex exec automatically applies repo-scoped AGENTS.md instructions from the active workspace. Slaw cannot suppress that discovery in exec mode, so repo AGENTS.md files may still apply even when you only configured an explicit instructionsFilePath.
-- Slaw injects desired local skills into the effective CODEX_HOME/skills/ directory at execution time so Codex can discover "$slaw" and related skills without polluting the project working directory. In managed-home mode (the default) this is ~/.slaw/instances/<id>/companies/<companyId>/codex-home/skills/; when CODEX_HOME is explicitly overridden in adapter config, that override is used instead.
-- Unless explicitly overridden in adapter config, Slaw runs Codex with a per-company managed CODEX_HOME under the active Slaw instance and seeds auth/config from the shared Codex home (the CODEX_HOME env var, when set, or ~/.codex).
+- Slaw injects desired local skills into the effective CODEX_HOME/skills/ directory at execution time so Codex can discover "$slaw" and related skills without polluting the project working directory. In managed-home mode (the default) this is ~/.slaw/instances/<id>/squads/<squadId>/codex-home/skills/; when CODEX_HOME is explicitly overridden in adapter config, that override is used instead.
+- Unless explicitly overridden in adapter config, Slaw runs Codex with a per-squad managed CODEX_HOME under the active Slaw instance and seeds auth/config from the shared Codex home (the CODEX_HOME env var, when set, or ~/.codex).
 - Some model/tool combinations reject certain effort levels (for example minimal with web search enabled).
 - Fast mode is supported on GPT-5.4 and manual model IDs. When enabled for those models, Slaw applies \`service_tier="fast"\` and \`features.fast_mode=true\`.
 - When Slaw realizes a workspace/runtime for a run, it injects SLAW_WORKSPACE_* and SLAW_RUNTIME_* env vars for agent-side tooling.

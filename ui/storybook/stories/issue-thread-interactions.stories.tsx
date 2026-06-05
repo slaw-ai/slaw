@@ -657,7 +657,7 @@ export const ReviewSurface: Story = {
               liveRuns={issueThreadInteractionLiveRuns}
               transcriptsByRunId={issueThreadInteractionTranscriptsByRunId}
               hasOutputForRun={(runId) => runId === "run-thread-live"}
-              companyId={issueThreadInteractionFixtureMeta.companyId}
+              squadId={issueThreadInteractionFixtureMeta.squadId}
               projectId={issueThreadInteractionFixtureMeta.projectId}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
               userLabelMap={boardUserLabels}

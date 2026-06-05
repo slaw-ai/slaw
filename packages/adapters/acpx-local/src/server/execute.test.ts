@@ -78,7 +78,7 @@ async function runExecutor(
     runId: "run-1",
     agent: {
       id: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
     },
       runtime: {},
       config,
@@ -189,8 +189,8 @@ describe("acpx_local runtime skill isolation", () => {
       slawHome,
       "instances",
       slawInstanceId,
-      "companies",
-      "company-1",
+      "squads",
+      "squad-1",
       "codex-home",
     );
     await fs.mkdir(sourceCodexHome, { recursive: true });
@@ -416,7 +416,7 @@ describe("acpx_local runtime skill isolation", () => {
 
     const result = await execute({
       runId: "run-1",
-      agent: { id: "agent-1", companyId: "company-1" },
+      agent: { id: "agent-1", squadId: "squad-1" },
       runtime: {},
       config: {
         agent: "custom",
@@ -468,7 +468,7 @@ describe("acpx_local runtime skill isolation", () => {
 
     const result = await execute({
       runId: "run-stderr-1",
-      agent: { id: "agent-1", companyId: "company-1" },
+      agent: { id: "agent-1", squadId: "squad-1" },
       runtime: {},
       config: {
         agent: "custom",
@@ -526,7 +526,7 @@ describe("acpx_local runtime skill isolation", () => {
         runId: "run-1",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
         },
         runtime: {},
         config: { agent: "custom", agentCommand: "node ./fake-acp.js" },
@@ -667,7 +667,7 @@ describe("acpx_local runtime skill isolation", () => {
       });
       const result = await execute({
         runId: `run-${agent}`,
-        agent: { id: `agent-${agent}`, companyId: "company-1" },
+        agent: { id: `agent-${agent}`, squadId: "squad-1" },
         runtime: {},
         config:
           agent === "custom"

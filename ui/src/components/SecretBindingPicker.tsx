@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, KeyRound, Loader2, Plus, X } from "lucide-react";
-import type { CompanySecret, SecretVersionSelector } from "@slaw/shared";
+import type { SquadSecret, SecretVersionSelector } from "@slaw/shared";
 import { secretsApi } from "../api/secrets";
 import { queryKeys } from "../lib/queryKeys";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,14 +27,14 @@ interface SecretBindingPickerProps {
   disabled?: boolean;
   /**
    * Optional whitelist of secret statuses to show. Defaults to "active".
-   * Pass null to disable the filter and show every secret in the company.
+   * Pass null to disable the filter and show every secret in the squad.
    */
-  statusFilter?: Array<CompanySecret["status"]> | null;
+  statusFilter?: Array<SquadSecret["status"]> | null;
 }
 
 const VERSION_LATEST: SecretVersionSelector = "latest";
 
-function describeSecret(secret: CompanySecret): string {
+function describeSecret(secret: SquadSecret): string {
   const provider = secret.provider.replaceAll("_", " ");
   if (secret.managedMode === "external_reference") {
     return `External · ${provider}`;
@@ -42,7 +42,7 @@ function describeSecret(secret: CompanySecret): string {
   return provider;
 }
 
-function statusTone(status: CompanySecret["status"]): string {
+function statusTone(status: SquadSecret["status"]): string {
   switch (status) {
     case "active":
       return "text-emerald-600 dark:text-emerald-400";
@@ -69,7 +69,7 @@ export function SecretBindingPicker({
   statusFilter = ["active"],
 }: SecretBindingPickerProps) {
   const queryClient = useQueryClient();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState("");
   const [createValue, setCreateValue] = useState("");
@@ -77,11 +77,11 @@ export function SecretBindingPicker({
   const [createError, setCreateError] = useState<string | null>(null);
 
   const secretsQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.secrets.list(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.secrets.list(selectedSquadId)
       : ["secrets", "__disabled__"],
-    queryFn: () => secretsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryFn: () => secretsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
 
   const filteredSecrets = useMemo(() => {
@@ -99,13 +99,13 @@ export function SecretBindingPicker({
 
   const createMutation = useMutation({
     mutationFn: () =>
-      secretsApi.create(selectedCompanyId!, {
+      secretsApi.create(selectedSquadId!, {
         name: createName.trim(),
         value: createValue,
         description: createDescription.trim() || null,
       }),
     onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedSquadId!) });
       onChange({ secretId: created.id, version: VERSION_LATEST });
       setCreateOpen(false);
       setCreateName("");
@@ -202,7 +202,7 @@ export function SecretBindingPicker({
           variant="outline"
           size="sm"
           onClick={() => setCreateOpen(true)}
-          disabled={disabled || !selectedCompanyId}
+          disabled={disabled || !selectedSquadId}
           aria-label="Create secret"
         >
           <Plus className="h-3.5 w-3.5" />

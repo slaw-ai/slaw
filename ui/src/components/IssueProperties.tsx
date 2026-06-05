@@ -9,9 +9,9 @@ import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { queryKeys } from "../lib/queryKeys";
-import { buildCompanyUserInlineOptions, buildCompanyUserLabelMap } from "../lib/company-members";
+import { buildSquadUserInlineOptions, buildSquadUserLabelMap } from "../lib/squad-members";
 import { ISSUE_OVERRIDE_ADAPTER_TYPES, type IssueModelLane } from "../lib/issue-assignee-overrides";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import {
@@ -382,9 +382,9 @@ export function IssueProperties({
   onUpdate,
   inline,
 }: IssuePropertiesProps) {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const queryClient = useQueryClient();
-  const companyId = issue.companyId ?? selectedCompanyId;
+  const squadId = issue.squadId ?? selectedSquadId;
   const [assigneeOpen, setAssigneeOpen] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState("");
   const [projectOpen, setProjectOpen] = useState(false);
@@ -416,19 +416,19 @@ export function IssueProperties({
   const currentUserId = session?.user?.id ?? session?.session?.userId;
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(companyId!),
-    queryFn: () => agentsApi.list(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.agents.list(squadId!),
+    queryFn: () => agentsApi.list(squadId!),
+    enabled: !!squadId,
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(companyId!),
-    queryFn: () => accessApi.listUserDirectory(companyId!),
-    enabled: !!companyId,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(squadId!),
+    queryFn: () => accessApi.listUserDirectory(squadId!),
+    enabled: !!squadId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(companyId!),
-    queryFn: () => projectsApi.list(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.projects.list(squadId!),
+    queryFn: () => projectsApi.list(squadId!),
+    enabled: !!squadId,
   });
   const activeProjects = useMemo(
     () => (projects ?? []).filter((p) => !p.archivedAt || p.id === issue.projectId),
@@ -436,38 +436,38 @@ export function IssueProperties({
   );
   const { orderedProjects } = useProjectOrder({
     projects: activeProjects,
-    companyId,
+    squadId,
     userId: currentUserId,
   });
 
   const { data: labels } = useQuery({
-    queryKey: queryKeys.issues.labels(companyId!),
-    queryFn: () => issuesApi.listLabels(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.issues.labels(squadId!),
+    queryFn: () => issuesApi.listLabels(squadId!),
+    enabled: !!squadId,
   });
 
   const { data: allIssues, isFetching: isFetchingIssuePickerIssues } = useQuery({
-    queryKey: queryKeys.issues.list(companyId!),
-    queryFn: () => issuesApi.list(companyId!),
-    enabled: !!companyId && (parentOpen || (blockedByOpen && normalizedBlockedBySearch.length === 0)),
+    queryKey: queryKeys.issues.list(squadId!),
+    queryFn: () => issuesApi.list(squadId!),
+    enabled: !!squadId && (parentOpen || (blockedByOpen && normalizedBlockedBySearch.length === 0)),
   });
 
   const { data: searchedBlockedByIssues, isFetching: isFetchingSearchedBlockedByIssues } = useQuery({
-    queryKey: companyId
-      ? queryKeys.issues.search(companyId, normalizedBlockedBySearch, undefined, ISSUE_BLOCKER_SEARCH_LIMIT)
+    queryKey: squadId
+      ? queryKeys.issues.search(squadId, normalizedBlockedBySearch, undefined, ISSUE_BLOCKER_SEARCH_LIMIT)
       : ["issues", "blocker-search", normalizedBlockedBySearch, ISSUE_BLOCKER_SEARCH_LIMIT],
-    queryFn: () => issuesApi.list(companyId!, {
+    queryFn: () => issuesApi.list(squadId!, {
       q: normalizedBlockedBySearch,
       limit: ISSUE_BLOCKER_SEARCH_LIMIT,
     }),
-    enabled: !!companyId && blockedByOpen && normalizedBlockedBySearch.length > 0,
+    enabled: !!squadId && blockedByOpen && normalizedBlockedBySearch.length > 0,
   });
 
   const createLabel = useMutation({
-    mutationFn: (data: { name: string; color: string }) => issuesApi.createLabel(companyId!, data),
+    mutationFn: (data: { name: string; color: string }) => issuesApi.createLabel(squadId!, data),
     onSuccess: async (created) => {
       queryClient.setQueryData<IssueLabel[] | undefined>(
-        queryKeys.issues.labels(companyId!),
+        queryKeys.issues.labels(squadId!),
         (current) => {
           if (!current) return [created];
           if (current.some((label) => label.id === created.id)) return current;
@@ -475,7 +475,7 @@ export function IssueProperties({
         },
       );
       onUpdate({ labelIds: [...(issue.labelIds ?? []), created.id] });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.issues.labels(companyId!) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.issues.labels(squadId!) });
       setNewLabelName("");
     },
   });
@@ -554,12 +554,12 @@ export function IssueProperties({
   );
   const recentProjectIds = useMemo(() => getRecentProjectIds(), [projectOpen]);
   const userLabelMap = useMemo(
-    () => buildCompanyUserLabelMap(companyMembers?.users),
-    [companyMembers?.users],
+    () => buildSquadUserLabelMap(squadMembers?.users),
+    [squadMembers?.users],
   );
   const otherUserOptions = useMemo(
-    () => buildCompanyUserInlineOptions(companyMembers?.users, { excludeUserIds: [currentUserId, issue.createdByUserId] }),
-    [companyMembers?.users, currentUserId, issue.createdByUserId],
+    () => buildSquadUserInlineOptions(squadMembers?.users, { excludeUserIds: [currentUserId, issue.createdByUserId] }),
+    [squadMembers?.users, currentUserId, issue.createdByUserId],
   );
 
   const assignee = issue.assigneeAgentId
@@ -589,18 +589,18 @@ export function IssueProperties({
     && assigneeOverrideAdapterConfig.chrome === true;
   const { data: assigneeAdapterModels } = useQuery({
     queryKey:
-      companyId && assigneeAdapterType
-        ? queryKeys.agents.adapterModels(companyId, assigneeAdapterType)
+      squadId && assigneeAdapterType
+        ? queryKeys.agents.adapterModels(squadId, assigneeAdapterType)
         : ["agents", "none", "adapter-models", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModels(companyId!, assigneeAdapterType!),
-    enabled: Boolean(companyId) && showAssigneeAdapterOptions && supportsAssigneeOverrides,
+    queryFn: () => agentsApi.adapterModels(squadId!, assigneeAdapterType!),
+    enabled: Boolean(squadId) && showAssigneeAdapterOptions && supportsAssigneeOverrides,
   });
   const { data: assigneeCheapProfiles } = useQuery({
-    queryKey: companyId && assigneeAdapterType
-      ? queryKeys.agents.adapterModelProfiles(companyId, assigneeAdapterType)
+    queryKey: squadId && assigneeAdapterType
+      ? queryKeys.agents.adapterModelProfiles(squadId, assigneeAdapterType)
       : ["agents", "none", "adapter-model-profiles", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModelProfiles(companyId!, assigneeAdapterType!),
-    enabled: Boolean(companyId) && showAssigneeAdapterOptions && assigneeSupportsCheapLane,
+    queryFn: () => agentsApi.adapterModelProfiles(squadId!, assigneeAdapterType!),
+    enabled: Boolean(squadId) && showAssigneeAdapterOptions && assigneeSupportsCheapLane,
   });
   const assigneeCheapProfile = useMemo(
     () => (assigneeCheapProfiles ?? []).find((profile) => profile.key === "cheap") ?? null,

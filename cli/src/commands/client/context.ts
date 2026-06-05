@@ -19,7 +19,7 @@ interface ContextOptions {
 
 interface ContextSetOptions extends ContextOptions {
   apiBase?: string;
-  companyId?: string;
+  squadId?: string;
   persona?: "board" | "agent";
   agentId?: string;
   agentName?: string;
@@ -63,7 +63,7 @@ export function registerContextCommands(program: Command): void {
         name,
         current: name === store.currentProfile,
         apiBase: profile.apiBase ?? null,
-        companyId: profile.companyId ?? null,
+        squadId: profile.squadId ?? null,
         persona: profile.persona ?? null,
         agentId: profile.agentId ?? null,
         agentName: profile.agentName ?? null,
@@ -90,7 +90,7 @@ export function registerContextCommands(program: Command): void {
     .option("--context <path>", "Path to CLI context file")
     .option("--profile <name>", "Profile name (default: current profile)")
     .option("--api-base <url>", "Default API base URL")
-    .option("--company-id <id>", "Default company ID")
+    .option("--squad-id <id>", "Default squad ID")
     .option("--persona <persona>", "Profile persona: board or agent")
     .option("--agent-id <id>", "Default agent ID for agent persona")
     .option("--agent-name <name>", "Default agent display name")
@@ -143,7 +143,7 @@ function setIfProvided<K extends keyof ClientContextProfile>(
 function buildContextPatch(opts: ContextSetOptions): Partial<ClientContextProfile> {
   const patch: Partial<ClientContextProfile> = {};
   setIfProvided(patch, "apiBase", opts.apiBase);
-  setIfProvided(patch, "companyId", opts.companyId);
+  setIfProvided(patch, "squadId", opts.squadId);
   setIfProvided(patch, "persona", parsePersona(opts.persona));
   setIfProvided(patch, "agentId", opts.agentId);
   setIfProvided(patch, "agentName", opts.agentName);

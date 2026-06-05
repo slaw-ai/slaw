@@ -5,13 +5,13 @@
 - `GET /llms/agent-configuration.txt`
 - `GET /llms/agent-configuration/:adapterType.txt`
 - `GET /llms/agent-icons.txt`
-- `GET /api/companies/:companyId/agent-configurations`
-- `GET /api/companies/:companyId/skills`
-- `POST /api/companies/:companyId/skills/import`
+- `GET /api/squads/:squadId/agent-configurations`
+- `GET /api/squads/:squadId/skills`
+- `POST /api/squads/:squadId/skills/import`
 - `GET /api/agents/:agentId/configuration`
 - `POST /api/agents/:agentId/skills/sync`
-- `POST /api/companies/:companyId/agent-hires`
-- `POST /api/companies/:companyId/agents`
+- `POST /api/squads/:squadId/agent-hires`
+- `POST /api/squads/:squadId/agents`
 - `GET /api/agents/:agentId/config-revisions`
 - `POST /api/agents/:agentId/config-revisions/:revisionId/rollback`
 - `POST /api/issues/:issueId/approvals`
@@ -26,7 +26,7 @@ Approval collaboration:
 - `POST /api/approvals/:approvalId/comments`
 - `GET /api/approvals/:approvalId/issues`
 
-## `POST /api/companies/:companyId/agent-hires`
+## `POST /api/squads/:squadId/agent-hires`
 
 Request body matches agent create shape:
 
@@ -81,9 +81,9 @@ Response:
 }
 ```
 
-If company setting disables required approval, `approval` is `null` and the agent is created as `idle`.
+If squad setting disables required approval, `approval` is `null` and the agent is created as `idle`.
 
-`desiredSkills` accepts company skill ids, canonical keys, or a unique slug. The server resolves and stores canonical company skill keys.
+`desiredSkills` accepts squad skill ids, canonical keys, or a unique slug. The server resolves and stores canonical squad skill keys.
 Leave timer heartbeats disabled by default. Only set `runtimeConfig.heartbeat.enabled=true` and include an `intervalSec` when the role truly needs scheduled recurring work or the user explicitly requested it.
 
 ## Approval Lifecycle

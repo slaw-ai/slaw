@@ -115,7 +115,7 @@ async function attachGoals(db: Db, rows: ProjectRow[]): Promise<ProjectWithGoals
 function toRuntimeService(row: WorkspaceRuntimeServiceRow): WorkspaceRuntimeService {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     projectId: row.projectId ?? null,
     projectWorkspaceId: row.projectWorkspaceId ?? null,
     executionWorkspaceId: row.executionWorkspaceId ?? null,
@@ -150,7 +150,7 @@ function toWorkspace(
 ): ProjectWorkspace {
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     projectId: row.projectId,
     name: row.name,
     sourceType: row.sourceType as ProjectWorkspace["sourceType"],
@@ -187,7 +187,7 @@ function deriveRepoNameFromRepoUrl(repoUrl: string | null): string | null {
 }
 
 function deriveProjectCodebase(input: {
-  companyId: string;
+  squadId: string;
   projectId: string;
   primaryWorkspace: ProjectWorkspace | null;
   fallbackWorkspaces: ProjectWorkspace[];
@@ -197,7 +197,7 @@ function deriveProjectCodebase(input: {
   const repoName = deriveRepoNameFromRepoUrl(repoUrl);
   const localFolder = primaryWorkspace?.cwd ?? null;
   const managedFolder = resolveManagedProjectWorkspaceDir({
-    companyId: input.companyId,
+    squadId: input.squadId,
     projectId: input.projectId,
     repoName,
   });
@@ -237,7 +237,7 @@ async function attachWorkspaces(db: Db, rows: ProjectWithGoals[]): Promise<Proje
     .orderBy(desc(projectWorkspaces.isPrimary), asc(projectWorkspaces.createdAt), asc(projectWorkspaces.id));
   const runtimeServicesByWorkspaceId = await listCurrentRuntimeServicesForProjectWorkspaces(
     db,
-    rows[0]!.companyId,
+    rows[0]!.squadId,
     workspaceRows.map((workspace) => workspace.id),
   );
   const sharedRuntimeServicesByWorkspaceId = new Map(
@@ -303,7 +303,7 @@ async function attachWorkspaces(db: Db, rows: ProjectWithGoals[]): Promise<Proje
     return {
       ...row,
       codebase: deriveProjectCodebase({
-        companyId: row.companyId,
+        squadId: row.squadId,
         projectId: row.id,
         primaryWorkspace,
         fallbackWorkspaces: workspaces,
@@ -316,14 +316,14 @@ async function attachWorkspaces(db: Db, rows: ProjectWithGoals[]): Promise<Proje
 }
 
 /** Sync the project_goals join table for a single project. */
-async function syncGoalLinks(db: Db, projectId: string, companyId: string, goalIds: string[]) {
+async function syncGoalLinks(db: Db, projectId: string, squadId: string, goalIds: string[]) {
   // Delete existing links
   await db.delete(projectGoals).where(eq(projectGoals.projectId, projectId));
 
   // Insert new links
   if (goalIds.length > 0) {
     await db.insert(projectGoals).values(
-      goalIds.map((goalId) => ({ projectId, goalId, companyId })),
+      goalIds.map((goalId) => ({ projectId, goalId, squadId })),
     );
   }
 }
@@ -428,7 +428,7 @@ export function resolveProjectNameForUniqueShortname(
 async function ensureSinglePrimaryWorkspace(
   dbOrTx: any,
   input: {
-    companyId: string;
+    squadId: string;
     projectId: string;
     keepWorkspaceId: string;
   },
@@ -438,7 +438,7 @@ async function ensureSinglePrimaryWorkspace(
     .set({ isPrimary: false, updatedAt: new Date() })
     .where(
       and(
-        eq(projectWorkspaces.companyId, input.companyId),
+        eq(projectWorkspaces.squadId, input.squadId),
         eq(projectWorkspaces.projectId, input.projectId),
       ),
     );
@@ -448,7 +448,7 @@ async function ensureSinglePrimaryWorkspace(
     .set({ isPrimary: true, updatedAt: new Date() })
     .where(
       and(
-        eq(projectWorkspaces.companyId, input.companyId),
+        eq(projectWorkspaces.squadId, input.squadId),
         eq(projectWorkspaces.projectId, input.projectId),
         eq(projectWorkspaces.id, input.keepWorkspaceId),
       ),
@@ -457,15 +457,15 @@ async function ensureSinglePrimaryWorkspace(
 
 export function projectService(db: Db) {
   const createProject = async (
-    companyId: string,
-    data: Omit<typeof projects.$inferInsert, "companyId"> & { goalIds?: string[] },
+    squadId: string,
+    data: Omit<typeof projects.$inferInsert, "squadId"> & { goalIds?: string[] },
   ): Promise<ProjectWithGoals> => {
     const { goalIds: inputGoalIds, ...projectData } = data;
     const ids = resolveGoalIds({ goalIds: inputGoalIds, goalId: projectData.goalId });
 
     // Auto-assign a color from the palette if none provided
     if (!projectData.color) {
-      const existing = await db.select({ color: projects.color }).from(projects).where(eq(projects.companyId, companyId));
+      const existing = await db.select({ color: projects.color }).from(projects).where(eq(projects.squadId, squadId));
       const usedColors = new Set(existing.map((r) => r.color).filter(Boolean));
       const nextColor = PROJECT_COLORS.find((c) => !usedColors.has(c)) ?? PROJECT_COLORS[existing.length % PROJECT_COLORS.length];
       projectData.color = nextColor;
@@ -474,7 +474,7 @@ export function projectService(db: Db) {
     const existingProjects = await db
       .select({ id: projects.id, name: projects.name })
       .from(projects)
-      .where(eq(projects.companyId, companyId));
+      .where(eq(projects.squadId, squadId));
     projectData.name = resolveProjectNameForUniqueShortname(projectData.name, existingProjects);
 
     // Also write goalId to the legacy column (first goal or null)
@@ -482,12 +482,12 @@ export function projectService(db: Db) {
 
     const row = await db
       .insert(projects)
-      .values({ ...projectData, goalId: legacyGoalId, companyId })
+      .values({ ...projectData, goalId: legacyGoalId, squadId })
       .returning()
       .then((rows) => rows[0]);
 
     if (ids && ids.length > 0) {
-      await syncGoalLinks(db, row.id, companyId, ids);
+      await syncGoalLinks(db, row.id, squadId, ids);
     }
 
     const [withGoals] = await attachGoals(db, [row]);
@@ -509,19 +509,19 @@ export function projectService(db: Db) {
   };
 
   return {
-    list: async (companyId: string): Promise<ProjectWithGoals[]> => {
-      const rows = await db.select().from(projects).where(eq(projects.companyId, companyId));
+    list: async (squadId: string): Promise<ProjectWithGoals[]> => {
+      const rows = await db.select().from(projects).where(eq(projects.squadId, squadId));
       const withGoals = await attachGoals(db, rows);
       return attachWorkspaces(db, withGoals);
     },
 
-    listByIds: async (companyId: string, ids: string[]): Promise<ProjectWithGoals[]> => {
+    listByIds: async (squadId: string, ids: string[]): Promise<ProjectWithGoals[]> => {
       const dedupedIds = [...new Set(ids)];
       if (dedupedIds.length === 0) return [];
       const rows = await db
         .select()
         .from(projects)
-        .where(and(eq(projects.companyId, companyId), inArray(projects.id, dedupedIds)));
+        .where(and(eq(projects.squadId, squadId), inArray(projects.id, dedupedIds)));
       const withGoals = await attachGoals(db, rows);
       const withWorkspaces = await attachWorkspaces(db, withGoals);
       const byId = new Map(withWorkspaces.map((project) => [project.id, project]));
@@ -531,7 +531,7 @@ export function projectService(db: Db) {
     getById: getProjectById,
 
     resolveManagedProject: async (input: {
-      companyId: string;
+      squadId: string;
       pluginId: string;
       pluginKey: string;
       projectKey: string;
@@ -548,7 +548,7 @@ export function projectService(db: Db) {
           pluginKey: input.pluginKey,
           resourceKind: "project",
           resourceKey: input.projectKey,
-          companyId: input.companyId,
+          squadId: input.squadId,
           projectId: null,
           project: null,
           status: "missing",
@@ -561,7 +561,7 @@ export function projectService(db: Db) {
           pluginKey: input.pluginKey,
           resourceKind: "project",
           resourceKey: input.projectKey,
-          companyId: input.companyId,
+          squadId: input.squadId,
           projectId: null,
           project: null,
           status: "missing",
@@ -573,7 +573,7 @@ export function projectService(db: Db) {
         .select()
         .from(pluginManagedResources)
         .where(and(
-          eq(pluginManagedResources.companyId, input.companyId),
+          eq(pluginManagedResources.squadId, input.squadId),
           eq(pluginManagedResources.pluginId, input.pluginId),
           eq(pluginManagedResources.resourceKind, "project"),
           eq(pluginManagedResources.resourceKey, input.projectKey),
@@ -584,7 +584,7 @@ export function projectService(db: Db) {
         const existingProject = await db
           .select({ id: projects.id })
           .from(projects)
-          .where(and(eq(projects.companyId, input.companyId), eq(projects.id, existingBinding.resourceId)))
+          .where(and(eq(projects.squadId, input.squadId), eq(projects.id, existingBinding.resourceId)))
           .then((rows) => rows[0] ?? null);
         if (existingProject) {
           if (input.reset) {
@@ -597,7 +597,7 @@ export function projectService(db: Db) {
                 color: declaration.color ?? null,
                 updatedAt: new Date(),
               })
-              .where(and(eq(projects.companyId, input.companyId), eq(projects.id, existingBinding.resourceId)));
+              .where(and(eq(projects.squadId, input.squadId), eq(projects.id, existingBinding.resourceId)));
           }
           if (input.createIfMissing !== false) {
             await db
@@ -610,7 +610,7 @@ export function projectService(db: Db) {
             pluginKey: input.pluginKey,
             resourceKind: "project",
             resourceKey: input.projectKey,
-            companyId: input.companyId,
+            squadId: input.squadId,
             projectId: project?.id ?? existingBinding.resourceId,
             project: project as import("@slaw/shared").Project | null,
             status: input.reset ? "reset" : "resolved",
@@ -622,14 +622,14 @@ export function projectService(db: Db) {
             pluginKey: input.pluginKey,
             resourceKind: "project",
             resourceKey: input.projectKey,
-            companyId: input.companyId,
+            squadId: input.squadId,
             projectId: null,
             project: null,
             status: "missing",
           };
         }
 
-        const project = await createProject(input.companyId, {
+        const project = await createProject(input.squadId, {
           name: declaration.displayName,
           description: declaration.description ?? null,
           status: declaration.status ?? "in_progress",
@@ -644,7 +644,7 @@ export function projectService(db: Db) {
           pluginKey: input.pluginKey,
           resourceKind: "project",
           resourceKey: input.projectKey,
-          companyId: input.companyId,
+          squadId: input.squadId,
           projectId: hydrated?.id ?? project.id,
           project: hydrated as import("@slaw/shared").Project | null,
           status: "relinked",
@@ -656,21 +656,21 @@ export function projectService(db: Db) {
           pluginKey: input.pluginKey,
           resourceKind: "project",
           resourceKey: input.projectKey,
-          companyId: input.companyId,
+          squadId: input.squadId,
           projectId: null,
           project: null,
           status: "missing",
         };
       }
 
-      const project = await createProject(input.companyId, {
+      const project = await createProject(input.squadId, {
         name: declaration.displayName,
         description: declaration.description ?? null,
         status: declaration.status ?? "in_progress",
         color: declaration.color ?? undefined,
       });
       await db.insert(pluginManagedResources).values({
-        companyId: input.companyId,
+        squadId: input.squadId,
         pluginId: input.pluginId,
         pluginKey: input.pluginKey,
         resourceKind: "project",
@@ -683,7 +683,7 @@ export function projectService(db: Db) {
         pluginKey: input.pluginKey,
         resourceKind: "project",
         resourceKey: input.projectKey,
-        companyId: input.companyId,
+        squadId: input.squadId,
         projectId: hydrated?.id ?? project.id,
         project: hydrated as import("@slaw/shared").Project | null,
         status: "created",
@@ -699,7 +699,7 @@ export function projectService(db: Db) {
       const { goalIds: inputGoalIds, ...projectData } = data;
       const ids = resolveGoalIds({ goalIds: inputGoalIds, goalId: projectData.goalId });
       const existingProject = await db
-        .select({ id: projects.id, companyId: projects.companyId, name: projects.name })
+        .select({ id: projects.id, squadId: projects.squadId, name: projects.name })
         .from(projects)
         .where(eq(projects.id, id))
         .then((rows) => rows[0] ?? null);
@@ -712,7 +712,7 @@ export function projectService(db: Db) {
           const existingProjects = await db
             .select({ id: projects.id, name: projects.name })
             .from(projects)
-            .where(eq(projects.companyId, existingProject.companyId));
+            .where(eq(projects.squadId, existingProject.squadId));
           projectData.name = resolveProjectNameForUniqueShortname(projectData.name, existingProjects, {
             excludeProjectId: id,
           });
@@ -737,7 +737,7 @@ export function projectService(db: Db) {
       if (!row) return null;
 
       if (ids !== undefined) {
-        await syncGoalLinks(db, id, row.companyId, ids);
+        await syncGoalLinks(db, id, row.squadId, ids);
       }
 
       const [withGoals] = await attachGoals(db, [row]);
@@ -745,14 +745,14 @@ export function projectService(db: Db) {
       return enriched ?? null;
     },
 
-    clearExecutionWorkspaceEnvironmentSelection: async (companyId: string, environmentId: string) => {
+    clearExecutionWorkspaceEnvironmentSelection: async (squadId: string, environmentId: string) => {
       const rows = await db
         .select({
           id: projects.id,
           executionWorkspacePolicy: projects.executionWorkspacePolicy,
         })
         .from(projects)
-        .where(eq(projects.companyId, companyId));
+        .where(eq(projects.squadId, squadId));
 
       let cleared = 0;
       for (const row of rows) {
@@ -795,7 +795,7 @@ export function projectService(db: Db) {
       if (rows.length === 0) return [];
       const runtimeServicesByWorkspaceId = await listCurrentRuntimeServicesForProjectWorkspaces(
         db,
-        rows[0]!.companyId,
+        rows[0]!.squadId,
         rows.map((workspace) => workspace.id),
       );
       return rows.map((row) =>
@@ -847,7 +847,7 @@ export function projectService(db: Db) {
             .set({ isPrimary: false, updatedAt: new Date() })
             .where(
               and(
-                eq(projectWorkspaces.companyId, project.companyId),
+                eq(projectWorkspaces.squadId, project.squadId),
                 eq(projectWorkspaces.projectId, projectId),
               ),
             );
@@ -856,7 +856,7 @@ export function projectService(db: Db) {
         const row = await tx
           .insert(projectWorkspaces)
           .values({
-            companyId: project.companyId,
+            squadId: project.squadId,
             projectId,
             name,
             sourceType,
@@ -965,7 +965,7 @@ export function projectService(db: Db) {
             .set({ isPrimary: false, updatedAt: new Date() })
             .where(
               and(
-                eq(projectWorkspaces.companyId, existing.companyId),
+                eq(projectWorkspaces.squadId, existing.squadId),
                 eq(projectWorkspaces.projectId, projectId),
               ),
             );
@@ -989,7 +989,7 @@ export function projectService(db: Db) {
           .from(projectWorkspaces)
           .where(
             and(
-              eq(projectWorkspaces.companyId, row.companyId),
+              eq(projectWorkspaces.squadId, row.squadId),
               eq(projectWorkspaces.projectId, row.projectId),
               eq(projectWorkspaces.isPrimary, true),
             ),
@@ -1002,7 +1002,7 @@ export function projectService(db: Db) {
             .from(projectWorkspaces)
             .where(
               and(
-                eq(projectWorkspaces.companyId, row.companyId),
+                eq(projectWorkspaces.squadId, row.squadId),
                 eq(projectWorkspaces.projectId, row.projectId),
                 eq(projectWorkspaces.id, row.id),
               ),
@@ -1013,7 +1013,7 @@ export function projectService(db: Db) {
             .from(projectWorkspaces)
             .where(
               and(
-                eq(projectWorkspaces.companyId, row.companyId),
+                eq(projectWorkspaces.squadId, row.squadId),
                 eq(projectWorkspaces.projectId, row.projectId),
               ),
             )
@@ -1021,7 +1021,7 @@ export function projectService(db: Db) {
             .then((rows) => rows.find((candidate) => candidate.id !== row.id) ?? null);
 
           await ensureSinglePrimaryWorkspace(tx, {
-            companyId: row.companyId,
+            squadId: row.squadId,
             projectId: row.projectId,
             keepWorkspaceId: alternateCandidate?.id ?? nextPrimaryCandidate?.id ?? row.id,
           });
@@ -1067,7 +1067,7 @@ export function projectService(db: Db) {
           .from(projectWorkspaces)
           .where(
             and(
-              eq(projectWorkspaces.companyId, row.companyId),
+              eq(projectWorkspaces.squadId, row.squadId),
               eq(projectWorkspaces.projectId, row.projectId),
             ),
           )
@@ -1077,7 +1077,7 @@ export function projectService(db: Db) {
 
         if (next) {
           await ensureSinglePrimaryWorkspace(tx, {
-            companyId: row.companyId,
+            squadId: row.squadId,
             projectId: row.projectId,
             keepWorkspaceId: next.id,
           });
@@ -1089,7 +1089,7 @@ export function projectService(db: Db) {
       return removed ? toWorkspace(removed) : null;
     },
 
-    resolveByReference: async (companyId: string, reference: string) => {
+    resolveByReference: async (squadId: string, reference: string) => {
       const raw = reference.trim();
       if (raw.length === 0) {
         return { project: null, ambiguous: false } as const;
@@ -1097,13 +1097,13 @@ export function projectService(db: Db) {
 
       if (isUuidLike(raw)) {
         const row = await db
-          .select({ id: projects.id, companyId: projects.companyId, name: projects.name })
+          .select({ id: projects.id, squadId: projects.squadId, name: projects.name })
           .from(projects)
-          .where(and(eq(projects.id, raw), eq(projects.companyId, companyId)))
+          .where(and(eq(projects.id, raw), eq(projects.squadId, squadId)))
           .then((rows) => rows[0] ?? null);
         if (!row) return { project: null, ambiguous: false } as const;
         return {
-          project: { id: row.id, companyId: row.companyId, urlKey: deriveProjectUrlKey(row.name, row.id) },
+          project: { id: row.id, squadId: row.squadId, urlKey: deriveProjectUrlKey(row.name, row.id) },
           ambiguous: false,
         } as const;
       }
@@ -1114,14 +1114,14 @@ export function projectService(db: Db) {
       }
 
       const rows = await db
-        .select({ id: projects.id, companyId: projects.companyId, name: projects.name })
+        .select({ id: projects.id, squadId: projects.squadId, name: projects.name })
         .from(projects)
-        .where(eq(projects.companyId, companyId));
+        .where(eq(projects.squadId, squadId));
       const matches = rows.filter((row) => deriveProjectUrlKey(row.name, row.id) === urlKey);
       if (matches.length === 1) {
         const match = matches[0]!;
         return {
-          project: { id: match.id, companyId: match.companyId, urlKey: deriveProjectUrlKey(match.name, match.id) },
+          project: { id: match.id, squadId: match.squadId, urlKey: deriveProjectUrlKey(match.name, match.id) },
           ambiguous: false,
         } as const;
       }

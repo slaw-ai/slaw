@@ -8,8 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Search, buildSearchUrl } from "./Search";
 
-const companyState = vi.hoisted(() => ({
-  selectedCompanyId: "company-1",
+const squadState = vi.hoisted(() => ({
+  selectedSquadId: "squad-1",
 }));
 
 const breadcrumbState = vi.hoisted(() => ({
@@ -34,8 +34,8 @@ const projectsApiMock = vi.hoisted(() => ({
   list: vi.fn(),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => companyState,
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => squadState,
 }));
 
 vi.mock("../context/BreadcrumbContext", () => ({
@@ -215,7 +215,7 @@ describe("Search page", () => {
     const { root } = renderSearch("/search?q=auth+flake", container);
 
     await waitForAssertion(() => {
-      expect(searchApiMock.search).toHaveBeenCalledWith("company-1", {
+      expect(searchApiMock.search).toHaveBeenCalledWith("squad-1", {
         q: "auth flake",
         scope: "all",
         limit: 20,
@@ -265,7 +265,7 @@ describe("Search page", () => {
     await new Promise((resolve) => setTimeout(resolve, 350));
 
     await waitForAssertion(() => {
-      expect(searchApiMock.search).toHaveBeenCalledWith("company-1", {
+      expect(searchApiMock.search).toHaveBeenCalledWith("squad-1", {
         q: "deflake",
         scope: "all",
         limit: 20,

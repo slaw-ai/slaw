@@ -6,11 +6,11 @@ import { configure } from "./commands/configure.js";
 import { addAllowedHostname } from "./commands/allowed-hostname.js";
 import { heartbeatRun } from "./commands/heartbeat-run.js";
 import { runCommand } from "./commands/run.js";
-import { bootstrapCeoInvite } from "./commands/auth-bootstrap-ceo.js";
+import { bootstrapSquadLeadInvite } from "./commands/auth-bootstrap-squad-lead.js";
 import { dbBackupCommand } from "./commands/db-backup.js";
 import { registerEnvLabCommands } from "./commands/env-lab.js";
 import { registerContextCommands } from "./commands/client/context.js";
-import { registerCompanyCommands } from "./commands/client/company.js";
+import { registerSquadCommands } from "./commands/client/squad.js";
 import { registerIssueCommands } from "./commands/client/issue.js";
 import { registerAgentCommands } from "./commands/client/agent.js";
 import { registerProjectCommands } from "./commands/client/project.js";
@@ -158,7 +158,7 @@ heartbeat
 
 registerContextCommands(program);
 registerConnectCommand(program);
-registerCompanyCommands(program);
+registerSquadCommands(program);
 registerIssueCommands(program);
 registerAgentCommands(program);
 registerProjectCommands(program);
@@ -187,14 +187,14 @@ registerPluginCommands(program);
 const auth = program.command("auth").description("Authentication and bootstrap utilities");
 
 auth
-  .command("bootstrap-ceo")
+  .command("bootstrap-squad-lead")
   .description("Create a one-time bootstrap invite URL for first instance admin")
   .option("-c, --config <path>", "Path to config file")
   .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
   .option("--force", "Create new invite even if admin already exists", false)
   .option("--expires-hours <hours>", "Invite expiration window in hours", (value) => Number(value))
   .option("--base-url <url>", "Public base URL used to print invite link")
-  .action(bootstrapCeoInvite);
+  .action(bootstrapSquadLeadInvite);
 
 registerClientAuthCommands(auth);
 

@@ -95,7 +95,7 @@ describe("grok_local execute", () => {
       runId: "run-1",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Grok Agent",
         adapterType: "grok_local",
         adapterConfig: {},
@@ -152,7 +152,7 @@ describe("grok_local execute", () => {
       runId: "run-setup-fail",
       agent: {
         id: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Grok Agent",
         adapterType: "grok_local",
         adapterConfig: {},

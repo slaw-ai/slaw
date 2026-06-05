@@ -1,24 +1,24 @@
 export const queryKeys = {
-  companies: {
-    all: ["companies"] as const,
-    detail: (id: string) => ["companies", id] as const,
-    stats: ["companies", "stats"] as const,
+  squads: {
+    all: ["squads"] as const,
+    detail: (id: string) => ["squads", id] as const,
+    stats: ["squads", "stats"] as const,
   },
-  companySkills: {
-    list: (companyId: string) => ["company-skills", companyId] as const,
-    detail: (companyId: string, skillId: string) => ["company-skills", companyId, skillId] as const,
-    updateStatus: (companyId: string, skillId: string) =>
-      ["company-skills", companyId, skillId, "update-status"] as const,
-    file: (companyId: string, skillId: string, relativePath: string) =>
-      ["company-skills", companyId, skillId, "file", relativePath] as const,
+  squadSkills: {
+    list: (squadId: string) => ["squad-skills", squadId] as const,
+    detail: (squadId: string, skillId: string) => ["squad-skills", squadId, skillId] as const,
+    updateStatus: (squadId: string, skillId: string) =>
+      ["squad-skills", squadId, skillId, "update-status"] as const,
+    file: (squadId: string, skillId: string, relativePath: string) =>
+      ["squad-skills", squadId, skillId, "file", relativePath] as const,
     catalog: (filters: { kind?: string; category?: string; q?: string } = {}) =>
-      ["company-skills", "catalog", filters.kind ?? "__all-kinds__", filters.category ?? "__all-categories__", filters.q ?? ""] as const,
-    catalogDetail: (catalogRef: string) => ["company-skills", "catalog", "detail", catalogRef] as const,
+      ["squad-skills", "catalog", filters.kind ?? "__all-kinds__", filters.category ?? "__all-categories__", filters.q ?? ""] as const,
+    catalogDetail: (catalogRef: string) => ["squad-skills", "catalog", "detail", catalogRef] as const,
     catalogFile: (catalogRef: string, relativePath: string) =>
-      ["company-skills", "catalog", "file", catalogRef, relativePath] as const,
+      ["squad-skills", "catalog", "file", catalogRef, relativePath] as const,
   },
   agents: {
-    list: (companyId: string) => ["agents", companyId] as const,
+    list: (squadId: string) => ["agents", squadId] as const,
     detail: (id: string) => ["agents", "detail", id] as const,
     runtimeState: (id: string) => ["agents", "runtime-state", id] as const,
     taskSessions: (id: string) => ["agents", "task-sessions", id] as const,
@@ -28,34 +28,34 @@ export const queryKeys = {
       ["agents", "instructions-bundle", id, "file", relativePath] as const,
     keys: (agentId: string) => ["agents", "keys", agentId] as const,
     configRevisions: (agentId: string) => ["agents", "config-revisions", agentId] as const,
-    adapterModels: (companyId: string, adapterType: string, environmentId?: string | null) =>
-      ["agents", companyId, "adapter-models", adapterType, environmentId ?? null] as const,
-    adapterModelProfiles: (companyId: string, adapterType: string) =>
-      ["agents", companyId, "adapter-model-profiles", adapterType] as const,
-    detectModel: (companyId: string, adapterType: string) =>
-      ["agents", companyId, "detect-model", adapterType] as const,
+    adapterModels: (squadId: string, adapterType: string, environmentId?: string | null) =>
+      ["agents", squadId, "adapter-models", adapterType, environmentId ?? null] as const,
+    adapterModelProfiles: (squadId: string, adapterType: string) =>
+      ["agents", squadId, "adapter-model-profiles", adapterType] as const,
+    detectModel: (squadId: string, adapterType: string) =>
+      ["agents", squadId, "detect-model", adapterType] as const,
   },
   issues: {
-    list: (companyId: string) => ["issues", companyId] as const,
-    search: (companyId: string, q: string, projectId?: string, limit?: number) =>
-      ["issues", companyId, "search", q, projectId ?? "__all-projects__", limit ?? "__no-limit__"] as const,
-    listAssignedToMe: (companyId: string) => ["issues", companyId, "assigned-to-me"] as const,
-    listMineByMe: (companyId: string) => ["issues", companyId, "mine-by-me"] as const,
-    listTouchedByMe: (companyId: string) => ["issues", companyId, "touched-by-me"] as const,
-    listUnreadTouchedByMe: (companyId: string) => ["issues", companyId, "unread-touched-by-me"] as const,
-    listBlockedAttention: (companyId: string) => ["issues", companyId, "blocked-attention"] as const,
-    countBlockedAttention: (companyId: string) => ["issues", companyId, "blocked-attention", "count"] as const,
-    labels: (companyId: string) => ["issues", companyId, "labels"] as const,
-    listByProject: (companyId: string, projectId: string) =>
-      ["issues", companyId, "project", projectId] as const,
-    listPluginOperationsByProject: (companyId: string, projectId: string, originKindPrefix: string) =>
-      ["issues", companyId, "project", projectId, "plugin-operations", originKindPrefix] as const,
-    listByParent: (companyId: string, parentId: string) =>
-      ["issues", companyId, "parent", parentId] as const,
-    listByDescendantRoot: (companyId: string, rootIssueId: string) =>
-      ["issues", companyId, "descendants", rootIssueId] as const,
-    listByExecutionWorkspace: (companyId: string, executionWorkspaceId: string) =>
-      ["issues", companyId, "execution-workspace", executionWorkspaceId] as const,
+    list: (squadId: string) => ["issues", squadId] as const,
+    search: (squadId: string, q: string, projectId?: string, limit?: number) =>
+      ["issues", squadId, "search", q, projectId ?? "__all-projects__", limit ?? "__no-limit__"] as const,
+    listAssignedToMe: (squadId: string) => ["issues", squadId, "assigned-to-me"] as const,
+    listMineByMe: (squadId: string) => ["issues", squadId, "mine-by-me"] as const,
+    listTouchedByMe: (squadId: string) => ["issues", squadId, "touched-by-me"] as const,
+    listUnreadTouchedByMe: (squadId: string) => ["issues", squadId, "unread-touched-by-me"] as const,
+    listBlockedAttention: (squadId: string) => ["issues", squadId, "blocked-attention"] as const,
+    countBlockedAttention: (squadId: string) => ["issues", squadId, "blocked-attention", "count"] as const,
+    labels: (squadId: string) => ["issues", squadId, "labels"] as const,
+    listByProject: (squadId: string, projectId: string) =>
+      ["issues", squadId, "project", projectId] as const,
+    listPluginOperationsByProject: (squadId: string, projectId: string, originKindPrefix: string) =>
+      ["issues", squadId, "project", projectId, "plugin-operations", originKindPrefix] as const,
+    listByParent: (squadId: string, parentId: string) =>
+      ["issues", squadId, "parent", parentId] as const,
+    listByDescendantRoot: (squadId: string, rootIssueId: string) =>
+      ["issues", squadId, "descendants", rootIssueId] as const,
+    listByExecutionWorkspace: (squadId: string, executionWorkspaceId: string) =>
+      ["issues", squadId, "execution-workspace", executionWorkspaceId] as const,
     detail: (id: string) => ["issues", "detail", id] as const,
     comments: (issueId: string) => ["issues", "comments", issueId] as const,
     interactions: (issueId: string) => ["issues", "interactions", issueId] as const,
@@ -81,52 +81,52 @@ export const queryKeys = {
     workProducts: (issueId: string) => ["issues", "work-products", issueId] as const,
   },
   routines: {
-    list: (companyId: string, filters?: { projectId?: string | null }) =>
-      ["routines", companyId, filters?.projectId ?? "__all-projects__"] as const,
+    list: (squadId: string, filters?: { projectId?: string | null }) =>
+      ["routines", squadId, filters?.projectId ?? "__all-projects__"] as const,
     detail: (id: string) => ["routines", "detail", id] as const,
     runs: (id: string) => ["routines", "runs", id] as const,
     revisions: (id: string) => ["routines", "revisions", id] as const,
-    activity: (companyId: string, id: string) => ["routines", "activity", companyId, id] as const,
+    activity: (squadId: string, id: string) => ["routines", "activity", squadId, id] as const,
   },
   executionWorkspaces: {
-    list: (companyId: string, filters?: Record<string, string | boolean | undefined>) =>
-      ["execution-workspaces", companyId, filters ?? {}] as const,
-    summaryList: (companyId: string, filters?: Record<string, string | boolean | undefined>) =>
-      ["execution-workspaces", companyId, "summary", filters ?? {}] as const,
+    list: (squadId: string, filters?: Record<string, string | boolean | undefined>) =>
+      ["execution-workspaces", squadId, filters ?? {}] as const,
+    summaryList: (squadId: string, filters?: Record<string, string | boolean | undefined>) =>
+      ["execution-workspaces", squadId, "summary", filters ?? {}] as const,
     detail: (id: string) => ["execution-workspaces", "detail", id] as const,
     closeReadiness: (id: string) => ["execution-workspaces", "close-readiness", id] as const,
     workspaceOperations: (id: string) => ["execution-workspaces", "workspace-operations", id] as const,
   },
   environments: {
-    list: (companyId: string) => ["environments", companyId] as const,
+    list: (squadId: string) => ["environments", squadId] as const,
   },
   projects: {
-    list: (companyId: string) => ["projects", companyId] as const,
+    list: (squadId: string) => ["projects", squadId] as const,
     detail: (id: string) => ["projects", "detail", id] as const,
   },
   goals: {
-    list: (companyId: string) => ["goals", companyId] as const,
+    list: (squadId: string) => ["goals", squadId] as const,
     detail: (id: string) => ["goals", "detail", id] as const,
   },
   budgets: {
-    overview: (companyId: string) => ["budgets", "overview", companyId] as const,
+    overview: (squadId: string) => ["budgets", "overview", squadId] as const,
   },
   approvals: {
-    list: (companyId: string, status?: string) =>
-      ["approvals", companyId, status] as const,
+    list: (squadId: string, status?: string) =>
+      ["approvals", squadId, status] as const,
     detail: (approvalId: string) => ["approvals", "detail", approvalId] as const,
     comments: (approvalId: string) => ["approvals", "comments", approvalId] as const,
     issues: (approvalId: string) => ["approvals", "issues", approvalId] as const,
   },
   access: {
-    invites: (companyId: string, state: string = "all", limit: number = 20) =>
-      ["access", "invites", "paginated-v1", companyId, state, limit] as const,
-    joinRequests: (companyId: string, status: string = "pending_approval") =>
-      ["access", "join-requests", companyId, status] as const,
-    companyMembers: (companyId: string) => ["access", "company-members", companyId] as const,
-    companyUserDirectory: (companyId: string) => ["access", "company-user-directory", companyId] as const,
+    invites: (squadId: string, state: string = "all", limit: number = 20) =>
+      ["access", "invites", "paginated-v1", squadId, state, limit] as const,
+    joinRequests: (squadId: string, status: string = "pending_approval") =>
+      ["access", "join-requests", squadId, status] as const,
+    squadMembers: (squadId: string) => ["access", "squad-members", squadId] as const,
+    squadUserDirectory: (squadId: string) => ["access", "squad-user-directory", squadId] as const,
     adminUsers: (query: string) => ["access", "admin-users", query] as const,
-    userCompanyAccess: (userId: string) => ["access", "user-company-access", userId] as const,
+    userSquadAccess: (userId: string) => ["access", "user-squad-access", userId] as const,
     invite: (token: string) => ["access", "invite", token] as const,
     currentBoardAccess: ["access", "current-board-access"] as const,
   },
@@ -134,62 +134,62 @@ export const queryKeys = {
     session: ["auth", "session"] as const,
   },
   sidebarPreferences: {
-    companyOrder: (userId: string) => ["sidebar-preferences", "company-order", userId] as const,
-    projectOrder: (companyId: string, userId: string) =>
-      ["sidebar-preferences", "project-order", companyId, userId] as const,
+    squadOrder: (userId: string) => ["sidebar-preferences", "squad-order", userId] as const,
+    projectOrder: (squadId: string, userId: string) =>
+      ["sidebar-preferences", "project-order", squadId, userId] as const,
   },
   resourceMemberships: {
-    mine: (companyId: string) => ["resource-memberships", companyId, "me"] as const,
+    mine: (squadId: string) => ["resource-memberships", squadId, "me"] as const,
   },
   instance: {
     generalSettings: ["instance", "general-settings"] as const,
     schedulerHeartbeats: ["instance", "scheduler-heartbeats"] as const,
     experimentalSettings: ["instance", "experimental-settings"] as const,
   },
-  cloudUpstreams: (companyId: string) => ["cloud-upstreams", companyId] as const,
+  cloudUpstreams: (squadId: string) => ["cloud-upstreams", squadId] as const,
   health: ["health"] as const,
   secrets: {
-    list: (companyId: string) => ["secrets", companyId] as const,
-    providers: (companyId: string) => ["secret-providers", companyId] as const,
-    providerConfigs: (companyId: string) => ["secret-provider-configs", companyId] as const,
+    list: (squadId: string) => ["secrets", squadId] as const,
+    providers: (squadId: string) => ["secret-providers", squadId] as const,
+    providerConfigs: (squadId: string) => ["secret-provider-configs", squadId] as const,
     usage: (secretId: string) => ["secrets", "usage", secretId] as const,
     accessEvents: (secretId: string) => ["secrets", "access-events", secretId] as const,
   },
-  companySearch: {
-    search: (companyId: string, q: string, scope: string, limit: number, offset: number) =>
-      ["company-search", companyId, q, scope, limit, offset] as const,
+  squadSearch: {
+    search: (squadId: string, q: string, scope: string, limit: number, offset: number) =>
+      ["squad-search", squadId, q, scope, limit, offset] as const,
   },
-  dashboard: (companyId: string) => ["dashboard", companyId] as const,
-  userProfile: (companyId: string, userSlug: string) =>
-    ["user-profile", companyId, userSlug] as const,
-  sidebarBadges: (companyId: string) => ["sidebar-badges", companyId] as const,
-  inboxDismissals: (companyId: string) => ["inbox-dismissals", companyId] as const,
-  activity: (companyId: string) => ["activity", companyId] as const,
-  costs: (companyId: string, from?: string, to?: string) =>
-    ["costs", companyId, from, to] as const,
-  usageByProvider: (companyId: string, from?: string, to?: string) =>
-    ["usage-by-provider", companyId, from, to] as const,
-  usageByBiller: (companyId: string, from?: string, to?: string) =>
-    ["usage-by-biller", companyId, from, to] as const,
-  financeSummary: (companyId: string, from?: string, to?: string) =>
-    ["finance-summary", companyId, from, to] as const,
-  financeByBiller: (companyId: string, from?: string, to?: string) =>
-    ["finance-by-biller", companyId, from, to] as const,
-  financeByKind: (companyId: string, from?: string, to?: string) =>
-    ["finance-by-kind", companyId, from, to] as const,
-  financeEvents: (companyId: string, from?: string, to?: string, limit: number = 100) =>
-    ["finance-events", companyId, from, to, limit] as const,
-  usageWindowSpend: (companyId: string) =>
-    ["usage-window-spend", companyId] as const,
-  usageQuotaWindows: (companyId: string) =>
-    ["usage-quota-windows", companyId] as const,
-  heartbeats: (companyId: string, agentId?: string) =>
-    ["heartbeats", companyId, agentId] as const,
+  dashboard: (squadId: string) => ["dashboard", squadId] as const,
+  userProfile: (squadId: string, userSlug: string) =>
+    ["user-profile", squadId, userSlug] as const,
+  sidebarBadges: (squadId: string) => ["sidebar-badges", squadId] as const,
+  inboxDismissals: (squadId: string) => ["inbox-dismissals", squadId] as const,
+  activity: (squadId: string) => ["activity", squadId] as const,
+  costs: (squadId: string, from?: string, to?: string) =>
+    ["costs", squadId, from, to] as const,
+  usageByProvider: (squadId: string, from?: string, to?: string) =>
+    ["usage-by-provider", squadId, from, to] as const,
+  usageByBiller: (squadId: string, from?: string, to?: string) =>
+    ["usage-by-biller", squadId, from, to] as const,
+  financeSummary: (squadId: string, from?: string, to?: string) =>
+    ["finance-summary", squadId, from, to] as const,
+  financeByBiller: (squadId: string, from?: string, to?: string) =>
+    ["finance-by-biller", squadId, from, to] as const,
+  financeByKind: (squadId: string, from?: string, to?: string) =>
+    ["finance-by-kind", squadId, from, to] as const,
+  financeEvents: (squadId: string, from?: string, to?: string, limit: number = 100) =>
+    ["finance-events", squadId, from, to, limit] as const,
+  usageWindowSpend: (squadId: string) =>
+    ["usage-window-spend", squadId] as const,
+  usageQuotaWindows: (squadId: string) =>
+    ["usage-quota-windows", squadId] as const,
+  heartbeats: (squadId: string, agentId?: string) =>
+    ["heartbeats", squadId, agentId] as const,
   runDetail: (runId: string) => ["heartbeat-run", runId] as const,
   runWorkspaceOperations: (runId: string) => ["heartbeat-run", runId, "workspace-operations"] as const,
-  liveRuns: (companyId: string) => ["live-runs", companyId] as const,
+  liveRuns: (squadId: string) => ["live-runs", squadId] as const,
   runIssues: (runId: string) => ["run-issues", runId] as const,
-  org: (companyId: string) => ["org", companyId] as const,
+  org: (squadId: string) => ["org", squadId] as const,
   skills: {
     available: ["skills", "available"] as const,
   },
@@ -200,8 +200,8 @@ export const queryKeys = {
     health: (pluginId: string) => ["plugins", pluginId, "health"] as const,
     uiContributions: ["plugins", "ui-contributions"] as const,
     config: (pluginId: string) => ["plugins", pluginId, "config"] as const,
-    localFolders: (pluginId: string, companyId: string) =>
-      ["plugins", pluginId, "companies", companyId, "local-folders"] as const,
+    localFolders: (pluginId: string, squadId: string) =>
+      ["plugins", pluginId, "squads", squadId, "local-folders"] as const,
     dashboard: (pluginId: string) => ["plugins", pluginId, "dashboard"] as const,
     logs: (pluginId: string) => ["plugins", pluginId, "logs"] as const,
   },

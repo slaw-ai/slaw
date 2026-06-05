@@ -161,7 +161,7 @@ function ClaimSuccess() {
         <div>
           <h1 className="text-xl font-semibold">You&rsquo;re the instance admin</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Setup is complete. Taking you to onboarding to create your first company&hellip;
+            Setup is complete. Taking you to onboarding to create your first squad&hellip;
           </p>
         </div>
       </div>

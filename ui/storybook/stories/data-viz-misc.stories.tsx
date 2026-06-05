@@ -23,7 +23,7 @@ import {
   SuccessRateChart,
 } from "@/components/ActivityCharts";
 import { AsciiArtAnimation } from "@/components/AsciiArtAnimation";
-import { CompanyPatternIcon } from "@/components/CompanyPatternIcon";
+import { SquadPatternIcon } from "@/components/SquadPatternIcon";
 import { EntityRow } from "@/components/EntityRow";
 import { FilterBar, type FilterValue } from "@/components/FilterBar";
 import { KanbanBoard } from "@/components/KanbanBoard";
@@ -52,7 +52,7 @@ import {
   storybookLiveRuns,
 } from "../fixtures/slawData";
 
-const companyId = "company-storybook";
+const squadId = "squad-storybook";
 const primaryIssueId = "issue-storybook-1";
 
 function StoryShell({ children }: { children: React.ReactNode }) {
@@ -94,7 +94,7 @@ function makeHeartbeatRun(overrides: Partial<HeartbeatRun>): HeartbeatRun {
   const createdAt = overrides.createdAt ?? daysAgo(1);
   const run: HeartbeatRun = {
     id: "run-fixture",
-    companyId,
+    squadId,
     agentId: "agent-codex",
     invocationSource: "on_demand",
     triggerDetail: "manual",
@@ -172,7 +172,7 @@ const kanbanIssues: Issue[] = [
     id: "issue-kanban-backlog",
     identifier: "PAP-1701",
     issueNumber: 1701,
-    title: "Sketch company analytics dashboard",
+    title: "Sketch squad analytics dashboard",
     status: "backlog",
     priority: "low",
     assigneeAgentId: "agent-cto",
@@ -189,7 +189,7 @@ const kanbanIssues: Issue[] = [
 ];
 
 const packageFiles: Record<string, string> = {
-  "COMPANY.md": "---\nname: SLAW Storybook\nkind: company\n---\nFixture company package for UI review.",
+  "SQUAD.md": "---\nname: SLAW Storybook\nkind: squad\n---\nFixture squad package for UI review.",
   "agents/codexcoder/AGENTS.md": "---\nname: CodexCoder\nskills:\n  - frontend-design\n  - slaw\n---\nShips product UI and verifies changes.",
   "agents/qachecker/AGENTS.md": "---\nname: QAChecker\nskills:\n  - web-design-guidelines\n---\nReviews browser behavior and acceptance criteria.",
   "projects/board-ui/PROJECT.md": "---\ntitle: Board UI\nstatus: in_progress\n---\nStorybook and operator control-plane surfaces.",
@@ -199,7 +199,7 @@ const packageFiles: Record<string, string> = {
 };
 
 const actionMap = new Map([
-  ["COMPANY.md", "replace"],
+  ["SQUAD.md", "replace"],
   ["agents/codexcoder/AGENTS.md", "update"],
   ["agents/qachecker/AGENTS.md", "create"],
   ["tasks/PAP-1677.md", "create"],
@@ -328,11 +328,11 @@ function OpenOnboardingOnMount({ initialStep }: { initialStep: 1 | 2 }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    queryClient.setQueryData(queryKeys.agents.adapterModels(companyId, "claude_local"), [
+    queryClient.setQueryData(queryKeys.agents.adapterModels(squadId, "claude_local"), [
       { id: "claude-sonnet-4-5", label: "Claude Sonnet 4.5" },
       { id: "claude-opus-4-1", label: "Claude Opus 4.1" },
     ]);
-    openOnboarding(initialStep === 1 ? { initialStep } : { initialStep, companyId });
+    openOnboarding(initialStep === 1 ? { initialStep } : { initialStep, squadId });
   }, [initialStep, openOnboarding, queryClient]);
 
   return <OnboardingWizard />;
@@ -384,7 +384,7 @@ function PackageFileTreeDemo({ empty = false }: { empty?: boolean }) {
 
   return (
     <StoryShell>
-      <Section eyebrow="PackageFileTree" title={empty ? "Empty package export" : "Selectable company package tree"}>
+      <Section eyebrow="PackageFileTree" title={empty ? "Empty package export" : "Selectable squad package tree"}>
         {empty ? (
           <div className="rounded-lg border border-dashed border-border bg-background/70 p-6 text-sm text-muted-foreground">
             No files are included in this package preview.
@@ -553,8 +553,8 @@ function SwipeToArchiveDemo({ disabled = false }: { disabled?: boolean }) {
   );
 }
 
-function CompanyPatternIconMatrix() {
-  const companies = [
+function SquadPatternIconMatrix() {
+  const squads = [
     { name: "Slaw Storybook", color: "#0f766e" },
     { name: "Research Bureau", color: "#2563eb" },
     { name: "Launch Ops", color: "#c2410c" },
@@ -564,20 +564,20 @@ function CompanyPatternIconMatrix() {
 
   return (
     <StoryShell>
-      <Section eyebrow="CompanyPatternIcon" title="Generated company pattern icons by size">
+      <Section eyebrow="SquadPatternIcon" title="Generated squad pattern icons by size">
         <div className="grid gap-4 md:grid-cols-2">
-          {companies.map((company) => (
-            <Card key={company.name} className="shadow-none">
+          {squads.map((squad) => (
+            <Card key={squad.name} className="shadow-none">
               <CardHeader>
-                <CardTitle className="text-base">{company.name}</CardTitle>
-                <CardDescription>{company.color}</CardDescription>
+                <CardTitle className="text-base">{squad.name}</CardTitle>
+                <CardDescription>{squad.color}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap items-end gap-4">
                 {sizes.map((size) => (
-                  <CompanyPatternIcon
+                  <SquadPatternIcon
                     key={size}
-                    companyName={company.name}
-                    brandColor={company.color}
+                    squadName={squad.name}
+                    brandColor={squad.color}
                     className={size}
                   />
                 ))}
@@ -704,8 +704,8 @@ export const LiveRunWidgetEmpty: Story = {
   render: () => <LiveRunWidgetStory empty />,
 };
 
-export const OnboardingWizardCompanyStep: Story = {
-  name: "OnboardingWizard / Company Step",
+export const OnboardingWizardSquadStep: Story = {
+  name: "OnboardingWizard / Squad Step",
   render: () => <OpenOnboardingOnMount initialStep={1} />,
 };
 
@@ -744,9 +744,9 @@ export const SwipeToArchiveDisabled: Story = {
   render: () => <SwipeToArchiveDemo disabled />,
 };
 
-export const CompanyPatternIconSizes: Story = {
-  name: "CompanyPatternIcon / Sizes",
-  render: () => <CompanyPatternIconMatrix />,
+export const SquadPatternIconSizes: Story = {
+  name: "SquadPatternIcon / Sizes",
+  render: () => <SquadPatternIconMatrix />,
 };
 
 export const AsciiArtAnimationPopulated: Story = {

@@ -5,7 +5,7 @@ import { goalsApi } from "../api/goals";
 import { projectsApi } from "../api/projects";
 import { assetsApi } from "../api/assets";
 import { usePanel } from "../context/PanelContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
@@ -48,7 +48,7 @@ export function GoalPropertiesToggleButton({
 
 export function GoalDetail() {
   const { goalId } = useParams<{ goalId: string }>();
-  const { selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const { selectedSquadId, setSelectedSquadId } = useSquad();
   const { openNewGoal } = useDialogActions();
   const { openPanel, closePanel, panelVisible, setPanelVisible } = usePanel();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -63,24 +63,24 @@ export function GoalDetail() {
     queryFn: () => goalsApi.get(goalId!),
     enabled: !!goalId
   });
-  const resolvedCompanyId = goal?.companyId ?? selectedCompanyId;
+  const resolvedSquadId = goal?.squadId ?? selectedSquadId;
 
   const { data: allGoals } = useQuery({
-    queryKey: queryKeys.goals.list(resolvedCompanyId!),
-    queryFn: () => goalsApi.list(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId
+    queryKey: queryKeys.goals.list(resolvedSquadId!),
+    queryFn: () => goalsApi.list(resolvedSquadId!),
+    enabled: !!resolvedSquadId
   });
 
   const { data: allProjects } = useQuery({
-    queryKey: queryKeys.projects.list(resolvedCompanyId!),
-    queryFn: () => projectsApi.list(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId
+    queryKey: queryKeys.projects.list(resolvedSquadId!),
+    queryFn: () => projectsApi.list(resolvedSquadId!),
+    enabled: !!resolvedSquadId
   });
 
   useEffect(() => {
-    if (!goal?.companyId || goal.companyId === selectedCompanyId) return;
-    setSelectedCompanyId(goal.companyId, { source: "route_sync" });
-  }, [goal?.companyId, selectedCompanyId, setSelectedCompanyId]);
+    if (!goal?.squadId || goal.squadId === selectedSquadId) return;
+    setSelectedSquadId(goal.squadId, { source: "route_sync" });
+  }, [goal?.squadId, selectedSquadId, setSelectedSquadId]);
 
   const updateGoal = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
@@ -89,9 +89,9 @@ export function GoalDetail() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.goals.detail(goalId!)
       });
-      if (resolvedCompanyId) {
+      if (resolvedSquadId) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.goals.list(resolvedCompanyId)
+          queryKey: queryKeys.goals.list(resolvedSquadId)
         });
       }
     }
@@ -99,9 +99,9 @@ export function GoalDetail() {
 
   const uploadImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!resolvedCompanyId) throw new Error("No company selected");
+      if (!resolvedSquadId) throw new Error("No squad selected");
       return assetsApi.uploadImage(
-        resolvedCompanyId,
+        resolvedSquadId,
         file,
         `goals/${goalId ?? "draft"}`
       );

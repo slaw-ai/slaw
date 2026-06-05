@@ -679,7 +679,7 @@ function StatusLanguage() {
                 <CardDescription>Green, warning, and hard-stop-adjacent progress treatments.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                <QuotaBar label="Company budget" percentUsed={27} leftLabel="$675 used" rightLabel="$2,500 cap" />
+                <QuotaBar label="Squad budget" percentUsed={27} leftLabel="$675 used" rightLabel="$2,500 cap" />
                 <QuotaBar label="Project budget" percentUsed={86} leftLabel="$1,031 used" rightLabel="$1,200 cap" />
                 <QuotaBar label="Agent budget" percentUsed={108} leftLabel="$432 used" rightLabel="$400 cap" showDeficitNotch />
               </CardContent>

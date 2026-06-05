@@ -5,8 +5,8 @@ import {
   authUsers,
   boardApiKeys,
   cliAuthChallenges,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   instanceUserRoles,
 } from "@slaw/db";
 import { conflict, forbidden, notFound } from "../errors.js";
@@ -63,16 +63,16 @@ export function boardAuthService(db: Db) {
         .then((rows) => rows[0] ?? null),
       db
         .select({
-          companyId: companyMemberships.companyId,
-          membershipRole: companyMemberships.membershipRole,
-          status: companyMemberships.status,
+          squadId: squadMemberships.squadId,
+          membershipRole: squadMemberships.membershipRole,
+          status: squadMemberships.status,
         })
-        .from(companyMemberships)
+        .from(squadMemberships)
         .where(
           and(
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, userId),
-            eq(companyMemberships.status, "active"),
+            eq(squadMemberships.principalType, "user"),
+            eq(squadMemberships.principalId, userId),
+            eq(squadMemberships.status, "active"),
           ),
         )
         .then((rows) => rows),
@@ -85,50 +85,50 @@ export function boardAuthService(db: Db) {
 
     return {
       user,
-      companyIds: memberships.map((row) => row.companyId),
+      squadIds: memberships.map((row) => row.squadId),
       memberships,
       isInstanceAdmin: Boolean(adminRole),
     };
   }
 
-  async function resolveBoardActivityCompanyIds(input: {
+  async function resolveBoardActivitySquadIds(input: {
     userId: string;
-    requestedCompanyId?: string | null;
+    requestedSquadId?: string | null;
     boardApiKeyId?: string | null;
   }) {
     const access = await resolveBoardAccess(input.userId);
-    const companyIds = new Set(access.companyIds);
+    const squadIds = new Set(access.squadIds);
 
-    if (companyIds.size === 0 && input.requestedCompanyId?.trim()) {
-      companyIds.add(input.requestedCompanyId.trim());
+    if (squadIds.size === 0 && input.requestedSquadId?.trim()) {
+      squadIds.add(input.requestedSquadId.trim());
     }
 
-    if (companyIds.size === 0 && input.boardApiKeyId?.trim()) {
-      const challengeCompanyIds = await db
-        .select({ requestedCompanyId: cliAuthChallenges.requestedCompanyId })
+    if (squadIds.size === 0 && input.boardApiKeyId?.trim()) {
+      const challengeSquadIds = await db
+        .select({ requestedSquadId: cliAuthChallenges.requestedSquadId })
         .from(cliAuthChallenges)
         .where(eq(cliAuthChallenges.boardApiKeyId, input.boardApiKeyId.trim()))
         .then((rows) =>
           rows
-            .map((row) => row.requestedCompanyId?.trim() ?? null)
+            .map((row) => row.requestedSquadId?.trim() ?? null)
             .filter((value): value is string => Boolean(value)),
         );
-      for (const companyId of challengeCompanyIds) {
-        companyIds.add(companyId);
+      for (const squadId of challengeSquadIds) {
+        squadIds.add(squadId);
       }
     }
 
-    if (companyIds.size === 0 && access.isInstanceAdmin) {
-      const allCompanyIds = await db
-        .select({ id: companies.id })
-        .from(companies)
+    if (squadIds.size === 0 && access.isInstanceAdmin) {
+      const allSquadIds = await db
+        .select({ id: squads.id })
+        .from(squads)
         .then((rows) => rows.map((row) => row.id));
-      for (const companyId of allCompanyIds) {
-        companyIds.add(companyId);
+      for (const squadId of allSquadIds) {
+        squadIds.add(squadId);
       }
     }
 
-    return Array.from(companyIds);
+    return Array.from(squadIds);
   }
 
   async function findBoardApiKeyByToken(token: string) {
@@ -237,7 +237,7 @@ export function boardAuthService(db: Db) {
     command: string;
     clientName?: string | null;
     requestedAccess: "board" | "instance_admin_required";
-    requestedCompanyId?: string | null;
+    requestedSquadId?: string | null;
   }) {
     const challengeSecret = createCliAuthSecret();
     const pendingBoardToken = createBoardApiToken();
@@ -255,7 +255,7 @@ export function boardAuthService(db: Db) {
         command: input.command.trim(),
         clientName: input.clientName?.trim() || null,
         requestedAccess: input.requestedAccess,
-        requestedCompanyId: input.requestedCompanyId?.trim() || null,
+        requestedSquadId: input.requestedSquadId?.trim() || null,
         pendingKeyHash: hashBearerToken(pendingBoardToken),
         pendingKeyName,
         expiresAt,
@@ -289,12 +289,12 @@ export function boardAuthService(db: Db) {
     const challenge = await getCliAuthChallengeBySecret(id, token);
     if (!challenge) return null;
 
-    const [company, approvedBy] = await Promise.all([
-      challenge.requestedCompanyId
+    const [squad, approvedBy] = await Promise.all([
+      challenge.requestedSquadId
         ? db
-            .select({ id: companies.id, name: companies.name })
-            .from(companies)
-            .where(eq(companies.id, challenge.requestedCompanyId))
+            .select({ id: squads.id, name: squads.name })
+            .from(squads)
+            .where(eq(squads.id, challenge.requestedSquadId))
             .then((rows) => rows[0] ?? null)
         : Promise.resolve(null),
       challenge.approvedByUserId
@@ -312,8 +312,8 @@ export function boardAuthService(db: Db) {
       command: challenge.command,
       clientName: challenge.clientName ?? null,
       requestedAccess: challenge.requestedAccess as "board" | "instance_admin_required",
-      requestedCompanyId: challenge.requestedCompanyId ?? null,
-      requestedCompanyName: company?.name ?? null,
+      requestedSquadId: challenge.requestedSquadId ?? null,
+      requestedSquadName: squad?.name ?? null,
       approvedAt: challenge.approvedAt?.toISOString() ?? null,
       cancelledAt: challenge.cancelledAt?.toISOString() ?? null,
       expiresAt: challenge.expiresAt.toISOString(),
@@ -430,6 +430,6 @@ export function boardAuthService(db: Db) {
     approveCliAuthChallenge,
     cancelCliAuthChallenge,
     assertCurrentBoardKey,
-    resolveBoardActivityCompanyIds,
+    resolveBoardActivitySquadIds,
   };
 }

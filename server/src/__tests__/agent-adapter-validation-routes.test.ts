@@ -16,14 +16,14 @@ const mockAccessService = vi.hoisted(() => ({
   setPrincipalPermission: vi.fn(),
 }));
 
-const mockCompanySkillService = vi.hoisted(() => ({
+const mockSquadSkillService = vi.hoisted(() => ({
   listRuntimeSkillEntries: vi.fn(),
   resolveRequestedSkillKeys: vi.fn(),
 }));
 
 const mockSecretService = vi.hoisted(() => ({
-  normalizeAdapterConfigForPersistence: vi.fn(async (_companyId: string, config: Record<string, unknown>) => config),
-  resolveAdapterConfigForRuntime: vi.fn(async (_companyId: string, config: Record<string, unknown>) => ({ config })),
+  normalizeAdapterConfigForPersistence: vi.fn(async (_squadId: string, config: Record<string, unknown>) => config),
+  resolveAdapterConfigForRuntime: vi.fn(async (_squadId: string, config: Record<string, unknown>) => ({ config })),
 }));
 
 const mockAgentInstructionsService = vi.hoisted(() => ({
@@ -65,7 +65,7 @@ vi.mock("../services/index.js", () => ({
   agentInstructionsService: () => mockAgentInstructionsService,
   accessService: () => mockAccessService,
   approvalService: () => mockApprovalService,
-  companySkillService: () => mockCompanySkillService,
+  squadSkillService: () => mockSquadSkillService,
   budgetService: () => mockBudgetService,
   heartbeatService: () => mockHeartbeatService,
   issueApprovalService: () => mockIssueApprovalService,
@@ -86,7 +86,7 @@ function registerModuleMocks() {
     agentInstructionsService: () => mockAgentInstructionsService,
     accessService: () => mockAccessService,
     approvalService: () => mockApprovalService,
-    companySkillService: () => mockCompanySkillService,
+    squadSkillService: () => mockSquadSkillService,
     budgetService: () => mockBudgetService,
     heartbeatService: () => mockHeartbeatService,
     issueApprovalService: () => mockIssueApprovalService,
@@ -126,7 +126,7 @@ async function createApp() {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -137,7 +137,7 @@ async function createApp() {
       from: vi.fn(() => ({
         where: vi.fn(async () => [
           {
-            id: "company-1",
+            id: "squad-1",
             requireBoardApprovalForNewAgents: false,
           },
         ]),
@@ -190,8 +190,8 @@ describe("agent routes adapter validation", () => {
     vi.doUnmock("../routes/agents.js");
     registerModuleMocks();
     vi.clearAllMocks();
-    mockCompanySkillService.listRuntimeSkillEntries.mockResolvedValue([]);
-    mockCompanySkillService.resolveRequestedSkillKeys.mockResolvedValue([]);
+    mockSquadSkillService.listRuntimeSkillEntries.mockResolvedValue([]);
+    mockSquadSkillService.resolveRequestedSkillKeys.mockResolvedValue([]);
     mockAccessService.canUser.mockResolvedValue(true);
     mockAccessService.decide.mockResolvedValue({
       allowed: true,
@@ -202,9 +202,9 @@ describe("agent routes adapter validation", () => {
     mockAccessService.ensureMembership.mockResolvedValue(undefined);
     mockAccessService.setPrincipalPermission.mockResolvedValue(undefined);
     mockLogActivity.mockResolvedValue(undefined);
-    mockAgentService.create.mockImplementation(async (_companyId: string, input: Record<string, unknown>) => ({
+    mockAgentService.create.mockImplementation(async (_squadId: string, input: Record<string, unknown>) => ({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-1",
+      squadId: "squad-1",
       name: String(input.name ?? "Agent"),
       urlKey: "agent",
       role: String(input.role ?? "general"),
@@ -242,7 +242,7 @@ describe("agent routes adapter validation", () => {
     const app = await createApp();
     const res = await requestApp(app, (baseUrl) =>
       request(baseUrl)
-        .post("/api/companies/company-1/agents")
+        .post("/api/squads/squad-1/agents")
         .send({
           name: "External Agent",
           adapterType: "external_test",
@@ -257,7 +257,7 @@ describe("agent routes adapter validation", () => {
     const app = await createApp();
     const res = await requestApp(app, (baseUrl) =>
       request(baseUrl)
-        .post("/api/companies/company-1/agents")
+        .post("/api/squads/squad-1/agents")
         .send({
           name: "Missing Adapter",
           adapterType: missingAdapterType,

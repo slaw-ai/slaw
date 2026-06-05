@@ -2,7 +2,7 @@ import type { InboxDismissal } from "@slaw/shared";
 import { api } from "./client";
 
 export const inboxDismissalsApi = {
-  list: (companyId: string) => api.get<InboxDismissal[]>(`/companies/${companyId}/inbox-dismissals`),
-  dismiss: (companyId: string, itemKey: string) =>
-    api.post<InboxDismissal>(`/companies/${companyId}/inbox-dismissals`, { itemKey }),
+  list: (squadId: string) => api.get<InboxDismissal[]>(`/squads/${squadId}/inbox-dismissals`),
+  dismiss: (squadId: string, itemKey: string) =>
+    api.post<InboxDismissal>(`/squads/${squadId}/inbox-dismissals`, { itemKey }),
 };

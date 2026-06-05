@@ -1,12 +1,12 @@
 import { pgTable, uuid, text, integer, timestamp, index } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { agents } from "./agents.js";
 
 export const documents = pgTable(
   "documents",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     title: text("title"),
     format: text("format").notNull().default("markdown"),
     latestBody: text("latest_body").notNull(),
@@ -23,8 +23,8 @@ export const documents = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyUpdatedIdx: index("documents_company_updated_idx").on(table.companyId, table.updatedAt),
-    companyCreatedIdx: index("documents_company_created_idx").on(table.companyId, table.createdAt),
+    squadUpdatedIdx: index("documents_squad_updated_idx").on(table.squadId, table.updatedAt),
+    squadCreatedIdx: index("documents_squad_created_idx").on(table.squadId, table.createdAt),
     titleSearchIdx: index("documents_title_search_idx").using("gin", table.title.op("gin_trgm_ops")),
     bodySearchIdx: index("documents_latest_body_search_idx").using("gin", table.latestBody.op("gin_trgm_ops")),
   }),

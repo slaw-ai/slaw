@@ -126,7 +126,7 @@ export const DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE = [
   "- When you intentionally restart follow-up work on a completed assigned issue, include structured `resume: true` with the POST /api/issues/{issueId}/comments or PATCH /api/issues/{issueId} comment payload. Generic agent comments on closed issues are inert by default.",
   "- For plan approval, update the plan document first, then create request_confirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}. Wait for acceptance before creating implementation subtasks, and create a fresh confirmation after superseding board/user comments if approval is still needed.",
   "- If blocked, mark the issue blocked and name the unblock owner and action.",
-  "- Respect budget, pause/cancel, approval gates, and company boundaries.",
+  "- Respect budget, pause/cancel, approval gates, and squad boundaries.",
 ].join("\n");
 
 export interface SlawSkillEntry {
@@ -205,7 +205,7 @@ function buildManagedSkillOrigin(entry: { required?: boolean }): Pick<
     };
   }
   return {
-    origin: "company_managed",
+    origin: "squad_managed",
     originLabel: "Managed by Slaw",
     readOnly: false,
   };
@@ -928,7 +928,7 @@ export function buildInvocationEnvForLogs(
   return redactEnvForLogs(merged);
 }
 
-export function buildSlawEnv(agent: { id: string; companyId: string }): Record<string, string> {
+export function buildSlawEnv(agent: { id: string; squadId: string }): Record<string, string> {
   const resolveHostForUrl = (rawHost: string): string => {
     const host = rawHost.trim();
     if (!host || host === "0.0.0.0" || host === "::") return "localhost";
@@ -937,7 +937,7 @@ export function buildSlawEnv(agent: { id: string; companyId: string }): Record<s
   };
   const vars: Record<string, string> = {
     SLAW_AGENT_ID: agent.id,
-    SLAW_COMPANY_ID: agent.companyId,
+    SLAW_SQUAD_ID: agent.squadId,
   };
   const runtimeHost = resolveHostForUrl(
     process.env.SLAW_LISTEN_HOST ?? process.env.HOST ?? "localhost",

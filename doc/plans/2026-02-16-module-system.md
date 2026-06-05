@@ -1,14 +1,14 @@
 # Slaw Module System
 
-> Supersession note: the company-template/package-format direction in this document is no longer current. For the current markdown-first company import/export plan, see `doc/plans/2026-03-13-company-import-export-v2.md` and `docs/companies/companies-spec.md`.
+> Supersession note: the squad-template/package-format direction in this document is no longer current. For the current markdown-first squad import/export plan, see `doc/plans/2026-03-13-squad-import-export-v2.md` and `docs/squads/squads-spec.md`.
 
 ## Overview
 
 Slaw's module system lets you extend the control plane with new capabilities — revenue tracking, observability, notifications, dashboards — without forking core. Modules are self-contained packages that register routes, UI pages, database tables, and lifecycle hooks.
 
-Separately, **Company Templates** are code-free data packages (agent teams, org charts, goal hierarchies) that you can import to bootstrap a new company.
+Separately, **Squad Templates** are code-free data packages (agent teams, org charts, goal hierarchies) that you can import to bootstrap a new squad.
 
-Both are discoverable through the **Company Store**.
+Both are discoverable through the **Squad Store**.
 
 ---
 
@@ -17,8 +17,8 @@ Both are discoverable through the **Company Store**.
 | Concept | What it is | Contains code? |
 |---------|-----------|----------------|
 | **Module** | A package that extends Slaw's API, UI, and data model | Yes |
-| **Company Template** | A data snapshot — agents, projects, goals, org structure | No (JSON only) |
-| **Company Store** | Registry for browsing/installing modules and templates | — |
+| **Squad Template** | A data snapshot — agents, projects, goals, org structure | No (JSON only) |
+| **Squad Store** | Registry for browsing/installing modules and templates | — |
 | **Hook** | A named event in the core that modules can subscribe to | — |
 | **Slot** | An exclusive category where only one module can be active (e.g., `observability`) | — |
 
@@ -427,11 +427,11 @@ Module UI hits the module's own API routes (`/api/modules/observability/*`) for 
 
 ---
 
-## Company Templates
+## Squad Templates
 
 ### Format
 
-A company template is a JSON file describing a full company structure:
+A squad template is a JSON file describing a full squad structure:
 
 ```json
 {
@@ -443,8 +443,8 @@ A company template is a JSON file describing a full company structure:
 
   "agents": [
     {
-      "ref": "ceo",
-      "name": "CEO Agent",
+      "ref": "squad_lead",
+      "name": "Squad Lead Agent",
       "role": "pm",
       "budgetCents": 100000,
       "metadata": { "responsibilities": "Strategy, fundraising, hiring" }
@@ -453,7 +453,7 @@ A company template is a JSON file describing a full company structure:
       "ref": "eng-lead",
       "name": "Engineering Lead",
       "role": "engineer",
-      "reportsTo": "ceo",
+      "reportsTo": "squad_lead",
       "budgetCents": 50000
     },
     {
@@ -467,14 +467,14 @@ A company template is a JSON file describing a full company structure:
       "ref": "designer",
       "name": "Designer",
       "role": "designer",
-      "reportsTo": "ceo",
+      "reportsTo": "squad_lead",
       "budgetCents": 20000
     },
     {
       "ref": "ops",
       "name": "Ops Agent",
       "role": "devops",
-      "reportsTo": "ceo",
+      "reportsTo": "squad_lead",
       "budgetCents": 20000
     }
   ],
@@ -483,7 +483,7 @@ A company template is a JSON file describing a full company structure:
     {
       "ref": "north-star",
       "title": "Launch MVP",
-      "level": "company"
+      "level": "squad"
     },
     {
       "ref": "build-product",
@@ -546,19 +546,19 @@ Templates use `ref` strings (not UUIDs) for internal cross-references. On import
 
 ### Export Flow
 
-You can also export a running company as a template:
+You can also export a running squad as a template:
 
 ```
-GET /api/templates/export → downloads the current company as a template JSON
+GET /api/templates/export → downloads the current squad as a template JSON
 ```
 
-This makes companies shareable and clonable.
+This makes squads shareable and clonable.
 
 ---
 
-## Company Store
+## Squad Store
 
-The Company Store is a registry for discovering and installing modules and templates. For v1, it's a curated GitHub repo with a JSON index. Later it could become a hosted service.
+The Squad Store is a registry for discovering and installing modules and templates. For v1, it's a curated GitHub repo with a JSON index. Later it could become a hosted service.
 
 ### Index Format
 
@@ -591,8 +591,8 @@ The Company Store is a registry for discovering and installing modules and templ
 ```bash
 pnpm slaw store list                    # browse available modules and templates
 pnpm slaw store install <module-id>     # install a module
-pnpm slaw store import <template-id>    # import a company template
-pnpm slaw store export                  # export current company as template
+pnpm slaw store import <template-id>    # import a squad template
+pnpm slaw store export                  # export current squad as template
 ```
 
 ---
@@ -621,7 +621,7 @@ pnpm slaw store export                  # export current company as template
 |--------|-------------|-----------|
 | **Audit & Compliance** | Immutable audit trail, approval workflows, spend authorization | All write hooks |
 | **Agent Logs / Replay** | Full execution traces per agent, token-by-token replay | `agent:heartbeat` |
-| **Multi-tenant** | Separate companies/orgs within one Slaw instance | `server:started` |
+| **Multi-tenant** | Separate squads/orgs within one Slaw instance | `server:started` |
 
 ---
 
@@ -662,7 +662,7 @@ Add new package:
 17. Template export endpoint (`GET /api/templates/export`)
 18. First template: "Startup in a Box"
 
-### Phase 4: Company Store
+### Phase 4: Squad Store
 
 19. GitHub-based store index
 20. CLI commands for browse/install/import

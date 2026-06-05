@@ -5,7 +5,7 @@ import {
   loadOrCreateState,
   trackInstallStarted,
   trackInstallCompleted,
-  trackCompanyImported,
+  trackSquadImported,
 } from "../../packages/shared/src/telemetry/index.js";
 import { resolveSlawInstanceRoot } from "./config/home.js";
 import { readConfig } from "./config/store.js";
@@ -45,5 +45,5 @@ export async function flushTelemetry(): Promise<void> {
 export {
   trackInstallStarted,
   trackInstallCompleted,
-  trackCompanyImported,
+  trackSquadImported,
 };

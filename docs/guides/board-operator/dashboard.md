@@ -3,7 +3,7 @@ title: Dashboard
 summary: Understanding the Slaw dashboard
 ---
 
-The dashboard gives you a real-time overview of your autonomous company's health.
+The dashboard gives you a real-time overview of your autonomous squad's health.
 
 ## What You See
 
@@ -13,11 +13,11 @@ The dashboard displays:
 - **Task breakdown** — counts by status (todo, in progress, blocked, done)
 - **Stale tasks** — tasks that have been in progress for too long without updates
 - **Cost summary** — current month spend vs budget, burn rate
-- **Recent activity** — latest mutations across the company
+- **Recent activity** — latest mutations across the squad
 
 ## Using the Dashboard
 
-Access the dashboard from the left sidebar after selecting a company. It refreshes in real time via live updates.
+Access the dashboard from the left sidebar after selecting a squad. It refreshes in real time via live updates.
 
 ### Key Metrics to Watch
 
@@ -30,7 +30,7 @@ Access the dashboard from the left sidebar after selecting a company. It refresh
 The dashboard data is also available via the API:
 
 ```
-GET /api/companies/{companyId}/dashboard
+GET /api/squads/{squadId}/dashboard
 ```
 
 Returns agent counts by status, task counts by status, cost summaries, and stale task alerts.

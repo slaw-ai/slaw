@@ -17,7 +17,7 @@ import {
   type WorkspaceRuntimeControlRequest,
 } from "../components/WorkspaceRuntimeControls";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { queryKeys } from "../lib/queryKeys";
 import { projectRouteRef, projectWorkspaceUrl } from "../lib/utils";
 
@@ -244,12 +244,12 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 export function ProjectWorkspaceDetail() {
-  const { companyPrefix, projectId, workspaceId } = useParams<{
-    companyPrefix?: string;
+  const { squadPrefix, projectId, workspaceId } = useParams<{
+    squadPrefix?: string;
     projectId: string;
     workspaceId: string;
   }>();
-  const { companies, selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const { squads, selectedSquadId, setSelectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
   const navigate = useNavigate();
@@ -261,17 +261,17 @@ export function ProjectWorkspaceDetail() {
   const routeWorkspaceId = workspaceId ?? "";
   const activeTab = useMemo(() => projectWorkspaceTabFromSearch(location.search), [location.search]);
 
-  const routeCompanyId = useMemo(() => {
-    if (!companyPrefix) return null;
-    const requestedPrefix = companyPrefix.toUpperCase();
-    return companies.find((company) => company.issuePrefix.toUpperCase() === requestedPrefix)?.id ?? null;
-  }, [companies, companyPrefix]);
+  const routeSquadId = useMemo(() => {
+    if (!squadPrefix) return null;
+    const requestedPrefix = squadPrefix.toUpperCase();
+    return squads.find((squad) => squad.issuePrefix.toUpperCase() === requestedPrefix)?.id ?? null;
+  }, [squads, squadPrefix]);
 
-  const lookupCompanyId = routeCompanyId ?? selectedCompanyId ?? undefined;
-  const canFetchProject = routeProjectRef.length > 0 && (isUuidLike(routeProjectRef) || Boolean(lookupCompanyId));
+  const lookupSquadId = routeSquadId ?? selectedSquadId ?? undefined;
+  const canFetchProject = routeProjectRef.length > 0 && (isUuidLike(routeProjectRef) || Boolean(lookupSquadId));
   const projectQuery = useQuery({
-    queryKey: [...queryKeys.projects.detail(routeProjectRef), lookupCompanyId ?? null],
-    queryFn: () => projectsApi.get(routeProjectRef, lookupCompanyId),
+    queryKey: [...queryKeys.projects.detail(routeProjectRef), lookupSquadId ?? null],
+    queryFn: () => projectsApi.get(routeProjectRef, lookupSquadId),
     enabled: canFetchProject,
   });
 
@@ -290,8 +290,8 @@ export function ProjectWorkspaceDetail() {
   } = usePluginSlots({
     slotTypes: ["detailTab"],
     entityType: "project_workspace",
-    companyId: project?.companyId ?? null,
-    enabled: Boolean(project?.companyId),
+    squadId: project?.squadId ?? null,
+    enabled: Boolean(project?.squadId),
   });
   const pluginTabItems = useMemo(
     () => pluginDetailSlots.map((slot) => ({
@@ -308,9 +308,9 @@ export function ProjectWorkspaceDetail() {
   );
 
   useEffect(() => {
-    if (!project?.companyId || project.companyId === selectedCompanyId) return;
-    setSelectedCompanyId(project.companyId, { source: "route_sync" });
-  }, [project?.companyId, selectedCompanyId, setSelectedCompanyId]);
+    if (!project?.squadId || project.squadId === selectedSquadId) return;
+    setSelectedSquadId(project.squadId, { source: "route_sync" });
+  }, [project?.squadId, selectedSquadId, setSelectedSquadId]);
 
   useEffect(() => {
     if (!workspace) return;
@@ -338,14 +338,14 @@ export function ProjectWorkspaceDetail() {
     if (!project) return;
     queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.id) });
     queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.urlKey) });
-    if (lookupCompanyId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(lookupCompanyId) });
+    if (lookupSquadId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(lookupSquadId) });
     }
   };
 
   const updateWorkspace = useMutation({
     mutationFn: (patch: Record<string, unknown>) =>
-      projectsApi.updateWorkspace(project!.id, routeWorkspaceId, patch, lookupCompanyId),
+      projectsApi.updateWorkspace(project!.id, routeWorkspaceId, patch, lookupSquadId),
     onSuccess: () => {
       invalidateProject();
       setErrorMessage(null);
@@ -356,7 +356,7 @@ export function ProjectWorkspaceDetail() {
   });
 
   const setPrimaryWorkspace = useMutation({
-    mutationFn: () => projectsApi.updateWorkspace(project!.id, routeWorkspaceId, { isPrimary: true }, lookupCompanyId),
+    mutationFn: () => projectsApi.updateWorkspace(project!.id, routeWorkspaceId, { isPrimary: true }, lookupSquadId),
     onSuccess: () => {
       invalidateProject();
       setErrorMessage(null);
@@ -368,7 +368,7 @@ export function ProjectWorkspaceDetail() {
 
   const controlRuntimeServices = useMutation({
     mutationFn: (request: WorkspaceRuntimeControlRequest) =>
-      projectsApi.controlWorkspaceCommands(project!.id, routeWorkspaceId, request.action, lookupCompanyId, request),
+      projectsApi.controlWorkspaceCommands(project!.id, routeWorkspaceId, request.action, lookupSquadId, request),
     onSuccess: (result, request) => {
       invalidateProject();
       setErrorMessage(null);
@@ -726,8 +726,8 @@ export function ProjectWorkspaceDetail() {
           <PluginSlotMount
             slot={activePluginTab.slot}
             context={{
-              companyId: project.companyId,
-              companyPrefix: companyPrefix ?? null,
+              squadId: project.squadId,
+              squadPrefix: squadPrefix ?? null,
               projectId: project.id,
               entityId: workspace.id,
               entityType: "project_workspace",

@@ -14,10 +14,10 @@ From a Slaw instance, install:
 
 ## Configuration
 
-Configure exe.dev from `Company Settings -> Environments`, not from the plugin's instance settings page.
+Configure exe.dev from `Squad Settings -> Environments`, not from the plugin's instance settings page.
 
 - Put the exe.dev API token on the sandbox environment itself.
-- When you save an environment, Slaw stores pasted API keys and pasted SSH private keys as company secrets.
+- When you save an environment, Slaw stores pasted API keys and pasted SSH private keys as squad secrets.
 - `EXE_API_KEY` remains an optional host-level fallback when an environment omits the API token.
 - The current implementation provisions VMs through exe.dev's HTTPS API and runs commands through direct SSH to the created VM.
 

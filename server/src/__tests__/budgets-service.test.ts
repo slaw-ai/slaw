@@ -68,7 +68,7 @@ describe("budgetService", () => {
   it("creates a hard-stop incident and pauses an agent when spend exceeds a budget", async () => {
     const policy = {
       id: "policy-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       scopeType: "agent",
       scopeId: "agent-1",
       metric: "billed_cents",
@@ -85,7 +85,7 @@ describe("budgetService", () => {
       [{ total: 150 }],
       [],
       [{
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Budget Agent",
         status: "running",
         pauseReason: null,
@@ -94,12 +94,12 @@ describe("budgetService", () => {
 
     dbStub.queueInsert([{
       id: "approval-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       status: "pending",
     }]);
     dbStub.queueInsert([{
       id: "incident-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       policyId: "policy-1",
       approvalId: "approval-1",
     }]);
@@ -108,21 +108,21 @@ describe("budgetService", () => {
 
     const service = budgetService(dbStub.db as any, { cancelWorkForScope });
     await service.evaluateCostEvent({
-      companyId: "company-1",
+      squadId: "squad-1",
       agentId: "agent-1",
       projectId: null,
     } as any);
 
     expect(dbStub.insertValues).toHaveBeenCalledWith(
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         type: "budget_override_required",
         status: "pending",
       }),
     );
     expect(dbStub.insertValues).toHaveBeenCalledWith(
       expect.objectContaining({
-        companyId: "company-1",
+        squadId: "squad-1",
         policyId: "policy-1",
         thresholdType: "hard",
         amountLimit: 100,
@@ -145,7 +145,7 @@ describe("budgetService", () => {
       }),
     );
     expect(cancelWorkForScope).toHaveBeenCalledWith({
-      companyId: "company-1",
+      squadId: "squad-1",
       scopeType: "agent",
       scopeId: "agent-1",
     });
@@ -154,7 +154,7 @@ describe("budgetService", () => {
   it("blocks new work when an agent hard-stop remains exceeded even if the agent is not paused yet", async () => {
     const agentPolicy = {
       id: "policy-agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       scopeType: "agent",
       scopeId: "agent-1",
       metric: "billed_cents",
@@ -170,7 +170,7 @@ describe("budgetService", () => {
       [{
         status: "running",
         pauseReason: null,
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Budget Agent",
       }],
       [{
@@ -183,7 +183,7 @@ describe("budgetService", () => {
     ]);
 
     const service = budgetService(dbStub.db as any);
-    const block = await service.getInvocationBlock("company-1", "agent-1");
+    const block = await service.getInvocationBlock("squad-1", "agent-1");
 
     expect(block).toEqual({
       scopeType: "agent",
@@ -193,12 +193,12 @@ describe("budgetService", () => {
     });
   });
 
-  it("surfaces a budget-owned company pause distinctly from a manual pause", async () => {
+  it("surfaces a budget-owned squad pause distinctly from a manual pause", async () => {
     const dbStub = createDbStub([
       [{
         status: "idle",
         pauseReason: null,
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Budget Agent",
       }],
       [{
@@ -209,13 +209,13 @@ describe("budgetService", () => {
     ]);
 
     const service = budgetService(dbStub.db as any);
-    const block = await service.getInvocationBlock("company-1", "agent-1");
+    const block = await service.getInvocationBlock("squad-1", "agent-1");
 
     expect(block).toEqual({
-      scopeType: "company",
-      scopeId: "company-1",
+      scopeType: "squad",
+      scopeId: "squad-1",
       scopeName: "Slaw",
-      reason: "Company is paused because its budget hard-stop was reached.",
+      reason: "Squad is paused because its budget hard-stop was reached.",
     });
   });
 
@@ -223,16 +223,16 @@ describe("budgetService", () => {
     const dbStub = createDbStub([
       [{
         id: "incident-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         policyId: "policy-1",
         amountObserved: 120,
         approvalId: "approval-1",
       }],
       [{
         id: "policy-1",
-        companyId: "company-1",
-        scopeType: "company",
-        scopeId: "company-1",
+        squadId: "squad-1",
+        scopeType: "squad",
+        scopeId: "squad-1",
         metric: "billed_cents",
         windowKind: "calendar_month_utc",
       }],
@@ -243,7 +243,7 @@ describe("budgetService", () => {
 
     await expect(
       service.resolveIncident(
-        "company-1",
+        "squad-1",
         "incident-1",
         { action: "raise_budget_and_resume", amount: 140 },
         "board-user",
@@ -251,15 +251,15 @@ describe("budgetService", () => {
     ).rejects.toThrow("New budget must exceed current observed spend");
   });
 
-  it("syncs company monthly budget when raising and resuming a company incident", async () => {
+  it("syncs squad monthly budget when raising and resuming a squad incident", async () => {
     const now = new Date();
     const dbStub = createDbStub([
       [{
         id: "incident-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         policyId: "policy-1",
-        scopeType: "company",
-        scopeId: "company-1",
+        scopeType: "squad",
+        scopeId: "squad-1",
         metric: "billed_cents",
         windowKind: "calendar_month_utc",
         windowStart: now,
@@ -275,9 +275,9 @@ describe("budgetService", () => {
       }],
       [{
         id: "policy-1",
-        companyId: "company-1",
-        scopeType: "company",
-        scopeId: "company-1",
+        squadId: "squad-1",
+        scopeType: "squad",
+        scopeId: "squad-1",
         metric: "billed_cents",
         windowKind: "calendar_month_utc",
         amount: 100,
@@ -285,7 +285,7 @@ describe("budgetService", () => {
       [{ total: 120 }],
       [{ id: "approval-1", status: "approved" }],
       [{
-        companyId: "company-1",
+        squadId: "squad-1",
         name: "Slaw",
         status: "paused",
         pauseReason: "budget",
@@ -295,7 +295,7 @@ describe("budgetService", () => {
 
     const service = budgetService(dbStub.db as any);
     await service.resolveIncident(
-      "company-1",
+      "squad-1",
       "incident-1",
       { action: "raise_budget_and_resume", amount: 175 },
       "board-user",

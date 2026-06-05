@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
 import { heartbeatsApi } from "../api/heartbeats";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useSidebar } from "../context/SidebarContext";
@@ -67,7 +67,7 @@ function filterOrgTree(nodes: OrgNode[], tab: FilterTab, showTerminated: boolean
 }
 
 export function Agents() {
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { openNewAgent } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -82,25 +82,25 @@ export function Agents() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { data: agents, isLoading, error } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
 
   const { data: orgTree } = useQuery({
-    queryKey: queryKeys.org(selectedCompanyId!),
-    queryFn: () => agentsApi.org(selectedCompanyId!),
-    enabled: !!selectedCompanyId && effectiveView === "org",
+    queryKey: queryKeys.org(selectedSquadId!),
+    queryFn: () => agentsApi.org(selectedSquadId!),
+    enabled: !!selectedSquadId && effectiveView === "org",
   });
 
   const { data: runs } = useQuery({
-    queryKey: [...queryKeys.liveRuns(selectedCompanyId!), "agents-page"],
-    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: [...queryKeys.liveRuns(selectedSquadId!), "agents-page"],
+    queryFn: () => heartbeatsApi.liveRunsForSquad(selectedSquadId!),
+    enabled: !!selectedSquadId,
     refetchInterval: 15_000,
   });
-  const membershipsQuery = useResourceMemberships(selectedCompanyId);
-  const membershipMutation = useResourceMembershipMutation(selectedCompanyId);
+  const membershipsQuery = useResourceMemberships(selectedSquadId);
+  const membershipMutation = useResourceMembershipMutation(selectedSquadId);
 
   // Map agentId -> first live run + live run count
   const liveRunByAgent = useMemo(() => {
@@ -127,8 +127,8 @@ export function Agents() {
     setBreadcrumbs([{ label: "Agents" }]);
   }, [setBreadcrumbs]);
 
-  if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select a company to view agents." />;
+  if (!selectedSquadId) {
+    return <EmptyState icon={Bot} message="Select a squad to view agents." />;
   }
 
   if (isLoading) {

@@ -3,8 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AdapterEnvironmentTestResult } from "@slaw/shared";
 import { useLocation, useNavigate, useParams } from "@/lib/router";
 import { useDialog } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
-import { companiesApi } from "../api/companies";
+import { useSquad } from "../context/SquadContext";
+import { squadsApi } from "../api/squads";
 import { goalsApi } from "../api/goals";
 import { agentsApi } from "../api/agents";
 import { approvalsApi } from "../api/approvals";
@@ -34,7 +34,7 @@ import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import {
   buildOnboardingIssuePayload,
   buildOnboardingProjectPayload,
-  selectDefaultCompanyGoalId
+  selectDefaultSquadGoalId
 } from "../lib/onboarding-launch";
 import { buildNewAgentRuntimeConfig } from "../lib/new-agent-runtime-config";
 import {
@@ -63,7 +63,7 @@ import {
 type Step = 1 | 2 | 3 | 4;
 type AdapterType = string;
 
-const DEFAULT_TASK_DESCRIPTION = `You are the CEO. You set the direction for the company.
+const DEFAULT_TASK_DESCRIPTION = `You are the Squad Lead. You set the direction for the squad.
 
 - hire a founding engineer
 - write a hiring plan
@@ -71,23 +71,23 @@ const DEFAULT_TASK_DESCRIPTION = `You are the CEO. You set the direction for the
 
 export function OnboardingWizard() {
   const { onboardingOpen, onboardingOptions, closeOnboarding } = useDialog();
-  const { companies, setSelectedCompanyId, loading: companiesLoading } = useCompany();
+  const { squads, setSelectedSquadId, loading: squadsLoading } = useSquad();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const { companyPrefix } = useParams<{ companyPrefix?: string }>();
+  const { squadPrefix } = useParams<{ squadPrefix?: string }>();
   const [routeDismissed, setRouteDismissed] = useState(false);
 
   // Sync disabled adapter types from server so adapter grid filters them out
   const disabledTypes = useDisabledAdaptersSync();
 
   const routeOnboardingOptions =
-    companyPrefix && companiesLoading
+    squadPrefix && squadsLoading
       ? null
       : resolveRouteOnboardingOptions({
           pathname: location.pathname,
-          companyPrefix,
-          companies,
+          squadPrefix,
+          squads,
         });
   const effectiveOnboardingOpen =
     onboardingOpen || (routeOnboardingOptions !== null && !routeDismissed);
@@ -96,7 +96,7 @@ export function OnboardingWizard() {
     : routeOnboardingOptions ?? {};
 
   const initialStep = effectiveOnboardingOptions.initialStep ?? 1;
-  const existingCompanyId = effectiveOnboardingOptions.companyId;
+  const existingSquadId = effectiveOnboardingOptions.squadId;
 
   const [step, setStep] = useState<Step>(initialStep);
   const [loading, setLoading] = useState(false);
@@ -105,11 +105,11 @@ export function OnboardingWizard() {
   const [modelSearch, setModelSearch] = useState("");
 
   // Step 1
-  const [companyName, setCompanyName] = useState("");
-  const [companyGoal, setCompanyGoal] = useState("");
+  const [squadName, setSquadName] = useState("");
+  const [squadGoal, setSquadGoal] = useState("");
 
   // Step 2
-  const [agentName, setAgentName] = useState("CEO");
+  const [agentName, setAgentName] = useState("Squad Lead");
   const [adapterType, setAdapterType] = useState<AdapterType>("claude_local");
   const [model, setModel] = useState("");
   const [command, setCommand] = useState("");
@@ -141,14 +141,14 @@ export function OnboardingWizard() {
     el.style.height = el.scrollHeight + "px";
   }, []);
 
-  // Created entity IDs — pre-populate from existing company when skipping step 1
-  const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(
-    existingCompanyId ?? null
+  // Created entity IDs — pre-populate from existing squad when skipping step 1
+  const [createdSquadId, setCreatedSquadId] = useState<string | null>(
+    existingSquadId ?? null
   );
-  const [createdCompanyPrefix, setCreatedCompanyPrefix] = useState<
+  const [createdSquadPrefix, setCreatedSquadPrefix] = useState<
     string | null
   >(null);
-  const [createdCompanyGoalId, setCreatedCompanyGoalId] = useState<string | null>(
+  const [createdSquadGoalId, setCreatedSquadGoalId] = useState<string | null>(
     null
   );
   const [createdAgentId, setCreatedAgentId] = useState<string | null>(null);
@@ -159,31 +159,31 @@ export function OnboardingWizard() {
     setRouteDismissed(false);
   }, [location.pathname]);
 
-  // Sync step and company when onboarding opens with options.
-  // Keep this independent from company-list refreshes so Step 1 completion
-  // doesn't get reset after creating a company.
+  // Sync step and squad when onboarding opens with options.
+  // Keep this independent from squad-list refreshes so Step 1 completion
+  // doesn't get reset after creating a squad.
   useEffect(() => {
     if (!effectiveOnboardingOpen) return;
-    const cId = effectiveOnboardingOptions.companyId ?? null;
+    const cId = effectiveOnboardingOptions.squadId ?? null;
     setStep(effectiveOnboardingOptions.initialStep ?? 1);
-    setCreatedCompanyId(cId);
-    setCreatedCompanyPrefix(null);
-    setCreatedCompanyGoalId(null);
+    setCreatedSquadId(cId);
+    setCreatedSquadPrefix(null);
+    setCreatedSquadGoalId(null);
     setCreatedProjectId(null);
     setCreatedAgentId(null);
     setCreatedIssueRef(null);
   }, [
     effectiveOnboardingOpen,
-    effectiveOnboardingOptions.companyId,
+    effectiveOnboardingOptions.squadId,
     effectiveOnboardingOptions.initialStep
   ]);
 
-  // Backfill issue prefix for an existing company once companies are loaded.
+  // Backfill issue prefix for an existing squad once squads are loaded.
   useEffect(() => {
-    if (!effectiveOnboardingOpen || !createdCompanyId || createdCompanyPrefix) return;
-    const company = companies.find((c) => c.id === createdCompanyId);
-    if (company) setCreatedCompanyPrefix(company.issuePrefix);
-  }, [effectiveOnboardingOpen, createdCompanyId, createdCompanyPrefix, companies]);
+    if (!effectiveOnboardingOpen || !createdSquadId || createdSquadPrefix) return;
+    const squad = squads.find((c) => c.id === createdSquadId);
+    if (squad) setCreatedSquadPrefix(squad.issuePrefix);
+  }, [effectiveOnboardingOpen, createdSquadId, createdSquadPrefix, squads]);
 
   // Resize textarea when step 3 is shown or description changes
   useEffect(() => {
@@ -193,11 +193,11 @@ export function OnboardingWizard() {
   const { data: adapterModels } = useQuery({
     // The wizard doesn't expose an environment selector, so models always
     // resolve against the local Slaw host (environmentId = null).
-    queryKey: createdCompanyId
-      ? queryKeys.agents.adapterModels(createdCompanyId, adapterType, null)
+    queryKey: createdSquadId
+      ? queryKeys.agents.adapterModels(createdSquadId, adapterType, null)
       : ["agents", "none", "adapter-models", adapterType, null],
-    queryFn: () => agentsApi.adapterModels(createdCompanyId!, adapterType, { environmentId: null }),
-    enabled: Boolean(createdCompanyId) && effectiveOnboardingOpen && step === 2
+    queryFn: () => agentsApi.adapterModels(createdSquadId!, adapterType, { environmentId: null }),
+    enabled: Boolean(createdSquadId) && effectiveOnboardingOpen && step === 2
   });
   const getCapabilities = useAdapterCapabilities();
   const adapterCaps = getCapabilities(adapterType);
@@ -288,9 +288,9 @@ export function OnboardingWizard() {
     setStep(1);
     setLoading(false);
     setError(null);
-    setCompanyName("");
-    setCompanyGoal("");
-    setAgentName("CEO");
+    setSquadName("");
+    setSquadGoal("");
+    setAgentName("Squad Lead");
     setAdapterType("claude_local");
     setModel("");
     setCommand("");
@@ -303,9 +303,9 @@ export function OnboardingWizard() {
     setUnsetAnthropicLoading(false);
     setTaskTitle("Hire your first engineer and create a hiring plan");
     setTaskDescription(DEFAULT_TASK_DESCRIPTION);
-    setCreatedCompanyId(null);
-    setCreatedCompanyPrefix(null);
-    setCreatedCompanyGoalId(null);
+    setCreatedSquadId(null);
+    setCreatedSquadPrefix(null);
+    setCreatedSquadGoalId(null);
     setCreatedAgentId(null);
     setCreatedProjectId(null);
     setCreatedIssueRef(null);
@@ -357,9 +357,9 @@ export function OnboardingWizard() {
   async function runAdapterEnvironmentTest(
     adapterConfigOverride?: Record<string, unknown>
   ): Promise<AdapterEnvironmentTestResult | null> {
-    if (!createdCompanyId) {
+    if (!createdSquadId) {
       setAdapterEnvError(
-        "Create or select a company before testing adapter environment."
+        "Create or select a squad before testing adapter environment."
       );
       return null;
     }
@@ -367,7 +367,7 @@ export function OnboardingWizard() {
     setAdapterEnvError(null);
     try {
       const result = await agentsApi.testEnvironment(
-        createdCompanyId,
+        createdSquadId,
         adapterType,
         {
           adapterConfig: adapterConfigOverride ?? buildAdapterConfig()
@@ -389,40 +389,40 @@ export function OnboardingWizard() {
     setLoading(true);
     setError(null);
     try {
-      const company = await companiesApi.create({ name: companyName.trim() });
-      setCreatedCompanyId(company.id);
-      setCreatedCompanyPrefix(company.issuePrefix);
-      setSelectedCompanyId(company.id);
-      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      const squad = await squadsApi.create({ name: squadName.trim() });
+      setCreatedSquadId(squad.id);
+      setCreatedSquadPrefix(squad.issuePrefix);
+      setSelectedSquadId(squad.id);
+      queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
 
-      if (companyGoal.trim()) {
-        const parsedGoal = parseOnboardingGoalInput(companyGoal);
-        const goal = await goalsApi.create(company.id, {
+      if (squadGoal.trim()) {
+        const parsedGoal = parseOnboardingGoalInput(squadGoal);
+        const goal = await goalsApi.create(squad.id, {
           title: parsedGoal.title,
           ...(parsedGoal.description
             ? { description: parsedGoal.description }
             : {}),
-          level: "company",
+          level: "squad",
           status: "active"
         });
-        setCreatedCompanyGoalId(goal.id);
+        setCreatedSquadGoalId(goal.id);
         queryClient.invalidateQueries({
-          queryKey: queryKeys.goals.list(company.id)
+          queryKey: queryKeys.goals.list(squad.id)
         });
       } else {
-        setCreatedCompanyGoalId(null);
+        setCreatedSquadGoalId(null);
       }
 
       setStep(2);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create company");
+      setError(err instanceof Error ? err.message : "Failed to create squad");
     } finally {
       setLoading(false);
     }
   }
 
   async function handleStep2Next() {
-    if (!createdCompanyId) return;
+    if (!createdSquadId) return;
     setLoading(true);
     setError(null);
     try {
@@ -440,9 +440,9 @@ export function OnboardingWizard() {
         if (!result) return;
       }
 
-      const hire = await agentsApi.hire(createdCompanyId, {
+      const hire = await agentsApi.hire(createdSquadId, {
         name: agentName.trim(),
-        role: "ceo",
+        role: "squad_lead",
         adapterType,
         adapterConfig: buildAdapterConfig(),
         runtimeConfig: buildNewAgentRuntimeConfig()
@@ -453,13 +453,13 @@ export function OnboardingWizard() {
           "Approved during onboarding first-agent setup."
         );
         queryClient.invalidateQueries({
-          queryKey: queryKeys.approvals.list(createdCompanyId)
+          queryKey: queryKeys.approvals.list(createdSquadId)
         });
       }
       const agent = hire.agent;
       setCreatedAgentId(agent.id);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.agents.list(createdCompanyId)
+        queryKey: queryKeys.agents.list(createdSquadId)
       });
       setStep(3);
     } catch (err) {
@@ -470,7 +470,7 @@ export function OnboardingWizard() {
   }
 
   async function handleUnsetAnthropicApiKey() {
-    if (!createdCompanyId || unsetAnthropicLoading) return;
+    if (!createdSquadId || unsetAnthropicLoading) return;
     setUnsetAnthropicLoading(true);
     setError(null);
     setAdapterEnvError(null);
@@ -494,10 +494,10 @@ export function OnboardingWizard() {
         await agentsApi.update(
           createdAgentId,
           { adapterConfig: configWithUnset },
-          createdCompanyId
+          createdSquadId
         );
         queryClient.invalidateQueries({
-          queryKey: queryKeys.agents.list(createdCompanyId)
+          queryKey: queryKeys.agents.list(createdSquadId)
         });
       }
 
@@ -519,40 +519,40 @@ export function OnboardingWizard() {
   }
 
   async function handleStep3Next() {
-    if (!createdCompanyId || !createdAgentId) return;
+    if (!createdSquadId || !createdAgentId) return;
     setError(null);
     setStep(4);
   }
 
   async function handleLaunch() {
-    if (!createdCompanyId || !createdAgentId) return;
+    if (!createdSquadId || !createdAgentId) return;
     setLoading(true);
     setError(null);
     try {
-      let goalId = createdCompanyGoalId;
+      let goalId = createdSquadGoalId;
       if (!goalId) {
-        const goals = await goalsApi.list(createdCompanyId);
-        goalId = selectDefaultCompanyGoalId(goals);
-        setCreatedCompanyGoalId(goalId);
+        const goals = await goalsApi.list(createdSquadId);
+        goalId = selectDefaultSquadGoalId(goals);
+        setCreatedSquadGoalId(goalId);
       }
 
       let projectId = createdProjectId;
       if (!projectId) {
         const project = await projectsApi.create(
-          createdCompanyId,
+          createdSquadId,
           buildOnboardingProjectPayload(goalId)
         );
         projectId = project.id;
         setCreatedProjectId(projectId);
         queryClient.invalidateQueries({
-          queryKey: queryKeys.projects.list(createdCompanyId)
+          queryKey: queryKeys.projects.list(createdSquadId)
         });
       }
 
       let issueRef = createdIssueRef;
       if (!issueRef) {
         const issue = await issuesApi.create(
-          createdCompanyId,
+          createdSquadId,
           buildOnboardingIssuePayload({
             title: taskTitle,
             description: taskDescription,
@@ -564,16 +564,16 @@ export function OnboardingWizard() {
         issueRef = issue.identifier ?? issue.id;
         setCreatedIssueRef(issueRef);
         queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.list(createdCompanyId)
+          queryKey: queryKeys.issues.list(createdSquadId)
         });
       }
 
-      setSelectedCompanyId(createdCompanyId);
+      setSelectedSquadId(createdSquadId);
       reset();
       closeOnboarding();
       navigate(
-        createdCompanyPrefix
-          ? `/${createdCompanyPrefix}/issues/${issueRef}`
+        createdSquadPrefix
+          ? `/${createdSquadPrefix}/issues/${issueRef}`
           : `/issues/${issueRef}`
       );
     } catch (err) {
@@ -586,7 +586,7 @@ export function OnboardingWizard() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      if (step === 1 && companyName.trim()) handleStep1Next();
+      if (step === 1 && squadName.trim()) handleStep1Next();
       else if (step === 2 && agentName.trim()) handleStep2Next();
       else if (step === 3 && taskTitle.trim()) handleStep3Next();
       else if (step === 4) handleLaunch();
@@ -632,7 +632,7 @@ export function OnboardingWizard() {
               <div className="flex items-center gap-0 mb-8 border-b border-border">
                 {(
                   [
-                    { step: 1 as Step, label: "Company", icon: Building2 },
+                    { step: 1 as Step, label: "Squad", icon: Building2 },
                     { step: 2 as Step, label: "Agent", icon: Bot },
                     { step: 3 as Step, label: "Task", icon: ListTodo },
                     { step: 4 as Step, label: "Launch", icon: Rocket }
@@ -663,7 +663,7 @@ export function OnboardingWizard() {
                       <Building2 className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-medium">Name your company</h3>
+                      <h3 className="font-medium">Name your squad</h3>
                       <p className="text-xs text-muted-foreground">
                         This is the organization your agents will work for.
                       </p>
@@ -673,18 +673,18 @@ export function OnboardingWizard() {
                     <label
                       className={cn(
                         "text-xs mb-1 block transition-colors",
-                        companyName.trim()
+                        squadName.trim()
                           ? "text-foreground"
                           : "text-muted-foreground group-focus-within:text-foreground"
                       )}
                     >
-                      Company name
+                      Squad name
                     </label>
                     <input
                       className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
                       placeholder="Acme Corp"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
+                      value={squadName}
+                      onChange={(e) => setSquadName(e.target.value)}
                       autoFocus
                     />
                   </div>
@@ -692,7 +692,7 @@ export function OnboardingWizard() {
                     <label
                       className={cn(
                         "text-xs mb-1 block transition-colors",
-                        companyGoal.trim()
+                        squadGoal.trim()
                           ? "text-foreground"
                           : "text-muted-foreground group-focus-within:text-foreground"
                       )}
@@ -701,9 +701,9 @@ export function OnboardingWizard() {
                     </label>
                     <textarea
                       className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[60px]"
-                      placeholder="What is this company trying to achieve?"
-                      value={companyGoal}
-                      onChange={(e) => setCompanyGoal(e.target.value)}
+                      placeholder="What is this squad trying to achieve?"
+                      value={squadGoal}
+                      onChange={(e) => setSquadGoal(e.target.value)}
                     />
                   </div>
                 </div>
@@ -728,7 +728,7 @@ export function OnboardingWizard() {
                     </label>
                     <input
                       className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
-                      placeholder="CEO"
+                      placeholder="Squad Lead"
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
                       autoFocus
@@ -986,7 +986,7 @@ export function OnboardingWizard() {
                           <p className="text-[11px] text-amber-900/90 leading-relaxed">
                             Claude failed while{" "}
                             <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
-                            is set. You can clear it in this CEO adapter config
+                            is set. You can clear it in this Squad Lead adapter config
                             and retry the probe.
                           </p>
                           <Button
@@ -1136,9 +1136,9 @@ export function OnboardingWizard() {
                       <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">
-                          {companyName}
+                          {squadName}
                         </p>
-                        <p className="text-xs text-muted-foreground">Company</p>
+                        <p className="text-xs text-muted-foreground">Squad</p>
                       </div>
                       <Check className="h-4 w-4 text-green-500 shrink-0" />
                     </div>
@@ -1194,7 +1194,7 @@ export function OnboardingWizard() {
                   {step === 1 && (
                     <Button
                       size="sm"
-                      disabled={!companyName.trim() || loading}
+                      disabled={!squadName.trim() || loading}
                       onClick={handleStep1Next}
                     >
                       {loading ? (

@@ -50,7 +50,7 @@ describe("issue tree control routes", () => {
     vi.clearAllMocks();
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
-      companyId: "company-2",
+      squadId: "squad-2",
     });
     mockTreeControlService.cancelUnclaimedWakeupsForTree.mockResolvedValue([]);
     mockTreeControlService.cancelIssueStatusesForHold.mockResolvedValue({ updatedIssueIds: [], updatedIssues: [] });
@@ -64,11 +64,11 @@ describe("issue tree control routes", () => {
     mockHeartbeatService.wakeup.mockResolvedValue(null);
   });
 
-  it("rejects cross-company preview requests before calling the preview service", async () => {
+  it("rejects cross-squad preview requests before calling the preview service", async () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -86,7 +86,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: "22222222-2222-4222-8222-222222222222",
-      companyId: "company-2",
+      squadId: "squad-2",
       runId: null,
       source: "api_key",
     });
@@ -104,7 +104,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -125,7 +125,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -155,7 +155,7 @@ describe("issue tree control routes", () => {
     expect(res.status).toBe(201);
     expect(mockHeartbeatService.cancelRun).toHaveBeenCalledWith("44444444-4444-4444-8444-444444444444");
     expect(mockTreeControlService.cancelUnclaimedWakeupsForTree).toHaveBeenCalledWith(
-      "company-2",
+      "squad-2",
       "11111111-1111-4111-8111-111111111111",
       "Cancelled because an active subtree pause hold was created",
     );
@@ -172,7 +172,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -203,7 +203,7 @@ describe("issue tree control routes", () => {
 
     expect(res.status).toBe(201);
     expect(mockTreeControlService.cancelIssueStatusesForHold).toHaveBeenCalledWith(
-      "company-2",
+      "squad-2",
       "11111111-1111-4111-8111-111111111111",
       "33333333-3333-4333-8333-333333333333",
     );
@@ -220,7 +220,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -255,7 +255,7 @@ describe("issue tree control routes", () => {
     expect(res.status).toBe(201);
     expect(mockHeartbeatService.cancelRun).toHaveBeenCalledWith("44444444-4444-4444-8444-444444444444");
     expect(mockTreeControlService.cancelIssueStatusesForHold).toHaveBeenCalledWith(
-      "company-2",
+      "squad-2",
       "11111111-1111-4111-8111-111111111111",
       "33333333-3333-4333-8333-333333333333",
     );
@@ -275,7 +275,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -318,7 +318,7 @@ describe("issue tree control routes", () => {
 
     expect(res.status).toBe(200);
     expect(mockTreeControlService.restoreIssueStatusesForHold).toHaveBeenCalledWith(
-      "company-2",
+      "squad-2",
       "11111111-1111-4111-8111-111111111111",
       "66666666-6666-4666-8666-666666666666",
       expect.objectContaining({ reason: "restore subtree" }),
@@ -337,7 +337,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });
@@ -367,7 +367,7 @@ describe("issue tree control routes", () => {
 
     expect(res.status).toBe(500);
     expect(mockTreeControlService.releaseHold).toHaveBeenCalledWith(
-      "company-2",
+      "squad-2",
       "11111111-1111-4111-8111-111111111111",
       "66666666-6666-4666-8666-666666666666",
       expect.objectContaining({
@@ -381,7 +381,7 @@ describe("issue tree control routes", () => {
     const app = await createApp({
       type: "board",
       userId: "user-1",
-      companyIds: ["company-2"],
+      squadIds: ["squad-2"],
       source: "session",
       isInstanceAdmin: false,
     });

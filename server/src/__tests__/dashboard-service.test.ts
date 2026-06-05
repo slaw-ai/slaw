@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { agents, companies, createDb, heartbeatRuns } from "@slaw/db";
+import { agents, squads, createDb, heartbeatRuns } from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -49,7 +49,7 @@ describeEmbeddedPostgres("dashboard service", () => {
   afterEach(async () => {
     await db.delete(heartbeatRuns);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -57,24 +57,24 @@ describeEmbeddedPostgres("dashboard service", () => {
   });
 
   it("aggregates the full 14-day run activity window without recent-run truncation", async () => {
-    const companyId = randomUUID();
-    const otherCompanyId = randomUUID();
+    const squadId = randomUUID();
+    const otherSquadId = randomUUID();
     const agentId = randomUUID();
     const otherAgentId = randomUUID();
     const today = utcDay(0);
     const weekAgo = utcDay(-7);
 
-    await db.insert(companies).values([
+    await db.insert(squads).values([
       {
-        id: companyId,
+        id: squadId,
         name: "Slaw",
-        issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       },
       {
-        id: otherCompanyId,
+        id: otherSquadId,
         name: "Other",
-        issuePrefix: `T${otherCompanyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        issuePrefix: `T${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       },
     ]);
@@ -82,7 +82,7 @@ describeEmbeddedPostgres("dashboard service", () => {
     await db.insert(agents).values([
       {
         id: agentId,
-        companyId,
+        squadId,
         name: "CodexCoder",
         role: "engineer",
         status: "running",
@@ -93,7 +93,7 @@ describeEmbeddedPostgres("dashboard service", () => {
       },
       {
         id: otherAgentId,
-        companyId: otherCompanyId,
+        squadId: otherSquadId,
         name: "OtherAgent",
         role: "engineer",
         status: "running",
@@ -107,7 +107,7 @@ describeEmbeddedPostgres("dashboard service", () => {
     await db.insert(heartbeatRuns).values([
       ...Array.from({ length: 105 }, () => ({
         id: randomUUID(),
-        companyId,
+        squadId,
         agentId,
         invocationSource: "assignment",
         status: "succeeded",
@@ -115,7 +115,7 @@ describeEmbeddedPostgres("dashboard service", () => {
       })),
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         agentId,
         invocationSource: "assignment",
         status: "failed",
@@ -123,7 +123,7 @@ describeEmbeddedPostgres("dashboard service", () => {
       },
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         agentId,
         invocationSource: "assignment",
         status: "timed_out",
@@ -131,7 +131,7 @@ describeEmbeddedPostgres("dashboard service", () => {
       },
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         agentId,
         invocationSource: "assignment",
         status: "cancelled",
@@ -139,7 +139,7 @@ describeEmbeddedPostgres("dashboard service", () => {
       },
       {
         id: randomUUID(),
-        companyId: otherCompanyId,
+        squadId: otherSquadId,
         agentId: otherAgentId,
         invocationSource: "assignment",
         status: "succeeded",
@@ -147,7 +147,7 @@ describeEmbeddedPostgres("dashboard service", () => {
       },
     ]);
 
-    const summary = await dashboardService(db).summary(companyId);
+    const summary = await dashboardService(db).summary(squadId);
 
     expect(summary.runActivity).toHaveLength(14);
     const todayBucket = summary.runActivity.find((bucket) => bucket.date === utcDateKey(today));

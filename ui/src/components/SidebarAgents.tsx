@@ -11,7 +11,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useToastActions } from "../context/ToastContext";
@@ -214,28 +214,28 @@ export function SidebarAgents() {
   const [open, setOpen] = useState(true);
   const [pendingAgentIds, setPendingAgentIds] = useState<Set<string>>(() => new Set());
   const queryClient = useQueryClient();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { openNewAgent } = useDialogActions();
   const { isMobile, setSidebarOpen } = useSidebar();
   const { pushToast } = useToastActions();
   const location = useLocation();
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId,
   });
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
   });
-  const membershipsQuery = useResourceMemberships(selectedCompanyId);
-  const membershipMutation = useResourceMembershipMutation(selectedCompanyId);
+  const membershipsQuery = useResourceMemberships(selectedSquadId);
+  const membershipMutation = useResourceMembershipMutation(selectedSquadId);
 
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(selectedCompanyId!),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.liveRuns(selectedSquadId!),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(selectedSquadId!),
+    enabled: !!selectedSquadId,
     refetchInterval: 10_000,
   });
 
@@ -260,16 +260,16 @@ export function SidebarAgents() {
   }, [agents, membershipsQuery.data, membershipsQuery.isSuccess]);
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const sortModeStorageKey = useMemo(() => {
-    if (!selectedCompanyId) return null;
-    return getAgentSortModeStorageKey(selectedCompanyId, currentUserId);
-  }, [currentUserId, selectedCompanyId]);
+    if (!selectedSquadId) return null;
+    return getAgentSortModeStorageKey(selectedSquadId, currentUserId);
+  }, [currentUserId, selectedSquadId]);
   const [sortMode, setSortMode] = useState<AgentSidebarSortMode>(() => {
     if (!sortModeStorageKey) return "top";
     return readAgentSortMode(sortModeStorageKey);
   });
   const { orderedAgents } = useAgentOrder({
     agents: visibleAgents,
-    companyId: selectedCompanyId,
+    squadId: selectedSquadId,
     userId: currentUserId,
   });
   const sortedAgents = useMemo(
@@ -325,8 +325,8 @@ export function SidebarAgents() {
   const pauseResumeAgent = useMutation({
     mutationFn: ({ agent, action }: { agent: Agent; action: "pause" | "resume" }) =>
       action === "pause"
-        ? agentsApi.pause(agent.id, selectedCompanyId ?? undefined)
-        : agentsApi.resume(agent.id, selectedCompanyId ?? undefined),
+        ? agentsApi.pause(agent.id, selectedSquadId ?? undefined)
+        : agentsApi.resume(agent.id, selectedSquadId ?? undefined),
     onMutate: ({ agent }) => {
       setPendingAgentIds((current) => {
         const next = new Set(current);
@@ -335,11 +335,11 @@ export function SidebarAgents() {
       });
     },
     onSuccess: async (_agent, { agent, action }) => {
-      if (selectedCompanyId) {
+      if (selectedSquadId) {
         await Promise.all([
-          queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId) }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.liveRuns(selectedCompanyId) }),
-          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(selectedCompanyId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedSquadId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.liveRuns(selectedSquadId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(selectedSquadId) }),
         ]);
       }
       await Promise.all([

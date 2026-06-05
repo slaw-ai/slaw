@@ -16,7 +16,7 @@ The alpha surface includes:
 - managed `Wiki Maintainer` agent, managed `LLM Wiki` project, and paused managed routines for wiki update processing, lint, and index refresh
 - plugin-operation issue creation using `surfaceVisibility: "plugin_operation"`
 - local source capture into `raw/` with metadata rows in the plugin DB namespace
-- opt-in company-scoped Slaw event ingestion controls for issues, comments, and documents; event ingestion is disabled by default and routes captured raw provenance into the default space only
+- opt-in squad-scoped Slaw event ingestion controls for issues, comments, and documents; event ingestion is disabled by default and routes captured raw provenance into the default space only
 - manual Slaw project/root issue distillation and bounded backfill actions with explicit work items, operation issues, source caps, and estimated cost recording
 - Slaw-derived distillation (cursor windows, manual `distill-now`, backfill) always writes into the default wiki space in Phase 1; non-default spaces remain on manual / raw-file ingest until per-space Slaw ingestion profiles ship
 - Slaw-derived distillation maintains `wiki/projects/<slug>/standup.md` as the executive current-state view for each represented project, alongside durable `wiki/projects/<slug>/index.md` knowledge pages

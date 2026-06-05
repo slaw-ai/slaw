@@ -4,10 +4,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import {
   activityLog,
   agents,
-  companies,
-  companySecretBindings,
-  companySecrets,
-  companySecretVersions,
+  squads,
+  squadSecretBindings,
+  squadSecrets,
+  squadSecretVersions,
   createDb,
   executionWorkspaces,
   heartbeatRuns,
@@ -61,19 +61,19 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     await db.delete(issueInboxArchives);
     await db.delete(issueReadStates);
     await db.delete(secretAccessEvents);
-    await db.delete(companySecretBindings);
+    await db.delete(squadSecretBindings);
     await db.delete(routineRuns);
     await db.delete(routineTriggers);
     await db.delete(routines);
-    await db.delete(companySecretVersions);
-    await db.delete(companySecrets);
+    await db.delete(squadSecretVersions);
+    await db.delete(squadSecrets);
     await db.delete(heartbeatRuns);
     await db.delete(issues);
     await db.delete(executionWorkspaces);
     await db.delete(projectWorkspaces);
     await db.delete(projects);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
     await db.delete(instanceSettings);
   });
 
@@ -95,10 +95,10 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       },
     ) => Promise<unknown>;
   }) {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const projectId = randomUUID();
-    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     const wakeups: Array<{
       agentId: string;
       opts: {
@@ -112,8 +112,8 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       };
     }> = [];
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -121,7 +121,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -133,7 +133,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(projects).values({
       id: projectId,
-      companyId,
+      squadId,
       name: "Routines",
       status: "in_progress",
     });
@@ -151,7 +151,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
           const queuedRunId = randomUUID();
           await db.insert(heartbeatRuns).values({
             id: queuedRunId,
-            companyId,
+            squadId,
             agentId: wakeupAgentId,
             invocationSource: wakeupOpts.source ?? "assignment",
             triggerDetail: wakeupOpts.triggerDetail ?? null,
@@ -171,7 +171,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     });
     const issueSvc = issueService(db);
     const routine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -187,20 +187,20 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       {},
     );
 
-    return { companyId, agentId, issueSvc, projectId, routine, svc, wakeups };
+    return { squadId, agentId, issueSvc, projectId, routine, svc, wakeups };
   }
 
   it("filters listed routines by project", async () => {
-    const { companyId, agentId, projectId, routine, svc } = await seedFixture();
+    const { squadId, agentId, projectId, routine, svc } = await seedFixture();
     const otherProjectId = randomUUID();
     await db.insert(projects).values({
       id: otherProjectId,
-      companyId,
+      squadId,
       name: "Other routines",
       status: "in_progress",
     });
     const otherRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId: otherProjectId,
         goalId: null,
@@ -216,17 +216,17 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       {},
     );
 
-    const projectRoutines = await svc.list(companyId, { projectId });
-    const allRoutines = await svc.list(companyId);
+    const projectRoutines = await svc.list(squadId, { projectId });
+    const allRoutines = await svc.list(squadId);
 
     expect(projectRoutines.map((entry) => entry.id)).toEqual([routine.id]);
     expect(allRoutines.map((entry) => entry.id)).toEqual(expect.arrayContaining([routine.id, otherRoutine.id]));
   });
 
   it("creates a fresh execution issue when the previous routine issue is open but idle", async () => {
-    const { companyId, issueSvc, routine, svc } = await seedFixture();
+    const { squadId, issueSvc, routine, svc } = await seedFixture();
     const previousRunId = randomUUID();
-    const previousIssue = await issueSvc.create(companyId, {
+    const previousIssue = await issueSvc.create(squadId, {
       projectId: routine.projectId,
       title: routine.title,
       description: routine.description,
@@ -240,7 +240,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(routineRuns).values({
       id: previousRunId,
-      companyId,
+      squadId,
       routineId: routine.id,
       triggerId: null,
       source: "manual",
@@ -271,10 +271,10 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("creates draft routines without a project or default assignee", async () => {
-    const { companyId, svc } = await seedFixture();
+    const { squadId, svc } = await seedFixture();
 
     const routine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId: null,
         goalId: null,
@@ -337,16 +337,16 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("stores routine env in revisions, syncs routine secret bindings, and stamps runs with the dispatch revision", async () => {
-    const { agentId, companyId, projectId, svc } = await seedFixture();
+    const { agentId, squadId, projectId, svc } = await seedFixture();
     const secrets = secretService(db);
-    const secret = await secrets.create(companyId, {
+    const secret = await secrets.create(squadId, {
       name: `routine-api-${randomUUID()}`,
       provider: "local_encrypted",
       value: "secret-value",
     });
 
     const routine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -368,11 +368,11 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     const bindings = await db
       .select()
-      .from(companySecretBindings)
-      .where(eq(companySecretBindings.targetId, routine.id));
+      .from(squadSecretBindings)
+      .where(eq(squadSecretBindings.targetId, routine.id));
     expect(bindings).toMatchObject([
       {
-        companyId,
+        squadId,
         secretId: secret.id,
         targetType: "routine",
         configPath: "env.ROUTINE_API_KEY",
@@ -382,16 +382,16 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     const [initialRevision] = await svc.listRevisions(routine.id);
     expect(initialRevision?.snapshot.routine.env).toEqual(routine.env);
 
-    await db.delete(companySecretBindings).where(eq(companySecretBindings.targetId, routine.id));
+    await db.delete(squadSecretBindings).where(eq(squadSecretBindings.targetId, routine.id));
     const repaired = await svc.update(routine.id, { env: routine.env }, {});
     expect(repaired).not.toBeNull();
     const repairedBindings = await db
       .select()
-      .from(companySecretBindings)
-      .where(eq(companySecretBindings.targetId, routine.id));
+      .from(squadSecretBindings)
+      .where(eq(squadSecretBindings.targetId, routine.id));
     expect(repairedBindings).toMatchObject([
       {
-        companyId,
+        squadId,
         secretId: secret.id,
         targetType: "routine",
         configPath: "env.ROUTINE_API_KEY",
@@ -477,8 +477,8 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       replayWindowSec: 300,
     }, {});
     await svc.deleteTrigger(created.trigger.id, {});
-    await expect(db.select().from(companySecrets).where(eq(companySecrets.id, created.trigger.secretId!))).resolves.toHaveLength(0);
-    await expect(db.select().from(companySecretBindings).where(eq(companySecretBindings.secretId, created.trigger.secretId!))).resolves.toHaveLength(0);
+    await expect(db.select().from(squadSecrets).where(eq(squadSecrets.id, created.trigger.secretId!))).resolves.toHaveLength(0);
+    await expect(db.select().from(squadSecretBindings).where(eq(squadSecretBindings.secretId, created.trigger.secretId!))).resolves.toHaveLength(0);
 
     const restored = await svc.restoreRevision(routine.id, created.revision.id, {});
 
@@ -496,11 +496,11 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("blocks agents from restoring routine revisions assigned to another agent", async () => {
-    const { companyId, routine, svc } = await seedFixture();
+    const { squadId, routine, svc } = await seedFixture();
     const otherAgentId = randomUUID();
     await db.insert(agents).values({
       id: otherAgentId,
-      companyId,
+      squadId,
       name: "OtherCoder",
       role: "engineer",
       status: "active",
@@ -565,8 +565,8 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     const deleted = await svc.deleteTrigger(created.trigger.id, {});
     expect(deleted.revision?.revisionNumber).toBe(5);
-    await expect(db.select().from(companySecrets).where(eq(companySecrets.id, created.trigger.secretId!))).resolves.toHaveLength(0);
-    await expect(db.select().from(companySecretBindings).where(eq(companySecretBindings.secretId, created.trigger.secretId!))).resolves.toHaveLength(0);
+    await expect(db.select().from(squadSecrets).where(eq(squadSecrets.id, created.trigger.secretId!))).resolves.toHaveLength(0);
+    await expect(db.select().from(squadSecretBindings).where(eq(squadSecretBindings.secretId, created.trigger.secretId!))).resolves.toHaveLength(0);
 
     const revisions = await svc.listRevisions(routine.id);
     const serialized = JSON.stringify(revisions.map((revision) => revision.snapshot));
@@ -601,7 +601,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("records the manual board runner on fresh routine issues so they appear in that user's inbox", async () => {
-    const { companyId, agentId, issueSvc, routine, svc } = await seedFixture();
+    const { squadId, agentId, issueSvc, routine, svc } = await seedFixture();
     const userId = randomUUID();
 
     const run = await svc.runRoutine(routine.id, { source: "manual" }, { userId });
@@ -622,7 +622,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       createdByUserId: userId,
     });
 
-    const inboxIssues = await issueSvc.list(companyId, {
+    const inboxIssues = await issueSvc.list(squadId, {
       touchedByUserId: userId,
       inboxArchivedByUserId: userId,
       includeRoutineExecutions: true,
@@ -647,10 +647,10 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("coalesces only when the existing routine issue has a live execution run", async () => {
-    const { agentId, companyId, issueSvc, routine, svc } = await seedFixture();
+    const { agentId, squadId, issueSvc, routine, svc } = await seedFixture();
     const previousRunId = randomUUID();
     const liveHeartbeatRunId = randomUUID();
-    const previousIssue = await issueSvc.create(companyId, {
+    const previousIssue = await issueSvc.create(squadId, {
       projectId: routine.projectId,
       title: routine.title,
       description: routine.description,
@@ -664,7 +664,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(routineRuns).values({
       id: previousRunId,
-      companyId,
+      squadId,
       routineId: routine.id,
       triggerId: null,
       source: "manual",
@@ -675,7 +675,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(heartbeatRuns).values({
       id: liveHeartbeatRunId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       triggerDetail: "system",
@@ -711,11 +711,11 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("touches a coalesced routine issue for the manual runner's inbox", async () => {
-    const { agentId, companyId, issueSvc, routine, svc } = await seedFixture();
+    const { agentId, squadId, issueSvc, routine, svc } = await seedFixture();
     const userId = randomUUID();
     const previousRunId = randomUUID();
     const liveHeartbeatRunId = randomUUID();
-    const previousIssue = await issueSvc.create(companyId, {
+    const previousIssue = await issueSvc.create(squadId, {
       projectId: routine.projectId,
       title: routine.title,
       description: routine.description,
@@ -729,7 +729,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(routineRuns).values({
       id: previousRunId,
-      companyId,
+      squadId,
       routineId: routine.id,
       triggerId: null,
       source: "manual",
@@ -739,7 +739,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     });
     await db.insert(heartbeatRuns).values({
       id: liveHeartbeatRunId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       triggerDetail: "system",
@@ -756,7 +756,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       })
       .where(eq(issues.id, previousIssue.id));
     await db.insert(issueInboxArchives).values({
-      companyId,
+      squadId,
       issueId: previousIssue.id,
       userId,
       archivedAt: new Date("2026-03-20T12:02:00.000Z"),
@@ -773,13 +773,13 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       db.select().from(issueReadStates).where(eq(issueReadStates.issueId, previousIssue.id)),
     ).resolves.toEqual([
       expect.objectContaining({
-        companyId,
+        squadId,
         issueId: previousIssue.id,
         userId,
       }),
     ]);
 
-    const inboxIssues = await issueSvc.list(companyId, {
+    const inboxIssues = await issueSvc.list(squadId, {
       touchedByUserId: userId,
       inboxArchivedByUserId: userId,
       includeRoutineExecutions: true,
@@ -788,7 +788,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("touches a skipped active routine issue for the manual runner's inbox", async () => {
-    const { agentId, companyId, issueSvc, routine, svc } = await seedFixture();
+    const { agentId, squadId, issueSvc, routine, svc } = await seedFixture();
     const userId = randomUUID();
     const previousRunId = randomUUID();
     const liveHeartbeatRunId = randomUUID();
@@ -798,7 +798,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       .set({ concurrencyPolicy: "skip_if_active" })
       .where(eq(routines.id, routine.id));
 
-    const previousIssue = await issueSvc.create(companyId, {
+    const previousIssue = await issueSvc.create(squadId, {
       projectId: routine.projectId,
       title: routine.title,
       description: routine.description,
@@ -812,7 +812,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(routineRuns).values({
       id: previousRunId,
-      companyId,
+      squadId,
       routineId: routine.id,
       triggerId: null,
       source: "manual",
@@ -822,7 +822,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     });
     await db.insert(heartbeatRuns).values({
       id: liveHeartbeatRunId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       triggerDetail: "system",
@@ -839,7 +839,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       })
       .where(eq(issues.id, previousIssue.id));
     await db.insert(issueInboxArchives).values({
-      companyId,
+      squadId,
       issueId: previousIssue.id,
       userId,
       archivedAt: new Date("2026-03-20T12:02:00.000Z"),
@@ -856,13 +856,13 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       db.select().from(issueReadStates).where(eq(issueReadStates.issueId, previousIssue.id)),
     ).resolves.toEqual([
       expect.objectContaining({
-        companyId,
+        squadId,
         issueId: previousIssue.id,
         userId,
       }),
     ]);
 
-    const inboxIssues = await issueSvc.list(companyId, {
+    const inboxIssues = await issueSvc.list(squadId, {
       touchedByUserId: userId,
       inboxArchivedByUserId: userId,
       includeRoutineExecutions: true,
@@ -871,9 +871,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("does not coalesce live routine runs with different resolved variables", async () => {
-    const { companyId, agentId, projectId, svc } = await seedFixture();
+    const { squadId, agentId, projectId, svc } = await seedFixture();
     const variableRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -925,9 +925,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("interpolates routine variables into the execution issue and stores resolved values", async () => {
-    const { companyId, agentId, projectId, svc } = await seedFixture();
+    const { squadId, agentId, projectId, svc } = await seedFixture();
     const variableRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -975,7 +975,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("attaches the selected execution workspace to manually triggered routine issues", async () => {
-    const { companyId, projectId, routine, svc } = await seedFixture();
+    const { squadId, projectId, routine, svc } = await seedFixture();
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
 
@@ -992,7 +992,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       .where(eq(projects.id, projectId));
     await db.insert(projectWorkspaces).values({
       id: projectWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       name: "Primary workspace",
       isPrimary: true,
@@ -1000,7 +1000,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     });
     await db.insert(executionWorkspaces).values({
       id: executionWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       projectWorkspaceId,
       mode: "isolated_workspace",
@@ -1037,7 +1037,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("auto-populates workspaceBranch from a reused isolated workspace", async () => {
-    const { companyId, agentId, projectId, svc } = await seedFixture();
+    const { squadId, agentId, projectId, svc } = await seedFixture();
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
 
@@ -1054,7 +1054,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       .where(eq(projects.id, projectId));
     await db.insert(projectWorkspaces).values({
       id: projectWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       name: "Primary workspace",
       isPrimary: true,
@@ -1062,7 +1062,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     });
     await db.insert(executionWorkspaces).values({
       id: executionWorkspaceId,
-      companyId,
+      squadId,
       projectId,
       projectWorkspaceId,
       mode: "isolated_workspace",
@@ -1074,7 +1074,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     });
 
     const branchRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -1121,9 +1121,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("runs draft routines with one-off agent and project overrides", async () => {
-    const { companyId, agentId, projectId, svc } = await seedFixture();
+    const { squadId, agentId, projectId, svc } = await seedFixture();
     const draftRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId: null,
         goalId: null,
@@ -1164,9 +1164,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("rejects enabling automation for routines without a default agent", async () => {
-    const { companyId, svc } = await seedFixture();
+    const { squadId, svc } = await seedFixture();
     const draftRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId: null,
         goalId: null,
@@ -1188,9 +1188,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("blocks schedule triggers when required variables do not have defaults", async () => {
-    const { companyId, agentId, projectId, svc } = await seedFixture();
+    const { squadId, agentId, projectId, svc } = await seedFixture();
     const variableRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -1220,9 +1220,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("treats malformed stored defaults as missing when validating schedule triggers", async () => {
-    const { companyId, agentId, projectId, svc } = await seedFixture();
+    const { squadId, agentId, projectId, svc } = await seedFixture();
     const variableRoutine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,
@@ -1279,7 +1279,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
         const queuedRunId = randomUUID();
         await db.insert(heartbeatRuns).values({
           id: queuedRunId,
-          companyId: routine.companyId,
+          squadId: routine.squadId,
           agentId: wakeupAgentId,
           invocationSource: wakeupOpts.source ?? "assignment",
           triggerDetail: wakeupOpts.triggerDetail ?? null,
@@ -1432,11 +1432,11 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
       const [secret] = await db
         .select({
-          id: companySecrets.id,
-          provider: companySecrets.provider,
+          id: squadSecrets.id,
+          provider: squadSecrets.provider,
         })
-        .from(companySecrets)
-        .where(eq(companySecrets.id, trigger.secretId!));
+        .from(squadSecrets)
+        .where(eq(squadSecrets.id, trigger.secretId!));
 
       expect(secret).toMatchObject({
         id: trigger.secretId,

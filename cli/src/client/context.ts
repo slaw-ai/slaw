@@ -7,7 +7,7 @@ const DEFAULT_PROFILE = "default";
 
 export interface ClientContextProfile {
   apiBase?: string;
-  companyId?: string;
+  squadId?: string;
   persona?: "board" | "agent";
   agentId?: string;
   agentName?: string;
@@ -78,7 +78,7 @@ function normalizeProfile(value: unknown): ClientContextProfile {
 
   return {
     apiBase: toStringOrUndefined(profile.apiBase),
-    companyId: toStringOrUndefined(profile.companyId),
+    squadId: toStringOrUndefined(profile.squadId),
     persona,
     agentId: toStringOrUndefined(profile.agentId),
     agentName: toStringOrUndefined(profile.agentName),
@@ -152,7 +152,7 @@ export function upsertProfile(
   const merged: ClientContextProfile = { ...existing };
 
   if (patch.apiBase !== undefined) merged.apiBase = patch.apiBase;
-  if (patch.companyId !== undefined) merged.companyId = patch.companyId;
+  if (patch.squadId !== undefined) merged.squadId = patch.squadId;
   if (patch.persona !== undefined) merged.persona = patch.persona;
   if (patch.agentId !== undefined) merged.agentId = patch.agentId;
   if (patch.agentName !== undefined) merged.agentName = patch.agentName;
@@ -164,8 +164,8 @@ export function upsertProfile(
   if (patch.apiBase !== undefined && patch.apiBase.trim().length === 0) {
     delete merged.apiBase;
   }
-  if (patch.companyId !== undefined && patch.companyId.trim().length === 0) {
-    delete merged.companyId;
+  if (patch.squadId !== undefined && patch.squadId.trim().length === 0) {
+    delete merged.squadId;
   }
   if (patch.persona === undefined && "persona" in patch) {
     delete merged.persona;

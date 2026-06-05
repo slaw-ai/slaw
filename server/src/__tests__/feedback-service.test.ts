@@ -7,8 +7,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { writeSlawSkillSyncPreference } from "@slaw/adapter-utils/server-utils";
 import {
   agents,
-  companies,
-  companySkills,
+  squads,
+  squadSkills,
   costEvents,
   createDb,
   documents,
@@ -51,10 +51,10 @@ describe("feedbackService.saveIssueVote", () => {
     await db.delete(issueComments);
     await db.delete(costEvents);
     await db.delete(heartbeatRuns);
-    await db.delete(companySkills);
+    await db.delete(squadSkills);
     await db.delete(issues);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
     for (const dir of tempDirs) {
       fs.rmSync(dir, { recursive: true, force: true });
     }
@@ -68,21 +68,21 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   async function seedIssueWithAgentComment() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const commentId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `F${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `F${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -94,7 +94,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Add feedback voting",
       status: "todo",
       priority: "medium",
@@ -103,17 +103,17 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issueComments).values({
       id: commentId,
-      companyId,
+      squadId,
       issueId,
       authorAgentId: agentId,
       body: "AI generated update",
     });
 
-    return { companyId, issueId, commentId };
+    return { squadId, issueId, commentId };
   }
 
   async function seedIssueWithRichAgentComment() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const targetCommentId = randomUUID();
@@ -133,17 +133,17 @@ describe("feedbackService.saveIssueVote", () => {
       "utf8",
     );
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `R${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `R${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
-    await db.insert(companySkills).values([
+    await db.insert(squadSkills).values([
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         key: "slaw/slaw/slaw",
         slug: "slaw",
         name: "Slaw",
@@ -155,7 +155,7 @@ describe("feedbackService.saveIssueVote", () => {
       },
       {
         id: randomUUID(),
-        companyId,
+        squadId,
         key: "octo/research/public-skill",
         slug: "public-skill",
         name: "Public Skill",
@@ -169,7 +169,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -195,7 +195,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Trace-rich feedback",
       description: "Issue context includes ops@example.com and a backup phone 555 111 2222.",
       status: "todo",
@@ -205,7 +205,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "manual",
       status: "succeeded",
@@ -222,7 +222,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(costEvents).values({
       id: randomUUID(),
-      companyId,
+      squadId,
       agentId,
       issueId,
       heartbeatRunId: runId,
@@ -240,7 +240,7 @@ describe("feedbackService.saveIssueVote", () => {
     await db.insert(issueComments).values([
       {
         id: earlierCommentId,
-        companyId,
+        squadId,
         issueId,
         authorAgentId: agentId,
         createdByRunId: runId,
@@ -249,7 +249,7 @@ describe("feedbackService.saveIssueVote", () => {
       },
       {
         id: targetCommentId,
-        companyId,
+        squadId,
         issueId,
         authorAgentId: agentId,
         createdByRunId: runId,
@@ -258,7 +258,7 @@ describe("feedbackService.saveIssueVote", () => {
       },
       {
         id: laterCommentId,
-        companyId,
+        squadId,
         issueId,
         authorAgentId: agentId,
         createdByRunId: runId,
@@ -267,26 +267,26 @@ describe("feedbackService.saveIssueVote", () => {
       },
     ]);
 
-    return { companyId, issueId, targetCommentId, runId };
+    return { squadId, issueId, targetCommentId, runId };
   }
 
   async function seedIssueWithAgentDocument() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const documentId = randomUUID();
     const revisionId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `D${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `D${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -298,7 +298,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Document feedback",
       status: "todo",
       priority: "medium",
@@ -307,7 +307,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(documents).values({
       id: documentId,
-      companyId,
+      squadId,
       title: "Plan",
       format: "markdown",
       latestBody: "Drafted by an agent",
@@ -319,7 +319,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(documentRevisions).values({
       id: revisionId,
-      companyId,
+      squadId,
       documentId,
       revisionNumber: 1,
       body: "Drafted by an agent",
@@ -327,35 +327,35 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     await db.insert(issueDocuments).values({
-      companyId,
+      squadId,
       issueId,
       documentId,
       key: "plan",
     });
 
-    return { companyId, issueId, revisionId };
+    return { squadId, issueId, revisionId };
   }
 
   async function seedIssueWithAdapterRunComment(input: {
     adapterType: "claude_local" | "opencode_local";
     sessionId: string;
   }) {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const commentId = randomUUID();
     const runId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "TraceCollector",
       role: "engineer",
       status: "active",
@@ -367,7 +367,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Trace-backed feedback",
       status: "todo",
       priority: "medium",
@@ -376,7 +376,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "manual",
       status: "succeeded",
@@ -391,18 +391,18 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issueComments).values({
       id: commentId,
-      companyId,
+      squadId,
       issueId,
       authorAgentId: agentId,
       createdByRunId: runId,
       body: "Trace-backed agent output",
     });
 
-    return { companyId, issueId, commentId };
+    return { squadId, issueId, commentId };
   }
 
   it("stores a local vote without enabling sharing by default", async () => {
-    const { companyId, issueId, commentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId } = await seedIssueWithAgentComment();
 
     const result = await svc.saveIssueVote({
       issueId,
@@ -417,14 +417,14 @@ describe("feedbackService.saveIssueVote", () => {
     expect(result.persistedSharingPreference).toBe("not_allowed");
     expect(result.vote.consentVersion).toBeNull();
 
-    const company = await db
+    const squad = await db
       .select()
-      .from(companies)
-      .where(eq(companies.id, companyId))
+      .from(squads)
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0] ?? null);
 
-    expect(company?.feedbackDataSharingEnabled).toBe(false);
-    expect(company?.feedbackDataSharingConsentAt).toBeNull();
+    expect(squad?.feedbackDataSharingEnabled).toBe(false);
+    expect(squad?.feedbackDataSharingConsentAt).toBeNull();
 
     const settings = await db
       .select()
@@ -437,7 +437,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const traces = await svc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });
@@ -446,7 +446,7 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("enables sharing metadata on the first consented vote and upserts subsequent votes", async () => {
-    const { companyId, issueId, commentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId } = await seedIssueWithAgentComment();
 
     const first = await svc.saveIssueVote({
       issueId,
@@ -486,15 +486,15 @@ describe("feedbackService.saveIssueVote", () => {
     expect(votes[0]?.sharedWithLabs).toBe(false);
     expect(votes[0]?.consentVersion).toBeNull();
 
-    const company = await db
+    const squad = await db
       .select()
-      .from(companies)
-      .where(eq(companies.id, companyId))
+      .from(squads)
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0] ?? null);
 
-    expect(company?.feedbackDataSharingEnabled).toBe(true);
-    expect(company?.feedbackDataSharingConsentByUserId).toBe("user-1");
-    expect(company?.feedbackDataSharingTermsVersion).toBe("feedback-data-sharing-v1");
+    expect(squad?.feedbackDataSharingEnabled).toBe(true);
+    expect(squad?.feedbackDataSharingConsentByUserId).toBe("user-1");
+    expect(squad?.feedbackDataSharingTermsVersion).toBe("feedback-data-sharing-v1");
 
     const settings = await db
       .select()
@@ -523,7 +523,7 @@ describe("feedbackService.saveIssueVote", () => {
     expect(result.sharingEnabled).toBe(true);
 
     const traces = await svc.listFeedbackTraces({
-      companyId: result.vote.companyId,
+      squadId: result.vote.squadId,
       issueId,
       includePayload: true,
     });
@@ -556,7 +556,7 @@ describe("feedbackService.saveIssueVote", () => {
     expect(result.vote.reason).toBe("The update missed the edge case handling.");
 
     const traces = await svc.listFeedbackTraces({
-      companyId: result.vote.companyId,
+      squadId: result.vote.squadId,
       issueId,
       includePayload: true,
     });
@@ -592,7 +592,7 @@ describe("feedbackService.saveIssueVote", () => {
     expect(secondResult.vote.reason).toBe("Needed concrete next steps.");
 
     const traces = await svc.listFeedbackTraces({
-      companyId: secondResult.vote.companyId,
+      squadId: secondResult.vote.squadId,
       issueId,
       includePayload: true,
     });
@@ -607,7 +607,7 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("builds a detailed sanitized shared bundle with issue and agent context", async () => {
-    const { companyId, issueId, targetCommentId, runId } = await seedIssueWithRichAgentComment();
+    const { squadId, issueId, targetCommentId, runId } = await seedIssueWithRichAgentComment();
 
     await svc.saveIssueVote({
       issueId,
@@ -619,7 +619,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const traces = await svc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });
@@ -649,13 +649,14 @@ describe("feedbackService.saveIssueVote", () => {
     expect(JSON.stringify(issueContextItems)).toContain("[REDACTED_PHONE]");
     expect(sourceRun?.id).toBe(runId);
     expect(JSON.stringify(sourceRun)).toContain("gpt-5.4");
-    expect(skillItems?.[1]?.sourceLocator).toBe("https://github.com/octo/research/tree/main/skills/public-skill");
+    const publicSkillItem = skillItems?.find((item: { slug?: string }) => item?.slug === "public-skill");
+    expect(publicSkillItem?.sourceLocator).toBe("https://github.com/octo/research/tree/main/skills/public-skill");
     expect(String(instructions?.entryBody)).toContain("[REDACTED]");
     expect(String(instructions?.entryBody)).not.toContain("secret-value");
   });
 
   it("keeps earlier local votes local when a later vote enables sharing", async () => {
-    const { companyId, issueId, commentId: firstCommentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId: firstCommentId } = await seedIssueWithAgentComment();
     const secondCommentId = randomUUID();
     const agentId = await db
       .select({ authorAgentId: issueComments.authorAgentId })
@@ -665,7 +666,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issueComments).values({
       id: secondCommentId,
-      companyId,
+      squadId,
       issueId,
       authorAgentId: agentId,
       body: "Second AI generated update",
@@ -689,7 +690,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const traces = await svc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });
@@ -911,20 +912,20 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("rejects feedback votes on human-authored comments", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const issueId = randomUUID();
     const commentId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `H${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `H${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Human-authored comment",
       status: "todo",
       priority: "medium",
@@ -933,7 +934,7 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issueComments).values({
       id: commentId,
-      companyId,
+      squadId,
       issueId,
       authorUserId: "user-2",
       body: "Board comment",
@@ -951,9 +952,9 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("flushes pending shared traces into configured object storage and marks them sent", async () => {
-    const { companyId, issueId, commentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId } = await seedIssueWithAgentComment();
     const uploadTraceBundle = vi.fn().mockResolvedValue({
-      objectKey: `feedback-traces/${companyId}/2026/04/01/test-trace.json`,
+      objectKey: `feedback-traces/${squadId}/2026/04/01/test-trace.json`,
     });
     const flushingSvc = feedbackService(db, {
       shareClient: {
@@ -978,7 +979,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const traces = await flushingSvc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });
@@ -990,7 +991,7 @@ describe("feedbackService.saveIssueVote", () => {
     expect(uploadTraceBundle.mock.calls[0]?.[0]).toMatchObject({
       traceId: traces[0]?.id,
       exportId: traces[0]?.exportId,
-      companyId,
+      squadId,
       issueId,
       issueIdentifier: traces[0]?.issueIdentifier,
       captureStatus: expect.stringMatching(/^(full|partial|unavailable)$/),
@@ -1002,7 +1003,7 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("can flush a single shared trace immediately by trace id", async () => {
-    const { companyId, issueId, commentId: firstCommentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId: firstCommentId } = await seedIssueWithAgentComment();
     const secondCommentId = randomUUID();
     const agentId = await db
       .select({ authorAgentId: issueComments.authorAgentId })
@@ -1012,14 +1013,14 @@ describe("feedbackService.saveIssueVote", () => {
 
     await db.insert(issueComments).values({
       id: secondCommentId,
-      companyId,
+      squadId,
       issueId,
       authorAgentId: agentId,
       body: "Second AI generated update",
     });
 
     const uploadTraceBundle = vi.fn().mockResolvedValue({
-      objectKey: `feedback-traces/${companyId}/2026/04/01/test-trace.json`,
+      objectKey: `feedback-traces/${squadId}/2026/04/01/test-trace.json`,
     });
     const flushingSvc = feedbackService(db, {
       shareClient: {
@@ -1045,7 +1046,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const flushResult = await flushingSvc.flushPendingFeedbackTraces({
-      companyId,
+      squadId,
       traceId: first.traceId ?? undefined,
       limit: 1,
     });
@@ -1058,7 +1059,7 @@ describe("feedbackService.saveIssueVote", () => {
     expect(uploadTraceBundle).toHaveBeenCalledTimes(1);
 
     const traces = await flushingSvc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });
@@ -1069,7 +1070,7 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("marks pending shared traces as failed when remote export upload fails", async () => {
-    const { companyId, issueId, commentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId } = await seedIssueWithAgentComment();
     const uploadTraceBundle = vi.fn().mockRejectedValue(new Error("telemetry unavailable"));
     const flushingSvc = feedbackService(db, {
       shareClient: {
@@ -1094,7 +1095,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const traces = await flushingSvc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });
@@ -1107,7 +1108,7 @@ describe("feedbackService.saveIssueVote", () => {
   });
 
   it("marks pending shared traces as failed when no feedback export backend is configured", async () => {
-    const { companyId, issueId, commentId } = await seedIssueWithAgentComment();
+    const { squadId, issueId, commentId } = await seedIssueWithAgentComment();
 
     const result = await svc.saveIssueVote({
       issueId,
@@ -1119,7 +1120,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const flushResult = await svc.flushPendingFeedbackTraces({
-      companyId,
+      squadId,
       traceId: result.traceId ?? undefined,
       limit: 1,
     });
@@ -1131,7 +1132,7 @@ describe("feedbackService.saveIssueVote", () => {
     });
 
     const traces = await svc.listFeedbackTraces({
-      companyId,
+      squadId,
       issueId,
       includePayload: true,
     });

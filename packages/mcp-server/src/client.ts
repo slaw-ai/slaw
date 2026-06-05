@@ -53,16 +53,16 @@ export class SlawApiClient {
 
   get defaults() {
     return {
-      companyId: this.config.companyId,
+      squadId: this.config.squadId,
       agentId: this.config.agentId,
       runId: this.config.runId,
     };
   }
 
-  resolveCompanyId(companyId?: string | null): string {
-    const resolved = companyId?.trim() || this.config.companyId;
+  resolveSquadId(squadId?: string | null): string {
+    const resolved = squadId?.trim() || this.config.squadId;
     if (!resolved) {
-      throw new Error("companyId is required because SLAW_COMPANY_ID is not set");
+      throw new Error("squadId is required because SLAW_SQUAD_ID is not set");
     }
     return resolved;
   }

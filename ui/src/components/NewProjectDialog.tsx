@@ -1,13 +1,13 @@
 import { useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDialog } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { accessApi } from "../api/access";
 import { projectsApi } from "../api/projects";
 import { agentsApi } from "../api/agents";
 import { goalsApi } from "../api/goals";
 import { assetsApi } from "../api/assets";
-import { buildMarkdownMentionOptions } from "../lib/company-members";
+import { buildMarkdownMentionOptions } from "../lib/squad-members";
 import { queryKeys } from "../lib/queryKeys";
 import {
   Dialog,
@@ -49,7 +49,7 @@ const projectStatuses = [
 
 export function NewProjectDialog() {
   const { newProjectOpen, closeNewProject } = useDialog();
-  const { selectedCompanyId, selectedCompany } = useCompany();
+  const { selectedSquadId, selectedSquad } = useSquad();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -66,39 +66,39 @@ export function NewProjectDialog() {
   const descriptionEditorRef = useRef<MarkdownEditorRef>(null);
 
   const { data: goals } = useQuery({
-    queryKey: queryKeys.goals.list(selectedCompanyId!),
-    queryFn: () => goalsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && newProjectOpen,
+    queryKey: queryKeys.goals.list(selectedSquadId!),
+    queryFn: () => goalsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && newProjectOpen,
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(selectedCompanyId!),
-    queryFn: () => agentsApi.list(selectedCompanyId!),
-    enabled: !!selectedCompanyId && newProjectOpen,
+    queryKey: queryKeys.agents.list(selectedSquadId!),
+    queryFn: () => agentsApi.list(selectedSquadId!),
+    enabled: !!selectedSquadId && newProjectOpen,
   });
 
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId!),
-    queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
-    enabled: !!selectedCompanyId && newProjectOpen,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(selectedSquadId!),
+    queryFn: () => accessApi.listUserDirectory(selectedSquadId!),
+    enabled: !!selectedSquadId && newProjectOpen,
   });
 
   const mentionOptions = useMemo<MentionOption[]>(() => {
     return buildMarkdownMentionOptions({
       agents,
-      members: companyMembers?.users,
+      members: squadMembers?.users,
     });
-  }, [agents, companyMembers?.users]);
+  }, [agents, squadMembers?.users]);
 
   const createProject = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      projectsApi.create(selectedCompanyId!, data),
+      projectsApi.create(selectedSquadId!, data),
   });
 
   const uploadDescriptionImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!selectedCompanyId) throw new Error("No company selected");
-      return assetsApi.uploadImage(selectedCompanyId, file, "projects/drafts");
+      if (!selectedSquadId) throw new Error("No squad selected");
+      return assetsApi.uploadImage(selectedSquadId, file, "projects/drafts");
     },
   });
 
@@ -145,7 +145,7 @@ export function NewProjectDialog() {
   };
 
   async function handleSubmit() {
-    if (!selectedCompanyId || !name.trim()) return;
+    if (!selectedSquadId || !name.trim()) return;
     const localPath = workspaceLocalPath.trim();
     const repoUrl = workspaceRepoUrl.trim();
 
@@ -181,7 +181,7 @@ export function NewProjectDialog() {
         await projectsApi.createWorkspace(created.id, workspacePayload);
       }
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(selectedCompanyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(selectedSquadId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(created.id) });
       reset();
       closeNewProject();
@@ -218,9 +218,9 @@ export function NewProjectDialog() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {selectedCompany && (
+            {selectedSquad && (
               <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium">
-                {selectedCompany.name.slice(0, 3).toUpperCase()}
+                {selectedSquad.name.slice(0, 3).toUpperCase()}
               </span>
             )}
             <span className="text-muted-foreground/60">&rsaquo;</span>

@@ -33,8 +33,8 @@ To backfill existing content manually after migrating, run:
 
 ```sh
 pnpm issue-references:backfill
-# optional: limit to one company
-pnpm issue-references:backfill -- --company <company-id>
+# optional: limit to one squad
+pnpm issue-references:backfill -- --squad <squad-id>
 ```
 
 Future issue, comment, and document writes sync references automatically without running the backfill command.
@@ -150,9 +150,9 @@ Slaw stores current-user sidebar membership state in:
 - `project_memberships`
 - `agent_memberships`
 
-These rows are company-scoped and user-scoped. A missing row means the user is joined, so existing users keep seeing projects and agents in the sidebar until they explicitly leave them. Rows only control sidebar visibility; they do not affect project/agent detail access, all-pages, selectors, assignment flows, or existing company permissions.
+These rows are squad-scoped and user-scoped. A missing row means the user is joined, so existing users keep seeing projects and agents in the sidebar until they explicitly leave them. Rows only control sidebar visibility; they do not affect project/agent detail access, all-pages, selectors, assignment flows, or existing squad permissions.
 
-Both tables use a unique key on `(company_id, user_id, resource_id)` and keep `state` as `joined` or `left`. Join/leave mutations are idempotent board-user `/me` operations and write activity entries when the effective state changes.
+Both tables use a unique key on `(squad_id, user_id, resource_id)` and keep `state` as `joined` or `left`. Join/leave mutations are idempotent board-user `/me` operations and write activity entries when the effective state changes.
 
 ## Plugin database namespaces
 
@@ -174,9 +174,9 @@ up separately when you need full instance disaster recovery.
 
 Slaw stores secret metadata and versions in:
 
-- `company_secrets`
-- `company_secret_versions`
-- `company_secret_bindings`
+- `squad_secrets`
+- `squad_secret_versions`
+- `squad_secret_bindings`
 - `secret_access_events`
 
 Secret-aware env bindings are supported by agents, projects, and routines. Routine env lives in `routines.env`, is captured in `routine_revisions.snapshot`, and routine dispatches store `routine_runs.routine_revision_id` so runtime secret resolution uses the env snapshot that existed when the run was created. Routine secret refs bind with `target_type = 'routine'`, `target_id = routines.id`, and `config_path` values under `env.*`.
@@ -209,7 +209,7 @@ pnpm slaw configure --section secrets
 Inline secret migration command:
 
 ```sh
-pnpm slaw secrets migrate-inline-env --company-id <company-id> --apply
+pnpm slaw secrets migrate-inline-env --squad-id <squad-id> --apply
 
 # direct database maintenance fallback
 pnpm secrets:migrate-inline-env --apply

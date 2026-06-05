@@ -1,12 +1,12 @@
 import { pgTable, uuid, text, timestamp, jsonb, integer, index } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { agents } from "./agents.js";
 
 export const agentWakeupRequests = pgTable(
   "agent_wakeup_requests",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     agentId: uuid("agent_id").notNull().references(() => agents.id),
     source: text("source").notNull(),
     triggerDetail: text("trigger_detail"),
@@ -26,13 +26,13 @@ export const agentWakeupRequests = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyAgentStatusIdx: index("agent_wakeup_requests_company_agent_status_idx").on(
-      table.companyId,
+    squadAgentStatusIdx: index("agent_wakeup_requests_squad_agent_status_idx").on(
+      table.squadId,
       table.agentId,
       table.status,
     ),
-    companyRequestedIdx: index("agent_wakeup_requests_company_requested_idx").on(
-      table.companyId,
+    squadRequestedIdx: index("agent_wakeup_requests_squad_requested_idx").on(
+      table.squadId,
       table.requestedAt,
     ),
     agentRequestedIdx: index("agent_wakeup_requests_agent_requested_idx").on(table.agentId, table.requestedAt),

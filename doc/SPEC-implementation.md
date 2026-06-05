@@ -15,14 +15,14 @@ When there is a conflict, `SPEC-implementation.md` controls V1 behavior.
 
 Slaw V1 must provide a full control-plane loop for autonomous agents:
 
-1. A human board creates a company and defines goals.
+1. A human board creates a squad and defines goals.
 2. The board creates and manages agents in an org tree.
 3. Agents receive and execute tasks via heartbeat invocations.
 4. All work is tracked through tasks/comments with audit visibility.
 5. Token/cost usage is reported and budget limits can stop work.
 6. The board can intervene anywhere (pause agents/tasks, override decisions).
 
-Success means one operator can run a small AI-native company end-to-end with clear visibility and control.
+Success means one operator can run a small AI-native squad end-to-end with clear visibility and control.
 
 ## 3. Explicit V1 Product Decisions
 
@@ -30,11 +30,11 @@ These decisions close open questions from `SPEC.md` for V1.
 
 | Topic | V1 Decision |
 |---|---|
-| Tenancy | Single-tenant deployment, multi-company data model |
-| Company model | Company is first-order; all business entities are company-scoped |
+| Tenancy | Single-tenant deployment, multi-squad data model |
+| Squad model | Squad is first-order; all business entities are squad-scoped |
 | Board | Single human board operator per deployment |
 | Org graph | Strict tree (`reports_to` nullable root); no multi-manager reporting |
-| Visibility | Company-scoped visibility: board + all in-company agents can see all work objects by default; public/private deployment flags affect external exposure only and do **not** imply project/issue privacy |
+| Visibility | Squad-scoped visibility: board + all in-squad agents can see all work objects by default; public/private deployment flags affect external exposure only and do **not** imply project/issue privacy |
 | Communication | Tasks + comments only (no separate chat system) |
 | Task ownership | Single assignee; atomic checkout required for `in_progress` transition |
 | Recovery | Liveness/watchdog recovery preserves explicit ownership: retry lost execution continuity where safe, otherwise open visible source-scoped recovery actions by default, use issue-backed recovery only for independent repair work, or require human escalation (see `doc/execution-semantics.md`) |
@@ -53,20 +53,20 @@ As of 2026-02-17, the repo already includes:
 - React UI pages for dashboard/agents/projects/goals/issues lists
 - PostgreSQL schema via Drizzle with embedded PostgreSQL fallback when `DATABASE_URL` is unset
 
-V1 implementation extends this baseline into a company-centric, governance-aware control plane.
+V1 implementation extends this baseline into a squad-centric, governance-aware control plane.
 
 ## 5. V1 Scope
 
 ## 5.1 In Scope
 
-- Company lifecycle (create/list/get/update/archive)
-- Goal hierarchy linked to company mission
+- Squad lifecycle (create/list/get/update/archive)
+- Goal hierarchy linked to squad mission
 - Agent lifecycle with org structure and adapter configuration
 - Task lifecycle with parent/child hierarchy and comments
 - Atomic task checkout and explicit task status transitions
-- Board approvals for hires and CEO strategy proposal
+- Board approvals for hires and Squad Lead strategy proposal
 - Heartbeat invocation, status tracking, and cancellation
-- Cost event ingestion and rollups (agent/task/project/company)
+- Cost event ingestion and rollups (agent/task/project/squad)
 - Budget settings and hard-stop enforcement
 - Board web UI for dashboard, org chart, tasks, agents, approvals, costs
 - Agent-facing API contract (task read/write, heartbeat report, cost report)
@@ -118,7 +118,7 @@ All core tables include `id`, `created_at`, `updated_at` unless noted.
 
 Human auth tables (`users`, `sessions`, and provider-specific auth artifacts) are managed by the selected auth library. This spec treats them as required dependencies and references `users.id` where user attribution is needed.
 
-## 7.1 `companies`
+## 7.1 `squads`
 
 - `id` uuid pk
 - `name` text not null
@@ -135,12 +135,12 @@ Human auth tables (`users`, `sessions`, and provider-specific auth artifacts) ar
 - feedback sharing consent fields
 - branding fields such as `brand_color`
 
-Invariant: every business record belongs to exactly one company.
+Invariant: every business record belongs to exactly one squad.
 
 ## 7.2 `agents`
 
 - `id` uuid pk
-- `company_id` uuid fk `companies.id` not null
+- `squad_id` uuid fk `squads.id` not null
 - `name` text not null
 - `role` text not null
 - `title` text null
@@ -162,7 +162,7 @@ Invariant: every business record belongs to exactly one company.
 
 Invariants:
 
-- agent and manager must be in same company
+- agent and manager must be in same squad
 - no cycles in reporting tree
 - `terminated` agents cannot be resumed
 
@@ -170,7 +170,7 @@ Invariants:
 
 - `id` uuid pk
 - `agent_id` uuid fk `agents.id` not null
-- `company_id` uuid fk `companies.id` not null
+- `squad_id` uuid fk `squads.id` not null
 - `name` text not null
 - `key_hash` text not null
 - `last_used_at` timestamptz null
@@ -181,20 +181,20 @@ Invariant: plaintext key shown once at creation; only hash stored.
 ## 7.4 `goals`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `title` text not null
 - `description` text null
-- `level` enum: `company | team | agent | task`
+- `level` enum: `squad | team | agent | task`
 - `parent_id` uuid fk `goals.id` null
 - `owner_agent_id` uuid fk `agents.id` null
 - `status` enum: `planned | active | achieved | cancelled`
 
-Invariant: at least one root `company` level goal per company.
+Invariant: at least one root `squad` level goal per squad.
 
 ## 7.5 `projects`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `goal_id` uuid fk `goals.id` null
 - `name` text not null
 - `description` text null
@@ -212,7 +212,7 @@ Routine execution issues add a routine-scoped env overlay after project env and 
 ## 7.6 `issues` (core task entity)
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `project_id` uuid fk `projects.id` null
 - `project_workspace_id` uuid fk `project_workspaces.id` null
 - `goal_id` uuid fk `goals.id` null
@@ -242,14 +242,14 @@ Routine execution issues add a routine-scoped env overlay after project env and 
 Invariants:
 
 - single assignee only
-- task must trace to company goal chain via `goal_id`, `parent_id`, or project-goal linkage
+- task must trace to squad goal chain via `goal_id`, `parent_id`, or project-goal linkage
 - `in_progress` requires assignee
 - terminal states: `done | cancelled`
 
 ## 7.7 `issue_comments`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `issue_id` uuid fk `issues.id` not null
 - `author_agent_id` uuid fk `agents.id` null
 - `author_user_id` uuid fk `users.id` null
@@ -258,7 +258,7 @@ Invariants:
 ## 7.8 `heartbeat_runs`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `agent_id` uuid fk not null
 - `invocation_source` enum: `scheduler | manual | callback`
 - `status` enum: `queued | running | succeeded | failed | cancelled | timed_out`
@@ -271,7 +271,7 @@ Invariants:
 ## 7.9 `cost_events`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `agent_id` uuid fk `agents.id` not null
 - `issue_id` uuid fk `issues.id` null
 - `project_id` uuid fk `projects.id` null
@@ -284,13 +284,13 @@ Invariants:
 - `cost_cents` int not null
 - `occurred_at` timestamptz not null
 
-Invariant: each event must attach to agent and company; rollups are aggregation, never manually edited.
+Invariant: each event must attach to agent and squad; rollups are aggregation, never manually edited.
 
 ## 7.10 `approvals`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
-- `type` enum: `hire_agent | approve_ceo_strategy | budget_override_required | request_board_approval`
+- `squad_id` uuid fk not null
+- `type` enum: `hire_agent | approve_squad_lead_strategy | budget_override_required | request_board_approval`
 - `requested_by_agent_id` uuid fk `agents.id` null
 - `requested_by_user_id` uuid fk `users.id` null
 - `status` enum: `pending | revision_requested | approved | rejected | cancelled`
@@ -302,7 +302,7 @@ Invariant: each event must attach to agent and company; rollups are aggregation,
 ## 7.11 `activity_log`
 
 - `id` uuid pk
-- `company_id` uuid fk not null
+- `squad_id` uuid fk not null
 - `actor_type` enum: `agent | user | system`
 - `actor_id` uuid/text not null
 - `action` text not null
@@ -318,30 +318,30 @@ Per-user project/agent membership is personal visibility state for board users. 
 `project_memberships`:
 
 - `id` uuid pk
-- `company_id` uuid fk `companies.id` not null
+- `squad_id` uuid fk `squads.id` not null
 - `project_id` uuid fk `projects.id` not null
 - `user_id` text not null
 - `state` enum-like text: `joined | left`
 - `created_at` timestamptz not null default now()
 - `updated_at` timestamptz not null default now()
-- unique `(company_id, user_id, project_id)`
+- unique `(squad_id, user_id, project_id)`
 
-`agent_memberships` mirrors the same shape with `agent_id` instead of `project_id` and unique `(company_id, user_id, agent_id)`.
+`agent_memberships` mirrors the same shape with `agent_id` instead of `project_id` and unique `(squad_id, user_id, agent_id)`.
 
 Invariants:
 
 - Missing membership rows mean `joined` for backward compatibility.
 - Mutations are board-user-only `/me` operations; agent API keys are rejected.
 - Viewer-role board users may update only their own membership rows through the narrow self-service helper.
-- Target project/agent ownership is checked against the path company before mutation.
+- Target project/agent ownership is checked against the path squad before mutation.
 - Successful state changes write `resource_membership.joined` or `resource_membership.left` activity entries.
 
-## 7.13 `company_secrets` + `company_secret_versions`
+## 7.13 `squad_secrets` + `squad_secret_versions`
 
 - Secret values are not stored inline in `agents.adapter_config.env`.
 - Agent env entries should use secret refs for sensitive values.
-- `company_secrets` tracks identity/provider metadata per company.
-- `company_secret_versions` stores encrypted/reference material per version.
+- `squad_secrets` tracks identity/provider metadata per squad.
+- `squad_secret_versions` stores encrypted/reference material per version.
 - Default provider in local deployments: `local_encrypted`.
 
 Operational policy:
@@ -352,32 +352,32 @@ Operational policy:
 
 ## 7.14 Required Indexes
 
-- `agents(company_id, status)`
-- `agents(company_id, reports_to)`
-- `issues(company_id, status)`
-- `issues(company_id, assignee_agent_id, status)`
-- `issues(company_id, parent_id)`
-- `issues(company_id, project_id)`
-- `cost_events(company_id, occurred_at)`
-- `cost_events(company_id, agent_id, occurred_at)`
-- `heartbeat_runs(company_id, agent_id, started_at desc)`
-- `approvals(company_id, status, type)`
-- `activity_log(company_id, created_at desc)`
-- `assets(company_id, created_at desc)`
-- `assets(company_id, object_key)` unique
-- `issue_attachments(company_id, issue_id)`
-- `company_secrets(company_id, name)` unique
-- `company_secret_versions(secret_id, version)` unique
-- `project_memberships(company_id, user_id)`
-- `project_memberships(company_id, user_id, project_id)` unique
-- `agent_memberships(company_id, user_id)`
-- `agent_memberships(company_id, user_id, agent_id)` unique
+- `agents(squad_id, status)`
+- `agents(squad_id, reports_to)`
+- `issues(squad_id, status)`
+- `issues(squad_id, assignee_agent_id, status)`
+- `issues(squad_id, parent_id)`
+- `issues(squad_id, project_id)`
+- `cost_events(squad_id, occurred_at)`
+- `cost_events(squad_id, agent_id, occurred_at)`
+- `heartbeat_runs(squad_id, agent_id, started_at desc)`
+- `approvals(squad_id, status, type)`
+- `activity_log(squad_id, created_at desc)`
+- `assets(squad_id, created_at desc)`
+- `assets(squad_id, object_key)` unique
+- `issue_attachments(squad_id, issue_id)`
+- `squad_secrets(squad_id, name)` unique
+- `squad_secret_versions(secret_id, version)` unique
+- `project_memberships(squad_id, user_id)`
+- `project_memberships(squad_id, user_id, project_id)` unique
+- `agent_memberships(squad_id, user_id)`
+- `agent_memberships(squad_id, user_id, agent_id)` unique
 
 ## 7.15 `assets` + `issue_attachments`
 
 - `assets` stores provider-backed object metadata (not inline bytes):
   - `id` uuid pk
-  - `company_id` uuid fk not null
+  - `squad_id` uuid fk not null
   - `provider` enum/text (`local_disk | s3`)
   - `object_key` text not null
   - `content_type` text not null
@@ -388,13 +388,13 @@ Operational policy:
   - `created_by_user_id` uuid/text fk null
 - `issue_attachments` links assets to issues/comments:
   - `id` uuid pk
-  - `company_id` uuid fk not null
+  - `squad_id` uuid fk not null
   - `issue_id` uuid fk not null
   - `asset_id` uuid fk not null
   - `issue_comment_id` uuid fk null
 - V1 attachment serving contract:
   - Default upload allowlist includes common images, PDF, plain text/markdown/JSON/CSV/HTML, ZIP, and video artifacts (`video/mp4`, `video/webm`, `video/quicktime`).
-  - Attachment reads are company-scoped and expose stable path metadata: `contentPath`/`openPath` for inline-safe viewing and `downloadPath` for forced download.
+  - Attachment reads are squad-scoped and expose stable path metadata: `contentPath`/`openPath` for inline-safe viewing and `downloadPath` for forced download.
   - Inline-safe responses use `Content-Disposition: inline`; unsafe types and explicit download requests use `attachment`.
   - Video attachments are inline-safe and support single `Range: bytes=start-end` requests with `206`, `Content-Range`, and `Accept-Ranges: bytes` for browser playback/seeking.
 - Attachment-backed artifact work products use `type: "artifact"`, `provider: "slaw"`, and metadata with `attachmentId`, `contentType`, `byteSize`, `contentPath`, `openPath`, `downloadPath`, and optional `originalFilename`.
@@ -403,7 +403,7 @@ Operational policy:
 
 - `documents` stores editable text-first documents:
   - `id` uuid pk
-  - `company_id` uuid fk not null
+  - `squad_id` uuid fk not null
   - `title` text null
   - `format` text not null (`markdown`)
   - `latest_body` text not null
@@ -419,14 +419,14 @@ Operational policy:
   - Locked documents are immutable until unlocked. Board operators can lock/unlock; agent writes to a locked key create a new issue document with a derived key instead of overwriting the locked document.
 - `document_revisions` stores append-only history:
   - `id` uuid pk
-  - `company_id` uuid fk not null
+  - `squad_id` uuid fk not null
   - `document_id` uuid fk not null
   - `revision_number` int not null
   - `body` text not null
   - `change_summary` text null
 - `issue_documents` links documents to issues with a stable workflow key:
   - `id` uuid pk
-  - `company_id` uuid fk not null
+  - `squad_id` uuid fk not null
   - `issue_id` uuid fk not null
   - `document_id` uuid fk not null
   - `key` text not null (`plan`, `design`, `notes`, etc.)
@@ -437,8 +437,8 @@ The current implementation includes additional V1-control-plane tables beyond th
 
 - Issue structure and review: `issue_relations` for blockers, `labels`/`issue_labels`, `issue_thread_interactions`, `issue_approvals`, `issue_execution_decisions`, `issue_work_products`, `issue_inbox_archives`, `issue_read_states`, and issue reference mention indexes.
 - Execution and workspace control: `execution_workspaces`, `project_workspaces`, `workspace_runtime_services`, `workspace_operations`, `environments`, `environment_leases`, `agent_task_sessions`, `agent_runtime_state`, `agent_wakeup_requests`, heartbeat events, and watchdog decision tables.
-- Plugins and routines: `plugins`, plugin config/state/entities/jobs/logs/webhooks, plugin database namespaces/migrations, plugin company settings, `routines`, `routine_revisions`, `routine_triggers`, and `routine_runs`.
-- Access and operations: company memberships, instance roles, principal permission grants, invites, join requests, board API keys, CLI auth challenges, budget policies/incidents, feedback exports/votes, company skills, sidebar preferences, and company logos.
+- Plugins and routines: `plugins`, plugin config/state/entities/jobs/logs/webhooks, plugin database namespaces/migrations, plugin squad settings, `routines`, `routine_revisions`, `routine_triggers`, and `routine_runs`.
+- Access and operations: squad memberships, instance roles, principal permission grants, invites, join requests, board API keys, CLI auth challenges, budget policies/incidents, feedback exports/votes, squad skills, sidebar preferences, and squad logos.
 
 ## 8. State Machines
 
@@ -492,41 +492,41 @@ Detailed ownership, execution, blocker, active-run watchdog, crash-recovery, and
 ## 9.1 Board Auth
 
 - Session-based auth for human operator
-- Board has full read/write across all companies in deployment
+- Board has full read/write across all squads in deployment
 - Every board mutation writes to `activity_log`
 
 ## 9.2 Agent Auth
 
-- Bearer API key mapped to one agent and company
+- Bearer API key mapped to one agent and squad
 - Agent key scope:
-  - read org/task/company context for own company
+  - read org/task/squad context for own squad
   - read/write own assigned tasks and comments
   - create tasks/comments for delegation
   - report heartbeat status
   - report cost events
 - Agent cannot:
   - bypass approval gates
-  - modify company-wide budgets directly
+  - modify squad-wide budgets directly
   - mutate auth/keys
 
 ## 9.3 Permission Matrix (V1)
 
 | Action | Board | Agent |
 |---|---|---|
-| Create company | yes | no |
+| Create squad | yes | no |
 | Hire/create agent | yes (direct) | request via approval |
 | Pause/resume agent | yes | no |
 | Create/update task | yes | yes |
 | Force reassign task | yes | limited |
 | Approve strategy/hire requests | yes | no |
 | Report cost | yes | yes |
-| Set company budget | yes | no |
+| Set squad budget | yes | no |
 | Set subordinate budget | yes | yes (manager subtree only) |
 | Set work-object visibility (issue/project) | no | no (pro gate) |
 
 ## 9.4 Permission Terminology and Default Visibility Rule
 
-Slaw V1 keeps a company-scoped visibility model as the default because centralized authorization and scoped work-object controls are not yet a core V1 control surface.
+Slaw V1 keeps a squad-scoped visibility model as the default because centralized authorization and scoped work-object controls are not yet a core V1 control surface.
 
 The approved term set is:
 
@@ -539,34 +539,34 @@ The approved term set is:
 
 ## 9.5 Core V1 Rule: what “private” means
 
-- A **private marker** on an agent profile (where represented) does **not** make company-visible work private.
-- Company-visible work objects (issues, comments, work products, costs, activity, project/task state) remain visible to the board and in-company agents by default.
+- A **private marker** on an agent profile (where represented) does **not** make squad-visible work private.
+- Squad-visible work objects (issues, comments, work products, costs, activity, project/task state) remain visible to the board and in-squad agents by default.
 - Project/issue-level privacy, scoped assignment-only object visibility, and organization-wide custom ACLs are deferred to Pro/Enterprise controls.
 
 ## 9.6 V1 vs Pro/Enterprise Controls (recommended target split)
 
 | Permission area | Free / V1 default | Pro / Enterprise |
 |---|---|---|
-| Company boundary | Hard boundary only (`company_id`) | Multi-company policy overlays (`membership`, `project`, and `task` scopes) |
+| Squad boundary | Hard boundary only (`squad_id`) | Multi-squad policy overlays (`membership`, `project`, and `task` scopes) |
 | Simple roles | Board + agent roles with existing approval/budget gates | Additional role aliases + scoped approver roles |
 | Profile visibility | Full profile visibility for coordination and audit | Optional profile redaction / selective sharing for external surfaces |
 | Config visibility | Board full read with redacted secret fields; agent config read/write constrained by own agent identity | Scoped config visibility controls and central policy enforcement |
 | Assignment/invocation | Assignment creates execution authority; board can reassign or force release | Delegation policies and scoped invokers with deny-listed tool classes |
-| Work-object visibility | All issues and projects in-company are visible to board and agents | Project/issue ACLs and reviewer-only channels |
+| Work-object visibility | All issues and projects in-squad are visible to board and agents | Project/issue ACLs and reviewer-only channels |
 | Tool/secret policy | Secret refs, log redaction, and adapter-level command/webhook restrictions | Tool allowlists with centralized policy evaluation |
 | Escalation | Escalate from agent to manager to board; board approval/budget gates remain authoritative | Escalation routing and SLA windows |
 
 ## 9.7 Recommended first-slice implementation order
 
-1. Lock route-level checks for existing company boundaries, actor extraction, and approval/budget gates.
-2. Treat profile privacy as external-facing signal only; do not use it to hide company-visible work objects.
+1. Lock route-level checks for existing squad boundaries, actor extraction, and approval/budget gates.
+2. Treat profile privacy as external-facing signal only; do not use it to hide squad-visible work objects.
 3. Enforce assignment/invocation coupling (`assignee`/`agent` checks, checkout semantics, invocation checks).
 4. Standardize read-path redaction for secrets and secret references, including logs and activity.
 5. Standardize escalation paths (`blocked` and refusal) so non-board agents hand off by manager/board with immutable audit.
 
 ## 9.8 Scoped Task Assignment Grants
 
-`tasks:assign` remains the broad assignment permission. Existing unscoped grants preserve compatibility and allow the principal to assign any visible company task within normal company-boundary checks.
+`tasks:assign` remains the broad assignment permission. Existing unscoped grants preserve compatibility and allow the principal to assign any visible squad task within normal squad-boundary checks.
 
 `tasks:assign_scope` is the constrained assignment permission. Its `principal_permission_grants.scope` JSON must include at least one recognized constraint:
 
@@ -580,27 +580,27 @@ When multiple constraint families are present, assignment must satisfy all of th
 
 All endpoints are under `/api` and return JSON.
 
-## 10.1 Companies
+## 10.1 Squads
 
-- `GET /companies`
-- `POST /companies`
-- `GET /companies/:companyId`
-- `PATCH /companies/:companyId`
-- `PATCH /companies/:companyId/branding`
-- `POST /companies/:companyId/archive`
+- `GET /squads`
+- `POST /squads`
+- `GET /squads/:squadId`
+- `PATCH /squads/:squadId`
+- `PATCH /squads/:squadId/branding`
+- `POST /squads/:squadId/archive`
 
 ## 10.2 Goals
 
-- `GET /companies/:companyId/goals`
-- `POST /companies/:companyId/goals`
+- `GET /squads/:squadId/goals`
+- `POST /squads/:squadId/goals`
 - `GET /goals/:goalId`
 - `PATCH /goals/:goalId`
 - `DELETE /goals/:goalId` (soft delete optional, hard delete board-only)
 
 ## 10.3 Agents
 
-- `GET /companies/:companyId/agents`
-- `POST /companies/:companyId/agents`
+- `GET /squads/:squadId/agents`
+- `POST /squads/:squadId/agents`
 - `GET /agents/:agentId`
 - `PATCH /agents/:agentId`
 - `POST /agents/:agentId/pause`
@@ -611,8 +611,8 @@ All endpoints are under `/api` and return JSON.
 
 ## 10.4 Tasks (Issues)
 
-- `GET /companies/:companyId/issues`
-- `POST /companies/:companyId/issues`
+- `GET /squads/:squadId/issues`
+- `POST /squads/:squadId/issues`
 - `GET /issues/:issueId`
 - `PATCH /issues/:issueId`
 - `GET /issues/:issueId/documents`
@@ -627,7 +627,7 @@ All endpoints are under `/api` and return JSON.
 - `POST /issues/:issueId/admin/force-release` (board-only lock recovery)
 - `POST /issues/:issueId/comments`
 - `GET /issues/:issueId/comments`
-- `POST /companies/:companyId/issues/:issueId/attachments` (multipart upload)
+- `POST /squads/:squadId/issues/:issueId/attachments` (multipart upload)
 - `GET /issues/:issueId/attachments`
 - `GET /attachments/:attachmentId/content`
 - `DELETE /attachments/:attachmentId`
@@ -649,20 +649,20 @@ Server behavior:
 2. if updated row count is 0, return `409` with current owner/status
 3. successful checkout sets `assignee_agent_id`, `status = in_progress`, and `started_at`
 
-`POST /issues/:issueId/admin/force-release` is an operator recovery endpoint for stale harness locks. It requires board access to the issue company, clears checkout and execution run lock fields, and may clear the agent assignee when `clearAssignee=true` is passed. The route must write an `issue.admin_force_release` activity log entry containing the previous checkout and execution run IDs.
+`POST /issues/:issueId/admin/force-release` is an operator recovery endpoint for stale harness locks. It requires board access to the issue squad, clears checkout and execution run lock fields, and may clear the agent assignee when `clearAssignee=true` is passed. The route must write an `issue.admin_force_release` activity log entry containing the previous checkout and execution run IDs.
 
 ## 10.5 Projects
 
-- `GET /companies/:companyId/projects`
-- `POST /companies/:companyId/projects`
+- `GET /squads/:squadId/projects`
+- `POST /squads/:squadId/projects`
 - `GET /projects/:projectId`
 - `PATCH /projects/:projectId`
 
 ## 10.6 Current-user Resource Memberships
 
-- `GET /companies/:companyId/resource-memberships/me`
-- `PUT /companies/:companyId/resource-memberships/me/projects/:projectId`
-- `PUT /companies/:companyId/resource-memberships/me/agents/:agentId`
+- `GET /squads/:squadId/resource-memberships/me`
+- `PUT /squads/:squadId/resource-memberships/me/projects/:projectId`
+- `PUT /squads/:squadId/resource-memberships/me/agents/:agentId`
 
 Request payload:
 
@@ -670,28 +670,28 @@ Request payload:
 { "state": "joined" }
 ```
 
-Allowed states are `joined` and `left`. Endpoints require a concrete board user and active company membership, reject agent API keys, and only mutate the caller's own sidebar visibility state. Joining/leaving is idempotent; missing rows read as `joined`.
+Allowed states are `joined` and `left`. Endpoints require a concrete board user and active squad membership, reject agent API keys, and only mutate the caller's own sidebar visibility state. Joining/leaving is idempotent; missing rows read as `joined`.
 
 ## 10.7 Approvals
 
-- `GET /companies/:companyId/approvals?status=pending`
-- `POST /companies/:companyId/approvals`
+- `GET /squads/:squadId/approvals?status=pending`
+- `POST /squads/:squadId/approvals`
 - `POST /approvals/:approvalId/approve`
 - `POST /approvals/:approvalId/reject`
 
 ## 10.8 Cost and Budgets
 
-- `POST /companies/:companyId/cost-events`
-- `GET /companies/:companyId/costs/summary`
-- `GET /companies/:companyId/costs/by-agent`
-- `GET /companies/:companyId/costs/by-project`
-- `PATCH /companies/:companyId/budgets`
+- `POST /squads/:squadId/cost-events`
+- `GET /squads/:squadId/costs/summary`
+- `GET /squads/:squadId/costs/by-agent`
+- `GET /squads/:squadId/costs/by-project`
+- `PATCH /squads/:squadId/budgets`
 - `PATCH /agents/:agentId/budgets`
 
 ## 10.9 Activity and Dashboard
 
-- `GET /companies/:companyId/activity`
-- `GET /companies/:companyId/dashboard`
+- `GET /squads/:squadId/activity`
+- `GET /squads/:squadId/dashboard`
 
 Dashboard payload must include:
 
@@ -719,7 +719,7 @@ The current app also exposes V1-supporting surfaces for:
 - execution workspaces, project workspaces, workspace runtime services, and workspace operations
 - routines and scheduled/API/webhook triggers
 - plugin installation, configuration, state, jobs, logs, webhooks, and plugin database namespace migration
-- company import/export preview/apply, feedback export/vote routes, instance backup/config routes, invites, join requests, memberships, and permission grants
+- squad import/export preview/apply, feedback export/vote routes, instance backup/config routes, invites, join requests, memberships, and permission grants
 
 ## 11. Heartbeat and Adapter Contract
 
@@ -812,13 +812,13 @@ Scheduler must skip invocation when:
 
 Board can bypass request flow and create agents directly via UI; direct create is still logged as a governance action.
 
-## 12.2 CEO Strategy Approval
+## 12.2 Squad Lead Strategy Approval
 
-1. CEO posts strategy proposal as `approval(type=approve_ceo_strategy)`.
+1. Squad Lead posts strategy proposal as `approval(type=approve_squad_lead_strategy)`.
 2. Board reviews payload (plan text, initial structure, high-level tasks).
-3. Approval unlocks execution state for CEO-created delegated work.
+3. Approval unlocks execution state for Squad Lead-created delegated work.
 
-Before first strategy approval, CEO may only draft tasks, not transition them to active execution states.
+Before first strategy approval, Squad Lead may only draft tasks, not transition them to active execution states.
 
 ## 12.3 Board Override
 
@@ -833,7 +833,7 @@ Board can at any time:
 
 ## 13.1 Budget Layers
 
-- company monthly budget
+- squad monthly budget
 - agent monthly budget
 - optional project budget (if configured)
 
@@ -849,7 +849,7 @@ Board may override by raising budget or explicitly resuming agent.
 
 ## 13.3 Cost Event Ingestion
 
-`POST /companies/:companyId/cost-events` body:
+`POST /squads/:squadId/cost-events` body:
 
 ```json
 {
@@ -869,7 +869,7 @@ Validation:
 
 - non-negative token counts
 - `costCents >= 0`
-- company ownership checks for all linked entities
+- squad ownership checks for all linked entities
 
 ## 13.4 Rollups
 
@@ -881,17 +881,17 @@ Materialized rollups can be added later if query latency exceeds targets.
 V1 UI routes:
 
 - `/` dashboard
-- `/companies` company list/create
-- `/companies/:id/org` org chart and agent status
-- `/companies/:id/tasks` task list/kanban
-- `/companies/:id/agents/:agentId` agent detail
-- `/companies/:id/costs` cost and budget dashboard
-- `/companies/:id/approvals` pending/history approvals
-- `/companies/:id/activity` audit/event stream
+- `/squads` squad list/create
+- `/squads/:id/org` org chart and agent status
+- `/squads/:id/tasks` task list/kanban
+- `/squads/:id/agents/:agentId` agent detail
+- `/squads/:id/costs` cost and budget dashboard
+- `/squads/:id/approvals` pending/history approvals
+- `/squads/:id/activity` audit/event stream
 
 Required UX behaviors:
 
-- global company selector
+- global squad selector
 - quick actions: pause/resume agent, create task, approve/reject request
 - conflict toasts on atomic checkout failure
 - no silent background failures; every failed run visible in UI
@@ -919,7 +919,7 @@ Required UX behaviors:
 
 ## 15.4 Reliability Targets
 
-- API p95 latency under 250 ms for standard CRUD at 1k tasks/company
+- API p95 latency under 250 ms for standard CRUD at 1k tasks/squad
 - heartbeat invoke acknowledgement under 2 s for process adapter
 - no lost approval decisions (transactional writes)
 
@@ -929,7 +929,7 @@ Required UX behaviors:
 - redact secrets in logs (`adapter_config`, auth headers, env vars)
 - CSRF protection for board session endpoints
 - rate limit auth and key-management endpoints
-- strict company boundary checks on every entity fetch/mutation
+- strict squad boundary checks on every entity fetch/mutation
 
 ## 17. Testing Strategy
 
@@ -948,7 +948,7 @@ Required UX behaviors:
 
 ## 17.3 End-to-End Tests
 
-- board creates company -> hires CEO -> approves strategy -> CEO receives work
+- board creates squad -> hires Squad Lead -> approves strategy -> Squad Lead receives work
 - agent reports cost -> budget threshold reached -> auto-pause occurs
 - task delegation across teams with request depth increment
 
@@ -966,11 +966,11 @@ A release candidate is blocked unless these pass:
 
 Current implementation note: the milestones below describe the original V1 sequencing. Several systems originally framed as future work have since shipped or advanced materially, including issue documents/interactions, blockers, routines, execution workspaces, import/export portability, authenticated deployment modes, multi-user basics, and the local/self-hosted plugin runtime.
 
-## Milestone 1: Company Core and Auth
+## Milestone 1: Squad Core and Auth
 
-- add `companies` and company scoping to existing entities
+- add `squads` and squad scoping to existing entities
 - add board session auth and agent API keys
-- migrate existing API routes to company-aware paths
+- migrate existing API routes to squad-aware paths
 
 ## Milestone 2: Task and Governance Semantics
 
@@ -993,24 +993,24 @@ Current implementation note: the milestones below describe the original V1 seque
 
 ## Milestone 5: Board UI Completion
 
-- add company selector and org chart view
+- add squad selector and org chart view
 - add approvals and cost pages
 
 ## Milestone 6: Hardening and Release
 
 - full integration/e2e suite
-- seed/demo company templates for local testing
+- seed/demo squad templates for local testing
 - release checklist and docs update
 
 ## 19. Acceptance Criteria (Release Gate)
 
 V1 is complete only when all criteria are true:
 
-1. A board user can create multiple companies and switch between them.
-2. A company can run at least one active heartbeat-enabled agent.
+1. A board user can create multiple squads and switch between them.
+2. A squad can run at least one active heartbeat-enabled agent.
 3. Task checkout is conflict-safe with `409` on concurrent claims.
 4. Agents can update tasks/comments and report costs with API keys only.
-5. Board can approve/reject hire and CEO strategy requests in UI.
+5. Board can approve/reject hire and Squad Lead strategy requests in UI.
 6. Budget hard limit auto-pauses an agent and prevents new invocations.
 7. Dashboard shows accurate counts/spend from live DB data.
 8. Every mutation is auditable in activity log.
@@ -1024,14 +1024,14 @@ V1 is complete only when all criteria are true:
 - realtime transport optimization (SSE/WebSockets)
 - public template marketplace integration (ClipHub)
 
-## 21. Company Portability Package (V1 Addendum)
+## 21. Squad Portability Package (V1 Addendum)
 
-V1 supports company import/export using a portable package contract:
+V1 supports squad import/export using a portable package contract:
 
-- markdown-first package rooted at `COMPANY.md`
+- markdown-first package rooted at `SQUAD.md`
 - implicit folder discovery by convention
 - `.slaw.yaml` sidecar for Slaw-specific fidelity
-- canonical base package is vendor-neutral and aligned with `docs/companies/companies-spec.md`
+- canonical base package is vendor-neutral and aligned with `docs/squads/squads-spec.md`
 - common conventions:
   - `agents/<slug>/AGENTS.md`
   - `teams/<slug>/TEAM.md`
@@ -1049,8 +1049,8 @@ Export/import behavior in V1:
 - export strips environment-specific paths (`cwd`, local instruction file paths, inline prompt duplication) while preserving portable project repo/workspace metadata such as `repoUrl`, refs, and workspace-policy references keyed in `.slaw.yaml`
 - export never includes secret values; env inputs are reported as portable declarations instead
 - import supports target modes:
-  - create a new company
-  - import into an existing company
+  - create a new squad
+  - import into an existing squad
 - import recreates exported project workspaces and remaps portable workspace keys back to target-local workspace ids
 - import forces imported agent timer heartbeats off so packages never start scheduled runs implicitly
 - import supports collision strategies: `rename`, `skip`, `replace`

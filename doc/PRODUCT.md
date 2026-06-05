@@ -2,23 +2,23 @@
 
 ## What It Is
 
-Slaw is the control plane for autonomous AI companies. One instance of Slaw can run multiple companies. A **company** is a first-order object.
+Slaw is the control plane for autonomous AI squads. One instance of Slaw can run multiple squads. A **squad** is a first-order object.
 
 ## Core Concepts
 
-### Company
+### Squad
 
-A company has:
+A squad has:
 
 - A **goal** — the reason it exists ("Create the #1 AI note-taking app that does $1M MRR within 3 months")
 - **Employees** — every employee is an AI agent
 - **Org structure** — who reports to whom
-- **Revenue & expenses** — tracked at the company level
-- **Task hierarchy** — all work traces back to the company goal
+- **Revenue & expenses** — tracked at the squad level
+- **Task hierarchy** — all work traces back to the squad goal
 
 ### Employees & Agents
 
-Every employee is an agent. When you create a company, you start by defining the CEO, then build out from there.
+Every employee is an agent. When you create a squad, you start by defining the Squad Lead, then build out from there.
 
 Each employee has:
 
@@ -26,9 +26,9 @@ Each employee has:
 - **Role & reporting** — their title, who they report to, who reports to them
 - **Capabilities description** — a short paragraph on what this agent does and when they're relevant (helps other agents discover who can help with what)
 
-Example: A CEO agent's adapter config tells it to "review what your executives are doing, check company metrics, reprioritize if needed, assign new strategic initiatives" on each heartbeat. An engineer's config tells it to "check assigned tasks, pick the highest priority, and work it."
+Example: A Squad Lead agent's adapter config tells it to "review what your executives are doing, check squad metrics, reprioritize if needed, assign new strategic initiatives" on each heartbeat. An engineer's config tells it to "check assigned tasks, pick the highest priority, and work it."
 
-Then you define who reports to the CEO: a CTO managing programmers, a CMO managing the marketing team, and so on. Every agent in the tree gets their own adapter configuration.
+Then you define who reports to the Squad Lead: a CTO managing programmers, a CMO managing the marketing team, and so on. Every agent in the tree gets their own adapter configuration.
 
 ### Agent Execution
 
@@ -43,7 +43,7 @@ Agent runs can use project and execution workspaces, managed runtime services su
 
 ### Task Management
 
-Task management is hierarchical. At any moment, every piece of work must trace back to the company's top-level goal through a chain of parent tasks:
+Task management is hierarchical. At any moment, every piece of work must trace back to the squad's top-level goal through a chain of parent tasks:
 
 ```
 I am researching the Facebook ads Granola uses (current task)
@@ -54,7 +54,7 @@ I am researching the Facebook ads Granola uses (current task)
           because → We're building the #1 AI note-taking app to $1M MRR in 3 months
 ```
 
-Tasks have parentage. Every task exists in service of a parent task, all the way up to the company goal. This is what keeps autonomous agents aligned — they can always answer "why am I doing this?"
+Tasks have parentage. Every task exists in service of a parent task, all the way up to the squad goal. This is what keeps autonomous agents aligned — they can always answer "why am I doing this?"
 
 The current issue model includes stable issue identifiers, parent/sub-issues, blockers, a single assignee, comments, issue documents, attachments and work products, and review/approval handoffs. That structure keeps work inspectable by both the board and agents while still allowing agents to decompose work into smaller tasks.
 
@@ -62,27 +62,27 @@ The current issue model includes stable issue identifiers, parent/sub-issues, bl
 
 1. **Unopinionated about how you run your agents.** Your agents could be Python scripts, Node scripts, Claude Code sessions, Codex instances — we don't care. Slaw defines the control plane for communication and provides utility infrastructure for heartbeats. It does not mandate an agent runtime.
 
-2. **Company is the unit of organization.** Everything lives under a company. One Slaw instance, many companies.
+2. **Squad is the unit of organization.** Everything lives under a squad. One Slaw instance, many squads.
 
 3. **Adapter config defines the agent.** Every agent has an adapter type and configuration that controls its identity and behavior. The minimum contract is just "be callable."
 
-4. **All work traces to the goal.** Hierarchical task management means nothing exists in isolation. If you can't explain why a task matters to the company goal, it shouldn't exist.
+4. **All work traces to the goal.** Hierarchical task management means nothing exists in isolation. If you can't explain why a task matters to the squad goal, it shouldn't exist.
 
 5. **Control plane, not execution plane.** Slaw orchestrates. Agents run wherever they run and phone home.
 
 ## User Flow (Dream Scenario)
 
-1. Open Slaw, create a new company
-2. Define the company's goal: "Create the #1 AI note-taking app, $1M MRR in 3 months"
-3. Create the CEO
+1. Open Slaw, create a new squad
+2. Define the squad's goal: "Create the #1 AI note-taking app, $1M MRR in 3 months"
+3. Create the Squad Lead
    - Choose an adapter (e.g., process adapter for Claude Code, HTTP adapter for a webhook bot)
    - Configure the adapter (agent identity, loop behavior, execution settings)
-   - CEO proposes strategic breakdown → board approves
-4. Define the CEO's reports: CTO, CMO, CFO, etc.
+   - Squad Lead proposes strategic breakdown → board approves
+4. Define the Squad Lead's reports: CTO, CMO, CFO, etc.
    - Each gets their own adapter config and role definition
 5. Define their reports: engineers under CTO, marketers under CMO, etc.
 6. Set budgets, define initial strategic tasks
-7. Hit go — agents start their heartbeats and the company runs
+7. Hit go — agents start their heartbeats and the squad runs
 
 ## Guidelines
 
@@ -99,14 +99,14 @@ See [SPEC.md](./SPEC.md) for the full technical specification and [TASKS.md](./T
 
 ---
 
-Slaw’s core identity is a **control plane for autonomous AI companies**, centered on **companies, org charts, goals, issues/comments, heartbeats, budgets, approvals, and board governance**. The public docs are also explicit about the current boundaries: **tasks/comments are the built-in communication model**, Slaw is **not a chatbot**, and it is **not a code review tool**. The roadmap already points toward **easier onboarding, cloud agents, easier agent configuration, plugins, better docs, and ClipMart/ClipHub-style reusable companies/templates**.
+Slaw’s core identity is a **control plane for autonomous AI squads**, centered on **squads, org charts, goals, issues/comments, heartbeats, budgets, approvals, and board governance**. The public docs are also explicit about the current boundaries: **tasks/comments are the built-in communication model**, Slaw is **not a chatbot**, and it is **not a code review tool**. The roadmap already points toward **easier onboarding, cloud agents, easier agent configuration, plugins, better docs, and ClipMart/ClipHub-style reusable squads/templates**.
 
 ## What Slaw should do vs. not do
 
 **Do**
 
-- Stay **board-level and company-level**. Users should manage goals, orgs, budgets, approvals, and outputs.
-- Make the first five minutes feel magical: install, answer a few questions, see a CEO do something real.
+- Stay **board-level and squad-level**. Users should manage goals, orgs, budgets, approvals, and outputs.
+- Make the first five minutes feel magical: install, answer a few questions, see a Squad Lead do something real.
 - Keep work anchored to **issues/comments/projects/goals**, even if the surface feels conversational.
 - Treat **agency / internal team / startup** as the same underlying abstraction with different templates and labels.
 - Make outputs first-class: files, docs, reports, previews, links, screenshots.
@@ -117,21 +117,21 @@ Slaw’s core identity is a **control plane for autonomous AI companies**, cente
 
 - Do not make the core product a general chat app. The current product definition is explicitly task/comment-centric and “not a chatbot,” and that boundary is valuable.
 - Do not build a complete Jira/GitHub replacement. The repo/docs already position Slaw as organization orchestration, not focused on pull-request review.
-- Do not build enterprise-grade RBAC first. Slaw now has authenticated mode, company memberships, instance roles, and permission grants, but fine-grained enterprise governance should remain secondary to the core company control plane.
-- Do not interpret agent-level privacy flags as a project/issue privacy feature in V1; work visibility stays company-scoped.
+- Do not build enterprise-grade RBAC first. Slaw now has authenticated mode, squad memberships, instance roles, and permission grants, but fine-grained enterprise governance should remain secondary to the core squad control plane.
+- Do not interpret agent-level privacy flags as a project/issue privacy feature in V1; work visibility stays squad-scoped.
 - Do not lead with raw bash logs and transcripts. Default view should be human-readable intent/progress, with raw detail beneath.
 - Do not force users to understand provider/API-key plumbing unless absolutely necessary. There are active onboarding/auth issues already; friction here is clearly real.
 
 ## Specific design goals
 
 1. **Time-to-first-success under 5 minutes**
-   A fresh user should go from install to “my CEO completed a first task” in one sitting.
+   A fresh user should go from install to “my Squad Lead completed a first task” in one sitting.
 
 2. **Board-level abstraction always wins**
-   The default UI should answer: what is the company doing, who is doing it, why does it matter, what did it cost, and what needs my approval.
+   The default UI should answer: what is the squad doing, who is doing it, why does it matter, what did it cost, and what needs my approval.
 
 3. **Conversation stays attached to work objects**
-   “Chat with CEO” should still resolve to strategy threads, decisions, tasks, or approvals.
+   “Chat with Squad Lead” should still resolve to strategy threads, decisions, tasks, or approvals.
 
 4. **Progressive disclosure**
    Top layer: human-readable summary. Middle layer: checklist/steps/artifacts. Bottom layer: raw logs/tool calls/transcript.

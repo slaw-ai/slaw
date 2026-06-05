@@ -40,17 +40,17 @@ export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_ROUTE_ALLOWLIST: readonly SandboxCa
   { method: "POST", path: /^\/api\/agents\/[^/]+\/skills\/sync$/ },
   { method: "PATCH", path: /^\/api\/agents\/[^/]+\/instructions-path$/ },
 
-  // Company-level reads used to discover work and context
-  { method: "GET", path: /^\/api\/companies\/[^/]+$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/dashboard$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/agents$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/issues$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/projects$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/goals$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/org$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/approvals$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/routines$/ },
-  { method: "GET", path: /^\/api\/companies\/[^/]+\/skills$/ },
+  // Squad-level reads used to discover work and context
+  { method: "GET", path: /^\/api\/squads\/[^/]+$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/dashboard$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/agents$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/issues$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/projects$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/goals$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/org$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/approvals$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/routines$/ },
+  { method: "GET", path: /^\/api\/squads\/[^/]+\/skills$/ },
   { method: "GET", path: /^\/api\/projects\/[^/]+$/ },
   { method: "GET", path: /^\/api\/goals\/[^/]+$/ },
 
@@ -73,14 +73,14 @@ export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_ROUTE_ALLOWLIST: readonly SandboxCa
   { method: "POST", path: /^\/api\/issues\/[^/]+\/interactions\/[^/]+\/(?:accept|reject|respond)$/ },
 
   // Subtasks / delegation
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues$/ },
+  { method: "POST", path: /^\/api\/squads\/[^/]+\/issues$/ },
 
   // Approvals (request, read, comment)
   { method: "GET", path: /^\/api\/approvals\/[^/]+$/ },
   { method: "GET", path: /^\/api\/approvals\/[^/]+\/issues$/ },
   { method: "GET", path: /^\/api\/approvals\/[^/]+\/comments$/ },
   { method: "POST", path: /^\/api\/approvals\/[^/]+\/comments$/ },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/approvals$/ },
+  { method: "POST", path: /^\/api\/squads\/[^/]+\/approvals$/ },
 
   // Execution workspaces and runtime services (start/stop/restart dev servers)
   { method: "GET", path: /^\/api\/execution-workspaces\/[^/]+$/ },
@@ -89,7 +89,7 @@ export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_ROUTE_ALLOWLIST: readonly SandboxCa
   // Routines (agents manage their own routines and triggers)
   { method: "GET", path: /^\/api\/routines\/[^/]+$/ },
   { method: "GET", path: /^\/api\/routines\/[^/]+\/runs$/ },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/routines$/ },
+  { method: "POST", path: /^\/api\/squads\/[^/]+\/routines$/ },
   { method: "PATCH", path: /^\/api\/routines\/[^/]+$/ },
   { method: "POST", path: /^\/api\/routines\/[^/]+\/run$/ },
   { method: "POST", path: /^\/api\/routines\/[^/]+\/triggers$/ },

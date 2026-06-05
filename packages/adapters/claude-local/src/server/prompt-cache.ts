@@ -24,7 +24,7 @@ function nonEmpty(value: string | undefined): string | null {
 
 function resolveManagedClaudePromptCacheRoot(
   env: NodeJS.ProcessEnv,
-  companyId: string,
+  squadId: string,
 ): string {
   const instanceRoot = resolveSlawInstanceRootForAdapter({
     homeDir: nonEmpty(env.SLAW_HOME) ?? undefined,
@@ -33,8 +33,8 @@ function resolveManagedClaudePromptCacheRoot(
   });
   return path.resolve(
     instanceRoot,
-    "companies",
-    companyId,
+    "squads",
+    squadId,
     "claude-prompt-cache",
   );
 }
@@ -132,17 +132,17 @@ async function ensureReadableFile(targetPath: string, contents: string): Promise
 }
 
 export async function prepareClaudePromptBundle(input: {
-  companyId: string;
+  squadId: string;
   skills: SkillEntry[];
   instructionsContents: string | null;
   onLog: AdapterExecutionContext["onLog"];
 }): Promise<ClaudePromptBundle> {
-  const { companyId, skills, instructionsContents, onLog } = input;
+  const { squadId, skills, instructionsContents, onLog } = input;
   const bundleKey = await buildClaudePromptBundleKey({
     skills,
     instructionsContents,
   });
-  const rootDir = path.join(resolveManagedClaudePromptCacheRoot(process.env, companyId), bundleKey);
+  const rootDir = path.join(resolveManagedClaudePromptCacheRoot(process.env, squadId), bundleKey);
   const skillsHome = path.join(rootDir, ".claude", "skills");
   await fs.mkdir(skillsHome, { recursive: true });
 

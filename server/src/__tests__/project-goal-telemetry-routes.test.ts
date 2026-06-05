@@ -77,7 +77,7 @@ async function createApp(routeType: "project" | "goal") {
     (req as any).actor = {
       type: "board",
       userId: "board-user",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -113,17 +113,17 @@ describe("project and goal telemetry routes", () => {
     mockGetTelemetryClient.mockReturnValue({ track: mockTelemetryTrack });
     mockProjectService.resolveByReference.mockResolvedValue({ ambiguous: false, project: null });
     mockEnvironmentService.getById.mockReset();
-    mockSecretService.normalizeEnvBindingsForPersistence.mockImplementation(async (_companyId, env) => env);
+    mockSecretService.normalizeEnvBindingsForPersistence.mockImplementation(async (_squadId, env) => env);
     mockProjectService.create.mockResolvedValue({
       id: "project-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       name: "Telemetry project",
       description: null,
       status: "backlog",
     });
     mockGoalService.create.mockResolvedValue({
       id: "goal-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       title: "Telemetry goal",
       description: null,
       level: "team",
@@ -135,7 +135,7 @@ describe("project and goal telemetry routes", () => {
   it("emits telemetry when a project is created", async () => {
     const app = await createApp("project");
     const res = await request(app)
-      .post("/api/companies/company-1/projects")
+      .post("/api/squads/squad-1/projects")
       .send({ name: "Telemetry project" });
 
     expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
@@ -145,7 +145,7 @@ describe("project and goal telemetry routes", () => {
   it("emits telemetry when a goal is created", async () => {
     const app = await createApp("goal");
     const res = await request(app)
-      .post("/api/companies/company-1/goals")
+      .post("/api/squads/squad-1/goals")
       .send({ title: "Telemetry goal", level: "team" });
 
     expect([200, 201], JSON.stringify(res.body)).toContain(res.status);

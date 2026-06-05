@@ -7,7 +7,7 @@ First-party reference plugin showing the smallest possible UI extension.
 - a manifest with a `dashboardWidget` UI slot
 - `entrypoints.ui` wiring for plugin UI bundles
 - a minimal React widget rendered in the Slaw dashboard
-- reading host context (`companyId`) from `PluginWidgetProps`
+- reading host context (`squadId`) from `PluginWidgetProps`
 - worker lifecycle hooks (`setup`, `onHealth`) for basic runtime observability
 
 ## API Surface

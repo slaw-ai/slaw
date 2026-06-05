@@ -6,8 +6,8 @@ import {
   activityLog,
   agents,
   assets,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   createDb,
   documents,
   heartbeatRuns,
@@ -39,11 +39,11 @@ const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : 
 
 type Db = ReturnType<typeof createDb>;
 
-function agentActor(companyId: string, agentId: string): Express.Request["actor"] {
+function agentActor(squadId: string, agentId: string): Express.Request["actor"] {
   return {
     type: "agent",
     agentId,
-    companyId,
+    squadId,
     runId: null,
     source: "agent_jwt",
   };
@@ -70,9 +70,9 @@ async function createApp(db: Db, actor: Express.Request["actor"]) {
   return app;
 }
 
-async function seedCompany(db: Db, label: string) {
+async function seedSquad(db: Db, label: string) {
   return db
-    .insert(companies)
+    .insert(squads)
     .values({
       name: `Permissions Boundary ${label}`,
       issuePrefix: `PB${randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}`,
@@ -83,13 +83,13 @@ async function seedCompany(db: Db, label: string) {
 
 async function seedAgent(
   db: Db,
-  companyId: string,
+  squadId: string,
   input: { role?: string; permissions?: Record<string, unknown>; status?: "active" | "idle" } = {},
 ) {
   return db
     .insert(agents)
     .values({
-      companyId,
+      squadId,
       name: `Agent ${randomUUID()}`,
       role: input.role ?? "engineer",
       status: input.status ?? "active",
@@ -120,11 +120,11 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     await db.delete(issueComments);
     await db.delete(activityLog);
     await db.delete(principalPermissionGrants);
-    await db.delete(companyMemberships);
+    await db.delete(squadMemberships);
     await db.delete(heartbeatRuns);
     await db.delete(issues);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -132,9 +132,9 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
   });
 
   it("keeps V1 private agent visibility from becoming issue, comment, document, attachment, activity, or work product privacy", async () => {
-    const company = await seedCompany(db, "Visibility");
-    const readerAgent = await seedAgent(db, company.id);
-    const privateTargetAgent = await seedAgent(db, company.id, {
+    const squad = await seedSquad(db, "Visibility");
+    const readerAgent = await seedAgent(db, squad.id);
+    const privateTargetAgent = await seedAgent(db, squad.id, {
       permissions: {
         authorizationPolicy: {
           agentVisibility: {
@@ -150,8 +150,8 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     const issue = await db
       .insert(issues)
       .values({
-        companyId: company.id,
-        identifier: `${company.issuePrefix}-1`,
+        squadId: squad.id,
+        identifier: `${squad.issuePrefix}-1`,
         title: "Visible work for a private target agent",
         status: "todo",
         priority: "medium",
@@ -162,17 +162,17 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     const comment = await db
       .insert(issueComments)
       .values({
-        companyId: company.id,
+        squadId: squad.id,
         issueId: issue.id,
         authorAgentId: privateTargetAgent.id,
-        body: "Private target agent status is still company-visible.",
+        body: "Private target agent status is still squad-visible.",
       })
       .returning()
       .then((rows) => rows[0]!);
     const doc = await db
       .insert(documents)
       .values({
-        companyId: company.id,
+        squadId: squad.id,
         title: "Plan",
         latestBody: "Shared plan body",
         createdByAgentId: privateTargetAgent.id,
@@ -181,7 +181,7 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
       .returning()
       .then((rows) => rows[0]!);
     await db.insert(issueDocuments).values({
-      companyId: company.id,
+      squadId: squad.id,
       issueId: issue.id,
       documentId: doc.id,
       key: "plan",
@@ -189,7 +189,7 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     const asset = await db
       .insert(assets)
       .values({
-        companyId: company.id,
+        squadId: squad.id,
         provider: "local_disk",
         objectKey: `attachments/${randomUUID()}.txt`,
         contentType: "text/plain",
@@ -201,13 +201,13 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
       .returning()
       .then((rows) => rows[0]!);
     await db.insert(issueAttachments).values({
-      companyId: company.id,
+      squadId: squad.id,
       issueId: issue.id,
       issueCommentId: comment.id,
       assetId: asset.id,
     });
     await db.insert(issueWorkProducts).values({
-      companyId: company.id,
+      squadId: squad.id,
       issueId: issue.id,
       type: "url",
       provider: "test",
@@ -216,7 +216,7 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
       status: "ready",
     });
     await db.insert(activityLog).values({
-      companyId: company.id,
+      squadId: squad.id,
       actorType: "agent",
       actorId: privateTargetAgent.id,
       agentId: privateTargetAgent.id,
@@ -226,10 +226,10 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
       details: { source: "test" },
     });
 
-    const app = await createApp(db, agentActor(company.id, readerAgent.id));
+    const app = await createApp(db, agentActor(squad.id, readerAgent.id));
 
     const [issueList, comments, docs, docDetail, attachments, activity, workProducts] = await Promise.all([
-      request(app).get(`/api/companies/${company.id}/issues`),
+      request(app).get(`/api/squads/${squad.id}/issues`),
       request(app).get(`/api/issues/${issue.id}/comments`),
       request(app).get(`/api/issues/${issue.id}/documents`),
       request(app).get(`/api/issues/${issue.id}/documents/plan`),
@@ -256,15 +256,15 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     expect(workProducts.body).toEqual(expect.arrayContaining([expect.objectContaining({ title: "Preview" })]));
   });
 
-  it("denies cross-company issue reads before private-agent grant evaluation can matter", async () => {
-    const sourceCompany = await seedCompany(db, "Source");
-    const targetCompany = await seedCompany(db, "Target");
-    const sourceAgent = await seedAgent(db, sourceCompany.id);
-    const privateTargetAgent = await seedAgent(db, targetCompany.id, {
+  it("denies cross-squad issue reads before private-agent grant evaluation can matter", async () => {
+    const sourceSquad = await seedSquad(db, "Source");
+    const targetSquad = await seedSquad(db, "Target");
+    const sourceAgent = await seedAgent(db, sourceSquad.id);
+    const privateTargetAgent = await seedAgent(db, targetSquad.id, {
       permissions: {
         authorizationPolicy: {
           agentVisibility: { mode: "private", hiddenFromDefaultDirectory: true },
-          assignmentPolicy: { mode: "company_default" },
+          assignmentPolicy: { mode: "squad_default" },
           protectedAgent: { requiresApproval: false },
         },
       },
@@ -272,8 +272,8 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     const issue = await db
       .insert(issues)
       .values({
-        companyId: targetCompany.id,
-        title: "Other company work",
+        squadId: targetSquad.id,
+        title: "Other squad work",
         status: "todo",
         priority: "medium",
         assigneeAgentId: privateTargetAgent.id,
@@ -281,49 +281,49 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
       .returning()
       .then((rows) => rows[0]!);
 
-    const res = await request(await createApp(db, agentActor(sourceCompany.id, sourceAgent.id)))
+    const res = await request(await createApp(db, agentActor(sourceSquad.id, sourceAgent.id)))
       .get(`/api/issues/${issue.id}`);
 
     expect(res.status).toBe(403);
-    expect(res.body.error).toContain("Agent key cannot access another company");
+    expect(res.body.error).toContain("Agent key cannot access another squad");
   });
 
-  it("allows same-company route assignment after upgrade but keeps private target assignment grant constrained", async () => {
-    const company = await seedCompany(db, "Assignment");
-    const actorAgent = await seedAgent(db, company.id);
-    const openTargetAgent = await seedAgent(db, company.id);
-    const privateTargetAgent = await seedAgent(db, company.id, {
+  it("allows same-squad route assignment after upgrade but keeps private target assignment grant constrained", async () => {
+    const squad = await seedSquad(db, "Assignment");
+    const actorAgent = await seedAgent(db, squad.id);
+    const openTargetAgent = await seedAgent(db, squad.id);
+    const privateTargetAgent = await seedAgent(db, squad.id, {
       permissions: {
         authorizationPolicy: {
           agentVisibility: { mode: "private", hiddenFromDefaultDirectory: true },
-          assignmentPolicy: { mode: "company_default" },
+          assignmentPolicy: { mode: "squad_default" },
           protectedAgent: { requiresApproval: false },
           managedBy: "permissions-extension",
         },
       },
     });
-    const app = await createApp(db, agentActor(company.id, actorAgent.id));
+    const app = await createApp(db, agentActor(squad.id, actorAgent.id));
 
     const openAssignment = await request(app)
-      .post(`/api/companies/${company.id}/issues`)
+      .post(`/api/squads/${squad.id}/issues`)
       .send({ title: "Assignable after upgrade", assigneeAgentId: openTargetAgent.id });
     expect(openAssignment.status, JSON.stringify(openAssignment.body)).toBe(201);
 
     const deniedPrivateAssignment = await request(app)
-      .post(`/api/companies/${company.id}/issues`)
+      .post(`/api/squads/${squad.id}/issues`)
       .send({ title: "Private target needs scope", assigneeAgentId: privateTargetAgent.id });
     expect(deniedPrivateAssignment.status).toBe(403);
     expect(deniedPrivateAssignment.body.error).toContain("private");
 
-    await db.insert(companyMemberships).values({
-      companyId: company.id,
+    await db.insert(squadMemberships).values({
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       status: "active",
       membershipRole: "member",
     });
     await db.insert(principalPermissionGrants).values({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       permissionKey: "tasks:assign_scope",
@@ -332,15 +332,15 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
     });
 
     const allowedPrivateAssignment = await request(app)
-      .post(`/api/companies/${company.id}/issues`)
+      .post(`/api/squads/${squad.id}/issues`)
       .send({ title: "Private target has explicit scope", assigneeAgentId: privateTargetAgent.id });
     expect(allowedPrivateAssignment.status, JSON.stringify(allowedPrivateAssignment.body)).toBe(201);
 
-    const otherPrivateTargetAgent = await seedAgent(db, company.id, {
+    const otherPrivateTargetAgent = await seedAgent(db, squad.id, {
       permissions: privateTargetAgent.permissions as Record<string, unknown>,
     });
     const deniedOutsideScope = await request(app)
-      .post(`/api/companies/${company.id}/issues`)
+      .post(`/api/squads/${squad.id}/issues`)
       .send({ title: "Different private target stays denied", assigneeAgentId: otherPrivateTargetAgent.id });
     expect(deniedOutsideScope.status).toBe(403);
     expect(deniedOutsideScope.body.error).toContain("private");

@@ -3,9 +3,9 @@ import { Link, useLocation } from "@/lib/router";
 import { AlertTriangle, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 
-type NotFoundScope = "board" | "invalid_company_prefix" | "global";
+type NotFoundScope = "board" | "invalid_squad_prefix" | "global";
 
 interface NotFoundPageProps {
   scope?: NotFoundScope;
@@ -15,21 +15,21 @@ interface NotFoundPageProps {
 export function NotFoundPage({ scope = "global", requestedPrefix }: NotFoundPageProps) {
   const location = useLocation();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { companies, selectedCompany } = useCompany();
+  const { squads, selectedSquad } = useSquad();
 
   useEffect(() => {
     setBreadcrumbs([{ label: "Not Found" }]);
   }, [setBreadcrumbs]);
 
-  const fallbackCompany = selectedCompany ?? companies[0] ?? null;
-  const dashboardHref = fallbackCompany ? `/${fallbackCompany.issuePrefix}/dashboard` : "/";
+  const fallbackSquad = selectedSquad ?? squads[0] ?? null;
+  const dashboardHref = fallbackSquad ? `/${fallbackSquad.issuePrefix}/dashboard` : "/";
   const currentPath = `${location.pathname}${location.search}${location.hash}`;
   const normalizedPrefix = requestedPrefix?.toUpperCase();
 
-  const title = scope === "invalid_company_prefix" ? "Company not found" : "Page not found";
+  const title = scope === "invalid_squad_prefix" ? "Squad not found" : "Page not found";
   const description =
-    scope === "invalid_company_prefix"
-      ? `No company matches prefix "${normalizedPrefix ?? "unknown"}".`
+    scope === "invalid_squad_prefix"
+      ? `No squad matches prefix "${normalizedPrefix ?? "unknown"}".`
       : "This route does not exist.";
 
   return (

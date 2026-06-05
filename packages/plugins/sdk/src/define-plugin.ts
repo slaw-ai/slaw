@@ -34,10 +34,10 @@
  *     });
  *
  *     // Register data for the UI
- *     ctx.data.register("sync-health", async ({ companyId }) => {
+ *     ctx.data.register("sync-health", async ({ squadId }) => {
  *       const state = await ctx.state.get({
- *         scopeKind: "company",
- *         scopeId: String(companyId),
+ *         scopeKind: "squad",
+ *         scopeId: String(squadId),
  *         stateKey: "last-sync",
  *       });
  *       return { lastSync: state };
@@ -136,7 +136,7 @@ export interface PluginApiRequestInput {
     userId?: string | null;
     runId?: string | null;
   };
-  companyId: string;
+  squadId: string;
   headers: Record<string, string>;
 }
 
@@ -239,7 +239,7 @@ export interface PluginDefinition {
 
   /**
    * Called for manifest-declared scoped JSON API routes under
-   * `/api/plugins/:pluginId/api/*` after the host has enforced auth, company
+   * `/api/plugins/:pluginId/api/*` after the host has enforced auth, squad
    * access, capabilities, and checkout policy.
    */
   onApiRequest?(input: PluginApiRequestInput): Promise<PluginApiResponse>;

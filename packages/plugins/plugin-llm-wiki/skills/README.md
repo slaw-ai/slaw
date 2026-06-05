@@ -1,6 +1,6 @@
 # LLM Wiki Maintainer Skills
 
-This folder is the plugin-level source for LLM Wiki managed company skills. Slaw installs these skills into the company skill library and syncs them onto the Wiki Maintainer agent. The Wiki Maintainer's identity and operating loop live in `agents/wiki-maintainer/AGENTS.md`; the wiki-root `AGENTS.md` remains the wiki schema for page layout, citation style, and log format.
+This folder is the plugin-level source for LLM Wiki managed squad skills. Slaw installs these skills into the squad skill library and syncs them onto the Wiki Maintainer agent. The Wiki Maintainer's identity and operating loop live in `agents/wiki-maintainer/AGENTS.md`; the wiki-root `AGENTS.md` remains the wiki schema for page layout, citation style, and log format.
 
 Each skill is an isolated SKILL.md describing one job — when to invoke it, the inputs that must be true before starting, the steps, and the durable output the operation must leave behind.
 
@@ -20,7 +20,7 @@ Each skill is an isolated SKILL.md describing one job — when to invoke it, the
 ```
 AGENTS.md (wiki root)                              ← schema for the wiki itself: page conventions, frontmatter, voice
   agents/wiki-maintainer/AGENTS.md                 ← agent identity and operating loop
-  skills/<skill>/SKILL.md                          ← plugin-managed company skills installed onto the maintainer
+  skills/<skill>/SKILL.md                          ← plugin-managed squad skills installed onto the maintainer
 ```
 
 When a skill conflicts with the wiki-root `AGENTS.md`, the wiki schema wins for page format/voice and the skill wins for operation flow. When a skill conflicts with the agent's `AGENTS.md`, the agent file wins for identity and the skill wins for the operation procedure.

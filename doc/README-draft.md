@@ -10,7 +10,7 @@ Use the copy from the website in cases where we need some.
 - image header up top
 - Slaw
 - Manage autonomous AI Businesses
-- The open-source AI-agent orchestrator teams of agents that run companies
+- The open-source AI-agent orchestrator teams of agents that run squads
 
 - a video
 
@@ -26,7 +26,7 @@ It looks like a task manager but has specialized skills and agent coordination
 
 # Slaw is right for you if:
 
-- You want to build autonomous companies
+- You want to build autonomous squads
 - You want to coordinate many different types agents (Codex, Claude, Cursor, etc.) to collaborate towards a common goal
 - You have 20 simultaneous Claude Code terminals open (and lose track of what everyone is working on)
 - You want to let your agents run autonomously 24/7, but still audit their work and chime in when needed

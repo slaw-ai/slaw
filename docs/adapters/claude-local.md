@@ -30,10 +30,10 @@ Templates support `{{variable}}` substitution:
 | Variable | Value |
 |----------|-------|
 | `{{agentId}}` | Agent's ID |
-| `{{companyId}}` | Company ID |
+| `{{squadId}}` | Squad ID |
 | `{{runId}}` | Current run ID |
 | `{{agent.name}}` | Agent's name |
-| `{{company.name}}` | Company name |
+| `{{squad.name}}` | Squad name |
 
 ## Session Persistence
 
@@ -50,7 +50,7 @@ The adapter creates a temporary directory with symlinks to Slaw skills and passe
 For manual local CLI usage outside heartbeat runs (for example running as `claudecoder` directly), use:
 
 ```sh
-pnpm slaw agent local-cli claudecoder --company-id <company-id>
+pnpm slaw agent local-cli claudecoder --squad-id <squad-id>
 ```
 
 This installs Slaw skills in `~/.claude/skills`, creates an agent API key, and prints shell exports to run as that agent.

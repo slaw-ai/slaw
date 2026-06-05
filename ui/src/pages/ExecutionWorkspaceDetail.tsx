@@ -32,7 +32,7 @@ import {
   type WorkspaceRuntimeControlRequest,
 } from "../components/WorkspaceRuntimeControls";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useToastActions } from "../context/ToastContext";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
 import { queryKeys } from "../lib/queryKeys";
@@ -299,14 +299,14 @@ function WorkspaceLink({
 }
 
 function ExecutionWorkspaceIssuesList({
-  companyId,
+  squadId,
   workspace,
   issues,
   isLoading,
   error,
   project,
 }: {
-  companyId: string;
+  squadId: string;
   workspace: ExecutionWorkspace;
   issues: Issue[];
   isLoading: boolean;
@@ -316,15 +316,15 @@ function ExecutionWorkspaceIssuesList({
   const queryClient = useQueryClient();
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(companyId),
-    queryFn: () => agentsApi.list(companyId),
-    enabled: !!companyId,
+    queryKey: queryKeys.agents.list(squadId),
+    queryFn: () => agentsApi.list(squadId),
+    enabled: !!squadId,
   });
 
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(companyId),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(companyId),
-    enabled: !!companyId,
+    queryKey: queryKeys.liveRuns(squadId),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(squadId),
+    enabled: !!squadId,
     refetchInterval: 5000,
   });
 
@@ -333,10 +333,10 @@ function ExecutionWorkspaceIssuesList({
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => issuesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByExecutionWorkspace(companyId, workspace.id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByExecutionWorkspace(squadId, workspace.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(squadId) });
       if (project?.id) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, project.id) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(squadId, project.id) });
       }
     },
   });
@@ -435,13 +435,13 @@ function ExecutionWorkspaceRoutinesList({
   const [runningRoutineId, setRunningRoutineId] = useState<string | null>(null);
 
   const { data: routines, isLoading, error } = useQuery({
-    queryKey: queryKeys.routines.list(workspace.companyId, { projectId: workspace.projectId }),
-    queryFn: () => routinesApi.list(workspace.companyId, { projectId: workspace.projectId }),
+    queryKey: queryKeys.routines.list(workspace.squadId, { projectId: workspace.projectId }),
+    queryFn: () => routinesApi.list(workspace.squadId, { projectId: workspace.projectId }),
   });
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(workspace.companyId),
-    queryFn: () => agentsApi.list(workspace.companyId),
+    queryKey: queryKeys.agents.list(workspace.squadId),
+    queryFn: () => agentsApi.list(workspace.squadId),
   });
 
   const workspaceRoutines = useMemo(
@@ -468,10 +468,10 @@ function ExecutionWorkspaceRoutinesList({
     onSuccess: async (_, { id }) => {
       setRunDialogRoutine(null);
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["routines", workspace.companyId] }),
+        queryClient.invalidateQueries({ queryKey: ["routines", workspace.squadId] }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByExecutionWorkspace(workspace.companyId, workspace.id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(workspace.companyId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByExecutionWorkspace(workspace.squadId, workspace.id) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(workspace.squadId) }),
       ]);
       pushToast({
         title: "Routine started",
@@ -535,7 +535,7 @@ function ExecutionWorkspaceRoutinesList({
         onOpenChange={(next) => {
           if (!next) setRunDialogRoutine(null);
         }}
-        companyId={workspace.companyId}
+        squadId={workspace.squadId}
         routineName={runDialogRoutine?.title ?? null}
         agents={agents ?? []}
         projects={project ? [project] : []}
@@ -559,7 +559,7 @@ export function ExecutionWorkspaceDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const { selectedSquadId, setSelectedSquadId } = useSquad();
   const [form, setForm] = useState<WorkspaceFormState | null>(null);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -580,8 +580,8 @@ export function ExecutionWorkspaceDetail() {
   const workspace = workspaceQuery.data ?? null;
 
   const projectQuery = useQuery({
-    queryKey: workspace ? [...queryKeys.projects.detail(workspace.projectId), workspace.companyId] : ["projects", "detail", "__pending__"],
-    queryFn: () => projectsApi.get(workspace!.projectId, workspace!.companyId),
+    queryKey: workspace ? [...queryKeys.projects.detail(workspace.projectId), workspace.squadId] : ["projects", "detail", "__pending__"],
+    queryFn: () => projectsApi.get(workspace!.projectId, workspace!.squadId),
     enabled: Boolean(workspace?.projectId),
   });
   const project = projectQuery.data ?? null;
@@ -603,10 +603,10 @@ export function ExecutionWorkspaceDetail() {
   const derivedWorkspace = derivedWorkspaceQuery.data ?? null;
   const linkedIssuesQuery = useQuery({
     queryKey: workspace
-      ? queryKeys.issues.listByExecutionWorkspace(workspace.companyId, workspace.id)
+      ? queryKeys.issues.listByExecutionWorkspace(workspace.squadId, workspace.id)
       : ["issues", "__execution-workspace__", "__none__"],
-    queryFn: () => issuesApi.list(workspace!.companyId, { executionWorkspaceId: workspace!.id }),
-    enabled: Boolean(workspace?.companyId),
+    queryFn: () => issuesApi.list(workspace!.squadId, { executionWorkspaceId: workspace!.id }),
+    enabled: Boolean(workspace?.squadId),
   });
   const linkedIssues = linkedIssuesQuery.data ?? [];
 
@@ -622,8 +622,8 @@ export function ExecutionWorkspaceDetail() {
   } = usePluginSlots({
     slotTypes: ["detailTab"],
     entityType: "execution_workspace",
-    companyId: workspace?.companyId ?? null,
-    enabled: !!workspace?.companyId,
+    squadId: workspace?.squadId ?? null,
+    enabled: !!workspace?.squadId,
   });
   const workspacePluginTabItems = useMemo(
     () => workspacePluginDetailSlots.map((slot) => ({
@@ -652,9 +652,9 @@ export function ExecutionWorkspaceDetail() {
   const projectRef = project ? projectRouteRef(project) : workspace?.projectId ?? "";
 
   useEffect(() => {
-    if (!workspace?.companyId || workspace.companyId === selectedCompanyId) return;
-    setSelectedCompanyId(workspace.companyId, { source: "route_sync" });
-  }, [workspace?.companyId, selectedCompanyId, setSelectedCompanyId]);
+    if (!workspace?.squadId || workspace.squadId === selectedSquadId) return;
+    setSelectedSquadId(workspace.squadId, { source: "route_sync" });
+  }, [workspace?.squadId, selectedSquadId, setSelectedSquadId]);
 
   useEffect(() => {
     if (!workspace) return;
@@ -743,7 +743,7 @@ export function ExecutionWorkspaceDetail() {
   const pendingRuntimeAction = controlRuntimeServices.isPending ? controlRuntimeServices.variables ?? null : null;
 
   const pluginSlotContext = {
-    companyId: workspace.companyId,
+    squadId: workspace.squadId,
     projectId: workspace.projectId,
     entityId: workspace.id,
     entityType: "execution_workspace" as const,
@@ -1194,7 +1194,7 @@ export function ExecutionWorkspaceDetail() {
           </Card>
         ) : activeTab === "issues" ? (
           <ExecutionWorkspaceIssuesList
-            companyId={workspace.companyId}
+            squadId={workspace.squadId}
             workspace={workspace}
             issues={linkedIssues}
             isLoading={linkedIssuesQuery.isLoading}
@@ -1241,7 +1241,7 @@ export function ExecutionWorkspaceDetail() {
           queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.workspaceOperations(nextWorkspace.id) });
           if (project) {
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.id) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(project.companyId, { projectId: project.id }) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(project.squadId, { projectId: project.id }) });
           }
           if (sourceIssue) {
             queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(sourceIssue.id) });

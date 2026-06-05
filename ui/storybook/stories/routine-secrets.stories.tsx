@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
 import { KeyRound } from "lucide-react";
 import type {
-  CompanySecret,
+  SquadSecret,
   EnvBinding,
   Routine,
   RoutineEnvConfig,
@@ -13,14 +13,14 @@ import type {
 import { EnvVarEditor } from "@/components/EnvVarEditor";
 import { RoutineHistoryTab } from "@/components/RoutineHistoryTab";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookCompanies, storybookSecrets } from "../fixtures/slawData";
+import { storybookSquads, storybookSecrets } from "../fixtures/slawData";
 
-const COMPANY_ID = "company-storybook";
+const SQUAD_ID = "squad-storybook";
 
 if (typeof window !== "undefined") {
-  window.localStorage.setItem("slaw.selectedCompanyId", COMPANY_ID);
+  window.localStorage.setItem("slaw.selectedSquadId", SQUAD_ID);
 }
 
 function StorybookRoutineFixtures({
@@ -31,18 +31,18 @@ function StorybookRoutineFixtures({
   children: ReactNode;
 }) {
   const queryClient = useQueryClient();
-  queryClient.setQueryData(queryKeys.companies.all, { companies: storybookCompanies, unauthorized: false });
-  queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), storybookSecrets);
+  queryClient.setQueryData(queryKeys.squads.all, { squads: storybookSquads, unauthorized: false });
+  queryClient.setQueryData(queryKeys.secrets.list(SQUAD_ID), storybookSecrets);
   queryClient.setQueryData(queryKeys.routines.revisions("routine-storybook"), revisions);
 
-  const { selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const { selectedSquadId, setSelectedSquadId } = useSquad();
   useEffect(() => {
-    if (selectedCompanyId !== COMPANY_ID) {
-      setSelectedCompanyId(COMPANY_ID);
+    if (selectedSquadId !== SQUAD_ID) {
+      setSelectedSquadId(SQUAD_ID);
     }
-  }, [selectedCompanyId, setSelectedCompanyId]);
+  }, [selectedSquadId, setSelectedSquadId]);
 
-  if (selectedCompanyId !== COMPANY_ID) return null;
+  if (selectedSquadId !== SQUAD_ID) return null;
   return <>{children}</>;
 }
 
@@ -84,7 +84,7 @@ function SecretsTabSurface({
         </p>
         <EnvVarEditor
           value={env}
-          secrets={storybookSecrets as CompanySecret[]}
+          secrets={storybookSecrets as SquadSecret[]}
           onCreateSecret={async (name) => ({
             ...storybookSecrets[0]!,
             id: `secret-${Math.random().toString(36).slice(2, 8)}`,
@@ -145,7 +145,7 @@ function makeSnapshot(env: RoutineEnvConfig | null): RoutineRevisionSnapshotV1 {
     version: 1,
     routine: {
       id: "routine-storybook",
-      companyId: COMPANY_ID,
+      squadId: SQUAD_ID,
       projectId: null,
       goalId: null,
       parentIssueId: null,
@@ -166,7 +166,7 @@ function makeSnapshot(env: RoutineEnvConfig | null): RoutineRevisionSnapshotV1 {
 function makeRoutine(latestRevisionId: string, latestRevisionNumber: number): Routine {
   return {
     id: "routine-storybook",
-    companyId: COMPANY_ID,
+    squadId: SQUAD_ID,
     projectId: null,
     goalId: null,
     parentIssueId: null,
@@ -201,7 +201,7 @@ export const HistoryDiffWithEnv: Story = {
     const revisions: RoutineRevision[] = [
       {
         id: "rev-2",
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         routineId: "routine-storybook",
         revisionNumber: 2,
         title: "Nightly digest",
@@ -219,7 +219,7 @@ export const HistoryDiffWithEnv: Story = {
       },
       {
         id: "rev-1",
-        companyId: COMPANY_ID,
+        squadId: SQUAD_ID,
         routineId: "routine-storybook",
         revisionNumber: 1,
         title: "Nightly digest",
@@ -247,7 +247,7 @@ export const HistoryDiffWithEnv: Story = {
             onSaveEdits={() => {}}
             agents={new Map()}
             projects={new Map()}
-            secrets={storybookSecrets as CompanySecret[]}
+            secrets={storybookSecrets as SquadSecret[]}
             onRestoreSecretMaterials={() => {}}
           />
         </div>

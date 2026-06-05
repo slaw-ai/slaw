@@ -47,51 +47,51 @@ export function registerRunCommands(command: Command): void {
   addCommonClientOptions(
     command
       .command("list")
-      .description("List heartbeat runs for a company")
-      .option("-C, --company-id <id>", "Company ID")
+      .description("List heartbeat runs for a squad")
+      .option("-C, --squad-id <id>", "Squad ID")
       .option("--agent-id <id>", "Filter by agent ID")
       .option("--limit <n>", "Maximum runs to return")
       .action(async (opts: RunListOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const params = new URLSearchParams();
           if (opts.agentId) params.set("agentId", opts.agentId);
           if (opts.limit) params.set("limit", opts.limit);
           const query = params.toString();
           const rows = (await ctx.api.get<HeartbeatRun[]>(
-            `${apiPath`/api/companies/${ctx.companyId}/heartbeat-runs`}${query ? `?${query}` : ""}`,
+            `${apiPath`/api/squads/${ctx.squadId}/heartbeat-runs`}${query ? `?${query}` : ""}`,
           )) ?? [];
           printRuns(rows, ctx.json);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(
     command
       .command("live")
-      .description("List queued and running heartbeat runs for a company")
-      .option("-C, --company-id <id>", "Company ID")
+      .description("List queued and running heartbeat runs for a squad")
+      .option("-C, --squad-id <id>", "Squad ID")
       .option("--limit <n>", "Maximum runs to return")
       .option("--min-count <n>", "Pad with recent completed runs up to this count")
       .action(async (opts: RunLiveOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const params = new URLSearchParams();
           if (opts.limit) params.set("limit", opts.limit);
           if (opts.minCount) params.set("minCount", opts.minCount);
           const query = params.toString();
           const rows = (await ctx.api.get<HeartbeatRun[]>(
-            `${apiPath`/api/companies/${ctx.companyId}/live-runs`}${query ? `?${query}` : ""}`,
+            `${apiPath`/api/squads/${ctx.squadId}/live-runs`}${query ? `?${query}` : ""}`,
           )) ?? [];
           printRuns(rows, ctx.json);
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   addCommonClientOptions(

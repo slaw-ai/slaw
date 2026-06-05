@@ -39,7 +39,7 @@ import {
   storybookAgentMap,
   storybookAgents,
   storybookAuthSession,
-  storybookCompanies,
+  storybookSquads,
   storybookContinuationHandoff,
   storybookExecutionWorkspaces,
   storybookIssueDocuments,
@@ -49,9 +49,9 @@ import {
   storybookProjects,
 } from "../fixtures/slawData";
 
-const companyId = "company-storybook";
+const squadId = "squad-storybook";
 const issueListViewKey = "storybook:issue-management:list";
-const scopedIssueListViewKey = `${issueListViewKey}:${companyId}`;
+const scopedIssueListViewKey = `${issueListViewKey}:${squadId}`;
 const visibleColumns: InboxIssueColumn[] = ["status", "id", "assignee", "project", "workspace", "labels", "updated"];
 
 const issueDocumentSummaries = storybookIssueDocuments.map(({ body: _body, ...summary }) => summary);
@@ -84,12 +84,12 @@ function Section({
 }
 
 function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>) {
-  queryClient.setQueryData(queryKeys.companies.all, { companies: storybookCompanies, unauthorized: false });
+  queryClient.setQueryData(queryKeys.squads.all, { squads: storybookSquads, unauthorized: false });
   queryClient.setQueryData(queryKeys.auth.session, storybookAuthSession);
-  queryClient.setQueryData(queryKeys.agents.list(companyId), storybookAgents);
-  queryClient.setQueryData(queryKeys.projects.list(companyId), storybookProjects);
-  queryClient.setQueryData(queryKeys.issues.list(companyId), storybookIssues);
-  queryClient.setQueryData(queryKeys.issues.labels(companyId), storybookIssueLabels);
+  queryClient.setQueryData(queryKeys.agents.list(squadId), storybookAgents);
+  queryClient.setQueryData(queryKeys.projects.list(squadId), storybookProjects);
+  queryClient.setQueryData(queryKeys.issues.list(squadId), storybookIssues);
+  queryClient.setQueryData(queryKeys.issues.labels(squadId), storybookIssueLabels);
   queryClient.setQueryData(queryKeys.issues.documents(primaryIssue.id), storybookIssueDocuments);
   queryClient.setQueryData(queryKeys.issues.runs(primaryIssue.id), storybookIssueRuns);
   queryClient.setQueryData(queryKeys.issues.liveRuns(primaryIssue.id), []);
@@ -98,7 +98,7 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
     enableIsolatedWorkspaces: true,
     enableRoutineTriggers: true,
   });
-  queryClient.setQueryData(queryKeys.access.companyUserDirectory(companyId), {
+  queryClient.setQueryData(queryKeys.access.squadUserDirectory(squadId), {
     users: [
       {
         principalId: "user-board",
@@ -113,11 +113,11 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
     ],
   });
   queryClient.setQueryData(
-    queryKeys.sidebarPreferences.projectOrder(companyId, storybookAuthSession.user.id),
+    queryKeys.sidebarPreferences.projectOrder(squadId, storybookAuthSession.user.id),
     { orderedIds: storybookProjects.map((project) => project.id), updatedAt: null },
   );
   queryClient.setQueryData(
-    queryKeys.executionWorkspaces.summaryList(companyId),
+    queryKeys.executionWorkspaces.summaryList(squadId),
     storybookExecutionWorkspaces.map((workspace) => ({
       id: workspace.id,
       name: workspace.name,
@@ -126,7 +126,7 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
     })),
   );
   queryClient.setQueryData(
-    queryKeys.executionWorkspaces.list(companyId, {
+    queryKeys.executionWorkspaces.list(squadId, {
       projectId: primaryIssue.projectId ?? undefined,
       projectWorkspaceId: primaryIssue.projectWorkspaceId ?? undefined,
       reuseEligible: true,

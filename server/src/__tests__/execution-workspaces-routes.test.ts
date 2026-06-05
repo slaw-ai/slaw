@@ -25,14 +25,14 @@ vi.mock("../services/index.js", () => ({
   workspaceOperationService: () => mockWorkspaceOperationService,
 }));
 
-function createApp(companyIds = ["company-1"]) {
+function createApp(squadIds = ["squad-1"]) {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds,
+      squadIds,
       source: "session",
       isInstanceAdmin: false,
     };
@@ -60,7 +60,7 @@ describe.sequential("execution workspace routes", () => {
 
   it("uses summary mode for lightweight workspace lookups", async () => {
     const res = await request(createApp())
-      .get("/api/companies/company-1/execution-workspaces?summary=true&reuseEligible=true");
+      .get("/api/squads/squad-1/execution-workspaces?summary=true&reuseEligible=true");
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -71,7 +71,7 @@ describe.sequential("execution workspace routes", () => {
         projectWorkspaceId: null,
       },
     ]);
-    expect(mockExecutionWorkspaceService.listSummaries).toHaveBeenCalledWith("company-1", {
+    expect(mockExecutionWorkspaceService.listSummaries).toHaveBeenCalledWith("squad-1", {
       projectId: undefined,
       projectWorkspaceId: undefined,
       issueId: undefined,

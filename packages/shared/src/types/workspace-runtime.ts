@@ -177,7 +177,7 @@ export interface ExecutionWorkspaceSummary {
 
 export interface ExecutionWorkspace {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string;
   projectWorkspaceId: string | null;
   sourceIssueId: string | null;
@@ -206,7 +206,7 @@ export interface ExecutionWorkspace {
 
 export interface WorkspaceRuntimeService {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   projectWorkspaceId: string | null;
   executionWorkspaceId: string | null;
@@ -246,7 +246,7 @@ export type WorkspaceRealizationSyncStrategy =
 export interface WorkspaceRealizationRequest {
   version: 1;
   adapterType: string;
-  companyId: string;
+  squadId: string;
   environmentId: string;
   executionWorkspaceId: string | null;
   issueId: string | null;

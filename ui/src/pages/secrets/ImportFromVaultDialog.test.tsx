@@ -4,8 +4,8 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
-  CompanySecret,
-  CompanySecretProviderConfig,
+  SquadSecret,
+  SquadSecretProviderConfig,
   RemoteSecretImportCandidate,
   RemoteSecretImportPreviewResult,
   RemoteSecretImportResult,
@@ -37,9 +37,9 @@ vi.mock("../../context/ToastContext", () => ({
 
 import { ImportFromVaultDialog } from "./ImportFromVaultDialog";
 
-const awsVault: CompanySecretProviderConfig = {
+const awsVault: SquadSecretProviderConfig = {
   id: "vault-aws",
-  companyId: "company-1",
+  squadId: "squad-1",
   provider: "aws_secrets_manager",
   displayName: "AWS production",
   status: "ready",
@@ -162,7 +162,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -242,7 +242,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -282,10 +282,10 @@ describe("ImportFromVaultDialog", () => {
       makePreview([conflictCandidate]),
     );
 
-    const existing: CompanySecret[] = [
+    const existing: SquadSecret[] = [
       {
         id: "secret-existing",
-        companyId: "company-1",
+        squadId: "squad-1",
         key: "openai_api_key",
         name: "OPENAI_API_KEY",
         provider: "aws_secrets_manager",
@@ -314,7 +314,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={existing}
           />
@@ -378,7 +378,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -470,7 +470,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -519,7 +519,7 @@ describe("ImportFromVaultDialog", () => {
     await flush();
     await flush();
 
-    expect(mockSecretsApi.remoteImport).toHaveBeenCalledWith("company-1", {
+    expect(mockSecretsApi.remoteImport).toHaveBeenCalledWith("squad-1", {
       providerConfigId: awsVault.id,
       secrets: [
         expect.objectContaining({
@@ -607,7 +607,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -670,7 +670,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[]}
             existingSecrets={[]}
             onManageVaults={vi.fn()}
@@ -704,7 +704,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -742,7 +742,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />
@@ -785,7 +785,7 @@ describe("ImportFromVaultDialog", () => {
           <ImportFromVaultDialog
             open
             onOpenChange={vi.fn()}
-            companyId="company-1"
+            squadId="squad-1"
             providerConfigs={[awsVault]}
             existingSecrets={[]}
           />

@@ -59,7 +59,7 @@ describe("buildIssuePropertiesPanelKey", () => {
         executionWorkspaceSettings: { mode: "isolated_workspace" },
         currentExecutionWorkspace: {
           id: "workspace-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           projectId: "project-1",
           projectWorkspaceId: "project-workspace-1",
           sourceIssueId: "issue-1",

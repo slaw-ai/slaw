@@ -22,9 +22,9 @@ These source kinds may contribute body text to Slaw-derived source bundles:
 
 | Source kind | Allowed body fields | Reason |
 | --- | --- | --- |
-| Issue | `title`, `description`, identifier/status metadata | First-party Slaw text under company ACL |
-| Comment | `body` | First-party Slaw text under company ACL |
-| Document | `body`, `title`, `key`, revision metadata | First-party Slaw text under company ACL |
+| Issue | `title`, `description`, identifier/status metadata | First-party Slaw text under squad ACL |
+| Comment | `body` | First-party Slaw text under squad ACL |
+| Document | `body`, `title`, `key`, revision metadata | First-party Slaw text under squad ACL |
 
 ## Assets And Work Products
 
@@ -89,7 +89,7 @@ This addresses Sensitive Information Disclosure, Unsafe Consumption of APIs, and
 
 Every metadata-only reference must preserve enough provenance to explain where it came from without reading the underlying content:
 
-- `companyId`
+- `squadId`
 - `issueId`
 - attachment/work-product id
 - producer identity when available
@@ -112,7 +112,7 @@ Human review **is required**, with a separate security sign-off issue, before en
 
 This gate exists because the current host surfaces have different trust properties:
 
-- issue/comment/document text is first-party Slaw content already exposed through company-scoped issue/document APIs
+- issue/comment/document text is first-party Slaw content already exposed through squad-scoped issue/document APIs
 - asset content is a blob download surface (`/api/assets/:id/content`) and can carry prompt-injection or parser-risk payloads
 - work products can point at arbitrary destinations through `url`, which reintroduces SSRF, token leakage, and prompt-injection risk if dereferenced automatically
 

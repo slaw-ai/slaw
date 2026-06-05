@@ -26,9 +26,9 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type {
-  CompanySecret,
-  CompanySecretUsageBinding,
-  CompanySecretProviderConfig,
+  SquadSecret,
+  SquadSecretUsageBinding,
+  SquadSecretProviderConfig,
   SecretProviderConfigDiscoveryCandidate,
   SecretProviderConfigDiscoveryPreviewResult,
   SecretAccessEvent,
@@ -38,7 +38,7 @@ import type {
   SecretProviderDescriptor,
   SecretStatus,
 } from "@slaw/shared";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
 import {
@@ -131,13 +131,13 @@ function emptyProviderVaultForm(provider: SecretProvider = "local_encrypted"): P
   };
 }
 
-function providerConfigValue(config: CompanySecretProviderConfig["config"], key: string) {
+function providerConfigValue(config: SquadSecretProviderConfig["config"], key: string) {
   if (!config || typeof config !== "object" || Array.isArray(config)) return "";
   const value = (config as Record<string, unknown>)[key];
   return typeof value === "string" ? value : "";
 }
 
-function providerVaultFormFromConfig(config: CompanySecretProviderConfig): ProviderVaultForm {
+function providerVaultFormFromConfig(config: SquadSecretProviderConfig): ProviderVaultForm {
   return {
     ...emptyProviderVaultForm(config.provider),
     displayName: config.displayName,
@@ -264,7 +264,7 @@ function detailString(details: Record<string, unknown> | undefined, key: string)
 }
 
 export function getProviderConfigBlockReason(
-  config: CompanySecretProviderConfig | null | undefined,
+  config: SquadSecretProviderConfig | null | undefined,
 ) {
   if (!config) return null;
   if (config.status === "disabled") return "This provider vault is disabled.";
@@ -276,7 +276,7 @@ export function getProviderConfigBlockReason(
 }
 
 export function getDefaultProviderConfigId(
-  configs: CompanySecretProviderConfig[],
+  configs: SquadSecretProviderConfig[],
   provider: SecretProvider,
 ) {
   const providerConfigs = configs.filter((config) => config.provider === provider);
@@ -289,7 +289,7 @@ export function getDefaultProviderConfigId(
   );
 }
 
-function providerVaultLabel(configs: CompanySecretProviderConfig[], id: string | null | undefined) {
+function providerVaultLabel(configs: SquadSecretProviderConfig[], id: string | null | undefined) {
   if (!id) return "Deployment default";
   return configs.find((config) => config.id === id)?.displayName ?? "Unknown vault";
 }
@@ -340,7 +340,7 @@ function getAwsProviderVaultDiscoveryQuery(form: ProviderVaultForm): string | nu
 export function getAwsManagedPathPreview(input: {
   provider: SecretProviderDescriptor | null | undefined;
   health: SecretProviderHealthResponse | null;
-  companyId: string;
+  squadId: string;
   secretKeySource: string;
 }) {
   if (input.provider?.id !== "aws_secrets_manager") return null;
@@ -348,12 +348,12 @@ export function getAwsManagedPathPreview(input: {
   const prefix = detailString(healthEntry?.details, "prefix") ?? "slaw";
   const deploymentId = detailString(healthEntry?.details, "deploymentId") ?? "{deploymentId}";
   const secretKey = normalizeSecretKeyForPreview(input.secretKeySource) || "{secretKey}";
-  return `${prefix}/${deploymentId}/${input.companyId}/${secretKey}`;
+  return `${prefix}/${deploymentId}/${input.squadId}/${secretKey}`;
 }
 
 export function Secrets() {
   const queryClient = useQueryClient();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const [activeTab, setActiveTab] = useState<SecretsTab>("secrets");
@@ -381,10 +381,10 @@ export function Secrets() {
   const [rotateExternalRef, setRotateExternalRef] = useState("");
   const [rotateProviderConfigId, setRotateProviderConfigId] = useState("");
   const [rotateError, setRotateError] = useState<string | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<CompanySecret | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<SquadSecret | null>(null);
   const [vaultDialogOpen, setVaultDialogOpen] = useState(false);
-  const [editingVault, setEditingVault] = useState<CompanySecretProviderConfig | null>(null);
-  const [removeVaultConfirm, setRemoveVaultConfirm] = useState<CompanySecretProviderConfig | null>(null);
+  const [editingVault, setEditingVault] = useState<SquadSecretProviderConfig | null>(null);
+  const [removeVaultConfirm, setRemoveVaultConfirm] = useState<SquadSecretProviderConfig | null>(null);
   const [vaultForm, setVaultForm] = useState<ProviderVaultForm>(() => emptyProviderVaultForm());
   const [vaultError, setVaultError] = useState<string | null>(null);
   const [vaultDiscovery, setVaultDiscovery] =
@@ -396,38 +396,38 @@ export function Secrets() {
   }, [setBreadcrumbs]);
 
   const secretsQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.secrets.list(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.secrets.list(selectedSquadId)
       : ["secrets", "__disabled__"],
-    queryFn: () => secretsApi.list(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryFn: () => secretsApi.list(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
   });
 
   const providersQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.secrets.providers(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.secrets.providers(selectedSquadId)
       : ["secret-providers", "__disabled__"],
-    queryFn: () => secretsApi.providers(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryFn: () => secretsApi.providers(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
     staleTime: 5 * 60_000,
   });
 
   const providerHealthQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? ["secret-provider-health", selectedCompanyId]
+    queryKey: selectedSquadId
+      ? ["secret-provider-health", selectedSquadId]
       : ["secret-provider-health", "__disabled__"],
-    queryFn: () => secretsApi.providerHealth(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryFn: () => secretsApi.providerHealth(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
     refetchInterval: 60_000,
     retry: false,
   });
 
   const providerConfigsQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.secrets.providerConfigs(selectedCompanyId)
+    queryKey: selectedSquadId
+      ? queryKeys.secrets.providerConfigs(selectedSquadId)
       : ["secret-provider-configs", "__disabled__"],
-    queryFn: () => secretsApi.providerConfigs(selectedCompanyId!),
-    enabled: Boolean(selectedCompanyId),
+    queryFn: () => secretsApi.providerConfigs(selectedSquadId!),
+    enabled: Boolean(selectedSquadId),
     retry: false,
   });
 
@@ -475,7 +475,7 @@ export function Secrets() {
   const awsManagedPathPreview = getAwsManagedPathPreview({
     provider: selectedCreateProvider,
     health: providerHealthQuery.data ?? null,
-    companyId: selectedCompanyId ?? "{companyId}",
+    squadId: selectedSquadId ?? "{squadId}",
     secretKeySource: createForm.key.trim() || createForm.name,
   });
 
@@ -517,9 +517,9 @@ export function Secrets() {
   });
 
   function invalidateAll(extraIds: string[] = []) {
-    if (!selectedCompanyId) return;
-    queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.secrets.providerConfigs(selectedCompanyId) });
+    if (!selectedSquadId) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedSquadId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.secrets.providerConfigs(selectedSquadId) });
     for (const id of extraIds) {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.usage(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.accessEvents(id) });
@@ -541,7 +541,7 @@ export function Secrets() {
       } else {
         input.externalRef = createForm.externalRef.trim();
       }
-      return secretsApi.create(selectedCompanyId!, input);
+      return secretsApi.create(selectedSquadId!, input);
     },
     onSuccess: (created) => {
       pushToast({ title: "Secret created", body: created.name, tone: "success" });
@@ -646,7 +646,7 @@ export function Secrets() {
       if (editingVault) {
         return secretsApi.updateProviderConfig(editingVault.id, data);
       }
-      return secretsApi.createProviderConfig(selectedCompanyId!, {
+      return secretsApi.createProviderConfig(selectedSquadId!, {
         ...(data as UpdateSecretProviderConfigInput),
         provider: vaultForm.provider,
       } as CreateSecretProviderConfigInput);
@@ -666,7 +666,7 @@ export function Secrets() {
 
   const discoverVaultMutation = useMutation({
     mutationFn: () =>
-      secretsApi.providerConfigDiscoveryPreview(selectedCompanyId!, {
+      secretsApi.providerConfigDiscoveryPreview(selectedSquadId!, {
         provider: "aws_secrets_manager",
         config: buildProviderVaultConfig(vaultForm),
         query: getAwsProviderVaultDiscoveryQuery(vaultForm),
@@ -794,7 +794,7 @@ export function Secrets() {
     setVaultDialogOpen(true);
   }
 
-  function openEditVault(config: CompanySecretProviderConfig) {
+  function openEditVault(config: SquadSecretProviderConfig) {
     setEditingVault(config);
     setVaultForm(providerVaultFormFromConfig(config));
     setVaultError(null);
@@ -818,9 +818,9 @@ export function Secrets() {
     }));
   }
 
-  if (!selectedCompanyId) {
+  if (!selectedSquadId) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">Select a company to manage secrets.</div>
+      <div className="p-6 text-sm text-muted-foreground">Select a squad to manage secrets.</div>
     );
   }
 
@@ -1143,11 +1143,11 @@ export function Secrets() {
         </DialogContent>
       </Dialog>
 
-      {selectedCompanyId && (
+      {selectedSquadId && (
         <ImportFromVaultDialog
           open={importOpen}
           onOpenChange={setImportOpen}
-          companyId={selectedCompanyId}
+          squadId={selectedSquadId}
           providerConfigs={providerConfigs}
           existingSecrets={secrets}
           onManageVaults={() => {
@@ -1789,7 +1789,7 @@ function providerFamilyIcon(provider: SecretProvider) {
   }
 }
 
-function ProviderVaultInlineWarning({ config }: { config: CompanySecretProviderConfig }) {
+function ProviderVaultInlineWarning({ config }: { config: SquadSecretProviderConfig }) {
   const blockReason = getProviderConfigBlockReason(config);
   const message = blockReason ?? config.healthMessage;
   if (!message) {
@@ -1809,7 +1809,7 @@ function ProviderVaultInlineWarning({ config }: { config: CompanySecretProviderC
 }
 
 interface ImportFromVaultButtonProps {
-  providerConfigs: CompanySecretProviderConfig[];
+  providerConfigs: SquadSecretProviderConfig[];
   onClick: () => void;
   onManageVaults: () => void;
   className?: string;
@@ -1872,16 +1872,16 @@ export function ProviderVaultsTab({
   pendingActionId,
 }: {
   providers: SecretProviderDescriptor[];
-  providerConfigs: CompanySecretProviderConfig[];
+  providerConfigs: SquadSecretProviderConfig[];
   loading: boolean;
   error: unknown;
   onRetry: () => void;
   onCreate: (provider: SecretProvider) => void;
-  onEdit: (config: CompanySecretProviderConfig) => void;
-  onDisable: (config: CompanySecretProviderConfig) => void;
-  onRemove: (config: CompanySecretProviderConfig) => void;
-  onSetDefault: (config: CompanySecretProviderConfig) => void;
-  onHealthCheck: (config: CompanySecretProviderConfig) => void;
+  onEdit: (config: SquadSecretProviderConfig) => void;
+  onDisable: (config: SquadSecretProviderConfig) => void;
+  onRemove: (config: SquadSecretProviderConfig) => void;
+  onSetDefault: (config: SquadSecretProviderConfig) => void;
+  onHealthCheck: (config: SquadSecretProviderConfig) => void;
   pendingActionId: string | null;
 }) {
   if (loading) {
@@ -1949,7 +1949,7 @@ export function ProviderVaultsTab({
               <div className="rounded-md border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
                 {isComingSoonFamily
                   ? "Not yet supported."
-                  : "No company-specific vaults yet. Secrets can still use the deployment default provider settings."}
+                  : "No squad-specific vaults yet. Secrets can still use the deployment default provider settings."}
               </div>
             ) : (
               <div className="space-y-3">
@@ -1983,7 +1983,7 @@ function ProviderVaultCard({
   onSetDefault,
   onHealthCheck,
 }: {
-  config: CompanySecretProviderConfig;
+  config: SquadSecretProviderConfig;
   pending: boolean;
   onEdit: () => void;
   onDisable: () => void;
@@ -2320,8 +2320,8 @@ function SecretDetailsTab({
   secret,
   providerConfigs,
 }: {
-  secret: CompanySecret;
-  providerConfigs: CompanySecretProviderConfig[];
+  secret: SquadSecret;
+  providerConfigs: SquadSecretProviderConfig[];
 }) {
   return (
     <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
@@ -2362,7 +2362,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function SecretUsageTab({ loading, bindings }: { loading: boolean; bindings: CompanySecretUsageBinding[] }) {
+function SecretUsageTab({ loading, bindings }: { loading: boolean; bindings: SquadSecretUsageBinding[] }) {
   if (loading) {
     return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
   }

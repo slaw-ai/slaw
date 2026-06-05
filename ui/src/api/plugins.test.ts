@@ -22,23 +22,23 @@ describe("pluginsApi local folders", () => {
     mockApi.put.mockResolvedValue({});
   });
 
-  it("lists company-scoped local folders for a plugin", async () => {
-    await pluginsApi.listLocalFolders("plugin-1", "company-1");
+  it("lists squad-scoped local folders for a plugin", async () => {
+    await pluginsApi.listLocalFolders("plugin-1", "squad-1");
 
     expect(mockApi.get).toHaveBeenCalledWith(
-      "/plugins/plugin-1/companies/company-1/local-folders",
+      "/plugins/plugin-1/squads/squad-1/local-folders",
     );
   });
 
   it("validates a candidate folder path without saving", async () => {
-    await pluginsApi.validateLocalFolder("plugin-1", "company-1", "wiki-root", {
+    await pluginsApi.validateLocalFolder("plugin-1", "squad-1", "wiki-root", {
       path: "/tmp/wiki",
       access: "readWrite",
       requiredFiles: ["WIKI.md"],
     });
 
     expect(mockApi.post).toHaveBeenCalledWith(
-      "/plugins/plugin-1/companies/company-1/local-folders/wiki-root/validate",
+      "/plugins/plugin-1/squads/squad-1/local-folders/wiki-root/validate",
       {
         path: "/tmp/wiki",
         access: "readWrite",
@@ -48,13 +48,13 @@ describe("pluginsApi local folders", () => {
   });
 
   it("saves through the local-folder PUT endpoint", async () => {
-    await pluginsApi.configureLocalFolder("plugin-1", "company-1", "wiki-root", {
+    await pluginsApi.configureLocalFolder("plugin-1", "squad-1", "wiki-root", {
       path: "/tmp/wiki",
       requiredDirectories: ["wiki"],
     });
 
     expect(mockApi.put).toHaveBeenCalledWith(
-      "/plugins/plugin-1/companies/company-1/local-folders/wiki-root",
+      "/plugins/plugin-1/squads/squad-1/local-folders/wiki-root",
       {
         path: "/tmp/wiki",
         requiredDirectories: ["wiki"],

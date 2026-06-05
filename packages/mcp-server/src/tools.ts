@@ -50,7 +50,7 @@ function parseOptionalJson(raw: string | undefined | null): unknown {
   return JSON.parse(raw);
 }
 
-const companyIdOptional = z.string().uuid().optional().nullable();
+const squadIdOptional = z.string().uuid().optional().nullable();
 const agentIdOptional = z.string().uuid().optional().nullable();
 const issueIdSchema = z.string().min(1);
 const projectIdSchema = z.string().min(1);
@@ -59,7 +59,7 @@ const approvalIdSchema = z.string().uuid();
 const documentKeySchema = z.string().trim().min(1).max(64);
 
 const listIssuesSchema = z.object({
-  companyId: companyIdOptional,
+  squadId: squadIdOptional,
   status: z.string().optional(),
   projectId: z.string().uuid().optional(),
   assigneeAgentId: z.string().uuid().optional(),
@@ -94,7 +94,7 @@ const upsertDocumentToolSchema = z.object({
 });
 
 const createIssueToolSchema = z.object({
-  companyId: companyIdOptional,
+  squadId: squadIdOptional,
 }).merge(createIssueInputSchema);
 
 const updateIssueToolSchema = z.object({
@@ -152,7 +152,7 @@ const approvalDecisionSchema = z.object({
 });
 
 const createApprovalToolSchema = z.object({
-  companyId: companyIdOptional,
+  squadId: squadIdOptional,
 }).merge(createApprovalSchema);
 
 const apiRequestSchema = z.object({
@@ -237,32 +237,32 @@ export function createToolDefinitions(client: SlawApiClient): ToolDefinition[] {
     ),
     makeTool(
       "slawListAgents",
-      "List agents in a company",
-      z.object({ companyId: companyIdOptional }),
-      async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/agents`),
+      "List agents in a squad",
+      z.object({ squadId: squadIdOptional }),
+      async ({ squadId }) => client.requestJson("GET", `/squads/${client.resolveSquadId(squadId)}/agents`),
     ),
     makeTool(
       "slawGetAgent",
       "Get a single agent by id",
-      z.object({ agentId: z.string().min(1), companyId: companyIdOptional }),
-      async ({ agentId, companyId }) => {
-        const qs = companyId ? `?companyId=${encodeURIComponent(companyId)}` : "";
+      z.object({ agentId: z.string().min(1), squadId: squadIdOptional }),
+      async ({ agentId, squadId }) => {
+        const qs = squadId ? `?squadId=${encodeURIComponent(squadId)}` : "";
         return client.requestJson("GET", `/agents/${encodeURIComponent(agentId)}${qs}`);
       },
     ),
     makeTool(
       "slawListIssues",
-      "List issues for a company with optional filters",
+      "List issues for a squad with optional filters",
       listIssuesSchema,
       async (input) => {
-        const companyId = client.resolveCompanyId(input.companyId);
+        const squadId = client.resolveSquadId(input.squadId);
         const params = new URLSearchParams();
         for (const [key, value] of Object.entries(input)) {
-          if (key === "companyId" || value === undefined || value === null) continue;
+          if (key === "squadId" || value === undefined || value === null) continue;
           params.set(key, String(value));
         }
         const qs = params.toString();
-        return client.requestJson("GET", `/companies/${companyId}/issues${qs ? `?${qs}` : ""}`);
+        return client.requestJson("GET", `/squads/${squadId}/issues${qs ? `?${qs}` : ""}`);
       },
     ),
     makeTool(
@@ -331,16 +331,16 @@ export function createToolDefinitions(client: SlawApiClient): ToolDefinition[] {
     ),
     makeTool(
       "slawListProjects",
-      "List projects in a company",
-      z.object({ companyId: companyIdOptional }),
-      async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/projects`),
+      "List projects in a squad",
+      z.object({ squadId: squadIdOptional }),
+      async ({ squadId }) => client.requestJson("GET", `/squads/${client.resolveSquadId(squadId)}/projects`),
     ),
     makeTool(
       "slawGetProject",
-      "Get a project by id or company-scoped short reference",
-      z.object({ projectId: projectIdSchema, companyId: companyIdOptional }),
-      async ({ projectId, companyId }) => {
-        const qs = companyId ? `?companyId=${encodeURIComponent(companyId)}` : "";
+      "Get a project by id or squad-scoped short reference",
+      z.object({ projectId: projectIdSchema, squadId: squadIdOptional }),
+      async ({ projectId, squadId }) => {
+        const qs = squadId ? `?squadId=${encodeURIComponent(squadId)}` : "";
         return client.requestJson("GET", `/projects/${encodeURIComponent(projectId)}${qs}`);
       },
     ),
@@ -395,9 +395,9 @@ export function createToolDefinitions(client: SlawApiClient): ToolDefinition[] {
     ),
     makeTool(
       "slawListGoals",
-      "List goals in a company",
-      z.object({ companyId: companyIdOptional }),
-      async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/goals`),
+      "List goals in a squad",
+      z.object({ squadId: squadIdOptional }),
+      async ({ squadId }) => client.requestJson("GET", `/squads/${client.resolveSquadId(squadId)}/goals`),
     ),
     makeTool(
       "slawGetGoal",
@@ -407,19 +407,19 @@ export function createToolDefinitions(client: SlawApiClient): ToolDefinition[] {
     ),
     makeTool(
       "slawListApprovals",
-      "List approvals in a company",
-      z.object({ companyId: companyIdOptional, status: z.string().optional() }),
-      async ({ companyId, status }) => {
+      "List approvals in a squad",
+      z.object({ squadId: squadIdOptional, status: z.string().optional() }),
+      async ({ squadId, status }) => {
         const qs = status ? `?status=${encodeURIComponent(status)}` : "";
-        return client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/approvals${qs}`);
+        return client.requestJson("GET", `/squads/${client.resolveSquadId(squadId)}/approvals${qs}`);
       },
     ),
     makeTool(
       "slawCreateApproval",
       "Create a board approval request, optionally linked to one or more issues",
       createApprovalToolSchema,
-      async ({ companyId, ...body }) =>
-        client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/approvals`, {
+      async ({ squadId, ...body }) =>
+        client.requestJson("POST", `/squads/${client.resolveSquadId(squadId)}/approvals`, {
           body,
         }),
     ),
@@ -445,8 +445,8 @@ export function createToolDefinitions(client: SlawApiClient): ToolDefinition[] {
       "slawCreateIssue",
       "Create a new issue",
       createIssueToolSchema,
-      async ({ companyId, ...body }) =>
-        client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, { body }),
+      async ({ squadId, ...body }) =>
+        client.requestJson("POST", `/squads/${client.resolveSquadId(squadId)}/issues`, { body }),
     ),
     makeTool(
       "slawUpdateIssue",

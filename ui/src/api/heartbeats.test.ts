@@ -10,21 +10,21 @@ vi.mock("./client", () => ({
 
 import { heartbeatsApi } from "./heartbeats";
 
-describe("heartbeatsApi.liveRunsForCompany", () => {
+describe("heartbeatsApi.liveRunsForSquad", () => {
   beforeEach(() => {
     mockApi.get.mockReset();
     mockApi.get.mockResolvedValue([]);
   });
 
   it("keeps the legacy numeric minCount signature", async () => {
-    await heartbeatsApi.liveRunsForCompany("company-1", 4);
+    await heartbeatsApi.liveRunsForSquad("squad-1", 4);
 
-    expect(mockApi.get).toHaveBeenCalledWith("/companies/company-1/live-runs?minCount=4");
+    expect(mockApi.get).toHaveBeenCalledWith("/squads/squad-1/live-runs?minCount=4");
   });
 
-  it("passes minCount and limit options to the company live-runs endpoint", async () => {
-    await heartbeatsApi.liveRunsForCompany("company-1", { minCount: 50, limit: 50 });
+  it("passes minCount and limit options to the squad live-runs endpoint", async () => {
+    await heartbeatsApi.liveRunsForSquad("squad-1", { minCount: 50, limit: 50 });
 
-    expect(mockApi.get).toHaveBeenCalledWith("/companies/company-1/live-runs?minCount=50&limit=50");
+    expect(mockApi.get).toHaveBeenCalledWith("/squads/squad-1/live-runs?minCount=50&limit=50");
   });
 });

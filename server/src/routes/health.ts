@@ -34,12 +34,12 @@ export function healthRoutes(
     deploymentMode: DeploymentMode;
     deploymentExposure: DeploymentExposure;
     authReady: boolean;
-    companyDeletionEnabled: boolean;
+    squadDeletionEnabled: boolean;
   } = {
     deploymentMode: "local_trusted",
     deploymentExposure: "private",
     authReady: true,
-    companyDeletionEnabled: true,
+    squadDeletionEnabled: true,
   },
 ) {
   const router = Router();
@@ -125,7 +125,7 @@ export function healthRoutes(
           .from(invites)
           .where(
             and(
-              eq(invites.inviteType, "bootstrap_ceo"),
+              eq(invites.inviteType, "bootstrap_squad_lead"),
               isNull(invites.revokedAt),
               isNull(invites.acceptedAt),
               gt(invites.expiresAt, now),
@@ -174,7 +174,7 @@ export function healthRoutes(
       bootstrapStatus,
       bootstrapInviteActive,
       features: {
-        companyDeletionEnabled: opts.companyDeletionEnabled,
+        squadDeletionEnabled: opts.squadDeletionEnabled,
       },
       ...(devServer ? { devServer } : {}),
     });

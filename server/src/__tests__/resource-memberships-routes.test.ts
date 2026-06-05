@@ -6,7 +6,7 @@ import {
   activityLog,
   agentMemberships,
   agents,
-  companies,
+  squads,
   createDb,
   projectMemberships,
   projects,
@@ -28,14 +28,14 @@ if (!embeddedPostgresSupport.supported) {
   );
 }
 
-function boardActor(companyId: string, role: "admin" | "operator" | "viewer" = "viewer") {
+function boardActor(squadId: string, role: "admin" | "operator" | "viewer" = "viewer") {
   return {
     type: "board" as const,
     userId: "user-1",
     source: "session" as const,
     isInstanceAdmin: false,
-    companyIds: [companyId],
-    memberships: [{ companyId, membershipRole: role, status: "active" }],
+    squadIds: [squadId],
+    memberships: [{ squadId, membershipRole: role, status: "active" }],
   };
 }
 
@@ -66,7 +66,7 @@ describeEmbeddedPostgres("resource membership routes", () => {
     await db.delete(agentMemberships);
     await db.delete(projects);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -74,34 +74,34 @@ describeEmbeddedPostgres("resource membership routes", () => {
   });
 
   async function seed() {
-    const companyId = randomUUID();
-    const otherCompanyId = randomUUID();
+    const squadId = randomUUID();
+    const otherSquadId = randomUUID();
     const projectId = randomUUID();
     const otherProjectId = randomUUID();
     const agentId = randomUUID();
     const otherAgentId = randomUUID();
-    await db.insert(companies).values([
+    await db.insert(squads).values([
       {
-        id: companyId,
+        id: squadId,
         name: "Slaw",
-        issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       },
       {
-        id: otherCompanyId,
+        id: otherSquadId,
         name: "Other",
-        issuePrefix: `T${otherCompanyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        issuePrefix: `T${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       },
     ]);
     await db.insert(projects).values([
-      { id: projectId, companyId, name: "Growth", status: "in_progress" },
-      { id: otherProjectId, companyId: otherCompanyId, name: "Other", status: "in_progress" },
+      { id: projectId, squadId, name: "Growth", status: "in_progress" },
+      { id: otherProjectId, squadId: otherSquadId, name: "Other", status: "in_progress" },
     ]);
     await db.insert(agents).values([
       {
         id: agentId,
-        companyId,
+        squadId,
         name: "CodexCoder",
         role: "engineer",
         status: "active",
@@ -112,7 +112,7 @@ describeEmbeddedPostgres("resource membership routes", () => {
       },
       {
         id: otherAgentId,
-        companyId: otherCompanyId,
+        squadId: otherSquadId,
         name: "OtherAgent",
         role: "engineer",
         status: "active",
@@ -122,14 +122,14 @@ describeEmbeddedPostgres("resource membership routes", () => {
         permissions: {},
       },
     ]);
-    return { companyId, otherAgentId, otherProjectId, projectId, agentId };
+    return { squadId, otherAgentId, otherProjectId, projectId, agentId };
   }
 
   it("defaults missing membership rows to joined", async () => {
-    const { companyId } = await seed();
-    const app = createApp(db, boardActor(companyId));
+    const { squadId } = await seed();
+    const app = createApp(db, boardActor(squadId));
 
-    const res = await request(app).get(`/api/companies/${companyId}/resource-memberships/me`);
+    const res = await request(app).get(`/api/squads/${squadId}/resource-memberships/me`);
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -140,14 +140,14 @@ describeEmbeddedPostgres("resource membership routes", () => {
   });
 
   it("allows viewer self-service mutations, logs changes, and keeps repeats idempotent", async () => {
-    const { companyId, projectId } = await seed();
-    const app = createApp(db, boardActor(companyId, "viewer"));
+    const { squadId, projectId } = await seed();
+    const app = createApp(db, boardActor(squadId, "viewer"));
 
     const first = await request(app)
-      .put(`/api/companies/${companyId}/resource-memberships/me/projects/${projectId}`)
+      .put(`/api/squads/${squadId}/resource-memberships/me/projects/${projectId}`)
       .send({ state: "left" });
     const second = await request(app)
-      .put(`/api/companies/${companyId}/resource-memberships/me/projects/${projectId}`)
+      .put(`/api/squads/${squadId}/resource-memberships/me/projects/${projectId}`)
       .send({ state: "left" });
 
     expect(first.status).toBe(200);
@@ -156,12 +156,12 @@ describeEmbeddedPostgres("resource membership routes", () => {
 
     const rows = await db.select().from(projectMemberships);
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ companyId, projectId, userId: "user-1", state: "left" });
+    expect(rows[0]).toMatchObject({ squadId, projectId, userId: "user-1", state: "left" });
 
     const activity = await db.select().from(activityLog);
     expect(activity).toHaveLength(1);
     expect(activity[0]).toMatchObject({
-      companyId,
+      squadId,
       actorType: "user",
       actorId: "user-1",
       action: "resource_membership.left",
@@ -171,28 +171,28 @@ describeEmbeddedPostgres("resource membership routes", () => {
   });
 
   it("rejects agent API key actors", async () => {
-    const { companyId, agentId } = await seed();
+    const { squadId, agentId } = await seed();
     const app = createApp(db, {
       type: "agent",
       agentId,
-      companyId,
+      squadId,
       source: "agent_key",
     });
 
-    const res = await request(app).get(`/api/companies/${companyId}/resource-memberships/me`);
+    const res = await request(app).get(`/api/squads/${squadId}/resource-memberships/me`);
 
     expect(res.status).toBe(403);
   });
 
-  it("rejects cross-company target resources", async () => {
-    const { companyId, otherAgentId, otherProjectId } = await seed();
-    const app = createApp(db, boardActor(companyId));
+  it("rejects cross-squad target resources", async () => {
+    const { squadId, otherAgentId, otherProjectId } = await seed();
+    const app = createApp(db, boardActor(squadId));
 
     const projectRes = await request(app)
-      .put(`/api/companies/${companyId}/resource-memberships/me/projects/${otherProjectId}`)
+      .put(`/api/squads/${squadId}/resource-memberships/me/projects/${otherProjectId}`)
       .send({ state: "left" });
     const agentRes = await request(app)
-      .put(`/api/companies/${companyId}/resource-memberships/me/agents/${otherAgentId}`)
+      .put(`/api/squads/${squadId}/resource-memberships/me/agents/${otherAgentId}`)
       .send({ state: "left" });
 
     expect(projectRes.status).toBe(404);
@@ -202,16 +202,16 @@ describeEmbeddedPostgres("resource membership routes", () => {
   });
 
   it("denies direct service calls that try to mutate another user's membership", async () => {
-    const { companyId, projectId } = await seed();
+    const { squadId, projectId } = await seed();
     const svc = resourceMembershipService(db);
 
     await expect(
       svc.updateProject({
-        companyId,
+        squadId,
         projectId,
         userId: "other-user",
         state: "left",
-        actor: boardActor(companyId),
+        actor: boardActor(squadId),
       }),
     ).rejects.toMatchObject({ status: 403 });
   });

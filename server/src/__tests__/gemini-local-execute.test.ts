@@ -91,7 +91,7 @@ describe("gemini execute", () => {
         runId: "run-1",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Gemini Coder",
           adapterType: "gemini_local",
           adapterConfig: {},
@@ -137,7 +137,7 @@ describe("gemini execute", () => {
           "SLAW_AGENT_ID",
           "SLAW_API_KEY",
           "SLAW_API_URL",
-          "SLAW_COMPANY_ID",
+          "SLAW_SQUAD_ID",
           "SLAW_RUN_ID",
         ]),
       );
@@ -170,7 +170,7 @@ describe("gemini execute", () => {
     try {
       await execute({
         runId: "run-yolo",
-        agent: { id: "a1", companyId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
+        agent: { id: "a1", squadId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
         runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
         config: {
           command: commandPath,
@@ -221,7 +221,7 @@ describe("gemini execute", () => {
     try {
       const result = await execute({
         runId: "run-turn-limit",
-        agent: { id: "a1", companyId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
+        agent: { id: "a1", squadId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
         runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
         config: {
           command: commandPath,
@@ -262,7 +262,7 @@ describe("gemini execute", () => {
     try {
       const result = await execute({
         runId: "run-exit-53",
-        agent: { id: "a1", companyId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
+        agent: { id: "a1", squadId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
         runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
         config: {
           command: commandPath,
@@ -311,7 +311,7 @@ describe("gemini execute", () => {
     try {
       const result = await execute({
         runId: "run-turn-limit-text",
-        agent: { id: "a1", companyId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
+        agent: { id: "a1", squadId: "c1", name: "G", adapterType: "gemini_local", adapterConfig: {} },
         runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
         config: {
           command: commandPath,
@@ -352,7 +352,7 @@ describe("gemini execute", () => {
         runId: "run-resume",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Gemini Coder",
           adapterType: "gemini_local",
           adapterConfig: {},

@@ -1,6 +1,6 @@
 import { inflateRawSync } from "node:zlib";
 import path from "node:path";
-import type { CompanyPortabilityFileEntry } from "@slaw/shared";
+import type { SquadPortabilityFileEntry } from "@slaw/shared";
 
 const textDecoder = new TextDecoder();
 
@@ -46,7 +46,7 @@ function sharedArchiveRoot(paths: string[]) {
     : null;
 }
 
-function bytesToPortableFileEntry(pathValue: string, bytes: Uint8Array): CompanyPortabilityFileEntry {
+function bytesToPortableFileEntry(pathValue: string, bytes: Uint8Array): SquadPortabilityFileEntry {
   const contentType = binaryContentTypeByExtension[path.extname(pathValue).toLowerCase()];
   if (!contentType) return textDecoder.decode(bytes);
   return {
@@ -66,10 +66,10 @@ async function inflateZipEntry(compressionMethod: number, bytes: Uint8Array) {
 
 export async function readZipArchive(source: ArrayBuffer | Uint8Array): Promise<{
   rootPath: string | null;
-  files: Record<string, CompanyPortabilityFileEntry>;
+  files: Record<string, SquadPortabilityFileEntry>;
 }> {
   const bytes = source instanceof Uint8Array ? source : new Uint8Array(source);
-  const entries: Array<{ path: string; body: CompanyPortabilityFileEntry }> = [];
+  const entries: Array<{ path: string; body: SquadPortabilityFileEntry }> = [];
   let offset = 0;
 
   while (offset + 4 <= bytes.length) {
@@ -115,7 +115,7 @@ export async function readZipArchive(source: ArrayBuffer | Uint8Array): Promise<
   }
 
   const rootPath = sharedArchiveRoot(entries.map((entry) => entry.path));
-  const files: Record<string, CompanyPortabilityFileEntry> = {};
+  const files: Record<string, SquadPortabilityFileEntry> = {};
   for (const entry of entries) {
     const normalizedPath =
       rootPath && entry.path.startsWith(`${rootPath}/`)

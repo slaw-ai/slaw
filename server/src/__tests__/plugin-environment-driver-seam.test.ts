@@ -124,7 +124,7 @@ describe("plugin environment driver seam", () => {
 
     stdin.write(serializeMessage(createRequest("environmentProbe", {
       driverKey: "fake-plugin",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "environment-1",
       config: { template: "base" },
     }, 2)));
@@ -141,7 +141,7 @@ describe("plugin environment driver seam", () => {
 
     stdin.write(serializeMessage(createRequest("environmentExecute", {
       driverKey: "fake-plugin",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "environment-1",
       config: { template: "base" },
       lease: { providerLeaseId: "lease-1" },

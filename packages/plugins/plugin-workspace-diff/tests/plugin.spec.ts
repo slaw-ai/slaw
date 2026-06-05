@@ -53,7 +53,7 @@ describe("workspace diff plugin", () => {
     harness.seed({
       executionWorkspaces: [{
         id: "workspace-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         projectId: "project-1",
         projectWorkspaceId: null,
         path: root,
@@ -69,7 +69,7 @@ describe("workspace diff plugin", () => {
 
     const result = await harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       view: "working-tree",
       includeUntracked: false,
       paths: ["src/app.ts"],
@@ -87,7 +87,7 @@ describe("workspace diff plugin", () => {
     harness.seed({
       executionWorkspaces: [{
         id: "workspace-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         projectId: "project-1",
         projectWorkspaceId: null,
         path: root,
@@ -103,7 +103,7 @@ describe("workspace diff plugin", () => {
 
     await expect(harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
     })).resolves.toMatchObject({ files: [], truncated: false });
   });
 
@@ -114,9 +114,9 @@ describe("workspace diff plugin", () => {
     await git(root, ["add", "src/app.ts"]);
     await git(root, ["commit", "-m", "project workspace change"]);
     const harness = createTestHarness({ manifest });
-    harness.ctx.projects.listWorkspaces = async (projectId, companyId) => {
+    harness.ctx.projects.listWorkspaces = async (projectId, squadId) => {
       expect(projectId).toBe("project-1");
-      expect(companyId).toBe("company-1");
+      expect(squadId).toBe("squad-1");
       return [{
         id: "workspace-1",
         projectId: "project-1",
@@ -134,7 +134,7 @@ describe("workspace diff plugin", () => {
 
     const result = await harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       projectId: "project-1",
       entityType: "project_workspace",
       view: "head",
@@ -182,7 +182,7 @@ describe("workspace diff plugin", () => {
     harness.seed({
       executionWorkspaces: [{
         id: "workspace-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         projectId: "project-1",
         projectWorkspaceId: "project-workspace-1",
         path: root,
@@ -194,9 +194,9 @@ describe("workspace diff plugin", () => {
         providerMetadata: null,
       }],
     });
-    harness.ctx.projects.listWorkspaces = async (projectId, companyId) => {
+    harness.ctx.projects.listWorkspaces = async (projectId, squadId) => {
       expect(projectId).toBe("project-1");
-      expect(companyId).toBe("company-1");
+      expect(squadId).toBe("squad-1");
       return [{
         id: "project-workspace-1",
         projectId: "project-1",
@@ -214,7 +214,7 @@ describe("workspace diff plugin", () => {
 
     const result = await harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       view: "head",
       includeUntracked: false,
     });
@@ -237,7 +237,7 @@ describe("workspace diff plugin", () => {
     harness.seed({
       executionWorkspaces: [{
         id: "workspace-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         projectId: "project-1",
         projectWorkspaceId: null,
         path: root,
@@ -249,9 +249,9 @@ describe("workspace diff plugin", () => {
         providerMetadata: null,
       }],
     });
-    harness.ctx.projects.listWorkspaces = async (projectId, companyId) => {
+    harness.ctx.projects.listWorkspaces = async (projectId, squadId) => {
       expect(projectId).toBe("project-1");
-      expect(companyId).toBe("company-1");
+      expect(squadId).toBe("squad-1");
       return [{
         id: "project-workspace-1",
         projectId: "project-1",
@@ -269,7 +269,7 @@ describe("workspace diff plugin", () => {
 
     const result = await harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       projectId: "project-1",
       view: "head",
       baseRef: null,
@@ -297,7 +297,7 @@ describe("workspace diff plugin", () => {
     harness.seed({
       executionWorkspaces: [{
         id: "workspace-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         projectId: "project-1",
         projectWorkspaceId: null,
         path: root,
@@ -313,7 +313,7 @@ describe("workspace diff plugin", () => {
 
     await expect(harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       view: "working-tree",
       includeUntracked: false,
     })).resolves.toMatchObject({
@@ -324,7 +324,7 @@ describe("workspace diff plugin", () => {
 
     await expect(harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       view: "head",
       baseRef: null,
       includeUntracked: false,
@@ -342,6 +342,6 @@ describe("workspace diff plugin", () => {
 
     await expect(harness.getData("workspace-diff", {
       workspaceId: "workspace-1",
-    })).rejects.toThrow("workspaceId and companyId are required");
+    })).rejects.toThrow("workspaceId and squadId are required");
   });
 });

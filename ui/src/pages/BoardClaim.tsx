@@ -34,8 +34,8 @@ export function BoardClaimPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.stats });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.squads.stats });
       await statusQuery.refetch();
     },
   });
@@ -103,7 +103,7 @@ export function BoardClaimPage() {
       <div className="rounded-lg border border-border bg-card p-6">
         <h1 className="text-xl font-semibold">Claim Board ownership</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This will promote your user to instance admin and migrate company ownership access from local trusted mode.
+          This will promote your user to instance admin and migrate squad ownership access from local trusted mode.
         </p>
 
         {claimMutation.error && (

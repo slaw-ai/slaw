@@ -3,7 +3,7 @@ import type { Db } from "@slaw/db";
 import { clampIssueRequestDepth } from "@slaw/shared";
 import {
   agents,
-  companies,
+  squads,
   costEvents,
   heartbeatRuns,
   issueComments,
@@ -204,11 +204,11 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
   const issuesSvc = issueService(db);
   const budgets = budgetService(db);
 
-  async function getCompanyIssuePrefix(companyId: string) {
+  async function getSquadIssuePrefix(squadId: string) {
     return db
-      .select({ issuePrefix: companies.issuePrefix })
-      .from(companies)
-      .where(eq(companies.id, companyId))
+      .select({ issuePrefix: squads.issuePrefix })
+      .from(squads)
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0]?.issuePrefix ?? "PAP");
   }
 
@@ -224,14 +224,14 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     return Boolean(agent && !["paused", "terminated", "pending_approval"].includes(agent.status));
   }
 
-  async function isProductivityReviewDescendant(issue: Pick<IssueRow, "companyId" | "parentId">) {
+  async function isProductivityReviewDescendant(issue: Pick<IssueRow, "squadId" | "parentId">) {
     let parentId = issue.parentId;
     let depth = 0;
     while (parentId && depth < MAX_PARENT_WALK_DEPTH) {
       const parent = await db
         .select({ id: issues.id, parentId: issues.parentId, originKind: issues.originKind })
         .from(issues)
-        .where(and(eq(issues.companyId, issue.companyId), eq(issues.id, parentId)))
+        .where(and(eq(issues.squadId, issue.squadId), eq(issues.id, parentId)))
         .then((rows) => rows[0] ?? null);
       if (!parent) return false;
       if (parent.originKind === PRODUCTIVITY_REVIEW_ORIGIN_KIND) return true;
@@ -241,13 +241,13 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     return false;
   }
 
-  async function findOpenProductivityReview(companyId: string, sourceIssueId: string) {
+  async function findOpenProductivityReview(squadId: string, sourceIssueId: string) {
     return db
       .select()
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           eq(issues.originKind, PRODUCTIVITY_REVIEW_ORIGIN_KIND),
           eq(issues.originId, sourceIssueId),
           isNull(issues.hiddenAt),
@@ -260,7 +260,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
   }
 
   async function findRecentResolvedProductivityReview(
-    companyId: string,
+    squadId: string,
     sourceIssueId: string,
     thresholds: ProductivityReviewThresholds,
     now: Date,
@@ -271,7 +271,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           eq(issues.originKind, PRODUCTIVITY_REVIEW_ORIGIN_KIND),
           eq(issues.originId, sourceIssueId),
           eq(issues.status, "done"),
@@ -284,7 +284,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
   }
 
   async function countRecentProductivityReviews(
-    companyId: string,
+    squadId: string,
     sourceIssueId: string,
     thresholds: ProductivityReviewThresholds,
     now: Date,
@@ -295,7 +295,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .from(issues)
       .where(
         and(
-          eq(issues.companyId, companyId),
+          eq(issues.squadId, squadId),
           eq(issues.originKind, PRODUCTIVITY_REVIEW_ORIGIN_KIND),
           eq(issues.originId, sourceIssueId),
           isNull(issues.hiddenAt),
@@ -306,7 +306,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .then((rows) => Number(rows[0]?.count ?? 0));
   }
 
-  async function getRefreshCommentState(companyId: string, reviewIssueId: string) {
+  async function getRefreshCommentState(squadId: string, reviewIssueId: string) {
     return db
       .select({
         count: sql<number>`count(*)::int`,
@@ -315,7 +315,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .from(issueComments)
       .where(
         and(
-          eq(issueComments.companyId, companyId),
+          eq(issueComments.squadId, squadId),
           eq(issueComments.issueId, reviewIssueId),
           sql`${issueComments.body} like ${`${PRODUCTIVITY_REVIEW_REFRESH_COMMENT_PREFIX}%`}`,
         ),
@@ -346,13 +346,13 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     return comment;
   }
 
-  async function countIssueRunsSince(companyId: string, agentId: string, issueId: string, since: Date) {
+  async function countIssueRunsSince(squadId: string, agentId: string, issueId: string, since: Date) {
     return db
       .select({ count: sql<number>`count(*)::int` })
       .from(heartbeatRuns)
       .where(
         and(
-          eq(heartbeatRuns.companyId, companyId),
+          eq(heartbeatRuns.squadId, squadId),
           eq(heartbeatRuns.agentId, agentId),
           issueRunScopeSql(issueId),
           sql`coalesce(${heartbeatRuns.startedAt}, ${heartbeatRuns.createdAt}) >= ${since.toISOString()}::timestamptz`,
@@ -361,17 +361,17 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .then((rows) => rows[0]?.count ?? 0);
   }
 
-  async function countIssueCommentsSince(companyId: string, issueId: string, agentId: string, since?: Date) {
+  async function countIssueCommentsSince(squadId: string, issueId: string, agentId: string, since?: Date) {
     return db
       .select({ count: sql<number>`count(*)::int` })
       .from(issueComments)
       .innerJoin(heartbeatRuns, eq(heartbeatRuns.id, issueComments.createdByRunId))
       .where(
         and(
-          eq(issueComments.companyId, companyId),
+          eq(issueComments.squadId, squadId),
           eq(issueComments.issueId, issueId),
           eq(issueComments.authorAgentId, agentId),
-          eq(heartbeatRuns.companyId, companyId),
+          eq(heartbeatRuns.squadId, squadId),
           eq(heartbeatRuns.agentId, agentId),
           issueRunScopeSql(issueId),
           since ? sql`${issueComments.createdAt} >= ${since.toISOString()}::timestamptz` : undefined,
@@ -394,7 +394,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .from(heartbeatRuns)
       .where(
         and(
-          eq(heartbeatRuns.companyId, sourceIssue.companyId),
+          eq(heartbeatRuns.squadId, sourceIssue.squadId),
           eq(heartbeatRuns.agentId, sourceAgent.id),
           issueRunScopeSql(sourceIssue.id),
         ),
@@ -410,7 +410,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
         .from(issueComments)
         .where(
           and(
-            eq(issueComments.companyId, sourceIssue.companyId),
+            eq(issueComments.squadId, sourceIssue.squadId),
             eq(issueComments.issueId, sourceIssue.id),
             inArray(issueComments.createdByRunId, runIds),
           ),
@@ -438,21 +438,21 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       latestComments,
       costRow,
     ] = await Promise.all([
-      countIssueRunsSince(sourceIssue.companyId, sourceAgent.id, sourceIssue.id, oneHourAgo),
-      countIssueRunsSince(sourceIssue.companyId, sourceAgent.id, sourceIssue.id, sixHoursAgo),
-      countIssueCommentsSince(sourceIssue.companyId, sourceIssue.id, sourceAgent.id),
-      countIssueCommentsSince(sourceIssue.companyId, sourceIssue.id, sourceAgent.id, oneHourAgo),
-      countIssueCommentsSince(sourceIssue.companyId, sourceIssue.id, sourceAgent.id, sixHoursAgo),
+      countIssueRunsSince(sourceIssue.squadId, sourceAgent.id, sourceIssue.id, oneHourAgo),
+      countIssueRunsSince(sourceIssue.squadId, sourceAgent.id, sourceIssue.id, sixHoursAgo),
+      countIssueCommentsSince(sourceIssue.squadId, sourceIssue.id, sourceAgent.id),
+      countIssueCommentsSince(sourceIssue.squadId, sourceIssue.id, sourceAgent.id, oneHourAgo),
+      countIssueCommentsSince(sourceIssue.squadId, sourceIssue.id, sourceAgent.id, sixHoursAgo),
       db
         .select({ comment: issueComments })
         .from(issueComments)
         .innerJoin(heartbeatRuns, eq(heartbeatRuns.id, issueComments.createdByRunId))
         .where(
           and(
-            eq(issueComments.companyId, sourceIssue.companyId),
+            eq(issueComments.squadId, sourceIssue.squadId),
             eq(issueComments.issueId, sourceIssue.id),
             eq(issueComments.authorAgentId, sourceAgent.id),
-            eq(heartbeatRuns.companyId, sourceIssue.companyId),
+            eq(heartbeatRuns.squadId, sourceIssue.squadId),
             eq(heartbeatRuns.agentId, sourceAgent.id),
             issueRunScopeSql(sourceIssue.id),
           ),
@@ -463,7 +463,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       db
         .select({ costCents: sql<number>`coalesce(sum(${costEvents.costCents}), 0)::int` })
         .from(costEvents)
-        .where(and(eq(costEvents.companyId, sourceIssue.companyId), eq(costEvents.issueId, sourceIssue.id)))
+        .where(and(eq(costEvents.squadId, sourceIssue.squadId), eq(costEvents.issueId, sourceIssue.id)))
         .then((rows) => rows[0] ?? { costCents: 0 }),
     ]);
 
@@ -530,14 +530,14 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       const project = await db
         .select({ leadAgentId: projects.leadAgentId })
         .from(projects)
-        .where(and(eq(projects.companyId, sourceIssue.companyId), eq(projects.id, sourceIssue.projectId)))
+        .where(and(eq(projects.squadId, sourceIssue.squadId), eq(projects.id, sourceIssue.projectId)))
         .then((rows) => rows[0] ?? null);
       if (project?.leadAgentId) candidateIds.push(project.leadAgentId);
     }
     const roleCandidates = await db
       .select({ id: agents.id })
       .from(agents)
-      .where(and(eq(agents.companyId, sourceIssue.companyId), inArray(agents.role, ["cto", "ceo"])))
+      .where(and(eq(agents.squadId, sourceIssue.squadId), inArray(agents.role, ["cto", "squad_lead"])))
       .orderBy(sql`case when ${agents.role} = 'cto' then 0 else 1 end`, asc(agents.createdAt), asc(agents.id));
     candidateIds.push(...roleCandidates.map((agent) => agent.id));
 
@@ -546,8 +546,8 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       if (seen.has(agentId)) continue;
       seen.add(agentId);
       const candidate = await getAgent(agentId);
-      if (!candidate || candidate.companyId !== sourceIssue.companyId || !isAgentInvokable(candidate)) continue;
-      const budgetBlock = await budgets.getInvocationBlock(sourceIssue.companyId, candidate.id, {
+      if (!candidate || candidate.squadId !== sourceIssue.squadId || !isAgentInvokable(candidate)) continue;
+      const budgetBlock = await budgets.getInvocationBlock(sourceIssue.squadId, candidate.id, {
         issueId: sourceIssue.id,
         projectId: sourceIssue.projectId ?? null,
       });
@@ -637,9 +637,9 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     evidence: ProductivityReviewEvidence,
     opts: { prefix: string; thresholds: ProductivityReviewThresholds },
   ) {
-    const existing = await findOpenProductivityReview(evidence.sourceIssue.companyId, evidence.sourceIssue.id);
+    const existing = await findOpenProductivityReview(evidence.sourceIssue.squadId, evidence.sourceIssue.id);
     if (existing) {
-      const refreshState = await getRefreshCommentState(evidence.sourceIssue.companyId, existing.id);
+      const refreshState = await getRefreshCommentState(evidence.sourceIssue.squadId, existing.id);
       const lastRefreshOrCreationAt = refreshState.latestCreatedAt ?? existing.createdAt;
       if (
         refreshState.count >= opts.thresholds.maxRefreshComments ||
@@ -649,7 +649,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       }
       await addRefreshComment(existing.id, buildRefreshComment(evidence, opts.prefix), evidence.generatedAt);
       await logActivity(db, {
-        companyId: evidence.sourceIssue.companyId,
+        squadId: evidence.sourceIssue.squadId,
         actorType: "system",
         actorId: "system",
         action: "issue.productivity_review_updated",
@@ -669,7 +669,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     }
 
     const recentCreationCount = await countRecentProductivityReviews(
-      evidence.sourceIssue.companyId,
+      evidence.sourceIssue.squadId,
       evidence.sourceIssue.id,
       opts.thresholds,
       evidence.generatedAt,
@@ -681,7 +681,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     const ownerAgentId = await resolveReviewOwnerAgentId(evidence.sourceIssue, evidence.sourceAgent);
     let review: Awaited<ReturnType<typeof issuesSvc.create>>;
     try {
-      review = await issuesSvc.create(evidence.sourceIssue.companyId, {
+      review = await issuesSvc.create(evidence.sourceIssue.squadId, {
         title: `Review productivity for ${evidence.sourceIssue.identifier ?? evidence.sourceIssue.title}`,
         description: buildReviewMarkdown(evidence, opts.prefix),
         status: "todo",
@@ -705,7 +705,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
           typeof maybe.message === "string" && maybe.message.includes("issues_active_productivity_review_uq")
         );
       if (!uniqueConflict) throw error;
-      const raced = await findOpenProductivityReview(evidence.sourceIssue.companyId, evidence.sourceIssue.id);
+      const raced = await findOpenProductivityReview(evidence.sourceIssue.squadId, evidence.sourceIssue.id);
       if (!raced) throw error;
       return { kind: "existing" as const, reviewIssueId: raced.id };
     }
@@ -715,7 +715,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .where(eq(issues.id, review.id));
 
     await logActivity(db, {
-      companyId: evidence.sourceIssue.companyId,
+      squadId: evidence.sourceIssue.squadId,
       actorType: "system",
       actorId: "system",
       action: "issue.productivity_review_created",
@@ -760,7 +760,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
 
   async function reconcileProductivityReviews(opts?: {
     now?: Date;
-    companyId?: string;
+    squadId?: string;
     thresholds?: Partial<ProductivityReviewThresholds>;
   }) {
     const now = opts?.now ?? new Date();
@@ -770,7 +770,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       .from(issues)
       .where(
         and(
-          opts?.companyId ? eq(issues.companyId, opts.companyId) : undefined,
+          opts?.squadId ? eq(issues.squadId, opts.squadId) : undefined,
           isNull(issues.hiddenAt),
           isNull(issues.assigneeUserId),
           inArray(issues.status, ["todo", "in_progress"]),
@@ -804,12 +804,12 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
         result.skipped += 1;
         continue;
       }
-      if (await findRecentResolvedProductivityReview(candidate.companyId, candidate.id, thresholds, now)) {
+      if (await findRecentResolvedProductivityReview(candidate.squadId, candidate.id, thresholds, now)) {
         result.snoozed += 1;
         continue;
       }
       const sourceAgent = await getAgent(candidate.assigneeAgentId);
-      if (!sourceAgent || sourceAgent.companyId !== candidate.companyId) {
+      if (!sourceAgent || sourceAgent.squadId !== candidate.squadId) {
         result.skipped += 1;
         continue;
       }
@@ -818,10 +818,10 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
         result.skipped += 1;
         continue;
       }
-      let prefix = prefixCache.get(candidate.companyId);
+      let prefix = prefixCache.get(candidate.squadId);
       if (!prefix) {
-        prefix = await getCompanyIssuePrefix(candidate.companyId);
-        prefixCache.set(candidate.companyId, prefix);
+        prefix = await getSquadIssuePrefix(candidate.squadId);
+        prefixCache.set(candidate.squadId, prefix);
       }
       try {
         const outcome = await createOrUpdateReview(evidence, { prefix, thresholds });
@@ -836,7 +836,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
         logger.warn(
           {
             err,
-            companyId: candidate.companyId,
+            squadId: candidate.squadId,
             issueId: candidate.id,
             requestDepth: candidate.requestDepth,
           },
@@ -849,7 +849,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
   }
 
   async function isProductivityReviewContinuationHoldActive(input: {
-    companyId: string;
+    squadId: string;
     issueId: string;
     agentId: string;
     now?: Date;
@@ -861,13 +861,13 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
       db
         .select()
         .from(issues)
-        .where(and(eq(issues.companyId, input.companyId), eq(issues.id, input.issueId)))
+        .where(and(eq(issues.squadId, input.squadId), eq(issues.id, input.issueId)))
         .then((rows) => rows[0] ?? null),
       getAgent(input.agentId),
-      findOpenProductivityReview(input.companyId, input.issueId),
+      findOpenProductivityReview(input.squadId, input.issueId),
     ]);
     if (!sourceIssue || !sourceAgent || !openReview) return { held: false as const };
-    if (sourceAgent.companyId !== input.companyId) return { held: false as const };
+    if (sourceAgent.squadId !== input.squadId) return { held: false as const };
     const evidence = await collectEvidence(sourceIssue, sourceAgent, thresholds, now);
     if (!evidence || !isSoftStopTrigger(evidence.trigger)) return { held: false as const };
     return {
@@ -880,7 +880,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
   }
 
   async function recordContinuationHold(input: {
-    companyId: string;
+    squadId: string;
     issueId: string;
     runId: string;
     agentId: string;
@@ -889,7 +889,7 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     reason: string;
   }) {
     await logActivity(db, {
-      companyId: input.companyId,
+      squadId: input.squadId,
       actorType: "system",
       actorId: "system",
       agentId: input.agentId,

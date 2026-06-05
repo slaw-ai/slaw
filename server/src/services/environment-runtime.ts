@@ -100,7 +100,7 @@ function stripSecretRefValuesFromPluginLeaseMetadata(input: {
 }
 
 export interface EnvironmentDriverAcquireInput {
-  companyId: string;
+  squadId: string;
   environment: Environment;
   issueId: string | null;
   /**
@@ -204,7 +204,7 @@ function createLocalEnvironmentDriver(db: Db): EnvironmentRuntimeDriver {
 
     async acquireRunLease(input) {
       return await environmentsSvc.acquireLease({
-        companyId: input.companyId,
+        squadId: input.squadId,
         environmentId: input.environment.id,
         executionWorkspaceId: input.executionWorkspaceId,
         issueId: input.issueId,
@@ -246,7 +246,7 @@ function createSshEnvironmentDriver(db: Db): EnvironmentRuntimeDriver {
     driver: "ssh",
 
     async acquireRunLease(input) {
-      const parsed = await resolveEnvironmentDriverConfigForRuntime(db, input.companyId, input.environment, {
+      const parsed = await resolveEnvironmentDriverConfigForRuntime(db, input.squadId, input.environment, {
         issueId: input.issueId,
         heartbeatRunId: input.heartbeatRunId,
       });
@@ -256,7 +256,7 @@ function createSshEnvironmentDriver(db: Db): EnvironmentRuntimeDriver {
 
       const { remoteCwd } = await ensureSshWorkspaceReady(parsed.config);
       return await environmentsSvc.acquireLease({
-        companyId: input.companyId,
+        squadId: input.squadId,
         environmentId: input.environment.id,
         executionWorkspaceId: input.executionWorkspaceId,
         issueId: input.issueId,
@@ -366,7 +366,7 @@ function createSandboxEnvironmentDriver(
   }): Promise<Record<string, unknown>> {
     const metadataConfig = sandboxConfigFromLeaseMetadataLoose(input.lease);
     if (metadataConfig && metadataConfig.provider === input.provider) {
-      const parsed = await resolveEnvironmentDriverConfigForRuntime(db, input.lease.companyId, {
+      const parsed = await resolveEnvironmentDriverConfigForRuntime(db, input.lease.squadId, {
         id: input.environment.id,
         driver: "sandbox",
         config: sandboxConfigForLeaseMetadata(metadataConfig),
@@ -380,7 +380,7 @@ function createSandboxEnvironmentDriver(
       try {
         const parsed = await resolveEnvironmentDriverConfigForRuntime(
           db,
-          input.lease.companyId,
+          input.lease.squadId,
           input.environment,
         );
         if (parsed.driver === "sandbox" && parsed.config.provider === input.provider) {
@@ -403,7 +403,7 @@ function createSandboxEnvironmentDriver(
 
     async acquireRunLease(input) {
       const storedParsed = parseEnvironmentDriverConfig(input.environment);
-      const parsed = await resolveEnvironmentDriverConfigForRuntime(db, input.companyId, input.environment, {
+      const parsed = await resolveEnvironmentDriverConfigForRuntime(db, input.squadId, input.environment, {
         issueId: input.issueId,
         heartbeatRunId: input.heartbeatRunId,
       });
@@ -462,7 +462,7 @@ function createSandboxEnvironmentDriver(
               "environmentResumeLease",
               {
                 driverKey: parsed.config.provider,
-                companyId: input.companyId,
+                squadId: input.squadId,
                 environmentId: input.environment.id,
                 issueId: input.issueId,
                 config: workerConfig,
@@ -481,7 +481,7 @@ function createSandboxEnvironmentDriver(
           "environmentAcquireLease",
           {
             driverKey: parsed.config.provider,
-            companyId: input.companyId,
+            squadId: input.squadId,
             environmentId: input.environment.id,
             issueId: input.issueId,
             config: workerConfig,
@@ -502,7 +502,7 @@ function createSandboxEnvironmentDriver(
           : "ephemeral";
 
         return await environmentsSvc.acquireLease({
-          companyId: input.companyId,
+          squadId: input.squadId,
           environmentId: input.environment.id,
           executionWorkspaceId: input.executionWorkspaceId,
           issueId: input.issueId,
@@ -557,7 +557,7 @@ function createSandboxEnvironmentDriver(
         : "ephemeral";
 
       return await environmentsSvc.acquireLease({
-        companyId: input.companyId,
+        squadId: input.squadId,
         environmentId: input.environment.id,
         executionWorkspaceId: input.executionWorkspaceId,
         issueId: input.issueId,
@@ -590,12 +590,12 @@ function createSandboxEnvironmentDriver(
       }
 
       const parsed = metadataConfig
-        ? await resolveEnvironmentDriverConfigForRuntime(db, input.lease.companyId, {
+        ? await resolveEnvironmentDriverConfigForRuntime(db, input.lease.squadId, {
             id: input.environment.id,
             driver: "sandbox",
             config: metadataConfig as unknown as Record<string, unknown>,
           })
-        : await resolveEnvironmentDriverConfigForRuntime(db, input.lease.companyId, input.environment);
+        : await resolveEnvironmentDriverConfigForRuntime(db, input.lease.squadId, input.environment);
       if (parsed.driver !== "sandbox") {
         throw new Error(`Expected sandbox environment config for lease "${input.lease.id}".`);
       }
@@ -636,7 +636,7 @@ function createSandboxEnvironmentDriver(
           });
           return await pluginWorkerManager.call(pluginId, "environmentRealizeWorkspace", {
             driverKey: providerKey,
-            companyId: input.lease.companyId,
+            squadId: input.lease.squadId,
             environmentId: input.environment.id,
             issueId: input.lease.issueId,
             config: stripSandboxProviderEnvelope(config as SandboxEnvironmentConfig),
@@ -681,7 +681,7 @@ function createSandboxEnvironmentDriver(
           const sanitizedConfig = stripSandboxProviderEnvelope(config as SandboxEnvironmentConfig);
           return await pluginWorkerManager.call(pluginId, "environmentExecute", {
             driverKey: providerKey,
-            companyId: input.lease.companyId,
+            squadId: input.lease.squadId,
             environmentId: input.environment.id,
             issueId: input.lease.issueId,
             config: sanitizedConfig,
@@ -723,7 +723,7 @@ function createSandboxEnvironmentDriver(
         });
         await pluginWorkerManager.call(pluginId, "environmentReleaseLease", {
           driverKey: providerKey,
-          companyId: input.lease.companyId,
+          squadId: input.lease.squadId,
           environmentId: input.environment.id,
           issueId: input.lease.issueId,
           config: stripSandboxProviderEnvelope(config as SandboxEnvironmentConfig),
@@ -892,7 +892,7 @@ function createPluginEnvironmentDriver(
       const { plugin } = await resolvePluginDriver(parsed.config);
       const providerLease = await workerManager.call(plugin.id, "environmentAcquireLease", {
         driverKey: parsed.config.driverKey,
-        companyId: input.companyId,
+        squadId: input.squadId,
         environmentId: input.environment.id,
         issueId: input.issueId,
         config: parsed.config.driverConfig,
@@ -901,7 +901,7 @@ function createPluginEnvironmentDriver(
       });
 
       return await environmentsSvc.acquireLease({
-        companyId: input.companyId,
+        squadId: input.squadId,
         environmentId: input.environment.id,
         executionWorkspaceId: input.executionWorkspaceId,
         issueId: input.issueId,
@@ -925,7 +925,7 @@ function createPluginEnvironmentDriver(
       const { plugin, driverKey, driverConfig } = await resolvePluginDriverForRelease(input);
       await workerManager.call(plugin.id, "environmentReleaseLease", {
         driverKey,
-        companyId: input.lease.companyId,
+        squadId: input.lease.squadId,
         environmentId: input.environment.id,
         issueId: input.lease.issueId,
         config: driverConfig,
@@ -946,7 +946,7 @@ function createPluginEnvironmentDriver(
       return await resumePluginEnvironmentLease({
         db,
         workerManager,
-        companyId: input.lease.companyId,
+        squadId: input.lease.squadId,
         environmentId: input.environment.id,
         issueId: input.lease.issueId,
         config: {
@@ -967,7 +967,7 @@ function createPluginEnvironmentDriver(
       await destroyPluginEnvironmentLease({
         db,
         workerManager,
-        companyId: input.lease.companyId,
+        squadId: input.lease.squadId,
         environmentId: input.environment.id,
         issueId: input.lease.issueId,
         config: {
@@ -998,7 +998,7 @@ function createPluginEnvironmentDriver(
         },
         params: {
           driverKey,
-          companyId: input.lease.companyId,
+          squadId: input.lease.squadId,
           environmentId: input.environment.id,
           issueId: input.lease.issueId,
           config: driverConfig,
@@ -1029,7 +1029,7 @@ function createPluginEnvironmentDriver(
         },
         params: {
           driverKey,
-          companyId: input.lease.companyId,
+          squadId: input.lease.squadId,
           environmentId: input.environment.id,
           issueId: input.lease.issueId,
           config: driverConfig,
@@ -1107,7 +1107,7 @@ export function environmentRuntimeService(
     getDriver,
 
     async acquireRunLease(input: {
-      companyId: string;
+      squadId: string;
       environment: Environment;
       issueId: string | null;
       /** Null for ad-hoc invocations (e.g. operator-initiated `Test` probes). */
@@ -1123,7 +1123,7 @@ export function environmentRuntimeService(
       });
       const driver = requireDriver(input.environment);
       const lease = await driver.acquireRunLease({
-        companyId: input.companyId,
+        squadId: input.squadId,
         environment: input.environment,
         issueId: input.issueId,
         heartbeatRunId: input.heartbeatRunId,
@@ -1162,7 +1162,7 @@ export function environmentRuntimeService(
 
         const leaseSnapshot: EnvironmentLease = {
           id: leaseRow.id,
-          companyId: leaseRow.companyId,
+          squadId: leaseRow.squadId,
           environmentId: leaseRow.environmentId,
           executionWorkspaceId: leaseRow.executionWorkspaceId ?? null,
           issueId: leaseRow.issueId ?? null,

@@ -8,15 +8,15 @@ import {
   type BaseClientOptions,
 } from "./common.js";
 
-interface CompanyOptions extends BaseClientOptions {
-  companyId?: string;
+interface SquadOptions extends BaseClientOptions {
+  squadId?: string;
 }
 
-interface JsonPayloadOptions extends CompanyOptions {
+interface JsonPayloadOptions extends SquadOptions {
   payloadJson?: string;
 }
 
-interface QueryOptions extends CompanyOptions {
+interface QueryOptions extends SquadOptions {
   query?: string;
   status?: string;
   requestType?: string;
@@ -62,24 +62,24 @@ export function registerAccessCommands(program: Command): void {
   addJsonPatch(profile, "update", "Update current auth profile", "/api/auth/profile");
   addCommonClientOptions(
     profile
-      .command("company-user")
-      .description("Get a user profile within a company")
+      .command("squad-user")
+      .description("Get a user profile within a squad")
       .argument("<userSlug>", "User slug")
-      .option("-C, --company-id <id>", "Company ID")
-      .action(async (userSlug: string, opts: CompanyOptions) => {
+      .option("-C, --squad-id <id>", "Squad ID")
+      .action(async (userSlug: string, opts: SquadOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
-          printOutput(await ctx.api.get(apiPath`/api/companies/${ctx.companyId}/users/${userSlug}/profile`), { json: ctx.json });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
+          printOutput(await ctx.api.get(apiPath`/api/squads/${ctx.squadId}/users/${userSlug}/profile`), { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 
   const invite = program.command("invite").description("Invite operations");
-  addCompanyList(invite, "list", "List company invites", "invites");
-  addCompanyPost(invite, "create", "Create an invite", "invites");
+  addSquadList(invite, "list", "List squad invites", "invites");
+  addSquadPost(invite, "create", "Create an invite", "invites");
   addCommonClientOptions(
     invite
       .command("revoke")
@@ -169,23 +169,23 @@ export function registerAccessCommands(program: Command): void {
     join
       .command("list")
       .description("List join requests")
-      .option("-C, --company-id <id>", "Company ID")
+      .option("-C, --squad-id <id>", "Squad ID")
       .option("--status <status>", "Filter by status (pending_approval, approved, rejected; pending alias accepted)")
       .option("--request-type <type>", "Filter by request type")
       .action(async (opts: QueryOptions) => {
         try {
-          const ctx = resolveCommandContext(opts, { requireCompany: true });
+          const ctx = resolveCommandContext(opts, { requireSquad: true });
           const params = new URLSearchParams();
           const status = normalizeJoinStatus(opts.status);
           if (status) params.set("status", status);
           if (opts.requestType) params.set("requestType", opts.requestType);
           const query = params.toString();
-          printOutput(await ctx.api.get(`${apiPath`/api/companies/${ctx.companyId}/join-requests`}${query ? `?${query}` : ""}`), { json: ctx.json });
+          printOutput(await ctx.api.get(`${apiPath`/api/squads/${ctx.squadId}/join-requests`}${query ? `?${query}` : ""}`), { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
   addJoinAction(join, "approve");
   addJoinAction(join, "reject");
@@ -205,9 +205,9 @@ export function registerAccessCommands(program: Command): void {
       }),
   );
 
-  const member = program.command("member").description("Company member operations");
-  addCompanyList(member, "list", "List company members", "members");
-  addCompanyList(member, "user-directory", "List company user directory", "user-directory");
+  const member = program.command("member").description("Squad member operations");
+  addSquadList(member, "list", "List squad members", "members");
+  addSquadList(member, "user-directory", "List squad user directory", "user-directory");
   addMemberPatch(member, "update", "members");
   addMemberPatch(member, "role-and-grants", "members", "role-and-grants");
   addMemberPatch(member, "permissions", "members", "permissions");
@@ -234,13 +234,13 @@ export function registerAccessCommands(program: Command): void {
   addAdminUserPost(user, "demote", "demote-instance-admin");
   addCommonClientOptions(
     user
-      .command("company-access")
-      .description("Get user company access")
+      .command("squad-access")
+      .description("Get user squad access")
       .argument("<userId>", "User ID")
       .action(async (userId: string, opts: BaseClientOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          printOutput(await ctx.api.get(apiPath`/api/admin/users/${userId}/company-access`), { json: ctx.json });
+          printOutput(await ctx.api.get(apiPath`/api/admin/users/${userId}/squad-access`), { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
@@ -248,14 +248,14 @@ export function registerAccessCommands(program: Command): void {
   );
   addCommonClientOptions(
     user
-      .command("company-access:update")
-      .description("Update user company access")
+      .command("squad-access:update")
+      .description("Update user squad access")
       .argument("<userId>", "User ID")
-      .requiredOption("--payload-json <json>", "UpdateUserCompanyAccess JSON payload")
+      .requiredOption("--payload-json <json>", "UpdateUserSquadAccess JSON payload")
       .action(async (userId: string, opts: JsonPayloadOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          printOutput(await ctx.api.put(apiPath`/api/admin/users/${userId}/company-access`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
+          printOutput(await ctx.api.put(apiPath`/api/admin/users/${userId}/squad-access`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
@@ -285,13 +285,13 @@ export function registerAccessCommands(program: Command): void {
   const sidebar = program.command("sidebar").description("Sidebar preference and badge operations");
   addSimpleGet(sidebar, "preferences", "Get current sidebar preferences", "/api/sidebar-preferences/me");
   addJsonPut(sidebar, "preferences:update", "Update current sidebar preferences", "/api/sidebar-preferences/me");
-  addCompanyList(sidebar, "project-preferences", "Get current project sidebar preferences", "sidebar-preferences/me");
-  addCompanyPut(sidebar, "project-preferences:update", "Update current project sidebar preferences", "sidebar-preferences/me");
-  addCompanyList(sidebar, "badges", "Get sidebar badges", "sidebar-badges");
+  addSquadList(sidebar, "project-preferences", "Get current project sidebar preferences", "sidebar-preferences/me");
+  addSquadPut(sidebar, "project-preferences:update", "Update current project sidebar preferences", "sidebar-preferences/me");
+  addSquadList(sidebar, "badges", "Get sidebar badges", "sidebar-badges");
 
   const inbox = program.command("inbox").description("Board inbox operations");
-  addCompanyList(inbox, "dismissals", "List dismissed inbox items", "inbox-dismissals");
-  addCompanyPost(inbox, "dismiss", "Dismiss an inbox item", "inbox-dismissals");
+  addSquadList(inbox, "dismissals", "List dismissed inbox items", "inbox-dismissals");
+  addSquadPost(inbox, "dismiss", "Dismiss an inbox item", "inbox-dismissals");
 
   const boardClaim = program.command("board-claim").description("Board claim token operations");
   addCommonClientOptions(
@@ -415,88 +415,88 @@ function addJsonPut(parent: Command, name: string, description: string, path: st
   }));
 }
 
-function addCompanyList(parent: Command, name: string, description: string, path: string): void {
+function addSquadList(parent: Command, name: string, description: string, path: string): void {
   addCommonClientOptions(
-    parent.command(name).description(description).option("-C, --company-id <id>", "Company ID").action(async (opts: CompanyOptions) => {
+    parent.command(name).description(description).option("-C, --squad-id <id>", "Squad ID").action(async (opts: SquadOptions) => {
       try {
-        const ctx = resolveCommandContext(opts, { requireCompany: true });
-        printOutput(await ctx.api.get(`${apiPath`/api/companies/${ctx.companyId}`}/${path}`), { json: ctx.json });
+        const ctx = resolveCommandContext(opts, { requireSquad: true });
+        printOutput(await ctx.api.get(`${apiPath`/api/squads/${ctx.squadId}`}/${path}`), { json: ctx.json });
       } catch (err) {
         handleCommandError(err);
       }
     }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
-function addCompanyPut(parent: Command, name: string, description: string, path: string): void {
+function addSquadPut(parent: Command, name: string, description: string, path: string): void {
   addCommonClientOptions(
-    parent.command(name).description(description).option("-C, --company-id <id>", "Company ID").requiredOption("--payload-json <json>", "JSON payload").action(async (opts: JsonPayloadOptions) => {
+    parent.command(name).description(description).option("-C, --squad-id <id>", "Squad ID").requiredOption("--payload-json <json>", "JSON payload").action(async (opts: JsonPayloadOptions) => {
       try {
-        const ctx = resolveCommandContext(opts, { requireCompany: true });
-        printOutput(await ctx.api.put(`${apiPath`/api/companies/${ctx.companyId}`}/${path}`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
+        const ctx = resolveCommandContext(opts, { requireSquad: true });
+        printOutput(await ctx.api.put(`${apiPath`/api/squads/${ctx.squadId}`}/${path}`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
       } catch (err) {
         handleCommandError(err);
       }
     }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
-function addCompanyPost(parent: Command, name: string, description: string, path: string): void {
+function addSquadPost(parent: Command, name: string, description: string, path: string): void {
   addCommonClientOptions(
-    parent.command(name).description(description).option("-C, --company-id <id>", "Company ID").requiredOption("--payload-json <json>", "JSON payload").action(async (opts: JsonPayloadOptions) => {
+    parent.command(name).description(description).option("-C, --squad-id <id>", "Squad ID").requiredOption("--payload-json <json>", "JSON payload").action(async (opts: JsonPayloadOptions) => {
       try {
-        const ctx = resolveCommandContext(opts, { requireCompany: true });
-        printOutput(await ctx.api.post(`${apiPath`/api/companies/${ctx.companyId}`}/${path}`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
+        const ctx = resolveCommandContext(opts, { requireSquad: true });
+        printOutput(await ctx.api.post(`${apiPath`/api/squads/${ctx.squadId}`}/${path}`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
       } catch (err) {
         handleCommandError(err);
       }
     }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
 function addJoinAction(parent: Command, action: "approve" | "reject"): void {
   addCommonClientOptions(
-    parent.command(action).description(`${action} a join request`).argument("<requestId>", "Join request ID").option("-C, --company-id <id>", "Company ID").action(async (requestId: string, opts: CompanyOptions) => {
+    parent.command(action).description(`${action} a join request`).argument("<requestId>", "Join request ID").option("-C, --squad-id <id>", "Squad ID").action(async (requestId: string, opts: SquadOptions) => {
       try {
-        const ctx = resolveCommandContext(opts, { requireCompany: true });
-        printOutput(await ctx.api.post(`${apiPath`/api/companies/${ctx.companyId}/join-requests/${requestId}`}/${action}`, {}), { json: ctx.json });
+        const ctx = resolveCommandContext(opts, { requireSquad: true });
+        printOutput(await ctx.api.post(`${apiPath`/api/squads/${ctx.squadId}/join-requests/${requestId}`}/${action}`, {}), { json: ctx.json });
       } catch (err) {
         handleCommandError(err);
       }
     }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
 function addMemberPatch(parent: Command, name: string, path: string, suffix?: string): void {
   addCommonClientOptions(
-    parent.command(name).description(`${name} a member`).argument("<memberId>", "Member ID").option("-C, --company-id <id>", "Company ID").requiredOption("--payload-json <json>", "JSON payload").action(async (memberId: string, opts: JsonPayloadOptions) => {
+    parent.command(name).description(`${name} a member`).argument("<memberId>", "Member ID").option("-C, --squad-id <id>", "Squad ID").requiredOption("--payload-json <json>", "JSON payload").action(async (memberId: string, opts: JsonPayloadOptions) => {
       try {
-        const ctx = resolveCommandContext(opts, { requireCompany: true });
-        const route = `${apiPath`/api/companies/${ctx.companyId}`}/${path}/${encodeURIComponent(memberId)}${suffix ? `/${suffix}` : ""}`;
+        const ctx = resolveCommandContext(opts, { requireSquad: true });
+        const route = `${apiPath`/api/squads/${ctx.squadId}`}/${path}/${encodeURIComponent(memberId)}${suffix ? `/${suffix}` : ""}`;
         printOutput(await ctx.api.patch(route, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
       } catch (err) {
         handleCommandError(err);
       }
     }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 
 function addMemberPost(parent: Command, name: string, path: string, suffix: string): void {
   addCommonClientOptions(
-    parent.command(name).description(`${name} a member`).argument("<memberId>", "Member ID").option("-C, --company-id <id>", "Company ID").option("--payload-json <json>", "JSON payload", "{}").action(async (memberId: string, opts: JsonPayloadOptions) => {
+    parent.command(name).description(`${name} a member`).argument("<memberId>", "Member ID").option("-C, --squad-id <id>", "Squad ID").option("--payload-json <json>", "JSON payload", "{}").action(async (memberId: string, opts: JsonPayloadOptions) => {
       try {
-        const ctx = resolveCommandContext(opts, { requireCompany: true });
-        printOutput(await ctx.api.post(`${apiPath`/api/companies/${ctx.companyId}`}/${path}/${encodeURIComponent(memberId)}/${suffix}`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
+        const ctx = resolveCommandContext(opts, { requireSquad: true });
+        printOutput(await ctx.api.post(`${apiPath`/api/squads/${ctx.squadId}`}/${path}/${encodeURIComponent(memberId)}/${suffix}`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
       } catch (err) {
         handleCommandError(err);
       }
     }),
-    { includeCompany: false },
+    { includeSquad: false },
   );
 }
 

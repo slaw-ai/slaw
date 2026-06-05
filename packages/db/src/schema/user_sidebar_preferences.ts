@@ -5,7 +5,7 @@ export const userSidebarPreferences = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: text("user_id").notNull(),
-    companyOrder: jsonb("company_order").$type<string[]>().notNull().default([]),
+    squadOrder: jsonb("squad_order").$type<string[]>().notNull().default([]),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

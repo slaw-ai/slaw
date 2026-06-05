@@ -115,9 +115,9 @@ function createZipArchiveWithDirectoryEntries(rootPath: string) {
   const entries = [
     { path: `${rootPath}/`, body: new Uint8Array(0), compressionMethod: 0 },
     { path: `${rootPath}/agents/`, body: new Uint8Array(0), compressionMethod: 0 },
-    { path: `${rootPath}/agents/ceo/`, body: new Uint8Array(0), compressionMethod: 0 },
-    { path: `${rootPath}/COMPANY.md`, body: encoder.encode("# Company\n"), compressionMethod: 8 },
-    { path: `${rootPath}/agents/ceo/AGENTS.md`, body: encoder.encode("# CEO\n"), compressionMethod: 8 },
+    { path: `${rootPath}/agents/squad_lead/`, body: new Uint8Array(0), compressionMethod: 0 },
+    { path: `${rootPath}/SQUAD.md`, body: encoder.encode("# Squad\n"), compressionMethod: 8 },
+    { path: `${rootPath}/agents/squad_lead/AGENTS.md`, body: encoder.encode("# Squad Lead\n"), compressionMethod: 8 },
   ].map((entry) => ({
     ...entry,
     data: entry.compressionMethod === 8 ? new Uint8Array(deflateRawSync(entry.body)) : entry.body,
@@ -186,8 +186,8 @@ describe("createZipArchive", () => {
   it("writes a zip archive with the export root path prefixed into each entry", () => {
     const archive = createZipArchive(
       {
-        "COMPANY.md": "# Company\n",
-        "agents/ceo/AGENTS.md": "# CEO\n",
+        "SQUAD.md": "# Squad\n",
+        "agents/squad_lead/AGENTS.md": "# Squad Lead\n",
       },
       "slaw-demo",
     );
@@ -196,16 +196,16 @@ describe("createZipArchive", () => {
 
     const firstNameLength = readUint16(archive, 26);
     const firstBodyLength = readUint32(archive, 18);
-    expect(readString(archive, 30, firstNameLength)).toBe("slaw-demo/agents/ceo/AGENTS.md");
-    expect(readString(archive, 30 + firstNameLength, firstBodyLength)).toBe("# CEO\n");
+    expect(readString(archive, 30, firstNameLength)).toBe("slaw-demo/agents/squad_lead/AGENTS.md");
+    expect(readString(archive, 30 + firstNameLength, firstBodyLength)).toBe("# Squad Lead\n");
 
     const secondOffset = 30 + firstNameLength + firstBodyLength;
     expect(readUint32(archive, secondOffset)).toBe(0x04034b50);
 
     const secondNameLength = readUint16(archive, secondOffset + 26);
     const secondBodyLength = readUint32(archive, secondOffset + 18);
-    expect(readString(archive, secondOffset + 30, secondNameLength)).toBe("slaw-demo/COMPANY.md");
-    expect(readString(archive, secondOffset + 30 + secondNameLength, secondBodyLength)).toBe("# Company\n");
+    expect(readString(archive, secondOffset + 30, secondNameLength)).toBe("slaw-demo/SQUAD.md");
+    expect(readString(archive, secondOffset + 30 + secondNameLength, secondBodyLength)).toBe("# Squad\n");
 
     const endOffset = archive.length - 22;
     expect(readUint32(archive, endOffset)).toBe(0x06054b50);
@@ -216,8 +216,8 @@ describe("createZipArchive", () => {
   it("reads a Slaw zip archive back into rootPath and file contents", async () => {
     const archive = createZipArchive(
       {
-        "COMPANY.md": "# Company\n",
-        "agents/ceo/AGENTS.md": "# CEO\n",
+        "SQUAD.md": "# Squad\n",
+        "agents/squad_lead/AGENTS.md": "# Squad Lead\n",
         ".slaw.yaml": "schema: slaw/v1\n",
       },
       "slaw-demo",
@@ -226,8 +226,8 @@ describe("createZipArchive", () => {
     await expect(readZipArchive(archive)).resolves.toEqual({
       rootPath: "slaw-demo",
       files: {
-        "COMPANY.md": "# Company\n",
-        "agents/ceo/AGENTS.md": "# CEO\n",
+        "SQUAD.md": "# Squad\n",
+        "agents/squad_lead/AGENTS.md": "# Squad Lead\n",
         ".slaw.yaml": "schema: slaw/v1\n",
       },
     });
@@ -236,7 +236,7 @@ describe("createZipArchive", () => {
   it("round-trips binary image files without coercing them to text", async () => {
     const archive = createZipArchive(
       {
-        "images/company-logo.png": {
+        "images/squad-logo.png": {
           encoding: "base64",
           data: Buffer.from("png-bytes").toString("base64"),
           contentType: "image/png",
@@ -248,7 +248,7 @@ describe("createZipArchive", () => {
     await expect(readZipArchive(archive)).resolves.toEqual({
       rootPath: "slaw-demo",
       files: {
-        "images/company-logo.png": {
+        "images/squad-logo.png": {
           encoding: "base64",
           data: Buffer.from("png-bytes").toString("base64"),
           contentType: "image/png",
@@ -260,8 +260,8 @@ describe("createZipArchive", () => {
   it("reads standard DEFLATE zip archives created outside Slaw", async () => {
     const archive = createDeflatedZipArchive(
       {
-        "COMPANY.md": "# Company\n",
-        "agents/ceo/AGENTS.md": "# CEO\n",
+        "SQUAD.md": "# Squad\n",
+        "agents/squad_lead/AGENTS.md": "# Squad Lead\n",
       },
       "slaw-demo",
     );
@@ -269,8 +269,8 @@ describe("createZipArchive", () => {
     await expect(readZipArchive(archive)).resolves.toEqual({
       rootPath: "slaw-demo",
       files: {
-        "COMPANY.md": "# Company\n",
-        "agents/ceo/AGENTS.md": "# CEO\n",
+        "SQUAD.md": "# Squad\n",
+        "agents/squad_lead/AGENTS.md": "# Squad Lead\n",
       },
     });
   });
@@ -281,8 +281,8 @@ describe("createZipArchive", () => {
     await expect(readZipArchive(archive)).resolves.toEqual({
       rootPath: "slaw-demo",
       files: {
-        "COMPANY.md": "# Company\n",
-        "agents/ceo/AGENTS.md": "# CEO\n",
+        "SQUAD.md": "# Squad\n",
+        "agents/squad_lead/AGENTS.md": "# Squad Lead\n",
       },
     });
   });

@@ -5,9 +5,9 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InviteUxLab } from "./InviteUxLab";
 
-vi.mock("@/components/CompanyPatternIcon", () => ({
-  CompanyPatternIcon: ({ companyName }: { companyName: string }) => (
-    <div aria-label={`${companyName} logo`}>{companyName}</div>
+vi.mock("@/components/SquadPatternIcon", () => ({
+  SquadPatternIcon: ({ squadName }: { squadName: string }) => (
+    <div aria-label={`${squadName} logo`}>{squadName}</div>
   ),
 }));
 
@@ -41,7 +41,7 @@ describe("InviteUxLab", () => {
     expect(container.textContent).toContain("Split-screen invite flows");
     expect(container.textContent).toContain("Approval and completion screens");
     expect(container.textContent).toContain("Auth page states");
-    expect(container.textContent).toContain("Company invite management");
+    expect(container.textContent).toContain("Squad invite management");
     expect(container.textContent).toContain("Create your account");
     expect(container.textContent).toContain("Invite history");
 

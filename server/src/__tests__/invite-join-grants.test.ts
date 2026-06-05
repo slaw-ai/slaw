@@ -7,7 +7,7 @@ import {
   grantsForHumanRole,
   normalizeHumanRole,
   resolveHumanInviteRole,
-} from "../services/company-member-roles.js";
+} from "../services/squad-member-roles.js";
 
 describe("agentJoinGrantsFromDefaults", () => {
   it("adds tasks:assign when invite defaults do not specify agent grants", () => {
@@ -115,7 +115,7 @@ describe("human invite roles", () => {
             grants: [
               {
                 permissionKey: "users:invite",
-                scope: { companyId: "company-1" },
+                scope: { squadId: "squad-1" },
               },
             ],
           },
@@ -125,7 +125,7 @@ describe("human invite roles", () => {
     ).toEqual([
       {
         permissionKey: "users:invite",
-        scope: { companyId: "company-1" },
+        scope: { squadId: "squad-1" },
       },
     ]);
   });

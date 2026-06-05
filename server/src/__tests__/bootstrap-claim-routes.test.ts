@@ -173,8 +173,8 @@ describe("bootstrap invite first-admin acceptance", () => {
   function createBootstrapInvite() {
     return {
       id: "invite-1",
-      companyId: null,
-      inviteType: "bootstrap_ceo",
+      squadId: null,
+      inviteType: "bootstrap_squad_lead",
       allowedJoinTypes: "human",
       tokenHash: hashToken("pcp_invite_test"),
       defaultsPayload: {},
@@ -203,7 +203,7 @@ describe("bootstrap invite first-admin acceptance", () => {
     expect(res.status).toBe(202);
     expect(res.body).toMatchObject({
       inviteId: "invite-1",
-      inviteType: "bootstrap_ceo",
+      inviteType: "bootstrap_squad_lead",
       bootstrapAccepted: true,
       userId: "user-1",
     });

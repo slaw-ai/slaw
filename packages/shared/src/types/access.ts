@@ -1,7 +1,7 @@
 import type {
   AgentAdapterType,
-  CompanyStatus,
-  HumanCompanyMembershipRole,
+  SquadStatus,
+  HumanSquadMembershipRole,
   InstanceUserRole,
   InviteJoinType,
   InviteType,
@@ -12,9 +12,9 @@ import type {
   PrincipalType,
 } from "../constants.js";
 
-export interface CompanyMembership {
+export interface SquadMembership {
   id: string;
-  companyId: string;
+  squadId: string;
   principalType: PrincipalType;
   principalId: string;
   status: MembershipStatus;
@@ -25,7 +25,7 @@ export interface CompanyMembership {
 
 export interface PrincipalPermissionGrant {
   id: string;
-  companyId: string;
+  squadId: string;
   principalType: PrincipalType;
   principalId: string;
   permissionKey: PermissionKey;
@@ -42,9 +42,9 @@ export interface AccessUserProfile {
   image: string | null;
 }
 
-export interface CompanyMemberRecord extends CompanyMembership {
+export interface SquadMemberRecord extends SquadMembership {
   principalType: "user";
-  membershipRole: HumanCompanyMembershipRole | null;
+  membershipRole: HumanSquadMembershipRole | null;
   user: AccessUserProfile | null;
   grants: PrincipalPermissionGrant[];
   removal?: {
@@ -53,24 +53,24 @@ export interface CompanyMemberRecord extends CompanyMembership {
   };
 }
 
-export interface CompanyMembersResponse {
-  members: CompanyMemberRecord[];
+export interface SquadMembersResponse {
+  members: SquadMemberRecord[];
   access: {
-    currentUserRole: HumanCompanyMembershipRole | null;
+    currentUserRole: HumanSquadMembershipRole | null;
     canManageMembers: boolean;
     canInviteUsers: boolean;
     canApproveJoinRequests: boolean;
   };
 }
 
-export interface ArchiveCompanyMemberResponse {
-  member: CompanyMemberRecord;
+export interface ArchiveSquadMemberResponse {
+  member: SquadMemberRecord;
   reassignedIssueCount: number;
 }
 
 export interface Invite {
   id: string;
-  companyId: string | null;
+  squadId: string | null;
   inviteType: InviteType;
   tokenHash: string;
   allowedJoinTypes: InviteJoinType;
@@ -85,24 +85,24 @@ export interface Invite {
 
 export type InviteState = "active" | "revoked" | "accepted" | "expired";
 
-export interface CompanyInviteRecord extends Invite {
-  companyName: string | null;
-  humanRole: HumanCompanyMembershipRole | null;
+export interface SquadInviteRecord extends Invite {
+  squadName: string | null;
+  humanRole: HumanSquadMembershipRole | null;
   inviteMessage: string | null;
   state: InviteState;
   invitedByUser: AccessUserProfile | null;
   relatedJoinRequestId: string | null;
 }
 
-export interface CompanyInviteListResponse {
-  invites: CompanyInviteRecord[];
+export interface SquadInviteListResponse {
+  invites: SquadInviteRecord[];
   nextOffset: number | null;
 }
 
 export interface JoinRequest {
   id: string;
   inviteId: string;
-  companyId: string;
+  squadId: string;
   requestType: JoinRequestType;
   status: JoinRequestStatus;
   requestIp: string;
@@ -127,7 +127,7 @@ export interface JoinRequestInviteSummary {
   id: string;
   inviteType: InviteType;
   allowedJoinTypes: InviteJoinType;
-  humanRole: HumanCompanyMembershipRole | null;
+  humanRole: HumanSquadMembershipRole | null;
   inviteMessage: string | null;
   createdAt: Date;
   expiresAt: Date;
@@ -153,18 +153,18 @@ export interface InstanceUserRoleGrant {
 
 export interface AdminUserDirectoryEntry extends AccessUserProfile {
   isInstanceAdmin: boolean;
-  activeCompanyMembershipCount: number;
+  activeSquadMembershipCount: number;
 }
 
-export interface UserCompanyAccessEntry extends CompanyMembership {
+export interface UserSquadAccessEntry extends SquadMembership {
   principalType: "user";
-  companyName: string | null;
-  companyStatus: CompanyStatus | null;
+  squadName: string | null;
+  squadStatus: SquadStatus | null;
 }
 
-export interface UserCompanyAccessResponse {
+export interface UserSquadAccessResponse {
   user: (AccessUserProfile & {
     isInstanceAdmin: boolean;
   }) | null;
-  companyAccess: UserCompanyAccessEntry[];
+  squadAccess: UserSquadAccessEntry[];
 }

@@ -1,11 +1,11 @@
 import { boolean, index, integer, pgTable, text, timestamp, uuid, uniqueIndex } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 
 export const budgetPolicies = pgTable(
   "budget_policies",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     scopeType: text("scope_type").notNull(),
     scopeId: uuid("scope_id").notNull(),
     metric: text("metric").notNull().default("billed_cents"),
@@ -21,19 +21,19 @@ export const budgetPolicies = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    companyScopeActiveIdx: index("budget_policies_company_scope_active_idx").on(
-      table.companyId,
+    squadScopeActiveIdx: index("budget_policies_squad_scope_active_idx").on(
+      table.squadId,
       table.scopeType,
       table.scopeId,
       table.isActive,
     ),
-    companyWindowIdx: index("budget_policies_company_window_idx").on(
-      table.companyId,
+    squadWindowIdx: index("budget_policies_squad_window_idx").on(
+      table.squadId,
       table.windowKind,
       table.metric,
     ),
-    companyScopeMetricUniqueIdx: uniqueIndex("budget_policies_company_scope_metric_unique_idx").on(
-      table.companyId,
+    squadScopeMetricUniqueIdx: uniqueIndex("budget_policies_squad_scope_metric_unique_idx").on(
+      table.squadId,
       table.scopeType,
       table.scopeId,
       table.metric,

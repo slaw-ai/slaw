@@ -6,7 +6,7 @@ import type {
   AgentStatus,
 } from "../constants.js";
 import type {
-  CompanyMembership,
+  SquadMembership,
   PrincipalPermissionGrant,
 } from "./access.js";
 
@@ -43,7 +43,7 @@ export interface AgentInstructionsFileDetail extends AgentInstructionsFileSummar
 
 export interface AgentInstructionsBundle {
   agentId: string;
-  companyId: string;
+  squadId: string;
   mode: AgentInstructionsBundleMode | null;
   rootPath: string | null;
   managedRootPath: string;
@@ -58,8 +58,8 @@ export interface AgentInstructionsBundle {
 
 export interface AgentAccessState {
   canAssignTasks: boolean;
-  taskAssignSource: "simple_default" | "explicit_grant" | "agent_creator" | "ceo_role" | "none";
-  membership: CompanyMembership | null;
+  taskAssignSource: "simple_default" | "explicit_grant" | "agent_creator" | "squad_lead_role" | "none";
+  membership: SquadMembership | null;
   grants: PrincipalPermissionGrant[];
 }
 
@@ -72,7 +72,7 @@ export interface AgentChainOfCommandEntry {
 
 export interface Agent {
   id: string;
-  companyId: string;
+  squadId: string;
   name: string;
   urlKey: string;
   role: AgentRole;
@@ -110,7 +110,7 @@ export interface AgentKeyCreated {
 
 export interface AgentConfigRevision {
   id: string;
-  companyId: string;
+  squadId: string;
   agentId: string;
   createdByAgentId: string | null;
   createdByUserId: string | null;

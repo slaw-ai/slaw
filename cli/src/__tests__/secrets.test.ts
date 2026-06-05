@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Agent, CompanySecret } from "@slaw/shared";
+import type { Agent, SquadSecret } from "@slaw/shared";
 import type { SlawConfig } from "../config/schema.js";
 import { secretsCheck } from "../checks/secrets-check.js";
 import {
@@ -15,7 +15,7 @@ import {
 function agent(partial: Partial<Agent>): Agent {
   return {
     id: "agent-12345678",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Coder",
     urlKey: "coder",
     role: "engineer",
@@ -42,10 +42,10 @@ function agent(partial: Partial<Agent>): Agent {
   };
 }
 
-function secret(partial: Partial<CompanySecret>): CompanySecret {
+function secret(partial: Partial<SquadSecret>): SquadSecret {
   return {
     id: "secret-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     key: "agent_agent-12_anthropic_api_key",
     name: "agent_agent-12_anthropic_api_key",
     provider: "local_encrypted",
@@ -144,7 +144,7 @@ describe("secrets CLI helpers", () => {
 
   it("parses declaration include filters", () => {
     expect(parseSecretsInclude("agents,projects,tasks")).toEqual({
-      company: false,
+      squad: false,
       agents: true,
       projects: true,
       issues: true,
@@ -274,28 +274,28 @@ describe("secrets API parity commands", () => {
     const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse()));
     vi.stubGlobal("fetch", fetchMock);
 
-    await runSecretCommand(["secrets", "provider-configs", "--company-id", "company-1"]);
-    await runSecretCommand(["secrets", "provider-config:create", "--company-id", "company-1", "--payload-json", "{}"]);
-    await runSecretCommand(["secrets", "provider-config:discovery-preview", "--company-id", "company-1", "--payload-json", "{}"]);
+    await runSecretCommand(["secrets", "provider-configs", "--squad-id", "squad-1"]);
+    await runSecretCommand(["secrets", "provider-config:create", "--squad-id", "squad-1", "--payload-json", "{}"]);
+    await runSecretCommand(["secrets", "provider-config:discovery-preview", "--squad-id", "squad-1", "--payload-json", "{}"]);
     await runSecretCommand(["secrets", "provider-config:get", "config-1"]);
     await runSecretCommand(["secrets", "provider-config:update", "config-1", "--payload-json", "{}"]);
     await runSecretCommand(["secrets", "provider-config:default", "config-1"]);
     await runSecretCommand(["secrets", "provider-config:health", "config-1"]);
     await runSecretCommand(["secrets", "provider-config:delete", "config-1"]);
-    await runSecretCommand(["secrets", "remote-import:preview", "--company-id", "company-1", "--payload-json", "{}"]);
-    await runSecretCommand(["secrets", "remote-import", "--company-id", "company-1", "--payload-json", "{}"]);
+    await runSecretCommand(["secrets", "remote-import:preview", "--squad-id", "squad-1", "--payload-json", "{}"]);
+    await runSecretCommand(["secrets", "remote-import", "--squad-id", "squad-1", "--payload-json", "{}"]);
 
     expect(fetchMock.mock.calls.map((call) => [call[1]?.method ?? "GET", call[0]])).toEqual([
-      ["GET", "http://localhost:3100/api/companies/company-1/secret-provider-configs"],
-      ["POST", "http://localhost:3100/api/companies/company-1/secret-provider-configs"],
-      ["POST", "http://localhost:3100/api/companies/company-1/secret-provider-configs/discovery/preview"],
+      ["GET", "http://localhost:3100/api/squads/squad-1/secret-provider-configs"],
+      ["POST", "http://localhost:3100/api/squads/squad-1/secret-provider-configs"],
+      ["POST", "http://localhost:3100/api/squads/squad-1/secret-provider-configs/discovery/preview"],
       ["GET", "http://localhost:3100/api/secret-provider-configs/config-1"],
       ["PATCH", "http://localhost:3100/api/secret-provider-configs/config-1"],
       ["POST", "http://localhost:3100/api/secret-provider-configs/config-1/default"],
       ["POST", "http://localhost:3100/api/secret-provider-configs/config-1/health"],
       ["DELETE", "http://localhost:3100/api/secret-provider-configs/config-1"],
-      ["POST", "http://localhost:3100/api/companies/company-1/secrets/remote-import/preview"],
-      ["POST", "http://localhost:3100/api/companies/company-1/secrets/remote-import"],
+      ["POST", "http://localhost:3100/api/squads/squad-1/secrets/remote-import/preview"],
+      ["POST", "http://localhost:3100/api/squads/squad-1/secrets/remote-import"],
     ]);
   });
 

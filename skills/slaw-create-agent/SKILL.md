@@ -15,13 +15,13 @@ Use this skill when you are asked to hire/create an agent.
 You need either:
 
 - board access, or
-- agent permission `can_create_agents=true` in your company
+- agent permission `can_create_agents=true` in your squad
 
-If you do not have this permission, escalate to your CEO or board.
+If you do not have this permission, escalate to your Squad Lead or board.
 
 ## Workflow
 
-### 1. Confirm identity and company context
+### 1. Confirm identity and squad context
 
 ```sh
 curl -sS "$SLAW_API_URL/api/agents/me" \
@@ -42,11 +42,11 @@ curl -sS "$SLAW_API_URL/llms/agent-configuration/claude_local.txt" \
 ### 3. Compare existing agent configurations
 
 ```sh
-curl -sS "$SLAW_API_URL/api/companies/$SLAW_COMPANY_ID/agent-configurations" \
+curl -sS "$SLAW_API_URL/api/squads/$SLAW_SQUAD_ID/agent-configurations" \
   -H "Authorization: Bearer $SLAW_API_KEY"
 ```
 
-Note naming, icon, reporting-line, and adapter conventions the company already follows.
+Note naming, icon, reporting-line, and adapter conventions the squad already follows.
 
 ### 4. Choose the instruction source (required)
 
@@ -77,14 +77,14 @@ curl -sS "$SLAW_API_URL/llms/agent-icons.txt" \
 - icon (required in practice; pick from `/llms/agent-icons.txt`)
 - reporting line (`reportsTo`)
 - adapter type
-- `desiredSkills` from the company skill library when this role needs installed skills on day one
+- `desiredSkills` from the squad skill library when this role needs installed skills on day one
 - if any `desiredSkills` or adapter settings expand browser access, external-system reach, filesystem scope, or secret-handling capability, justify each one in the hire comment
 - adapter and runtime config aligned to this environment
 - leave timer heartbeats off by default; only set `runtimeConfig.heartbeat.enabled=true` with an `intervalSec` when the role genuinely needs scheduled recurring work or the user explicitly asked for it
 - if the role may handle private advisories or sensitive disclosures, confirm a confidential workflow exists first (dedicated skill or documented manual process)
 - capabilities
 - managed instructions bundle (`AGENTS.md`) for adapters that support it; avoid durable `promptTemplate` config
-- for coding or execution agents, include the Slaw execution contract: start actionable work in the same heartbeat; do not stop at a plan unless planning was requested; leave durable progress with a clear next action; use child issues for long or parallel delegated work instead of polling; mark blocked work with owner/action; respect budget, pause/cancel, approval gates, and company boundaries
+- for coding or execution agents, include the Slaw execution contract: start actionable work in the same heartbeat; do not stop at a plan unless planning was requested; leave durable progress with a clear next action; use child issues for long or parallel delegated work instead of polling; mark blocked work with owner/action; respect budget, pause/cancel, approval gates, and squad boundaries
 - instruction text such as `AGENTS.md` built from step 4; for local managed-bundle adapters, send this as top-level `instructionsBundle.files["AGENTS.md"]`. Do not set `adapterConfig.promptTemplate` or `bootstrapPromptTemplate` for new agents.
 - source issue linkage (`sourceIssueId` or `sourceIssueIds`) when this hire came from an issue
 
@@ -96,7 +96,7 @@ Before submitting, walk the draft-review checklist end-to-end and fix any item t
 ### 8. Submit hire request
 
 ```sh
-curl -sS -X POST "$SLAW_API_URL/api/companies/$SLAW_COMPANY_ID/agent-hires" \
+curl -sS -X POST "$SLAW_API_URL/api/squads/$SLAW_SQUAD_ID/agent-hires" \
   -H "Authorization: Bearer $SLAW_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -104,7 +104,7 @@ curl -sS -X POST "$SLAW_API_URL/api/companies/$SLAW_COMPANY_ID/agent-hires" \
     "role": "cto",
     "title": "Chief Technology Officer",
     "icon": "crown",
-    "reportsTo": "<ceo-agent-id>",
+    "reportsTo": "<squad_lead-agent-id>",
     "capabilities": "Owns technical roadmap, architecture, staffing, execution",
     "desiredSkills": ["vercel-labs/agent-browser/agent-browser"],
     "adapterType": "codex_local",

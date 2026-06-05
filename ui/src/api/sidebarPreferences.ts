@@ -2,11 +2,11 @@ import type { SidebarOrderPreference, UpsertSidebarOrderPreference } from "@slaw
 import { api } from "./client";
 
 export const sidebarPreferencesApi = {
-  getCompanyOrder: () => api.get<SidebarOrderPreference>("/sidebar-preferences/me"),
-  updateCompanyOrder: (data: UpsertSidebarOrderPreference) =>
+  getSquadOrder: () => api.get<SidebarOrderPreference>("/sidebar-preferences/me"),
+  updateSquadOrder: (data: UpsertSidebarOrderPreference) =>
     api.put<SidebarOrderPreference>("/sidebar-preferences/me", data),
-  getProjectOrder: (companyId: string) =>
-    api.get<SidebarOrderPreference>(`/companies/${companyId}/sidebar-preferences/me`),
-  updateProjectOrder: (companyId: string, data: UpsertSidebarOrderPreference) =>
-    api.put<SidebarOrderPreference>(`/companies/${companyId}/sidebar-preferences/me`, data),
+  getProjectOrder: (squadId: string) =>
+    api.get<SidebarOrderPreference>(`/squads/${squadId}/sidebar-preferences/me`),
+  updateProjectOrder: (squadId: string, data: UpsertSidebarOrderPreference) =>
+    api.put<SidebarOrderPreference>(`/squads/${squadId}/sidebar-preferences/me`, data),
 };

@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
   agentWakeupRequests,
-  companies,
+  squads,
   createDb,
   heartbeatRuns,
   issues,
@@ -33,15 +33,15 @@ describe("heartbeat comment wake batching", () => {
   });
 
   it("defers approval-approved wakes for a running issue so the assignee resumes after the run", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
-    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const issuePrefix = `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     const heartbeat = heartbeatService(db);
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
       issuePrefix,
       requireBoardApprovalForNewAgents: false,
@@ -49,9 +49,9 @@ describe("heartbeat comment wake batching", () => {
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
-      name: "CEO",
-      role: "ceo",
+      squadId,
+      name: "Squad Lead",
+      role: "squad_lead",
       status: "running",
       adapterType: "process",
       adapterConfig: {},
@@ -61,7 +61,7 @@ describe("heartbeat comment wake batching", () => {
 
     await db.insert(heartbeatRuns).values({
       id: runId,
-      companyId,
+      squadId,
       agentId,
       invocationSource: "assignment",
       triggerDetail: "system",
@@ -75,13 +75,13 @@ describe("heartbeat comment wake batching", () => {
 
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       title: "Hire an agent",
       status: "blocked",
       priority: "medium",
       assigneeAgentId: agentId,
       executionRunId: runId,
-      executionAgentNameKey: "ceo",
+      executionAgentNameKey: "squad_lead",
       executionLockedAt: new Date(),
       issueNumber: 1,
       identifier: `${issuePrefix}-1`,
@@ -114,7 +114,7 @@ describe("heartbeat comment wake batching", () => {
       .from(agentWakeupRequests)
       .where(
         and(
-          eq(agentWakeupRequests.companyId, companyId),
+          eq(agentWakeupRequests.squadId, squadId),
           eq(agentWakeupRequests.agentId, agentId),
           eq(agentWakeupRequests.status, "deferred_issue_execution"),
         ),

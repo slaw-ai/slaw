@@ -63,7 +63,7 @@ import type { EnvironmentRuntimeService } from "../services/environment-runtime.
 function makeEnvironment(driver: string = "local"): Environment {
   return {
     id: "env-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Test Environment",
     description: null,
     driver: driver as Environment["driver"],
@@ -78,7 +78,7 @@ function makeEnvironment(driver: string = "local"): Environment {
 function makeLease(overrides: Partial<EnvironmentLease> = {}): EnvironmentLease {
   return {
     id: "lease-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     environmentId: "env-1",
     executionWorkspaceId: null,
     issueId: null,
@@ -122,7 +122,7 @@ function makePersistedExecutionWorkspace(
 ): ExecutionWorkspace {
   return {
     id: "ew-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: "project-1",
     projectWorkspaceId: null,
     sourceIssueId: null,
@@ -159,7 +159,7 @@ function makeRealizeInput(overrides: {
     environment: overrides.environment ?? makeEnvironment("local"),
     lease: overrides.lease ?? makeLease(),
     adapterType: "claude_local",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: null,
     heartbeatRunId: "run-1",
     executionWorkspace: makeExecutionWorkspace(),
@@ -208,7 +208,7 @@ describe("environmentRunOrchestrator — realizeForRun", () => {
     mockBuildWorkspaceRealizationRequest.mockReturnValue({
       version: 1,
       adapterType: "claude_local",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       executionWorkspaceId: null,
       issueId: null,
@@ -359,7 +359,7 @@ describe("environmentRunOrchestrator — realizeForRun", () => {
     mockBuildWorkspaceRealizationRequest.mockReturnValue({
       version: 1,
       adapterType: "claude_local",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       executionWorkspaceId: null,
       issueId: null,
@@ -424,7 +424,7 @@ describe("environmentRunOrchestrator — realizeForRun", () => {
     mockBuildWorkspaceRealizationRequest.mockReturnValue({
       version: 1,
       adapterType: "gemini_local",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       executionWorkspaceId: null,
       issueId: null,
@@ -503,7 +503,7 @@ describe("environmentRunOrchestrator — realizeForRun", () => {
     mockBuildWorkspaceRealizationRequest.mockReturnValue({
       version: 1,
       adapterType: "claude_local",
-      companyId: "company-1",
+      squadId: "squad-1",
       environmentId: "env-1",
       executionWorkspaceId: null,
       issueId: null,

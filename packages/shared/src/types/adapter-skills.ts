@@ -9,7 +9,7 @@ export type AgentSkillState =
   | "external";
 
 export type AgentSkillOrigin =
-  | "company_managed"
+  | "squad_managed"
   | "slaw_required"
   | "user_installed"
   | "external_unknown";

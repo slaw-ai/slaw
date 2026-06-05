@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { CompanySearchResult, CompanySearchResponse } from "@slaw/shared";
+import type { SquadSearchResult, SquadSearchResponse } from "@slaw/shared";
 import { Badge } from "@/components/ui/badge";
 import { IssueGroupHeader } from "@/components/IssueGroupHeader";
 import { Input } from "@/components/ui/input";
@@ -34,11 +34,11 @@ import { storybookAgents, storybookProjects, storybookIssues } from "../fixtures
 
 const agentsById = new Map(storybookAgents.map((agent) => [agent.id, agent]));
 
-type IssueResultOverrides = Omit<Partial<CompanySearchResult>, "issue"> & {
-  issue?: Partial<NonNullable<CompanySearchResult["issue"]>>;
+type IssueResultOverrides = Omit<Partial<SquadSearchResult>, "issue"> & {
+  issue?: Partial<NonNullable<SquadSearchResult["issue"]>>;
 };
 
-function buildIssueResult(overrides: IssueResultOverrides): CompanySearchResult {
+function buildIssueResult(overrides: IssueResultOverrides): SquadSearchResult {
   const baseIssue = {
     id: overrides.issue?.id ?? "issue-1",
     identifier: overrides.issue?.identifier ?? "PAP-3142",
@@ -49,7 +49,7 @@ function buildIssueResult(overrides: IssueResultOverrides): CompanySearchResult 
     assigneeUserId: overrides.issue?.assigneeUserId ?? null,
     projectId: overrides.issue?.projectId ?? storybookProjects[0]?.id ?? null,
     updatedAt: overrides.issue?.updatedAt ?? new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-  } satisfies NonNullable<CompanySearchResult["issue"]>;
+  } satisfies NonNullable<SquadSearchResult["issue"]>;
   return {
     id: overrides.id ?? baseIssue.id,
     type: "issue",
@@ -66,7 +66,7 @@ function buildIssueResult(overrides: IssueResultOverrides): CompanySearchResult 
   };
 }
 
-const fixtureResults: CompanySearchResult[] = [
+const fixtureResults: SquadSearchResult[] = [
   buildIssueResult({
     id: "issue-1",
     matchedFields: ["title", "comment"],
@@ -137,7 +137,7 @@ const fixtureResults: CompanySearchResult[] = [
   }),
 ];
 
-const fixtureAgents: CompanySearchResult[] = storybookAgents.slice(0, 1).map((agent) => ({
+const fixtureAgents: SquadSearchResult[] = storybookAgents.slice(0, 1).map((agent) => ({
   id: agent.id,
   type: "agent" as const,
   score: 80,
@@ -160,7 +160,7 @@ const fixtureAgents: CompanySearchResult[] = storybookAgents.slice(0, 1).map((ag
   previewImageUrl: null,
 }));
 
-const fixtureProjects: CompanySearchResult[] = storybookProjects.slice(0, 1).map((project) => ({
+const fixtureProjects: SquadSearchResult[] = storybookProjects.slice(0, 1).map((project) => ({
   id: project.id,
   type: "project" as const,
   score: 70,
@@ -183,7 +183,7 @@ const fixtureProjects: CompanySearchResult[] = storybookProjects.slice(0, 1).map
   previewImageUrl: null,
 }));
 
-const fixtureResponse: CompanySearchResponse = {
+const fixtureResponse: SquadSearchResponse = {
   query: "auth flake",
   normalizedQuery: "auth flake",
   scope: "all",
@@ -203,7 +203,7 @@ function ScopeTabsPreview({
   response,
 }: {
   active: "all" | "issues" | "comments" | "documents" | "agents" | "projects";
-  response: CompanySearchResponse;
+  response: SquadSearchResponse;
 }) {
   const total =
     (response.countsByType.issue ?? 0) +
@@ -240,7 +240,7 @@ function SearchPagePreview({
   state,
   query,
 }: {
-  response: CompanySearchResponse;
+  response: SquadSearchResponse;
   state: "results" | "empty" | "loading" | "initial";
   query: string;
 }) {
@@ -360,7 +360,7 @@ function SearchPagePreview({
       {state === "initial" ? (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
           <div>
-            <h2 className="text-lg font-semibold">Type to search company memory.</h2>
+            <h2 className="text-lg font-semibold">Type to search squad memory.</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Issues, comments, plan documents, agents, projects — same surface, ranked by relevance.
             </p>

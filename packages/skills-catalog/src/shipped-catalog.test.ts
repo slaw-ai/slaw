@@ -4,10 +4,10 @@ import type { CatalogSkill } from "./types.js";
 
 const EXPECTED_BUNDLED_KEYS = [
   "slaw/bundled/docs/doc-maintenance",
-  "slaw/bundled/slaw-operations/issue-triage",
-  "slaw/bundled/slaw-operations/task-planning",
   "slaw/bundled/product/wireframe",
   "slaw/bundled/quality/qa-acceptance",
+  "slaw/bundled/slaw-operations/issue-triage",
+  "slaw/bundled/slaw-operations/task-planning",
   "slaw/bundled/software-development/github-pr-workflow",
 ];
 

@@ -15,8 +15,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -79,11 +79,11 @@
         }
       },
       "indexes": {
-        "activity_log_company_created_idx": {
-          "name": "activity_log_company_created_idx",
+        "activity_log_squad_created_idx": {
+          "name": "activity_log_squad_created_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -138,12 +138,12 @@
         }
       },
       "foreignKeys": {
-        "activity_log_company_id_companies_id_fk": {
-          "name": "activity_log_company_id_companies_id_fk",
+        "activity_log_squad_id_squads_id_fk": {
+          "name": "activity_log_squad_id_squads_id_fk",
           "tableFrom": "activity_log",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -201,8 +201,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -255,11 +255,11 @@
           "method": "btree",
           "with": {}
         },
-        "agent_api_keys_company_agent_idx": {
-          "name": "agent_api_keys_company_agent_idx",
+        "agent_api_keys_squad_agent_idx": {
+          "name": "agent_api_keys_squad_agent_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -291,12 +291,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "agent_api_keys_company_id_companies_id_fk": {
-          "name": "agent_api_keys_company_id_companies_id_fk",
+        "agent_api_keys_squad_id_squads_id_fk": {
+          "name": "agent_api_keys_squad_id_squads_id_fk",
           "tableFrom": "agent_api_keys",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -322,8 +322,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -387,11 +387,11 @@
         }
       },
       "indexes": {
-        "agent_config_revisions_company_agent_created_idx": {
-          "name": "agent_config_revisions_company_agent_created_idx",
+        "agent_config_revisions_squad_agent_created_idx": {
+          "name": "agent_config_revisions_squad_agent_created_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -437,12 +437,12 @@
         }
       },
       "foreignKeys": {
-        "agent_config_revisions_company_id_companies_id_fk": {
-          "name": "agent_config_revisions_company_id_companies_id_fk",
+        "agent_config_revisions_squad_id_squads_id_fk": {
+          "name": "agent_config_revisions_squad_id_squads_id_fk",
           "tableFrom": "agent_config_revisions",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -493,8 +493,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -580,11 +580,11 @@
         }
       },
       "indexes": {
-        "agent_runtime_state_company_agent_idx": {
-          "name": "agent_runtime_state_company_agent_idx",
+        "agent_runtime_state_squad_agent_idx": {
+          "name": "agent_runtime_state_squad_agent_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -601,11 +601,11 @@
           "method": "btree",
           "with": {}
         },
-        "agent_runtime_state_company_updated_idx": {
-          "name": "agent_runtime_state_company_updated_idx",
+        "agent_runtime_state_squad_updated_idx": {
+          "name": "agent_runtime_state_squad_updated_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -637,12 +637,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "agent_runtime_state_company_id_companies_id_fk": {
-          "name": "agent_runtime_state_company_id_companies_id_fk",
+        "agent_runtime_state_squad_id_squads_id_fk": {
+          "name": "agent_runtime_state_squad_id_squads_id_fk",
           "tableFrom": "agent_runtime_state",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -668,8 +668,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -732,11 +732,11 @@
         }
       },
       "indexes": {
-        "agent_task_sessions_company_agent_adapter_task_uniq": {
-          "name": "agent_task_sessions_company_agent_adapter_task_uniq",
+        "agent_task_sessions_squad_agent_adapter_task_uniq": {
+          "name": "agent_task_sessions_squad_agent_adapter_task_uniq",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -765,11 +765,11 @@
           "method": "btree",
           "with": {}
         },
-        "agent_task_sessions_company_agent_updated_idx": {
-          "name": "agent_task_sessions_company_agent_updated_idx",
+        "agent_task_sessions_squad_agent_updated_idx": {
+          "name": "agent_task_sessions_squad_agent_updated_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -792,11 +792,11 @@
           "method": "btree",
           "with": {}
         },
-        "agent_task_sessions_company_task_updated_idx": {
-          "name": "agent_task_sessions_company_task_updated_idx",
+        "agent_task_sessions_squad_task_updated_idx": {
+          "name": "agent_task_sessions_squad_task_updated_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -821,12 +821,12 @@
         }
       },
       "foreignKeys": {
-        "agent_task_sessions_company_id_companies_id_fk": {
-          "name": "agent_task_sessions_company_id_companies_id_fk",
+        "agent_task_sessions_squad_id_squads_id_fk": {
+          "name": "agent_task_sessions_squad_id_squads_id_fk",
           "tableFrom": "agent_task_sessions",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -878,8 +878,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -993,11 +993,11 @@
         }
       },
       "indexes": {
-        "agent_wakeup_requests_company_agent_status_idx": {
-          "name": "agent_wakeup_requests_company_agent_status_idx",
+        "agent_wakeup_requests_squad_agent_status_idx": {
+          "name": "agent_wakeup_requests_squad_agent_status_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1020,11 +1020,11 @@
           "method": "btree",
           "with": {}
         },
-        "agent_wakeup_requests_company_requested_idx": {
-          "name": "agent_wakeup_requests_company_requested_idx",
+        "agent_wakeup_requests_squad_requested_idx": {
+          "name": "agent_wakeup_requests_squad_requested_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1064,12 +1064,12 @@
         }
       },
       "foreignKeys": {
-        "agent_wakeup_requests_company_id_companies_id_fk": {
-          "name": "agent_wakeup_requests_company_id_companies_id_fk",
+        "agent_wakeup_requests_squad_id_squads_id_fk": {
+          "name": "agent_wakeup_requests_squad_id_squads_id_fk",
           "tableFrom": "agent_wakeup_requests",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -1108,8 +1108,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -1222,11 +1222,11 @@
         }
       },
       "indexes": {
-        "agents_company_status_idx": {
-          "name": "agents_company_status_idx",
+        "agents_squad_status_idx": {
+          "name": "agents_squad_status_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1243,11 +1243,11 @@
           "method": "btree",
           "with": {}
         },
-        "agents_company_reports_to_idx": {
-          "name": "agents_company_reports_to_idx",
+        "agents_squad_reports_to_idx": {
+          "name": "agents_squad_reports_to_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1266,12 +1266,12 @@
         }
       },
       "foreignKeys": {
-        "agents_company_id_companies_id_fk": {
-          "name": "agents_company_id_companies_id_fk",
+        "agents_squad_id_squads_id_fk": {
+          "name": "agents_squad_id_squads_id_fk",
           "tableFrom": "agents",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -1310,8 +1310,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -1356,11 +1356,11 @@
         }
       },
       "indexes": {
-        "approval_comments_company_idx": {
-          "name": "approval_comments_company_idx",
+        "approval_comments_squad_idx": {
+          "name": "approval_comments_squad_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1409,12 +1409,12 @@
         }
       },
       "foreignKeys": {
-        "approval_comments_company_id_companies_id_fk": {
-          "name": "approval_comments_company_id_companies_id_fk",
+        "approval_comments_squad_id_squads_id_fk": {
+          "name": "approval_comments_squad_id_squads_id_fk",
           "tableFrom": "approval_comments",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -1466,8 +1466,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -1537,11 +1537,11 @@
         }
       },
       "indexes": {
-        "approvals_company_status_type_idx": {
-          "name": "approvals_company_status_type_idx",
+        "approvals_squad_status_type_idx": {
+          "name": "approvals_squad_status_type_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1566,12 +1566,12 @@
         }
       },
       "foreignKeys": {
-        "approvals_company_id_companies_id_fk": {
-          "name": "approvals_company_id_companies_id_fk",
+        "approvals_squad_id_squads_id_fk": {
+          "name": "approvals_squad_id_squads_id_fk",
           "tableFrom": "approvals",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -1610,8 +1610,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -1680,11 +1680,11 @@
         }
       },
       "indexes": {
-        "assets_company_created_idx": {
-          "name": "assets_company_created_idx",
+        "assets_squad_created_idx": {
+          "name": "assets_squad_created_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1701,11 +1701,11 @@
           "method": "btree",
           "with": {}
         },
-        "assets_company_provider_idx": {
-          "name": "assets_company_provider_idx",
+        "assets_squad_provider_idx": {
+          "name": "assets_squad_provider_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1722,11 +1722,11 @@
           "method": "btree",
           "with": {}
         },
-        "assets_company_object_key_uq": {
-          "name": "assets_company_object_key_uq",
+        "assets_squad_object_key_uq": {
+          "name": "assets_squad_object_key_uq",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1745,12 +1745,12 @@
         }
       },
       "foreignKeys": {
-        "assets_company_id_companies_id_fk": {
-          "name": "assets_company_id_companies_id_fk",
+        "assets_squad_id_squads_id_fk": {
+          "name": "assets_squad_id_squads_id_fk",
           "tableFrom": "assets",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -1778,8 +1778,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.companies": {
-      "name": "companies",
+    "public.squads": {
+      "name": "squads",
       "schema": "",
       "columns": {
         "id": {
@@ -1866,8 +1866,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.company_secret_versions": {
-      "name": "company_secret_versions",
+    "public.squad_secret_versions": {
+      "name": "squad_secret_versions",
       "schema": "",
       "columns": {
         "id": {
@@ -1928,8 +1928,8 @@
         }
       },
       "indexes": {
-        "company_secret_versions_secret_idx": {
-          "name": "company_secret_versions_secret_idx",
+        "squad_secret_versions_secret_idx": {
+          "name": "squad_secret_versions_secret_idx",
           "columns": [
             {
               "expression": "secret_id",
@@ -1949,8 +1949,8 @@
           "method": "btree",
           "with": {}
         },
-        "company_secret_versions_value_sha256_idx": {
-          "name": "company_secret_versions_value_sha256_idx",
+        "squad_secret_versions_value_sha256_idx": {
+          "name": "squad_secret_versions_value_sha256_idx",
           "columns": [
             {
               "expression": "value_sha256",
@@ -1964,8 +1964,8 @@
           "method": "btree",
           "with": {}
         },
-        "company_secret_versions_secret_version_uq": {
-          "name": "company_secret_versions_secret_version_uq",
+        "squad_secret_versions_secret_version_uq": {
+          "name": "squad_secret_versions_secret_version_uq",
           "columns": [
             {
               "expression": "secret_id",
@@ -1987,10 +1987,10 @@
         }
       },
       "foreignKeys": {
-        "company_secret_versions_secret_id_company_secrets_id_fk": {
-          "name": "company_secret_versions_secret_id_company_secrets_id_fk",
-          "tableFrom": "company_secret_versions",
-          "tableTo": "company_secrets",
+        "squad_secret_versions_secret_id_squad_secrets_id_fk": {
+          "name": "squad_secret_versions_secret_id_squad_secrets_id_fk",
+          "tableFrom": "squad_secret_versions",
+          "tableTo": "squad_secrets",
           "columnsFrom": [
             "secret_id"
           ],
@@ -2000,9 +2000,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "company_secret_versions_created_by_agent_id_agents_id_fk": {
-          "name": "company_secret_versions_created_by_agent_id_agents_id_fk",
-          "tableFrom": "company_secret_versions",
+        "squad_secret_versions_created_by_agent_id_agents_id_fk": {
+          "name": "squad_secret_versions_created_by_agent_id_agents_id_fk",
+          "tableFrom": "squad_secret_versions",
           "tableTo": "agents",
           "columnsFrom": [
             "created_by_agent_id"
@@ -2020,8 +2020,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.company_secrets": {
-      "name": "company_secrets",
+    "public.squad_secrets": {
+      "name": "squad_secrets",
       "schema": "",
       "columns": {
         "id": {
@@ -2031,8 +2031,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -2097,11 +2097,11 @@
         }
       },
       "indexes": {
-        "company_secrets_company_idx": {
-          "name": "company_secrets_company_idx",
+        "squad_secrets_squad_idx": {
+          "name": "squad_secrets_squad_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2112,11 +2112,11 @@
           "method": "btree",
           "with": {}
         },
-        "company_secrets_company_provider_idx": {
-          "name": "company_secrets_company_provider_idx",
+        "squad_secrets_squad_provider_idx": {
+          "name": "squad_secrets_squad_provider_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2133,11 +2133,11 @@
           "method": "btree",
           "with": {}
         },
-        "company_secrets_company_name_uq": {
-          "name": "company_secrets_company_name_uq",
+        "squad_secrets_squad_name_uq": {
+          "name": "squad_secrets_squad_name_uq",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2156,12 +2156,12 @@
         }
       },
       "foreignKeys": {
-        "company_secrets_company_id_companies_id_fk": {
-          "name": "company_secrets_company_id_companies_id_fk",
-          "tableFrom": "company_secrets",
-          "tableTo": "companies",
+        "squad_secrets_squad_id_squads_id_fk": {
+          "name": "squad_secrets_squad_id_squads_id_fk",
+          "tableFrom": "squad_secrets",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -2169,9 +2169,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "company_secrets_created_by_agent_id_agents_id_fk": {
-          "name": "company_secrets_created_by_agent_id_agents_id_fk",
-          "tableFrom": "company_secrets",
+        "squad_secrets_created_by_agent_id_agents_id_fk": {
+          "name": "squad_secrets_created_by_agent_id_agents_id_fk",
+          "tableFrom": "squad_secrets",
           "tableTo": "agents",
           "columnsFrom": [
             "created_by_agent_id"
@@ -2200,8 +2200,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -2283,11 +2283,11 @@
         }
       },
       "indexes": {
-        "cost_events_company_occurred_idx": {
-          "name": "cost_events_company_occurred_idx",
+        "cost_events_squad_occurred_idx": {
+          "name": "cost_events_squad_occurred_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2304,11 +2304,11 @@
           "method": "btree",
           "with": {}
         },
-        "cost_events_company_agent_occurred_idx": {
-          "name": "cost_events_company_agent_occurred_idx",
+        "cost_events_squad_agent_occurred_idx": {
+          "name": "cost_events_squad_agent_occurred_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2333,12 +2333,12 @@
         }
       },
       "foreignKeys": {
-        "cost_events_company_id_companies_id_fk": {
-          "name": "cost_events_company_id_companies_id_fk",
+        "cost_events_squad_id_squads_id_fk": {
+          "name": "cost_events_squad_id_squads_id_fk",
           "tableFrom": "cost_events",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -2416,8 +2416,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -2476,11 +2476,11 @@
         }
       },
       "indexes": {
-        "goals_company_idx": {
-          "name": "goals_company_idx",
+        "goals_squad_idx": {
+          "name": "goals_squad_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2493,12 +2493,12 @@
         }
       },
       "foreignKeys": {
-        "goals_company_id_companies_id_fk": {
-          "name": "goals_company_id_companies_id_fk",
+        "goals_squad_id_squads_id_fk": {
+          "name": "goals_squad_id_squads_id_fk",
           "tableFrom": "goals",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -2549,8 +2549,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -2639,11 +2639,11 @@
           "method": "btree",
           "with": {}
         },
-        "heartbeat_run_events_company_run_idx": {
-          "name": "heartbeat_run_events_company_run_idx",
+        "heartbeat_run_events_squad_run_idx": {
+          "name": "heartbeat_run_events_squad_run_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2660,11 +2660,11 @@
           "method": "btree",
           "with": {}
         },
-        "heartbeat_run_events_company_created_idx": {
-          "name": "heartbeat_run_events_company_created_idx",
+        "heartbeat_run_events_squad_created_idx": {
+          "name": "heartbeat_run_events_squad_created_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2683,12 +2683,12 @@
         }
       },
       "foreignKeys": {
-        "heartbeat_run_events_company_id_companies_id_fk": {
-          "name": "heartbeat_run_events_company_id_companies_id_fk",
+        "heartbeat_run_events_squad_id_squads_id_fk": {
+          "name": "heartbeat_run_events_squad_id_squads_id_fk",
           "tableFrom": "heartbeat_run_events",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -2740,8 +2740,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -2909,11 +2909,11 @@
         }
       },
       "indexes": {
-        "heartbeat_runs_company_agent_started_idx": {
-          "name": "heartbeat_runs_company_agent_started_idx",
+        "heartbeat_runs_squad_agent_started_idx": {
+          "name": "heartbeat_runs_squad_agent_started_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2938,12 +2938,12 @@
         }
       },
       "foreignKeys": {
-        "heartbeat_runs_company_id_companies_id_fk": {
-          "name": "heartbeat_runs_company_id_companies_id_fk",
+        "heartbeat_runs_squad_id_squads_id_fk": {
+          "name": "heartbeat_runs_squad_id_squads_id_fk",
           "tableFrom": "heartbeat_runs",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -2988,8 +2988,8 @@
       "name": "issue_approvals",
       "schema": "",
       "columns": {
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3057,11 +3057,11 @@
           "method": "btree",
           "with": {}
         },
-        "issue_approvals_company_idx": {
-          "name": "issue_approvals_company_idx",
+        "issue_approvals_squad_idx": {
+          "name": "issue_approvals_squad_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3074,12 +3074,12 @@
         }
       },
       "foreignKeys": {
-        "issue_approvals_company_id_companies_id_fk": {
-          "name": "issue_approvals_company_id_companies_id_fk",
+        "issue_approvals_squad_id_squads_id_fk": {
+          "name": "issue_approvals_squad_id_squads_id_fk",
           "tableFrom": "issue_approvals",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -3152,8 +3152,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3192,11 +3192,11 @@
         }
       },
       "indexes": {
-        "issue_attachments_company_issue_idx": {
-          "name": "issue_attachments_company_issue_idx",
+        "issue_attachments_squad_issue_idx": {
+          "name": "issue_attachments_squad_issue_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3245,12 +3245,12 @@
         }
       },
       "foreignKeys": {
-        "issue_attachments_company_id_companies_id_fk": {
-          "name": "issue_attachments_company_id_companies_id_fk",
+        "issue_attachments_squad_id_squads_id_fk": {
+          "name": "issue_attachments_squad_id_squads_id_fk",
           "tableFrom": "issue_attachments",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -3315,8 +3315,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3376,11 +3376,11 @@
           "method": "btree",
           "with": {}
         },
-        "issue_comments_company_idx": {
-          "name": "issue_comments_company_idx",
+        "issue_comments_squad_idx": {
+          "name": "issue_comments_squad_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3393,12 +3393,12 @@
         }
       },
       "foreignKeys": {
-        "issue_comments_company_id_companies_id_fk": {
-          "name": "issue_comments_company_id_companies_id_fk",
+        "issue_comments_squad_id_squads_id_fk": {
+          "name": "issue_comments_squad_id_squads_id_fk",
           "tableFrom": "issue_comments",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -3450,8 +3450,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3583,11 +3583,11 @@
         }
       },
       "indexes": {
-        "issues_company_status_idx": {
-          "name": "issues_company_status_idx",
+        "issues_squad_status_idx": {
+          "name": "issues_squad_status_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3604,11 +3604,11 @@
           "method": "btree",
           "with": {}
         },
-        "issues_company_assignee_status_idx": {
-          "name": "issues_company_assignee_status_idx",
+        "issues_squad_assignee_status_idx": {
+          "name": "issues_squad_assignee_status_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3631,11 +3631,11 @@
           "method": "btree",
           "with": {}
         },
-        "issues_company_parent_idx": {
-          "name": "issues_company_parent_idx",
+        "issues_squad_parent_idx": {
+          "name": "issues_squad_parent_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3652,11 +3652,11 @@
           "method": "btree",
           "with": {}
         },
-        "issues_company_project_idx": {
-          "name": "issues_company_project_idx",
+        "issues_squad_project_idx": {
+          "name": "issues_squad_project_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3673,11 +3673,11 @@
           "method": "btree",
           "with": {}
         },
-        "issues_company_identifier_idx": {
-          "name": "issues_company_identifier_idx",
+        "issues_squad_identifier_idx": {
+          "name": "issues_squad_identifier_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3696,12 +3696,12 @@
         }
       },
       "foreignKeys": {
-        "issues_company_id_companies_id_fk": {
-          "name": "issues_company_id_companies_id_fk",
+        "issues_squad_id_squads_id_fk": {
+          "name": "issues_squad_id_squads_id_fk",
           "tableFrom": "issues",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"
@@ -3792,8 +3792,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "company_id": {
-          "name": "company_id",
+        "squad_id": {
+          "name": "squad_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3851,11 +3851,11 @@
         }
       },
       "indexes": {
-        "projects_company_idx": {
-          "name": "projects_company_idx",
+        "projects_squad_idx": {
+          "name": "projects_squad_idx",
           "columns": [
             {
-              "expression": "company_id",
+              "expression": "squad_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3868,12 +3868,12 @@
         }
       },
       "foreignKeys": {
-        "projects_company_id_companies_id_fk": {
-          "name": "projects_company_id_companies_id_fk",
+        "projects_squad_id_squads_id_fk": {
+          "name": "projects_squad_id_squads_id_fk",
           "tableFrom": "projects",
-          "tableTo": "companies",
+          "tableTo": "squads",
           "columnsFrom": [
-            "company_id"
+            "squad_id"
           ],
           "columnsTo": [
             "id"

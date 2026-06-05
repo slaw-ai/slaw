@@ -71,12 +71,12 @@ export interface WatchdogDecisionInput {
 }
 
 export const heartbeatsApi = {
-  list: (companyId: string, agentId?: string, limit?: number) => {
+  list: (squadId: string, agentId?: string, limit?: number) => {
     const searchParams = new URLSearchParams();
     if (agentId) searchParams.set("agentId", agentId);
     if (limit) searchParams.set("limit", String(limit));
     const qs = searchParams.toString();
-    return api.get<HeartbeatRun[]>(`/companies/${companyId}/heartbeat-runs${qs ? `?${qs}` : ""}`);
+    return api.get<HeartbeatRun[]>(`/squads/${squadId}/heartbeat-runs${qs ? `?${qs}` : ""}`);
   },
   get: (runId: string) => api.get<HeartbeatRun>(`/heartbeat-runs/${runId}`),
   events: (runId: string, afterSeq = 0, limit = 200) =>
@@ -105,8 +105,8 @@ export const heartbeatsApi = {
     api.get<LiveRunForIssue[]>(`/issues/${issueId}/live-runs`),
   activeRunForIssue: (issueId: string) =>
     api.get<ActiveRunForIssue | null>(`/issues/${issueId}/active-run`),
-  liveRunsForCompany: (
-    companyId: string,
+  liveRunsForSquad: (
+    squadId: string,
     options?: number | { minCount?: number; limit?: number },
   ) => {
     const searchParams = new URLSearchParams();
@@ -117,7 +117,7 @@ export const heartbeatsApi = {
       if (options.limit) searchParams.set("limit", String(options.limit));
     }
     const qs = searchParams.toString();
-    return api.get<LiveRunForIssue[]>(`/companies/${companyId}/live-runs${qs ? `?${qs}` : ""}`);
+    return api.get<LiveRunForIssue[]>(`/squads/${squadId}/live-runs${qs ? `?${qs}` : ""}`);
   },
   listInstanceSchedulerAgents: () =>
     api.get<InstanceSchedulerHeartbeatAgent[]>("/instance/scheduler-heartbeats"),

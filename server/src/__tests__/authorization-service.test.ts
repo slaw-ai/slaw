@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
-  companies,
-  companyMemberships,
+  squads,
+  squadMemberships,
   createDb,
   instanceUserRoles,
   principalPermissionGrants,
@@ -18,9 +18,9 @@ import { authorizationService } from "../services/authorization.js";
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
-async function createCompany(db: ReturnType<typeof createDb>, label: string) {
+async function createSquad(db: ReturnType<typeof createDb>, label: string) {
   return db
-    .insert(companies)
+    .insert(squads)
     .values({
       name: `Authorization ${label} ${randomUUID()}`,
       issuePrefix: `AZ${randomUUID().slice(0, 6).toUpperCase()}`,
@@ -31,13 +31,13 @@ async function createCompany(db: ReturnType<typeof createDb>, label: string) {
 
 async function createAgent(
   db: ReturnType<typeof createDb>,
-  companyId: string,
+  squadId: string,
   input: { role?: string; reportsTo?: string | null; permissions?: Record<string, unknown> } = {},
 ) {
   return db
     .insert(agents)
     .values({
-      companyId,
+      squadId,
       name: `Agent ${randomUUID()}`,
       role: input.role ?? "engineer",
       reportsTo: input.reportsTo ?? null,
@@ -50,11 +50,11 @@ async function createAgent(
     .then((rows) => rows[0]!);
 }
 
-async function createProject(db: ReturnType<typeof createDb>, companyId: string, label: string) {
+async function createProject(db: ReturnType<typeof createDb>, squadId: string, label: string) {
   return db
     .insert(projects)
     .values({
-      companyId,
+      squadId,
       name: `Project ${label} ${randomUUID()}`,
     })
     .returning()
@@ -63,20 +63,20 @@ async function createProject(db: ReturnType<typeof createDb>, companyId: string,
 
 async function grantAgentPermission(
   db: ReturnType<typeof createDb>,
-  companyId: string,
+  squadId: string,
   agentId: string,
   permissionKey: "tasks:assign" | "tasks:assign_scope",
   scope: Record<string, unknown> | null = null,
 ) {
-  await db.insert(companyMemberships).values({
-    companyId,
+  await db.insert(squadMemberships).values({
+    squadId,
     principalType: "agent",
     principalId: agentId,
     status: "active",
     membershipRole: "member",
   });
   await db.insert(principalPermissionGrants).values({
-    companyId,
+    squadId,
     principalType: "agent",
     principalId: agentId,
     permissionKey,
@@ -96,11 +96,11 @@ describeEmbeddedPostgres("authorization service", () => {
 
   afterEach(async () => {
     await db.delete(principalPermissionGrants);
-    await db.delete(companyMemberships);
+    await db.delete(squadMemberships);
     await db.delete(instanceUserRoles);
     await db.delete(agents);
     await db.delete(projects);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -108,17 +108,17 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("allows active user role grants and explains the grant source", async () => {
-    const company = await createCompany(db, "UserGrant");
+    const squad = await createSquad(db, "UserGrant");
     const userId = `user-${randomUUID()}`;
-    await db.insert(companyMemberships).values({
-      companyId: company.id,
+    await db.insert(squadMemberships).values({
+      squadId: squad.id,
       principalType: "user",
       principalId: userId,
       status: "active",
       membershipRole: "operator",
     });
     await db.insert(principalPermissionGrants).values({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "user",
       principalId: userId,
       permissionKey: "tasks:assign",
@@ -126,7 +126,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "user",
       principalId: userId,
       action: "tasks:assign",
@@ -146,18 +146,18 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("allows agent grants for agent configuration decisions", async () => {
-    const company = await createCompany(db, "AgentGrant");
-    const actorAgent = await createAgent(db, company.id);
-    const targetAgent = await createAgent(db, company.id);
-    await db.insert(companyMemberships).values({
-      companyId: company.id,
+    const squad = await createSquad(db, "AgentGrant");
+    const actorAgent = await createAgent(db, squad.id);
+    const targetAgent = await createAgent(db, squad.id);
+    await db.insert(squadMemberships).values({
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       status: "active",
       membershipRole: "member",
     });
     await db.insert(principalPermissionGrants).values({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       permissionKey: "agents:create",
@@ -165,39 +165,39 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: company.id, source: "agent_key" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: squad.id, source: "agent_key" },
       action: "agent_config:read",
-      resource: { type: "agent", companyId: company.id, agentId: targetAgent.id },
+      resource: { type: "agent", squadId: squad.id, agentId: targetAgent.id },
     });
 
     expect(decision.allowed).toBe(true);
     expect(decision.grant?.permissionKey).toBe("agents:create");
   });
 
-  it("denies cross-company agent decisions before grant evaluation", async () => {
-    const sourceCompany = await createCompany(db, "Source");
-    const targetCompany = await createCompany(db, "Target");
-    const actorAgent = await createAgent(db, sourceCompany.id);
+  it("denies cross-squad agent decisions before grant evaluation", async () => {
+    const sourceSquad = await createSquad(db, "Source");
+    const targetSquad = await createSquad(db, "Target");
+    const actorAgent = await createAgent(db, sourceSquad.id);
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: sourceCompany.id, source: "agent_jwt" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: sourceSquad.id, source: "agent_jwt" },
       action: "tasks:assign",
-      resource: { type: "company", companyId: targetCompany.id },
+      resource: { type: "squad", squadId: targetSquad.id },
     });
 
     expect(decision).toMatchObject({
       allowed: false,
-      reason: "deny_company_boundary",
+      reason: "deny_squad_boundary",
     });
-    expect(decision.explanation).toContain("Agent key cannot access another company");
+    expect(decision.explanation).toContain("Agent key cannot access another squad");
   });
 
-  it("allows simple-mode task assignment between same-company agents without explicit grants", async () => {
-    const company = await createCompany(db, "AssignmentDefault");
-    const actorAgent = await createAgent(db, company.id, { role: "engineer" });
-    const targetAgent = await createAgent(db, company.id, { role: "engineer" });
-    await db.insert(companyMemberships).values({
-      companyId: company.id,
+  it("allows simple-mode task assignment between same-squad agents without explicit grants", async () => {
+    const squad = await createSquad(db, "AssignmentDefault");
+    const actorAgent = await createAgent(db, squad.id, { role: "engineer" });
+    const targetAgent = await createAgent(db, squad.id, { role: "engineer" });
+    await db.insert(squadMemberships).values({
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       status: "active",
@@ -205,23 +205,23 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: company.id, source: "agent_key" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: squad.id, source: "agent_key" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: company.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
     expect(decision).toMatchObject({
       allowed: true,
-      reason: "allow_simple_company_member",
+      reason: "allow_simple_squad_member",
     });
     expect(decision.explanation).toContain("simple mode");
   });
 
   it("denies simple-mode assignment when the target agent requires protected-assignment approval", async () => {
-    const company = await createCompany(db, "ProtectedAssignment");
-    const actorAgent = await createAgent(db, company.id, { role: "engineer" });
-    const targetAgent = await createAgent(db, company.id, {
+    const squad = await createSquad(db, "ProtectedAssignment");
+    const actorAgent = await createAgent(db, squad.id, { role: "engineer" });
+    const targetAgent = await createAgent(db, squad.id, {
       role: "engineer",
       permissions: {
         authorizationPolicy: {
@@ -239,9 +239,9 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: company.id, source: "agent_key" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: squad.id, source: "agent_key" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: company.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
@@ -253,9 +253,9 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("requires an explicit grant before assigning to a private target agent", async () => {
-    const company = await createCompany(db, "PrivateAssignment");
-    const actorAgent = await createAgent(db, company.id, { role: "engineer" });
-    const targetAgent = await createAgent(db, company.id, {
+    const squad = await createSquad(db, "PrivateAssignment");
+    const actorAgent = await createAgent(db, squad.id, { role: "engineer" });
+    const targetAgent = await createAgent(db, squad.id, {
       role: "engineer",
       permissions: {
         authorizationPolicy: {
@@ -264,7 +264,7 @@ describeEmbeddedPostgres("authorization service", () => {
             hiddenFromDefaultDirectory: true,
           },
           assignmentPolicy: {
-            mode: "company_default",
+            mode: "squad_default",
             protectedAgentRequiresApproval: false,
           },
           protectedAgent: {
@@ -276,20 +276,20 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const denied = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: company.id, source: "agent_key" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: squad.id, source: "agent_key" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: company.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
-    await grantAgentPermission(db, company.id, actorAgent.id, "tasks:assign_scope", {
+    await grantAgentPermission(db, squad.id, actorAgent.id, "tasks:assign_scope", {
       assigneeAgentId: targetAgent.id,
     });
 
     const allowed = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: company.id, source: "agent_key" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: squad.id, source: "agent_key" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: company.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
@@ -305,12 +305,12 @@ describeEmbeddedPostgres("authorization service", () => {
     });
   });
 
-  it("allows simple-mode task assignment for active same-company board operators without explicit grants", async () => {
-    const company = await createCompany(db, "BoardAssignmentDefault");
+  it("allows simple-mode task assignment for active same-squad board operators without explicit grants", async () => {
+    const squad = await createSquad(db, "BoardAssignmentDefault");
     const userId = `user-${randomUUID()}`;
-    const targetAgent = await createAgent(db, company.id, { role: "engineer" });
-    await db.insert(companyMemberships).values({
-      companyId: company.id,
+    const targetAgent = await createAgent(db, squad.id, { role: "engineer" });
+    await db.insert(squadMemberships).values({
+      squadId: squad.id,
       principalType: "user",
       principalId: userId,
       status: "active",
@@ -320,22 +320,22 @@ describeEmbeddedPostgres("authorization service", () => {
     const decision = await authorizationService(db).decide({
       actor: { type: "board", userId, source: "session" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: company.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
     expect(decision).toMatchObject({
       allowed: true,
-      reason: "allow_simple_company_member",
+      reason: "allow_simple_squad_member",
     });
   });
 
   it("denies legacy board assignment context for viewers", async () => {
-    const company = await createCompany(db, "BoardViewerAssignment");
+    const squad = await createSquad(db, "BoardViewerAssignment");
     const userId = `user-${randomUUID()}`;
-    const targetAgent = await createAgent(db, company.id, { role: "engineer" });
-    await db.insert(companyMemberships).values({
-      companyId: company.id,
+    const targetAgent = await createAgent(db, squad.id, { role: "engineer" });
+    await db.insert(squadMemberships).values({
+      squadId: squad.id,
       principalType: "user",
       principalId: userId,
       status: "active",
@@ -343,9 +343,9 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "board", userId, companyIds: [company.id], source: "session" },
+      actor: { type: "board", userId, squadIds: [squad.id], source: "session" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: company.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
@@ -355,13 +355,13 @@ describeEmbeddedPostgres("authorization service", () => {
     });
   });
 
-  it("denies simple-mode assignment to a target agent from another company", async () => {
-    const sourceCompany = await createCompany(db, "AssignmentSource");
-    const targetCompany = await createCompany(db, "AssignmentTarget");
-    const actorAgent = await createAgent(db, sourceCompany.id, { role: "engineer" });
-    const targetAgent = await createAgent(db, targetCompany.id, { role: "engineer" });
-    await db.insert(companyMemberships).values({
-      companyId: sourceCompany.id,
+  it("denies simple-mode assignment to a target agent from another squad", async () => {
+    const sourceSquad = await createSquad(db, "AssignmentSource");
+    const targetSquad = await createSquad(db, "AssignmentTarget");
+    const actorAgent = await createAgent(db, sourceSquad.id, { role: "engineer" });
+    const targetAgent = await createAgent(db, targetSquad.id, { role: "engineer" });
+    await db.insert(squadMemberships).values({
+      squadId: sourceSquad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       status: "active",
@@ -369,26 +369,26 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: sourceCompany.id, source: "agent_key" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: sourceSquad.id, source: "agent_key" },
       action: "tasks:assign",
-      resource: { type: "issue", companyId: sourceCompany.id, assigneeAgentId: targetAgent.id },
+      resource: { type: "issue", squadId: sourceSquad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
     });
 
     expect(decision).toMatchObject({
       allowed: false,
-      reason: "deny_company_boundary",
+      reason: "deny_squad_boundary",
     });
   });
 
-  it("preserves legacy CEO agent creator authority", async () => {
-    const company = await createCompany(db, "Legacy");
-    const actorAgent = await createAgent(db, company.id, { role: "ceo" });
+  it("preserves legacy Squad Lead agent creator authority", async () => {
+    const squad = await createSquad(db, "Legacy");
+    const actorAgent = await createAgent(db, squad.id, { role: "squad_lead" });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "agent", agentId: actorAgent.id, companyId: company.id, source: "agent_jwt" },
+      actor: { type: "agent", agentId: actorAgent.id, squadId: squad.id, source: "agent_jwt" },
       action: "agents:create",
-      resource: { type: "company", companyId: company.id },
+      resource: { type: "squad", squadId: squad.id },
     });
 
     expect(decision).toMatchObject({
@@ -398,17 +398,17 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("allows scoped assignment inside a granted project and denies other projects", async () => {
-    const company = await createCompany(db, "ProjectScope");
-    const project = await createProject(db, company.id, "Allowed");
-    const otherProject = await createProject(db, company.id, "Denied");
-    const actorAgent = await createAgent(db, company.id);
-    const targetAgent = await createAgent(db, company.id);
-    await grantAgentPermission(db, company.id, actorAgent.id, "tasks:assign_scope", {
+    const squad = await createSquad(db, "ProjectScope");
+    const project = await createProject(db, squad.id, "Allowed");
+    const otherProject = await createProject(db, squad.id, "Denied");
+    const actorAgent = await createAgent(db, squad.id);
+    const targetAgent = await createAgent(db, squad.id);
+    await grantAgentPermission(db, squad.id, actorAgent.id, "tasks:assign_scope", {
       projectIds: [project.id],
     });
 
     const allowed = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -416,7 +416,7 @@ describeEmbeddedPostgres("authorization service", () => {
       scope: { projectId: project.id, assigneeAgentId: targetAgent.id },
     });
     const denied = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -436,15 +436,15 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("treats unknown grant scope metadata as unconstrained", async () => {
-    const company = await createCompany(db, "UnknownScopeMetadata");
-    const actorAgent = await createAgent(db, company.id);
-    const targetAgent = await createAgent(db, company.id);
-    await grantAgentPermission(db, company.id, actorAgent.id, "tasks:assign_scope", {
-      note: "CEO-approved",
+    const squad = await createSquad(db, "UnknownScopeMetadata");
+    const actorAgent = await createAgent(db, squad.id);
+    const targetAgent = await createAgent(db, squad.id);
+    await grantAgentPermission(db, squad.id, actorAgent.id, "tasks:assign_scope", {
+      note: "Squad Lead-approved",
     });
 
     const decision = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -459,18 +459,18 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("allows scoped assignment to agents inside a managed subtree only", async () => {
-    const company = await createCompany(db, "SubtreeScope");
-    const actorAgent = await createAgent(db, company.id);
-    const managerAgent = await createAgent(db, company.id);
-    const childAgent = await createAgent(db, company.id, { reportsTo: managerAgent.id });
-    const grandchildAgent = await createAgent(db, company.id, { reportsTo: childAgent.id });
-    const outsideAgent = await createAgent(db, company.id);
-    await grantAgentPermission(db, company.id, actorAgent.id, "tasks:assign_scope", {
+    const squad = await createSquad(db, "SubtreeScope");
+    const actorAgent = await createAgent(db, squad.id);
+    const managerAgent = await createAgent(db, squad.id);
+    const childAgent = await createAgent(db, squad.id, { reportsTo: managerAgent.id });
+    const grandchildAgent = await createAgent(db, squad.id, { reportsTo: childAgent.id });
+    const outsideAgent = await createAgent(db, squad.id);
+    await grantAgentPermission(db, squad.id, actorAgent.id, "tasks:assign_scope", {
       managedSubtreeAgentIds: [managerAgent.id],
     });
 
     const allowed = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -478,7 +478,7 @@ describeEmbeddedPostgres("authorization service", () => {
       scope: { assigneeAgentId: grandchildAgent.id },
     });
     const denied = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -495,16 +495,16 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("allows scoped assignment to an explicit target-agent allowlist only", async () => {
-    const company = await createCompany(db, "AllowlistScope");
-    const actorAgent = await createAgent(db, company.id);
-    const allowedTarget = await createAgent(db, company.id);
-    const deniedTarget = await createAgent(db, company.id);
-    await grantAgentPermission(db, company.id, actorAgent.id, "tasks:assign_scope", {
+    const squad = await createSquad(db, "AllowlistScope");
+    const actorAgent = await createAgent(db, squad.id);
+    const allowedTarget = await createAgent(db, squad.id);
+    const deniedTarget = await createAgent(db, squad.id);
+    await grantAgentPermission(db, squad.id, actorAgent.id, "tasks:assign_scope", {
       assigneeAgentIds: [allowedTarget.id],
     });
 
     const allowed = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -512,7 +512,7 @@ describeEmbeddedPostgres("authorization service", () => {
       scope: { assigneeAgentId: allowedTarget.id },
     });
     const denied = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",
@@ -525,13 +525,13 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   it("preserves unscoped tasks:assign compatibility for assignment decisions", async () => {
-    const company = await createCompany(db, "BroadAssign");
-    const actorAgent = await createAgent(db, company.id);
-    const targetAgent = await createAgent(db, company.id);
-    await grantAgentPermission(db, company.id, actorAgent.id, "tasks:assign");
+    const squad = await createSquad(db, "BroadAssign");
+    const actorAgent = await createAgent(db, squad.id);
+    const targetAgent = await createAgent(db, squad.id);
+    await grantAgentPermission(db, squad.id, actorAgent.id, "tasks:assign");
 
     const decision = await authorizationService(db).decidePrincipalGrant({
-      companyId: company.id,
+      squadId: squad.id,
       principalType: "agent",
       principalId: actorAgent.id,
       action: "tasks:assign",

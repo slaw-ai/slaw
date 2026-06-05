@@ -140,10 +140,10 @@ export function CliAuthPage() {
               {challenge.requestedAccess === "instance_admin_required" ? "Instance admin" : "Board"}
             </div>
           </div>
-          {challenge.requestedCompanyName && (
+          {challenge.requestedSquadName && (
             <div>
-              <div className="text-muted-foreground">Requested company</div>
-              <div className="text-foreground">{challenge.requestedCompanyName}</div>
+              <div className="text-muted-foreground">Requested squad</div>
+              <div className="text-foreground">{challenge.requestedSquadName}</div>
             </div>
           )}
         </div>

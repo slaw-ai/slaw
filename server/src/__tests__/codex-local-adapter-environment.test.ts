@@ -23,7 +23,7 @@ describe("codex_local environment diagnostics", () => {
     await fs.rm(path.dirname(cwd), { recursive: true, force: true });
 
     const result = await testEnvironment({
-      companyId: "company-1",
+      squadId: "squad-1",
       adapterType: "codex_local",
       config: {
         command: process.execPath,
@@ -54,7 +54,7 @@ describe("codex_local environment diagnostics", () => {
       );
 
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "codex_local",
         config: {
           command: process.execPath,
@@ -83,7 +83,7 @@ describe("codex_local environment diagnostics", () => {
       // No auth.json written
 
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "codex_local",
         config: {
           command: process.execPath,
@@ -121,7 +121,7 @@ describe("codex_local environment diagnostics", () => {
       await fs.writeFile(fakeCodex, script, "utf8");
 
       const result = await testEnvironment({
-        companyId: "company-1",
+        squadId: "squad-1",
         adapterType: "codex_local",
         config: {
           command: "codex",

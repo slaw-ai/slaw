@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Sidebar } from "./Sidebar";
 
 const mockHeartbeatsApi = vi.hoisted(() => ({
-  liveRunsForCompany: vi.fn(),
+  liveRunsForSquad: vi.fn(),
 }));
 
 const mockInstanceSettingsApi = vi.hoisted(() => ({
@@ -40,10 +40,10 @@ vi.mock("../context/DialogContext", () => ({
   }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", issuePrefix: "PAP", name: "Slaw" },
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
+    selectedSquad: { id: "squad-1", issuePrefix: "PAP", name: "Slaw" },
   }),
 }));
 
@@ -78,8 +78,8 @@ vi.mock("@/plugins/launchers", () => ({
   ),
 }));
 
-vi.mock("./SidebarCompanyMenu", () => ({
-  SidebarCompanyMenu: () => <div>Company menu</div>,
+vi.mock("./SidebarSquadMenu", () => ({
+  SidebarSquadMenu: () => <div>Squad menu</div>,
 }));
 
 vi.mock("./SidebarProjects", () => ({
@@ -124,7 +124,7 @@ describe("Sidebar", () => {
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
-    mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([]);
+    mockHeartbeatsApi.liveRunsForSquad.mockResolvedValue([]);
   });
 
   afterEach(() => {

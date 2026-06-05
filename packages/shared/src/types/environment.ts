@@ -56,7 +56,7 @@ export interface EnvironmentProbeResult {
 
 export interface Environment {
   id: string;
-  companyId: string;
+  squadId: string;
   name: string;
   description: string | null;
   driver: EnvironmentDriver;
@@ -69,7 +69,7 @@ export interface Environment {
 
 export interface EnvironmentLease {
   id: string;
-  companyId: string;
+  squadId: string;
   environmentId: string;
   executionWorkspaceId: string | null;
   issueId: string | null;

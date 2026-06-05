@@ -1,7 +1,7 @@
 export interface SlawMcpConfig {
   apiUrl: string;
   apiKey: string;
-  companyId: string | null;
+  squadId: string | null;
   agentId: string | null;
   runId: string | null;
 }
@@ -32,7 +32,7 @@ export function readConfigFromEnv(env: NodeJS.ProcessEnv = process.env): SlawMcp
   return {
     apiUrl: normalizeApiUrl(apiUrl),
     apiKey,
-    companyId: nonEmpty(env.SLAW_COMPANY_ID),
+    squadId: nonEmpty(env.SLAW_SQUAD_ID),
     agentId: nonEmpty(env.SLAW_AGENT_ID),
     runId: nonEmpty(env.SLAW_RUN_ID),
   };

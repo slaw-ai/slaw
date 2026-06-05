@@ -15,7 +15,7 @@ export interface CloudUpstreamTarget {
   stackId: string;
   stackSlug: string | null;
   stackDisplayName: string | null;
-  companyId: string;
+  squadId: string;
   primaryHost: string;
   origin: string;
   product: string;
@@ -25,7 +25,7 @@ export interface CloudUpstreamTarget {
 
 export interface CloudUpstreamConnection {
   id: string;
-  companyId: string;
+  squadId: string;
   remoteUrl: string;
   target: CloudUpstreamTarget;
   tokenStatus: "pending" | "connected" | "expired" | "revoked";
@@ -61,7 +61,7 @@ export interface CloudUpstreamConflict {
 
 export interface CloudUpstreamPreview {
   connectionId: string;
-  sourceCompanyId: string;
+  sourceSquadId: string;
   target: CloudUpstreamTarget;
   schemaCompatible: boolean;
   summary: CloudUpstreamSummaryCount[];
@@ -81,7 +81,7 @@ export interface CloudUpstreamRunEvent {
 export interface CloudUpstreamRun {
   id: string;
   connectionId: string;
-  companyId: string;
+  squadId: string;
   status: CloudUpstreamRunStatus;
   activeStep: CloudUpstreamStep;
   progressPercent: number;

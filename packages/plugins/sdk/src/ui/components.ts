@@ -24,7 +24,7 @@ import { renderSdkUiComponent } from "./runtime.js";
 // ---------------------------------------------------------------------------
 
 /**
- * A trend value that can accompany a metric.
+ * A trend value that can acsquad a metric.
  * Positive values indicate upward trends; negative values indicate downward trends.
  */
 export interface MetricTrend {
@@ -341,7 +341,7 @@ export interface IssuesListFilters {
 }
 
 export interface IssuesListProps {
-  companyId: string | null;
+  squadId: string | null;
   projectId?: string | null;
   filters?: IssuesListFilters;
   viewStateKey?: string;
@@ -356,8 +356,8 @@ export interface AssigneePickerSelection {
 }
 
 export interface AssigneePickerProps {
-  /** Company whose agents and users should be listed. Defaults to host context. */
-  companyId?: string | null;
+  /** Squad whose agents and users should be listed. Defaults to host context. */
+  squadId?: string | null;
   /** Controlled value. Use `agent:<id>`, `user:<id>`, or an empty string. */
   value: string;
   /** Called with the encoded value plus parsed assignee IDs. */
@@ -381,8 +381,8 @@ export interface AssigneePickerProps {
 }
 
 export interface ProjectPickerProps {
-  /** Company whose projects should be listed. Defaults to host context. */
-  companyId?: string | null;
+  /** Squad whose projects should be listed. Defaults to host context. */
+  squadId?: string | null;
   /** Controlled project id, or an empty string for no project. */
   value: string;
   /** Called with the selected project id. Empty string means no project. */
@@ -575,7 +575,7 @@ export const ErrorBoundary = createSdkUiComponent<ErrorBoundaryProps>("ErrorBoun
 export const FileTree = createSdkUiComponent<FileTreeProps>("FileTree");
 
 /**
- * Renders Slaw's native issue list component for company-scoped plugin
+ * Renders Slaw's native issue list component for squad-scoped plugin
  * pages that need a standard board issue view.
  */
 export const IssuesList = createSdkUiComponent<IssuesListProps>("IssuesList");

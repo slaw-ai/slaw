@@ -8,7 +8,7 @@ Manage encrypted secrets that agents reference in their environment configuratio
 ## List Secrets
 
 ```
-GET /api/companies/{companyId}/secrets
+GET /api/squads/{squadId}/secrets
 ```
 
 Returns secret metadata (not decrypted values).
@@ -16,7 +16,7 @@ Returns secret metadata (not decrypted values).
 ## Create Secret
 
 ```
-POST /api/companies/{companyId}/secrets
+POST /api/squads/{squadId}/secrets
 {
   "name": "anthropic-api-key",
   "value": "sk-ant-..."
@@ -45,7 +45,7 @@ runtime path that enforces binding context and records access events.
 ## Provider Health
 
 ```
-GET /api/companies/{companyId}/secret-providers/health
+GET /api/squads/{squadId}/secret-providers/health
 ```
 
 Returns provider setup diagnostics, warnings, and local backup guidance. Health
@@ -54,22 +54,22 @@ responses must not include secret values or provider credentials.
 For `aws_secrets_manager`, an unready health response names the missing
 non-secret provider environment variables, the AWS SDK default credential source
 expected by the server runtime, and the custody rule that AWS bootstrap
-credentials must not be stored in Slaw `company_secrets`.
+credentials must not be stored in Slaw `squad_secrets`.
 
 The equivalent CLI check is:
 
 ```sh
-pnpm slaw secrets doctor --company-id {companyId}
+pnpm slaw secrets doctor --squad-id {squadId}
 ```
 
 ## Provider Vaults
 
-Provider vaults are named, company-scoped configurations that route secret
+Provider vaults are named, squad-scoped configurations that route secret
 material to one of the supported provider backends. See the
 [secrets deploy guide](/deploy/secrets#provider-vaults) for the operator model
 and custody rules.
 
-All routes below require board auth and company access. Mutating routes emit
+All routes below require board auth and squad access. Mutating routes emit
 `secret_provider_config.*` activity-log entries. No route in this surface
 returns provider credential values; submitting credential-shaped fields in
 `config` is rejected at validation time.
@@ -77,10 +77,10 @@ returns provider credential values; submitting credential-shaped fields in
 ### List Vaults
 
 ```
-GET /api/companies/{companyId}/secret-provider-configs
+GET /api/squads/{squadId}/secret-provider-configs
 ```
 
-Returns every vault for the company (including disabled rows for audit), each
+Returns every vault for the squad (including disabled rows for audit), each
 with id, provider, displayName, status, isDefault, non-sensitive `config`,
 latest health snapshot (`healthStatus`, `healthCheckedAt`, `healthMessage`,
 `healthDetails`), `disabledAt`, and audit columns.
@@ -88,7 +88,7 @@ latest health snapshot (`healthStatus`, `healthCheckedAt`, `healthMessage`,
 ### Create Vault
 
 ```
-POST /api/companies/{companyId}/secret-provider-configs
+POST /api/squads/{squadId}/secret-provider-configs
 {
   "provider": "aws_secrets_manager",
   "displayName": "Prod US-East",
@@ -194,18 +194,18 @@ provider modules.
 
 ### Selecting A Vault When Creating Or Rotating Secrets
 
-`POST /api/companies/{companyId}/secrets` and
+`POST /api/squads/{squadId}/secrets` and
 `POST /api/secrets/{secretId}/rotate` both accept an optional
 `providerConfigId` field that pins the secret to a specific vault. When
 omitted (or null), the operation runs through the deployment-level provider
 configuration — the same path existing installs already use. The board UI
-preselects the company's default vault for the chosen provider before
+preselects the squad's default vault for the chosen provider before
 submitting, so callers should usually send an explicit `providerConfigId`.
 Coming-soon and disabled vaults are rejected with a 422; a vault that does not
 match the secret's provider is rejected the same way.
 
 ```json
-POST /api/companies/{companyId}/secrets
+POST /api/squads/{squadId}/secrets
 {
   "name": "prod-stripe-key",
   "provider": "aws_secrets_manager",
@@ -233,9 +233,9 @@ Remote import links existing AWS Secrets Manager entries into Slaw as
 `external_reference` secrets. Import stores provider reference metadata only; it
 does not copy the remote secret plaintext into Slaw.
 
-The routes are board-only and company-scoped. `providerConfigId` must point to
-a same-company AWS provider vault with status `ready` or `warning`. Disabled,
-coming-soon, non-AWS, and cross-company vaults are rejected. Imported secrets
+The routes are board-only and squad-scoped. `providerConfigId` must point to
+a same-squad AWS provider vault with status `ready` or `warning`. Disabled,
+coming-soon, non-AWS, and cross-squad vaults are rejected. Imported secrets
 resolve later through the selected vault, so runtime reads still need
 `secretsmanager:GetSecretValue` and any required KMS decrypt permission on the
 selected external secret.
@@ -243,7 +243,7 @@ selected external secret.
 ### Preview Remote Import Candidates
 
 ```
-POST /api/companies/{companyId}/secrets/remote-import/preview
+POST /api/squads/{squadId}/secrets/remote-import/preview
 {
   "providerConfigId": "<aws-vault-uuid>",
   "query": "stripe",
@@ -305,7 +305,7 @@ resources instead.
 ### Import Selected Remote References
 
 ```
-POST /api/companies/{companyId}/secrets/remote-import
+POST /api/squads/{squadId}/secrets/remote-import
 {
   "providerConfigId": "<aws-vault-uuid>",
   "secrets": [
@@ -401,12 +401,12 @@ boundaries note in the [secrets deploy guide](/deploy/secrets#custody-boundaries
 
 ## Portability
 
-Company export/import APIs represent agent and project environment requirements
+Squad export/import APIs represent agent and project environment requirements
 as declarations in the package manifest. Exports omit secret values, secret IDs,
 provider references, and encrypted provider material. Use:
 
 ```sh
-pnpm slaw secrets declarations --company-id {companyId}
+pnpm slaw secrets declarations --squad-id {squadId}
 ```
 
 to inspect the declarations that an export would emit before moving a package.

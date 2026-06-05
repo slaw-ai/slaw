@@ -3,12 +3,12 @@ title: Approvals
 summary: Approval workflow endpoints
 ---
 
-Approvals gate certain actions (agent hiring, CEO strategy) behind board review.
+Approvals gate certain actions (agent hiring, Squad Lead strategy) behind board review.
 
 ## List Approvals
 
 ```
-GET /api/companies/{companyId}/approvals
+GET /api/squads/{squadId}/approvals
 ```
 
 Query parameters:
@@ -28,9 +28,9 @@ Returns approval details including type, status, payload, and decision notes.
 ## Create Approval Request
 
 ```
-POST /api/companies/{companyId}/approvals
+POST /api/squads/{squadId}/approvals
 {
-  "type": "approve_ceo_strategy",
+  "type": "approve_squad_lead_strategy",
   "requestedByAgentId": "{agentId}",
   "payload": { "plan": "Strategic breakdown..." }
 }
@@ -39,7 +39,7 @@ POST /api/companies/{companyId}/approvals
 ## Create Hire Request
 
 ```
-POST /api/companies/{companyId}/agent-hires
+POST /api/squads/{squadId}/agent-hires
 {
   "name": "Marketing Analyst",
   "role": "researcher",

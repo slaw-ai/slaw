@@ -39,10 +39,10 @@ describe("Secrets page provider helpers", () => {
       getAwsManagedPathPreview({
         provider: awsProvider,
         health,
-        companyId: "company-123",
+        squadId: "squad-123",
         secretKeySource: "Anthropic API Key",
       }),
-    ).toBe("slaw/prod-us-1/company-123/anthropic-api-key");
+    ).toBe("slaw/prod-us-1/squad-123/anthropic-api-key");
   });
 
   it("blocks unconfigured providers before create submission", () => {

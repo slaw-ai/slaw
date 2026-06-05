@@ -39,7 +39,7 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
       feedbackDataSharingPreference: "prompt",
     },
   })),
-  listCompanyIds: vi.fn(async () => ["company-1"]),
+  listSquadIds: vi.fn(async () => ["squad-1"]),
 }));
 const mockRoutineService = vi.hoisted(() => ({
   syncRunStatusForIssue: vi.fn(async () => undefined),
@@ -75,8 +75,8 @@ function registerModuleMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => ({
@@ -131,7 +131,7 @@ async function createApp(db: unknown = {}) {
     (req as any).actor = {
       type: "board",
       userId: "local-board",
-      companyIds: ["company-1"],
+      squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
     };
@@ -145,7 +145,7 @@ async function createApp(db: unknown = {}) {
 function makeIssue() {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    companyId: "company-1",
+    squadId: "squad-1",
     status: "todo",
     assigneeAgentId: "22222222-2222-4222-8222-222222222222",
     assigneeUserId: null,
@@ -198,7 +198,7 @@ describe("issue activity event routes", () => {
         feedbackDataSharingPreference: "prompt",
       },
     });
-    mockInstanceSettingsService.listCompanyIds.mockResolvedValue(["company-1"]);
+    mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);
     mockRoutineService.syncRunStatusForIssue.mockResolvedValue(undefined);
   });
 

@@ -1,4 +1,4 @@
-# Agent Management Follow-up Plan (CEO Patch + Config Rollback + Issue↔Approval Linking)
+# Agent Management Follow-up Plan (Squad Lead Patch + Config Rollback + Issue↔Approval Linking)
 
 Status: Proposed  
 Date: 2026-02-19  
@@ -6,14 +6,14 @@ Context: Follow-up from run `faeab00e-7857-4acc-b2b2-86f6d078adb4`
 
 ## 1. Investigation Findings
 
-## 1.1 Why CEO PATCH failed
+## 1.1 Why Squad Lead PATCH failed
 
 Root cause is explicit route logic:
 
 - `server/src/routes/agents.ts` currently blocks any agent patching another agent:
   - `if (req.actor.type === "agent" && req.actor.agentId !== id) { ... "Agent can only modify itself" }`
 
-So even though the CEO has hire permission, the route still enforces old self-only patch behavior.
+So even though the Squad Lead has hire permission, the route still enforces old self-only patch behavior.
 
 ## 1.2 Why comment quality felt wrong
 
@@ -33,17 +33,17 @@ So even though the CEO has hire permission, the route still enforces old self-on
 
 ## 2. Product/Behavior Changes
 
-## 2.1 Allow CEO to patch other same-company agents
+## 2.1 Allow Squad Lead to patch other same-squad agents
 
 Target behavior:
 
 - Board: full patch rights.
-- CEO: can patch agents in same company.
+- Squad Lead: can patch agents in same squad.
 - Other agents: self-only patch unless explicitly granted future permission.
 
 Note:
 
-- Keep company boundary checks strict.
+- Keep squad boundary checks strict.
 - Keep privileged fields separately governed.
 
 ## 2.2 Add first-class agent configuration revision log + rollback
@@ -77,7 +77,7 @@ Implement canonical join model so one issue can link many approvals and one appr
 Columns:
 
 - `id` uuid pk
-- `company_id` uuid fk
+- `squad_id` uuid fk
 - `agent_id` uuid fk
 - `revision_number` int (monotonic per agent)
 - `reason` text null
@@ -90,7 +90,7 @@ Columns:
 
 Indexes:
 
-- `(company_id, agent_id, revision_number desc)`
+- `(squad_id, agent_id, revision_number desc)`
 - `(agent_id, created_at desc)`
 
 ## 3.2 New table: `issue_approvals`
@@ -98,7 +98,7 @@ Indexes:
 Columns:
 
 - `id` uuid pk
-- `company_id` uuid fk
+- `squad_id` uuid fk
 - `issue_id` uuid fk
 - `approval_id` uuid fk
 - `relationship` text default `context`
@@ -108,12 +108,12 @@ Columns:
 
 Constraints:
 
-- unique `(company_id, issue_id, approval_id)`
+- unique `(squad_id, issue_id, approval_id)`
 
 Indexes:
 
-- `(company_id, issue_id)`
-- `(company_id, approval_id)`
+- `(squad_id, issue_id)`
+- `(squad_id, approval_id)`
 
 ## 4. API Plan
 
@@ -122,12 +122,12 @@ Indexes:
 Update `PATCH /api/agents/:id` authz matrix:
 
 - board: allow
-- agent role `ceo` in same company: allow
+- agent role `squad_lead` in same squad: allow
 - otherwise: self only
 
 ## 4.2 Separate privileged patch fields
 
-Protect these from generic PATCH by non-board/non-ceo:
+Protect these from generic PATCH by non-board/non-squad_lead:
 
 - `permissions`
 - `status` transitions outside allowed scope
@@ -160,8 +160,8 @@ Add:
 
 Extend create payloads to optionally include issue context:
 
-- `POST /api/companies/:companyId/approvals` supports `issueId` or `issueIds`
-- `POST /api/companies/:companyId/agent-hires` supports `sourceIssueId` or `sourceIssueIds`
+- `POST /api/squads/:squadId/approvals` supports `issueId` or `issueIds`
+- `POST /api/squads/:squadId/agent-hires` supports `sourceIssueId` or `sourceIssueIds`
 
 Server behavior:
 
@@ -211,7 +211,7 @@ Require:
 
 ## Phase A: Authz + safety hardening
 
-- Fix CEO patch authz in agent route
+- Fix Squad Lead patch authz in agent route
 - Restrict privileged generic patch fields
 - Add tests for authz matrix
 
@@ -233,7 +233,7 @@ Require:
 
 ## 8. Acceptance Criteria
 
-- CEO can patch CTO (same company) successfully.
+- Squad Lead can patch CTO (same squad) successfully.
 - Every config change creates a retrievable revision.
 - Rollback restores prior config in one action and creates a new revision record.
 - Issue and approval pages show stable bidirectional links from canonical DB relation.

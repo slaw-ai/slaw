@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
-  CompanySecretProviderConfig,
+  SquadSecretProviderConfig,
   SecretProviderConfigDiscoveryPreviewResult,
   SecretProviderDescriptor,
 } from "@slaw/shared";
@@ -43,9 +43,9 @@ vi.mock("../api/secrets", () => ({
   secretsApi: mockSecretsApi,
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
   }),
 }));
 
@@ -131,7 +131,7 @@ const providerConfigs = [
     healthMessage: null,
     healthDetails: null,
   },
-] satisfies Partial<CompanySecretProviderConfig>[];
+] satisfies Partial<SquadSecretProviderConfig>[];
 
 async function flushReact() {
   await act(async () => {
@@ -164,7 +164,7 @@ function makeDiscoveryPreview(
         sampleCount: 2,
         samples: [
           {
-            name: "slaw/prod-use1/company-1/openai",
+            name: "slaw/prod-use1/squad-1/openai",
             hasKmsKey: true,
             tagKeys: ["owner", "environment"],
           },
@@ -274,7 +274,7 @@ describe("Secrets page layout", () => {
       vaultRoot.render(
         <ProviderVaultsTab
           providers={providers}
-          providerConfigs={providerConfigs as CompanySecretProviderConfig[]}
+          providerConfigs={providerConfigs as SquadSecretProviderConfig[]}
           loading={false}
           error={null}
           onRetry={vi.fn()}
@@ -362,7 +362,7 @@ describe("Secrets page layout", () => {
     mockSecretsApi.list.mockResolvedValue([
       {
         id: "secret-openai",
-        companyId: "company-1",
+        squadId: "squad-1",
         key: "openai_api_key",
         name: "OPENAI_API_KEY",
         provider: "local_encrypted",
@@ -388,7 +388,7 @@ describe("Secrets page layout", () => {
       bindings: [
         {
           id: "binding-agent",
-          companyId: "company-1",
+          squadId: "squad-1",
           secretId: "secret-openai",
           targetType: "agent",
           targetId: "agent-1",
@@ -527,7 +527,7 @@ describe("Secrets page layout", () => {
     await flushReact();
     await flushReact();
 
-    expect(mockSecretsApi.providerConfigDiscoveryPreview).toHaveBeenCalledWith("company-1", {
+    expect(mockSecretsApi.providerConfigDiscoveryPreview).toHaveBeenCalledWith("squad-1", {
       provider: "aws_secrets_manager",
       config: {
         region: "us-east-1",

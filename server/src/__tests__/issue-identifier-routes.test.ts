@@ -3,7 +3,7 @@ import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { companies, createDb, issues } from "@slaw/db";
+import { squads, createDb, issues } from "@slaw/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -33,15 +33,15 @@ describeEmbeddedPostgres("issue identifier routes", () => {
     await tempDb?.cleanup();
   });
 
-  function createApp(companyId: string) {
+  function createApp(squadId: string) {
     const app = express();
     app.use(express.json());
     app.use((req, _res, next) => {
       (req as any).actor = {
         type: "board",
         userId: "cloud-user-1",
-        companyIds: [companyId],
-        memberships: [{ companyId, membershipRole: "owner", status: "active" }],
+        squadIds: [squadId],
+        memberships: [{ squadId, membershipRole: "owner", status: "active" }],
         source: "cloud_tenant",
         isInstanceAdmin: true,
       };
@@ -53,18 +53,18 @@ describeEmbeddedPostgres("issue identifier routes", () => {
   }
 
   it("resolves alphanumeric Cloud tenant issue identifiers for detail reads and updates", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const issueId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Cloud tenant",
       issuePrefix: "PC1A2",
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(issues).values({
       id: issueId,
-      companyId,
+      squadId,
       issueNumber: 7,
       identifier: "PC1A2-7",
       title: "Tenant identifier route",
@@ -73,13 +73,13 @@ describeEmbeddedPostgres("issue identifier routes", () => {
       createdByUserId: "cloud-user-1",
     });
 
-    const app = createApp(companyId);
+    const app = createApp(squadId);
     const read = await request(app).get("/api/issues/pc1a2-7");
 
     expect(read.status, JSON.stringify(read.body)).toBe(200);
     expect(read.body).toMatchObject({
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PC1A2-7",
     });
 
@@ -90,7 +90,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
     expect(updated.status, JSON.stringify(updated.body)).toBe(200);
     expect(updated.body).toMatchObject({
       id: issueId,
-      companyId,
+      squadId,
       identifier: "PC1A2-7",
       priority: "high",
     });

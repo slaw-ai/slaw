@@ -2,10 +2,10 @@ import { and, desc, eq, inArray, like, ne, notInArray, sql } from "drizzle-orm";
 import type { Db } from "@slaw/db";
 import {
   agents,
-  companySecretBindings,
-  companySecretProviderConfigs,
-  companySecrets,
-  companySecretVersions,
+  squadSecretBindings,
+  squadSecretProviderConfigs,
+  squadSecrets,
+  squadSecretVersions,
   environments,
   heartbeatRuns,
   issues,
@@ -15,7 +15,7 @@ import {
 } from "@slaw/db";
 import type {
   AgentEnvConfig,
-  CompanySecretBindingTarget,
+  SquadSecretBindingTarget,
   EnvBinding,
   RemoteSecretImportCandidate,
   RemoteSecretImportConflict,
@@ -67,7 +67,7 @@ type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type SecretBindingDb = Pick<Db | DbTransaction, "select" | "delete" | "insert">;
 
 function remoteProviderHttpError(error: unknown, context: {
-  companyId: string;
+  squadId: string;
   provider: SecretProvider;
   providerConfigId: string;
   operation: string;
@@ -76,7 +76,7 @@ function remoteProviderHttpError(error: unknown, context: {
     logger.warn(
       {
         err: error,
-        companyId: context.companyId,
+        squadId: context.squadId,
         provider: context.provider,
         providerConfigId: context.providerConfigId,
         operation: context.operation,
@@ -90,7 +90,7 @@ function remoteProviderHttpError(error: unknown, context: {
   logger.warn(
     {
       err: error,
-      companyId: context.companyId,
+      squadId: context.squadId,
       provider: context.provider,
       providerConfigId: context.providerConfigId,
       operation: context.operation,
@@ -102,7 +102,7 @@ function remoteProviderHttpError(error: unknown, context: {
 }
 
 function remoteImportRowFailureReason(error: unknown, fallback: string, context: {
-  companyId: string;
+  squadId: string;
   provider: SecretProvider;
   providerConfigId: string;
   operation: string;
@@ -111,7 +111,7 @@ function remoteImportRowFailureReason(error: unknown, fallback: string, context:
     logger.warn(
       {
         err: error,
-        companyId: context.companyId,
+        squadId: context.squadId,
         provider: context.provider,
         providerConfigId: context.providerConfigId,
         operation: context.operation,
@@ -125,7 +125,7 @@ function remoteImportRowFailureReason(error: unknown, fallback: string, context:
   logger.warn(
     {
       err: error,
-      companyId: context.companyId,
+      squadId: context.squadId,
       provider: context.provider,
       providerConfigId: context.providerConfigId,
       operation: context.operation,
@@ -157,7 +157,7 @@ async function cleanupPreparedProviderWrite(input: {
     logger.warn(
       {
         err: cleanupError,
-        companyId: input.context.companyId,
+        squadId: input.context.squadId,
         provider: input.provider.id,
         providerConfigId: input.providerConfig?.id ?? null,
         operation: input.operation,
@@ -280,9 +280,9 @@ function secretResolutionErrorCode(error: unknown): SecretResolutionErrorCode {
 function assertSelectableProviderConfig(config: {
   provider: string;
   status: string;
-  companyId: string;
-}, companyId: string, provider: SecretProvider) {
-  if (config.companyId !== companyId) throw unprocessable("Provider vault must belong to same company");
+  squadId: string;
+}, squadId: string, provider: SecretProvider) {
+  if (config.squadId !== squadId) throw unprocessable("Provider vault must belong to same squad");
   if (config.provider !== provider) throw unprocessable("Provider vault must match the secret provider");
   if (config.status === "coming_soon") {
     throw unprocessable("Provider vault is locked while coming soon");
@@ -301,19 +301,19 @@ export function secretService(db: Db) {
   async function getById(id: string, source: Pick<Db | DbTransaction, "select"> = db) {
     return source
       .select()
-      .from(companySecrets)
-      .where(eq(companySecrets.id, id))
+      .from(squadSecrets)
+      .where(eq(squadSecrets.id, id))
       .then((rows) => rows[0] ?? null);
   }
 
-  async function getByName(companyId: string, name: string) {
+  async function getByName(squadId: string, name: string) {
     return db
       .select()
-      .from(companySecrets)
+      .from(squadSecrets)
       .where(and(
-        eq(companySecrets.companyId, companyId),
-        eq(companySecrets.name, name),
-        ne(companySecrets.status, "deleted"),
+        eq(squadSecrets.squadId, squadId),
+        eq(squadSecrets.name, name),
+        ne(squadSecrets.status, "deleted"),
       ))
       .then((rows) => rows[0] ?? null);
   }
@@ -321,18 +321,18 @@ export function secretService(db: Db) {
   async function getSecretVersion(secretId: string, version: number) {
     return db
       .select()
-      .from(companySecretVersions)
+      .from(squadSecretVersions)
       .where(
         and(
-          eq(companySecretVersions.secretId, secretId),
-          eq(companySecretVersions.version, version),
+          eq(squadSecretVersions.secretId, secretId),
+          eq(squadSecretVersions.version, version),
         ),
       )
       .then((rows) => rows[0] ?? null);
   }
 
   async function getBinding(input: {
-    companyId: string;
+    squadId: string;
     secretId: string;
     consumerType: SecretBindingTargetType;
     consumerId: string;
@@ -340,21 +340,21 @@ export function secretService(db: Db) {
   }) {
     return db
       .select()
-      .from(companySecretBindings)
+      .from(squadSecretBindings)
       .where(
         and(
-          eq(companySecretBindings.companyId, input.companyId),
-          eq(companySecretBindings.secretId, input.secretId),
-          eq(companySecretBindings.targetType, input.consumerType),
-          eq(companySecretBindings.targetId, input.consumerId),
-          eq(companySecretBindings.configPath, input.configPath),
+          eq(squadSecretBindings.squadId, input.squadId),
+          eq(squadSecretBindings.secretId, input.secretId),
+          eq(squadSecretBindings.targetType, input.consumerType),
+          eq(squadSecretBindings.targetId, input.consumerId),
+          eq(squadSecretBindings.configPath, input.configPath),
         ),
       )
       .then((rows) => rows[0] ?? null);
   }
 
   async function assertBindingContext(
-    companyId: string,
+    squadId: string,
     secretId: string,
     context: SecretConsumerContext | undefined,
   ) {
@@ -363,7 +363,7 @@ export function secretService(db: Db) {
       throw unprocessable("Secret resolution requires a binding config path", { code: "binding_missing" });
     }
     const binding = await getBinding({
-      companyId,
+      squadId,
       secretId,
       consumerType: context.consumerType,
       consumerId: context.consumerId,
@@ -378,7 +378,7 @@ export function secretService(db: Db) {
   }
 
   async function recordAccessEvent(input: {
-    companyId: string;
+    squadId: string;
     secretId: string;
     version: number | null;
     provider: SecretProvider;
@@ -388,7 +388,7 @@ export function secretService(db: Db) {
   }) {
     if (!input.context) return;
     await db.insert(secretAccessEvents).values({
-      companyId: input.companyId,
+      squadId: input.squadId,
       secretId: input.secretId,
       version: input.version,
       provider: input.provider,
@@ -405,35 +405,35 @@ export function secretService(db: Db) {
     });
   }
 
-  async function assertSecretInCompany(
-    companyId: string,
+  async function assertSecretInSquad(
+    squadId: string,
     secretId: string,
     source: Pick<Db | DbTransaction, "select"> = db,
   ) {
     const secret = await getById(secretId, source);
     if (!secret) throw notFound("Secret not found");
     if (secret.status === "deleted") throw notFound("Secret not found");
-    if (secret.companyId !== companyId) throw unprocessable("Secret must belong to same company");
+    if (secret.squadId !== squadId) throw unprocessable("Secret must belong to same squad");
     return secret;
   }
 
   async function getProviderConfigById(id: string) {
     return db
       .select()
-      .from(companySecretProviderConfigs)
-      .where(eq(companySecretProviderConfigs.id, id))
+      .from(squadSecretProviderConfigs)
+      .where(eq(squadSecretProviderConfigs.id, id))
       .then((rows) => rows[0] ?? null);
   }
 
   async function assertProviderConfigForSecret(
-    companyId: string,
+    squadId: string,
     provider: SecretProvider,
     providerConfigId: string | null | undefined,
   ) {
     if (!providerConfigId) return null;
     const providerConfig = await getProviderConfigById(providerConfigId);
     if (!providerConfig) throw notFound("Provider vault not found");
-    assertSelectableProviderConfig(providerConfig, companyId, provider);
+    assertSelectableProviderConfig(providerConfig, squadId, provider);
     return providerConfig;
   }
 
@@ -450,12 +450,12 @@ export function secretService(db: Db) {
   }
 
   async function getSelectableRuntimeProviderConfig(input: {
-    companyId: string;
+    squadId: string;
     provider: SecretProvider;
     providerConfigId: string | null | undefined;
   }) {
     const providerConfig = await assertProviderConfigForSecret(
-      input.companyId,
+      input.squadId,
       input.provider,
       input.providerConfigId,
     );
@@ -474,12 +474,12 @@ export function secretService(db: Db) {
   }
 
   function toDraftProviderVaultRuntimeConfig(input: {
-    companyId: string;
+    squadId: string;
     provider: SecretProvider;
     config: Record<string, unknown>;
   }): SecretProviderVaultRuntimeConfig {
     return {
-      id: `discovery-preview-${input.companyId}`,
+      id: `discovery-preview-${input.squadId}`,
       provider: input.provider,
       status: "ready",
       config: validateProviderConfigPayload(input.provider, input.config),
@@ -547,14 +547,14 @@ export function secretService(db: Db) {
   }
 
   async function resolveSecretValueInternal(
-    companyId: string,
+    squadId: string,
     secretId: string,
     version: number | "latest",
     context?: SecretConsumerContext,
   ): Promise<RuntimeSecretResolution> {
     const secret = await getById(secretId);
     if (!secret) throw notFound("Secret not found");
-    if (secret.companyId !== companyId) throw unprocessable("Secret must belong to same company");
+    if (secret.squadId !== squadId) throw unprocessable("Secret must belong to same squad");
     const resolvedVersion = version === "latest" ? secret.latestVersion : version;
     const providerId = secret.provider as SecretProvider;
     const configPath = context?.configPath ?? null;
@@ -565,7 +565,7 @@ export function secretService(db: Db) {
       if (secret.status !== "active") {
         throw unprocessable("Secret is not active", { code: "secret_inactive" });
       }
-      await assertBindingContext(companyId, secret.id, context);
+      await assertBindingContext(squadId, secret.id, context);
       const versionRow = await getSecretVersion(secret.id, resolvedVersion);
       if (!versionRow) throw new HttpError(404, "Secret version not found", { code: "version_missing" });
       if (versionRow.status === "disabled" || versionRow.status === "destroyed" || versionRow.revokedAt) {
@@ -573,7 +573,7 @@ export function secretService(db: Db) {
       }
       const provider = getSecretProvider(providerId);
       const providerConfig = await getSelectableRuntimeProviderConfig({
-        companyId,
+        squadId,
         provider: providerId,
         providerConfigId: secret.providerConfigId,
       });
@@ -583,7 +583,7 @@ export function secretService(db: Db) {
         providerVersionRef: versionRow.providerVersionRef,
         providerConfig,
         context: {
-          companyId,
+          squadId,
           secretId: secret.id,
           secretKey: secret.key,
           version: resolvedVersion,
@@ -591,12 +591,12 @@ export function secretService(db: Db) {
       });
       await Promise.all([
         db
-          .update(companySecrets)
+          .update(squadSecrets)
           .set({ lastResolvedAt: new Date(), updatedAt: new Date() })
-          .where(eq(companySecrets.id, secret.id))
+          .where(eq(squadSecrets.id, secret.id))
           .catch(() => undefined),
         recordAccessEvent({
-          companyId,
+          squadId,
           secretId: secret.id,
           version: resolvedVersion,
           provider: providerId,
@@ -619,7 +619,7 @@ export function secretService(db: Db) {
     } catch (err) {
       const errorCode = secretResolutionErrorCode(err);
       await recordAccessEvent({
-        companyId,
+        squadId,
         secretId: secret.id,
         version: resolvedVersion,
         provider: providerId,
@@ -632,16 +632,16 @@ export function secretService(db: Db) {
   }
 
   async function resolveSecretValue(
-    companyId: string,
+    squadId: string,
     secretId: string,
     version: number | "latest",
     context?: SecretConsumerContext,
   ): Promise<string> {
-    return (await resolveSecretValueInternal(companyId, secretId, version, context)).value;
+    return (await resolveSecretValueInternal(squadId, secretId, version, context)).value;
   }
 
   async function normalizeEnvConfig(
-    companyId: string,
+    squadId: string,
     envValue: unknown,
     opts?: NormalizeEnvOptions,
   ): Promise<AgentEnvConfig> {
@@ -673,7 +673,7 @@ export function secretService(db: Db) {
         continue;
       }
 
-      await assertSecretInCompany(companyId, binding.secretId);
+      await assertSecretInSquad(squadId, binding.secretId);
       normalized[key] = {
         type: "secret_ref",
         secretId: binding.secretId,
@@ -684,7 +684,7 @@ export function secretService(db: Db) {
   }
 
   async function normalizeAdapterConfigForPersistenceInternal(
-    companyId: string,
+    squadId: string,
     adapterConfig: Record<string, unknown>,
     opts?: { strictMode?: boolean },
   ) {
@@ -692,12 +692,12 @@ export function secretService(db: Db) {
     if (!Object.prototype.hasOwnProperty.call(adapterConfig, "env")) {
       return normalized;
     }
-    normalized.env = await normalizeEnvConfig(companyId, adapterConfig.env, opts);
+    normalized.env = await normalizeEnvConfig(squadId, adapterConfig.env, opts);
     return normalized;
   }
 
   function collectTargetIds(
-    bindings: Array<typeof companySecretBindings.$inferSelect>,
+    bindings: Array<typeof squadSecretBindings.$inferSelect>,
     targetType: SecretBindingTargetType,
     opts?: { uuidOnly?: boolean },
   ) {
@@ -711,7 +711,7 @@ export function secretService(db: Db) {
     ];
   }
 
-  function fallbackBindingTarget(binding: typeof companySecretBindings.$inferSelect): CompanySecretBindingTarget {
+  function fallbackBindingTarget(binding: typeof squadSecretBindings.$inferSelect): SquadSecretBindingTarget {
     return {
       type: binding.targetType as SecretBindingTargetType,
       id: binding.targetId,
@@ -722,11 +722,11 @@ export function secretService(db: Db) {
   }
 
   async function buildBindingTargetMap(
-    companyId: string,
-    bindings: Array<typeof companySecretBindings.$inferSelect>,
+    squadId: string,
+    bindings: Array<typeof squadSecretBindings.$inferSelect>,
   ) {
-    const targetMap = new Map<string, CompanySecretBindingTarget>();
-    const setTarget = (target: CompanySecretBindingTarget) => {
+    const targetMap = new Map<string, SquadSecretBindingTarget>();
+    const setTarget = (target: SquadSecretBindingTarget) => {
       targetMap.set(`${target.type}:${target.id}`, target);
     };
 
@@ -740,7 +740,7 @@ export function secretService(db: Db) {
           status: agents.status,
         })
         .from(agents)
-        .where(and(eq(agents.companyId, companyId), inArray(agents.id, agentIds)));
+        .where(and(eq(agents.squadId, squadId), inArray(agents.id, agentIds)));
       for (const row of rows) {
         setTarget({
           type: "agent",
@@ -761,7 +761,7 @@ export function secretService(db: Db) {
           status: projects.status,
         })
         .from(projects)
-        .where(and(eq(projects.companyId, companyId), inArray(projects.id, projectIds)));
+        .where(and(eq(projects.squadId, squadId), inArray(projects.id, projectIds)));
       for (const row of rows) {
         setTarget({
           type: "project",
@@ -782,13 +782,13 @@ export function secretService(db: Db) {
           status: environments.status,
         })
         .from(environments)
-        .where(and(eq(environments.companyId, companyId), inArray(environments.id, environmentIds)));
+        .where(and(eq(environments.squadId, squadId), inArray(environments.id, environmentIds)));
       for (const row of rows) {
         setTarget({
           type: "environment",
           id: row.id,
           label: row.name,
-          href: "/company/settings/environments",
+          href: "/squad/settings/environments",
           status: row.status,
         });
       }
@@ -803,7 +803,7 @@ export function secretService(db: Db) {
           status: routines.status,
         })
         .from(routines)
-        .where(and(eq(routines.companyId, companyId), inArray(routines.id, routineIds)));
+        .where(and(eq(routines.squadId, squadId), inArray(routines.id, routineIds)));
       for (const row of rows) {
         setTarget({
           type: "routine",
@@ -825,7 +825,7 @@ export function secretService(db: Db) {
           status: issues.status,
         })
         .from(issues)
-        .where(and(eq(issues.companyId, companyId), inArray(issues.id, issueIds)));
+        .where(and(eq(issues.squadId, squadId), inArray(issues.id, issueIds)));
       for (const row of rows) {
         setTarget({
           type: "issue",
@@ -846,7 +846,7 @@ export function secretService(db: Db) {
           status: heartbeatRuns.status,
         })
         .from(heartbeatRuns)
-        .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, runIds)));
+        .where(and(eq(heartbeatRuns.squadId, squadId), inArray(heartbeatRuns.id, runIds)));
       for (const row of rows) {
         setTarget({
           type: "run",
@@ -861,19 +861,19 @@ export function secretService(db: Db) {
     return targetMap;
   }
 
-  async function buildRemoteImportConflictMaps(companyId: string, provider: SecretProvider) {
+  async function buildRemoteImportConflictMaps(squadId: string, provider: SecretProvider) {
     const activeSecrets = await db
       .select({
-        id: companySecrets.id,
-        name: companySecrets.name,
-        key: companySecrets.key,
-        provider: companySecrets.provider,
-        providerConfigId: companySecrets.providerConfigId,
-        externalRef: companySecrets.externalRef,
-        status: companySecrets.status,
+        id: squadSecrets.id,
+        name: squadSecrets.name,
+        key: squadSecrets.key,
+        provider: squadSecrets.provider,
+        providerConfigId: squadSecrets.providerConfigId,
+        externalRef: squadSecrets.externalRef,
+        status: squadSecrets.status,
       })
-      .from(companySecrets)
-      .where(and(eq(companySecrets.companyId, companyId), ne(companySecrets.status, "deleted")));
+      .from(squadSecrets)
+      .where(and(eq(squadSecrets.squadId, squadId), ne(squadSecrets.status, "deleted")));
     return {
       byProviderConfigExternalRef: new Map(
         activeSecrets
@@ -951,11 +951,11 @@ export function secretService(db: Db) {
     return conflicts;
   }
 
-  async function getRemoteImportProviderConfig(companyId: string, providerConfigId: string) {
+  async function getRemoteImportProviderConfig(squadId: string, providerConfigId: string) {
     const providerConfig = await getProviderConfigById(providerConfigId);
     if (!providerConfig) throw notFound("Provider vault not found");
     const provider = providerConfig.provider as SecretProvider;
-    assertSelectableProviderConfig(providerConfig, companyId, provider);
+    assertSelectableProviderConfig(providerConfig, squadId, provider);
     return { providerConfig, provider, runtimeConfig: toProviderVaultRuntimeConfig(providerConfig) };
   }
 
@@ -965,7 +965,7 @@ export function secretService(db: Db) {
     checkProviders: () => checkSecretProviders(),
 
     previewProviderConfigDiscovery: async (
-      companyId: string,
+      squadId: string,
       input: {
         provider: SecretProvider;
         config?: Record<string, unknown>;
@@ -990,13 +990,13 @@ export function secretService(db: Db) {
         throw unprocessable(`${providerId} provider does not support provider vault discovery`);
       }
       const runtimeConfig = toDraftProviderVaultRuntimeConfig({
-        companyId,
+        squadId,
         provider: providerId,
         config: parsed.data.config,
       });
       try {
         return await provider.discoverProviderConfigs({
-          companyId,
+          squadId,
           providerConfig: runtimeConfig,
           query: parsed.data.query,
           nextToken: parsed.data.nextToken,
@@ -1004,7 +1004,7 @@ export function secretService(db: Db) {
         });
       } catch (error) {
         throw remoteProviderHttpError(error, {
-          companyId,
+          squadId,
           provider: providerId,
           providerConfigId: "discovery-preview",
           operation: "secret_provider_config.discovery.preview",
@@ -1012,17 +1012,17 @@ export function secretService(db: Db) {
       }
     },
 
-    listProviderConfigs: (companyId: string) =>
+    listProviderConfigs: (squadId: string) =>
       db
         .select()
-        .from(companySecretProviderConfigs)
-        .where(eq(companySecretProviderConfigs.companyId, companyId))
-        .orderBy(desc(companySecretProviderConfigs.createdAt)),
+        .from(squadSecretProviderConfigs)
+        .where(eq(squadSecretProviderConfigs.squadId, squadId))
+        .orderBy(desc(squadSecretProviderConfigs.createdAt)),
 
     getProviderConfigById,
 
     createProviderConfig: async (
-      companyId: string,
+      squadId: string,
       input: {
         provider: SecretProvider;
         displayName: string;
@@ -1042,17 +1042,17 @@ export function secretService(db: Db) {
       return db.transaction(async (tx) => {
         if (input.isDefault) {
           await tx
-            .update(companySecretProviderConfigs)
+            .update(squadSecretProviderConfigs)
             .set({ isDefault: false, updatedAt: new Date() })
             .where(and(
-              eq(companySecretProviderConfigs.companyId, companyId),
-              eq(companySecretProviderConfigs.provider, input.provider),
+              eq(squadSecretProviderConfigs.squadId, squadId),
+              eq(squadSecretProviderConfigs.provider, input.provider),
             ));
         }
         return tx
-          .insert(companySecretProviderConfigs)
+          .insert(squadSecretProviderConfigs)
           .values({
-            companyId,
+            squadId,
             provider: input.provider,
             displayName: input.displayName.trim(),
             status,
@@ -1095,15 +1095,15 @@ export function secretService(db: Db) {
       return db.transaction(async (tx) => {
         if (patch.isDefault) {
           await tx
-            .update(companySecretProviderConfigs)
+            .update(squadSecretProviderConfigs)
             .set({ isDefault: false, updatedAt: new Date() })
             .where(and(
-              eq(companySecretProviderConfigs.companyId, existing.companyId),
-              eq(companySecretProviderConfigs.provider, existing.provider),
+              eq(squadSecretProviderConfigs.squadId, existing.squadId),
+              eq(squadSecretProviderConfigs.provider, existing.provider),
             ));
         }
         return tx
-          .update(companySecretProviderConfigs)
+          .update(squadSecretProviderConfigs)
           .set({
             displayName: patch.displayName?.trim() ?? existing.displayName,
             status,
@@ -1112,7 +1112,7 @@ export function secretService(db: Db) {
             disabledAt: status === "disabled" ? existing.disabledAt ?? new Date() : null,
             updatedAt: new Date(),
           })
-          .where(eq(companySecretProviderConfigs.id, id))
+          .where(eq(squadSecretProviderConfigs.id, id))
           .returning()
           .then((rows) => rows[0] ?? null);
       });
@@ -1122,22 +1122,22 @@ export function secretService(db: Db) {
       const existing = await getProviderConfigById(id);
       if (!existing) return null;
       return db
-        .update(companySecretProviderConfigs)
+        .update(squadSecretProviderConfigs)
         .set({
           status: "disabled",
           isDefault: false,
           disabledAt: existing.disabledAt ?? new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(companySecretProviderConfigs.id, id))
+        .where(eq(squadSecretProviderConfigs.id, id))
         .returning()
         .then((rows) => rows[0] ?? null);
     },
 
     removeProviderConfig: async (id: string) =>
       db
-        .delete(companySecretProviderConfigs)
-        .where(eq(companySecretProviderConfigs.id, id))
+        .delete(squadSecretProviderConfigs)
+        .where(eq(squadSecretProviderConfigs.id, id))
         .returning()
         .then((rows) => rows[0] ?? null),
 
@@ -1150,26 +1150,26 @@ export function secretService(db: Db) {
       return db.transaction(async (tx) => {
         const current = await tx
           .select()
-          .from(companySecretProviderConfigs)
-          .where(eq(companySecretProviderConfigs.id, id))
+          .from(squadSecretProviderConfigs)
+          .where(eq(squadSecretProviderConfigs.id, id))
           .then((rows) => rows[0] ?? null);
         if (!current) return null;
         if (current.status === "coming_soon" || current.status === "disabled") {
           throw unprocessable("Only ready or warning provider vaults can be default");
         }
         await tx
-          .update(companySecretProviderConfigs)
+          .update(squadSecretProviderConfigs)
           .set({ isDefault: false, updatedAt: new Date() })
           .where(and(
-            eq(companySecretProviderConfigs.companyId, current.companyId),
-            eq(companySecretProviderConfigs.provider, current.provider),
+            eq(squadSecretProviderConfigs.squadId, current.squadId),
+            eq(squadSecretProviderConfigs.provider, current.provider),
           ));
         const updated = await tx
-          .update(companySecretProviderConfigs)
+          .update(squadSecretProviderConfigs)
           .set({ isDefault: true, updatedAt: new Date() })
           .where(and(
-            eq(companySecretProviderConfigs.id, id),
-            notInArray(companySecretProviderConfigs.status, ["coming_soon", "disabled"]),
+            eq(squadSecretProviderConfigs.id, id),
+            notInArray(squadSecretProviderConfigs.status, ["coming_soon", "disabled"]),
           ))
           .returning()
           .then((rows) => rows[0] ?? null);
@@ -1198,7 +1198,7 @@ export function secretService(db: Db) {
         }),
       });
       await db
-        .update(companySecretProviderConfigs)
+        .update(squadSecretProviderConfigs)
         .set({
           healthStatus: health.status,
           healthCheckedAt: checkedAt,
@@ -1206,25 +1206,25 @@ export function secretService(db: Db) {
           healthDetails: health.details as unknown as Record<string, unknown>,
           updatedAt: new Date(),
         })
-        .where(eq(companySecretProviderConfigs.id, id));
+        .where(eq(squadSecretProviderConfigs.id, id));
       return { ...health, checkedAt };
     },
 
-    list: async (companyId: string) => {
+    list: async (squadId: string) => {
       const [secrets, referenceCounts] = await Promise.all([
         db
           .select()
-          .from(companySecrets)
-          .where(and(eq(companySecrets.companyId, companyId), ne(companySecrets.status, "deleted")))
-          .orderBy(desc(companySecrets.createdAt)),
+          .from(squadSecrets)
+          .where(and(eq(squadSecrets.squadId, squadId), ne(squadSecrets.status, "deleted")))
+          .orderBy(desc(squadSecrets.createdAt)),
         db
           .select({
-            secretId: companySecretBindings.secretId,
+            secretId: squadSecretBindings.secretId,
             count: sql<number>`count(*)::int`,
           })
-          .from(companySecretBindings)
-          .where(eq(companySecretBindings.companyId, companyId))
-          .groupBy(companySecretBindings.secretId),
+          .from(squadSecretBindings)
+          .where(eq(squadSecretBindings.squadId, squadId))
+          .groupBy(squadSecretBindings.secretId),
       ]);
       const countsBySecretId = new Map(referenceCounts.map((row) => [row.secretId, row.count]));
       return secrets.map((secret) => ({
@@ -1233,24 +1233,24 @@ export function secretService(db: Db) {
       }));
     },
 
-    listBindings: (companyId: string, secretId?: string) =>
+    listBindings: (squadId: string, secretId?: string) =>
       db
         .select()
-        .from(companySecretBindings)
+        .from(squadSecretBindings)
         .where(
           secretId
-            ? and(eq(companySecretBindings.companyId, companyId), eq(companySecretBindings.secretId, secretId))
-            : eq(companySecretBindings.companyId, companyId),
+            ? and(eq(squadSecretBindings.squadId, squadId), eq(squadSecretBindings.secretId, secretId))
+            : eq(squadSecretBindings.squadId, squadId),
         )
-        .orderBy(desc(companySecretBindings.createdAt)),
+        .orderBy(desc(squadSecretBindings.createdAt)),
 
-    listBindingReferences: async (companyId: string, secretId: string) => {
+    listBindingReferences: async (squadId: string, secretId: string) => {
       const bindings = await db
         .select()
-        .from(companySecretBindings)
-        .where(and(eq(companySecretBindings.companyId, companyId), eq(companySecretBindings.secretId, secretId)))
-        .orderBy(desc(companySecretBindings.createdAt));
-      const targetMap = await buildBindingTargetMap(companyId, bindings);
+        .from(squadSecretBindings)
+        .where(and(eq(squadSecretBindings.squadId, squadId), eq(squadSecretBindings.secretId, secretId)))
+        .orderBy(desc(squadSecretBindings.createdAt));
+      const targetMap = await buildBindingTargetMap(squadId, bindings);
       return bindings.map((binding) => ({
         ...binding,
         target:
@@ -1259,15 +1259,15 @@ export function secretService(db: Db) {
       }));
     },
 
-    listAccessEvents: (companyId: string, secretId: string) =>
+    listAccessEvents: (squadId: string, secretId: string) =>
       db
         .select()
         .from(secretAccessEvents)
-        .where(and(eq(secretAccessEvents.companyId, companyId), eq(secretAccessEvents.secretId, secretId)))
+        .where(and(eq(secretAccessEvents.squadId, squadId), eq(secretAccessEvents.secretId, secretId)))
         .orderBy(desc(secretAccessEvents.createdAt)),
 
     previewRemoteImport: async (
-      companyId: string,
+      squadId: string,
       input: {
         providerConfigId: string;
         query?: string | null;
@@ -1276,7 +1276,7 @@ export function secretService(db: Db) {
       },
     ) => {
       const { providerConfig, provider: providerId, runtimeConfig } = await getRemoteImportProviderConfig(
-        companyId,
+        squadId,
         input.providerConfigId,
       );
       const provider = getSecretProvider(providerId);
@@ -1293,13 +1293,13 @@ export function secretService(db: Db) {
         });
       } catch (error) {
         throw remoteProviderHttpError(error, {
-          companyId,
+          squadId,
           provider: providerId,
           providerConfigId: providerConfig.id,
           operation: "remote_import.preview",
         });
       }
-      const maps = await buildRemoteImportConflictMaps(companyId, providerId);
+      const maps = await buildRemoteImportConflictMaps(squadId, providerId);
       const candidates: RemoteSecretImportCandidate[] = [];
       for (const remote of listed.secrets) {
         const externalRef = remote.externalRef.trim();
@@ -1314,7 +1314,7 @@ export function secretService(db: Db) {
             providerVersionRef: remote.providerVersionRef ?? null,
             providerConfig: runtimeConfig,
             context: {
-              companyId,
+              squadId,
               secretKey: key || "remote-import-preview",
               secretName: name,
               version: 1,
@@ -1325,7 +1325,7 @@ export function secretService(db: Db) {
           conflicts.push({
             type: "provider_guardrail",
             message: remoteImportRowFailureReason(error, "Provider rejected this external reference", {
-              companyId,
+              squadId,
               provider: providerId,
               providerConfigId: providerConfig.id,
               operation: "remote_import.preview.link_external_reference",
@@ -1362,7 +1362,7 @@ export function secretService(db: Db) {
     },
 
     importRemoteSecrets: async (
-      companyId: string,
+      squadId: string,
       input: {
         providerConfigId: string;
         secrets: Array<{
@@ -1377,14 +1377,14 @@ export function secretService(db: Db) {
       actor?: { userId?: string | null; agentId?: string | null },
     ) => {
       const { providerConfig, provider: providerId, runtimeConfig } = await getRemoteImportProviderConfig(
-        companyId,
+        squadId,
         input.providerConfigId,
       );
       const provider = getSecretProvider(providerId);
       if (provider.descriptor().supportsExternalReferences === false) {
         throw unprocessable(`${providerId} provider does not support linked external references`);
       }
-      const maps = await buildRemoteImportConflictMaps(companyId, providerId);
+      const maps = await buildRemoteImportConflictMaps(squadId, providerId);
       const results: RemoteSecretImportRowResult[] = [];
 
       for (const selection of input.secrets) {
@@ -1419,7 +1419,7 @@ export function secretService(db: Db) {
               providerVersionRef: selection.providerVersionRef ?? null,
               providerConfig: runtimeConfig,
               context: {
-                companyId,
+                squadId,
                 secretKey: key,
                 secretName: name,
                 version: 1,
@@ -1442,7 +1442,7 @@ export function secretService(db: Db) {
               key,
               status: "error",
               reason: remoteImportRowFailureReason(error, "Provider rejected this external reference", {
-                companyId,
+                squadId,
                 provider: providerId,
                 providerConfigId: providerConfig.id,
                 operation: "remote_import.prepare_external_reference",
@@ -1475,7 +1475,7 @@ export function secretService(db: Db) {
               providerVersionRef: selection.providerVersionRef ?? null,
               providerConfig: runtimeConfig,
               context: {
-                companyId,
+                squadId,
                 secretKey: key,
                 secretName: name,
                 version: 1,
@@ -1488,9 +1488,9 @@ export function secretService(db: Db) {
           const preparedSecret = prepared;
           const secret = await db.transaction(async (tx) => {
             const inserted = await tx
-              .insert(companySecrets)
+              .insert(squadSecrets)
               .values({
-                companyId,
+                squadId,
                 key,
                 name,
                 provider: providerId,
@@ -1507,7 +1507,7 @@ export function secretService(db: Db) {
               })
               .returning()
               .then((rows) => rows[0]);
-            await tx.insert(companySecretVersions).values({
+            await tx.insert(squadSecretVersions).values({
               secretId: inserted.id,
               version: 1,
               material: preparedSecret.material,
@@ -1542,7 +1542,7 @@ export function secretService(db: Db) {
             key,
             status: "error",
             reason: remoteImportRowFailureReason(error, "Import failed", {
-              companyId,
+              squadId,
               provider: providerId,
               providerConfigId: providerConfig.id,
               operation: "remote_import.commit",
@@ -1568,7 +1568,7 @@ export function secretService(db: Db) {
     resolveSecretValue,
 
     create: async (
-      companyId: string,
+      squadId: string,
       input: {
         name: string;
         provider: SecretProvider;
@@ -1583,17 +1583,17 @@ export function secretService(db: Db) {
       },
       actor?: { userId?: string | null; agentId?: string | null },
     ) => {
-      const existing = await getByName(companyId, input.name);
+      const existing = await getByName(squadId, input.name);
       if (existing) throw conflict(`Secret already exists: ${input.name}`);
       const key = normalizeSecretKey(input.key ?? input.name);
       if (!key) throw unprocessable("Secret key is required");
       const duplicateKey = await db
         .select()
-        .from(companySecrets)
+        .from(squadSecrets)
         .where(and(
-          eq(companySecrets.companyId, companyId),
-          eq(companySecrets.key, key),
-          ne(companySecrets.status, "deleted"),
+          eq(squadSecrets.squadId, squadId),
+          eq(squadSecrets.key, key),
+          ne(squadSecrets.status, "deleted"),
         ))
         .then((rows) => rows[0] ?? null);
       if (duplicateKey) throw conflict(`Secret key already exists: ${key}`);
@@ -1601,7 +1601,7 @@ export function secretService(db: Db) {
       const managedMode = input.managedMode ?? "slaw_managed";
       const provider = getSecretProvider(input.provider);
       const providerConfig = await getSelectableRuntimeProviderConfig({
-        companyId,
+        squadId,
         provider: input.provider,
         providerConfigId: input.providerConfigId,
       });
@@ -1615,15 +1615,15 @@ export function secretService(db: Db) {
         throw unprocessable("Managed secrets require value");
       }
       const providerWriteContext = {
-        companyId,
+        squadId,
         secretKey: key,
         secretName: input.name,
         version: 1,
       };
       const reservedSecret = await db
-        .insert(companySecrets)
+        .insert(squadSecrets)
         .values({
-          companyId,
+          squadId,
           key,
           name: input.name,
           provider: input.provider,
@@ -1657,20 +1657,20 @@ export function secretService(db: Db) {
                 context: providerWriteContext,
               });
       } catch (error) {
-        await db.delete(companySecrets).where(eq(companySecrets.id, reservedSecret.id)).catch(() => undefined);
+        await db.delete(squadSecrets).where(eq(squadSecrets.id, reservedSecret.id)).catch(() => undefined);
         throw error;
       }
 
       try {
         await db
-          .update(companySecrets)
+          .update(squadSecrets)
           .set({
             externalRef: prepared.externalRef,
             latestVersion: 1,
             updatedAt: new Date(),
           })
-          .where(eq(companySecrets.id, reservedSecret.id));
-        await db.insert(companySecretVersions).values({
+          .where(eq(squadSecrets.id, reservedSecret.id));
+        await db.insert(squadSecretVersions).values({
           secretId: reservedSecret.id,
           version: 1,
           material: prepared.material,
@@ -1692,10 +1692,10 @@ export function secretService(db: Db) {
             operation: "create.prepare_rollback",
           });
           if (cleaned) {
-            await db.delete(companySecrets).where(eq(companySecrets.id, reservedSecret.id)).catch(() => undefined);
+            await db.delete(squadSecrets).where(eq(squadSecrets.id, reservedSecret.id)).catch(() => undefined);
           }
         } else {
-          await db.delete(companySecrets).where(eq(companySecrets.id, reservedSecret.id)).catch(() => undefined);
+          await db.delete(squadSecrets).where(eq(squadSecrets.id, reservedSecret.id)).catch(() => undefined);
         }
         throw error;
       }
@@ -1703,15 +1703,15 @@ export function secretService(db: Db) {
       try {
         return await db.transaction(async (tx) => {
           await tx
-            .update(companySecretVersions)
+            .update(squadSecretVersions)
             .set({ status: "current" })
             .where(and(
-              eq(companySecretVersions.secretId, reservedSecret.id),
-              eq(companySecretVersions.version, 1),
+              eq(squadSecretVersions.secretId, reservedSecret.id),
+              eq(squadSecretVersions.version, 1),
             ));
 
           const secret = await tx
-            .update(companySecrets)
+            .update(squadSecrets)
             .set({
               status: "active",
               externalRef: prepared.externalRef,
@@ -1719,7 +1719,7 @@ export function secretService(db: Db) {
               lastRotatedAt: new Date(),
               updatedAt: new Date(),
             })
-            .where(eq(companySecrets.id, reservedSecret.id))
+            .where(eq(squadSecrets.id, reservedSecret.id))
             .returning()
             .then((rows) => rows[0]);
 
@@ -1737,10 +1737,10 @@ export function secretService(db: Db) {
             operation: "create.rollback",
           });
           if (cleaned) {
-            await db.delete(companySecrets).where(eq(companySecrets.id, reservedSecret.id)).catch(() => undefined);
+            await db.delete(squadSecrets).where(eq(squadSecrets.id, reservedSecret.id)).catch(() => undefined);
           }
         } else {
-          await db.delete(companySecrets).where(eq(companySecrets.id, reservedSecret.id)).catch(() => undefined);
+          await db.delete(squadSecrets).where(eq(squadSecrets.id, reservedSecret.id)).catch(() => undefined);
         }
         throw error;
       }
@@ -1764,7 +1764,7 @@ export function secretService(db: Db) {
       const providerConfigId =
         input.providerConfigId === undefined ? secret.providerConfigId : input.providerConfigId;
       const providerConfig = await getSelectableRuntimeProviderConfig({
-        companyId: secret.companyId,
+        squadId: secret.squadId,
         provider: providerId,
         providerConfigId,
       });
@@ -1779,7 +1779,7 @@ export function secretService(db: Db) {
         throw unprocessable("Managed secrets require value");
       }
       const providerWriteContext = {
-        companyId: secret.companyId,
+        squadId: secret.squadId,
         secretKey: secret.key,
         secretName: secret.name,
         version: nextVersion,
@@ -1800,7 +1800,7 @@ export function secretService(db: Db) {
             });
 
       try {
-        await db.insert(companySecretVersions).values({
+        await db.insert(squadSecretVersions).values({
           secretId: secret.id,
           version: nextVersion,
           material: prepared.material,
@@ -1828,22 +1828,22 @@ export function secretService(db: Db) {
       try {
         return await db.transaction(async (tx) => {
           await tx
-            .update(companySecretVersions)
+            .update(squadSecretVersions)
             .set({ status: "previous" })
             .where(and(
-              eq(companySecretVersions.secretId, secret.id),
-              ne(companySecretVersions.version, nextVersion),
+              eq(squadSecretVersions.secretId, secret.id),
+              ne(squadSecretVersions.version, nextVersion),
             ));
           await tx
-            .update(companySecretVersions)
+            .update(squadSecretVersions)
             .set({ status: "current" })
             .where(and(
-              eq(companySecretVersions.secretId, secret.id),
-              eq(companySecretVersions.version, nextVersion),
+              eq(squadSecretVersions.secretId, secret.id),
+              eq(squadSecretVersions.version, nextVersion),
             ));
 
           const updated = await tx
-            .update(companySecrets)
+            .update(squadSecrets)
             .set({
               latestVersion: nextVersion,
               externalRef: prepared.externalRef,
@@ -1851,7 +1851,7 @@ export function secretService(db: Db) {
               lastRotatedAt: new Date(),
               updatedAt: new Date(),
             })
-            .where(eq(companySecrets.id, secret.id))
+            .where(eq(squadSecrets.id, secret.id))
             .returning()
             .then((rows) => rows[0] ?? null);
 
@@ -1870,10 +1870,10 @@ export function secretService(db: Db) {
           });
           if (cleaned) {
             await db
-              .delete(companySecretVersions)
+              .delete(squadSecretVersions)
               .where(and(
-                eq(companySecretVersions.secretId, secret.id),
-                eq(companySecretVersions.version, nextVersion),
+                eq(squadSecretVersions.secretId, secret.id),
+                eq(squadSecretVersions.version, nextVersion),
               ))
               .catch(() => undefined);
           }
@@ -1899,7 +1899,7 @@ export function secretService(db: Db) {
       if (secret.status === "deleted") throw notFound("Secret not found");
 
       if (patch.name && patch.name !== secret.name) {
-        const duplicate = await getByName(secret.companyId, patch.name);
+        const duplicate = await getByName(secret.squadId, patch.name);
         if (duplicate && duplicate.id !== secret.id) {
           throw conflict(`Secret already exists: ${patch.name}`);
         }
@@ -1909,11 +1909,11 @@ export function secretService(db: Db) {
       if (nextKey !== secret.key) {
         const duplicateKey = await db
           .select()
-          .from(companySecrets)
+          .from(squadSecrets)
           .where(and(
-            eq(companySecrets.companyId, secret.companyId),
-            eq(companySecrets.key, nextKey),
-            ne(companySecrets.status, "deleted"),
+            eq(squadSecrets.squadId, secret.squadId),
+            eq(squadSecrets.key, nextKey),
+            ne(squadSecrets.status, "deleted"),
           ))
           .then((rows) => rows[0] ?? null);
         if (duplicateKey && duplicateKey.id !== secret.id) {
@@ -1956,14 +1956,14 @@ export function secretService(db: Db) {
       }
       if (patch.providerConfigId !== undefined) {
         await assertProviderConfigForSecret(
-          secret.companyId,
+          secret.squadId,
           secret.provider as SecretProvider,
           patch.providerConfigId,
         );
       }
 
       return db
-        .update(companySecrets)
+        .update(squadSecrets)
         .set({
           key: deleting ? `${secret.key}__deleted__${secret.id}` : nextKey,
           name: deleting ? `${secret.name}__deleted__${secret.id}` : patch.name ?? secret.name,
@@ -1979,13 +1979,13 @@ export function secretService(db: Db) {
           deletedAt: deleting ? new Date() : secret.deletedAt,
           updatedAt: new Date(),
         })
-        .where(eq(companySecrets.id, secret.id))
+        .where(eq(squadSecrets.id, secret.id))
         .returning()
         .then((rows) => rows[0] ?? null);
     },
 
     createBinding: async (input: {
-      companyId: string;
+      squadId: string;
       secretId: string;
       targetType: SecretBindingTargetType;
       targetId: string;
@@ -1994,24 +1994,24 @@ export function secretService(db: Db) {
       required?: boolean;
       label?: string | null;
     }) => {
-      await assertSecretInCompany(input.companyId, input.secretId);
+      await assertSecretInSquad(input.squadId, input.secretId);
       const existing = await db
         .select()
-        .from(companySecretBindings)
+        .from(squadSecretBindings)
         .where(
           and(
-            eq(companySecretBindings.companyId, input.companyId),
-            eq(companySecretBindings.targetType, input.targetType),
-            eq(companySecretBindings.targetId, input.targetId),
-            eq(companySecretBindings.configPath, input.configPath),
+            eq(squadSecretBindings.squadId, input.squadId),
+            eq(squadSecretBindings.targetType, input.targetType),
+            eq(squadSecretBindings.targetId, input.targetId),
+            eq(squadSecretBindings.configPath, input.configPath),
           ),
         )
         .then((rows) => rows[0] ?? null);
       if (existing) throw conflict(`Secret binding already exists at ${input.configPath}`);
       return db
-        .insert(companySecretBindings)
+        .insert(squadSecretBindings)
         .values({
-          companyId: input.companyId,
+          squadId: input.squadId,
           secretId: input.secretId,
           targetType: input.targetType,
           targetId: input.targetId,
@@ -2025,7 +2025,7 @@ export function secretService(db: Db) {
     },
 
     syncSecretRefsForTarget: async (
-      companyId: string,
+      squadId: string,
       target: { targetType: SecretBindingTargetType; targetId: string },
       refs: Array<{
         secretId: string;
@@ -2043,7 +2043,7 @@ export function secretService(db: Db) {
         label: string | null;
       }> = [];
       for (const ref of refs) {
-        await assertSecretInCompany(companyId, ref.secretId);
+        await assertSecretInSquad(squadId, ref.secretId);
         normalizedRefs.push({
           secretId: ref.secretId,
           configPath: ref.configPath,
@@ -2059,31 +2059,31 @@ export function secretService(db: Db) {
         if (pathPrefixes.length > 0) {
           for (const pathPrefix of pathPrefixes) {
             await tx
-              .delete(companySecretBindings)
+              .delete(squadSecretBindings)
               .where(
                 and(
-                  eq(companySecretBindings.companyId, companyId),
-                  eq(companySecretBindings.targetType, target.targetType),
-                  eq(companySecretBindings.targetId, target.targetId),
-                  like(companySecretBindings.configPath, `${pathPrefix}.%`),
+                  eq(squadSecretBindings.squadId, squadId),
+                  eq(squadSecretBindings.targetType, target.targetType),
+                  eq(squadSecretBindings.targetId, target.targetId),
+                  like(squadSecretBindings.configPath, `${pathPrefix}.%`),
                 ),
               );
           }
         } else {
           await tx
-            .delete(companySecretBindings)
+            .delete(squadSecretBindings)
             .where(
               and(
-                eq(companySecretBindings.companyId, companyId),
-                eq(companySecretBindings.targetType, target.targetType),
-                eq(companySecretBindings.targetId, target.targetId),
+                eq(squadSecretBindings.squadId, squadId),
+                eq(squadSecretBindings.targetType, target.targetType),
+                eq(squadSecretBindings.targetId, target.targetId),
               ),
             );
         }
         if (normalizedRefs.length === 0) return;
-        await tx.insert(companySecretBindings).values(
+        await tx.insert(squadSecretBindings).values(
           normalizedRefs.map((ref) => ({
-            companyId,
+            squadId,
             secretId: ref.secretId,
             targetType: target.targetType,
             targetId: target.targetId,
@@ -2098,7 +2098,7 @@ export function secretService(db: Db) {
     },
 
     syncEnvBindingsForTarget: async (
-      companyId: string,
+      squadId: string,
       target: { targetType: SecretBindingTargetType; targetId: string; pathPrefix?: string },
       envValue: unknown,
       options?: { db?: SecretBindingDb },
@@ -2116,7 +2116,7 @@ export function secretService(db: Db) {
         if (!parsed.success) continue;
         const binding = canonicalizeBinding(parsed.data as EnvBinding);
         if (binding.type !== "secret_ref") continue;
-        await assertSecretInCompany(companyId, binding.secretId, bindingDb);
+        await assertSecretInSquad(squadId, binding.secretId, bindingDb);
         refs.push({
           secretId: binding.secretId,
           configPath: `${pathPrefix}.${key}`,
@@ -2126,19 +2126,19 @@ export function secretService(db: Db) {
 
       const writeBindings = async (targetDb: SecretBindingDb) => {
         await targetDb
-          .delete(companySecretBindings)
+          .delete(squadSecretBindings)
           .where(
             and(
-              eq(companySecretBindings.companyId, companyId),
-              eq(companySecretBindings.targetType, target.targetType),
-              eq(companySecretBindings.targetId, target.targetId),
-              like(companySecretBindings.configPath, `${pathPrefix}.%`),
+              eq(squadSecretBindings.squadId, squadId),
+              eq(squadSecretBindings.targetType, target.targetType),
+              eq(squadSecretBindings.targetId, target.targetId),
+              like(squadSecretBindings.configPath, `${pathPrefix}.%`),
             ),
           );
         if (refs.length === 0) return;
-        await targetDb.insert(companySecretBindings).values(
+        await targetDb.insert(squadSecretBindings).values(
           refs.map((ref) => ({
-            companyId,
+            squadId,
             secretId: ref.secretId,
             targetType: target.targetType,
             targetId: target.targetId,
@@ -2165,7 +2165,7 @@ export function secretService(db: Db) {
       const provider = getSecretProvider(providerId);
       if (secret.status !== "deleted") {
         await db
-          .update(companySecrets)
+          .update(squadSecrets)
           .set({
             key: `${secret.key}__deleted__${secret.id}`,
             name: `${secret.name}__deleted__${secret.id}`,
@@ -2173,7 +2173,7 @@ export function secretService(db: Db) {
             deletedAt: secret.deletedAt ?? new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(companySecrets.id, secretId));
+          .where(eq(squadSecrets.id, secretId));
       }
       const providerConfig = secret.providerConfigId
         ? await getProviderConfigById(secret.providerConfigId)
@@ -2189,7 +2189,7 @@ export function secretService(db: Db) {
             externalRef: secret.externalRef,
             providerConfig: providerRuntimeConfig,
             context: {
-              companyId: secret.companyId,
+              squadId: secret.squadId,
               secretKey: secret.key,
               secretName: secret.name,
               version: secret.latestVersion,
@@ -2202,24 +2202,24 @@ export function secretService(db: Db) {
           }
         }
       }
-      await db.delete(companySecrets).where(eq(companySecrets.id, secretId));
+      await db.delete(squadSecrets).where(eq(squadSecrets.id, secretId));
       return secret;
     },
 
     normalizeAdapterConfigForPersistence: async (
-      companyId: string,
+      squadId: string,
       adapterConfig: Record<string, unknown>,
       opts?: { strictMode?: boolean },
-    ) => normalizeAdapterConfigForPersistenceInternal(companyId, adapterConfig, opts),
+    ) => normalizeAdapterConfigForPersistenceInternal(squadId, adapterConfig, opts),
 
     normalizeEnvBindingsForPersistence: async (
-      companyId: string,
+      squadId: string,
       envValue: unknown,
       opts?: NormalizeEnvOptions,
-    ) => normalizeEnvConfig(companyId, envValue, opts),
+    ) => normalizeEnvConfig(squadId, envValue, opts),
 
     normalizeHireApprovalPayloadForPersistence: async (
-      companyId: string,
+      squadId: string,
       payload: Record<string, unknown>,
       opts?: { strictMode?: boolean },
     ) => {
@@ -2227,7 +2227,7 @@ export function secretService(db: Db) {
       const adapterConfig = asRecord(payload.adapterConfig);
       if (adapterConfig) {
         normalized.adapterConfig = await normalizeAdapterConfigForPersistenceInternal(
-          companyId,
+          squadId,
           adapterConfig,
           opts,
         );
@@ -2236,7 +2236,7 @@ export function secretService(db: Db) {
     },
 
     resolveEnvBindings: async (
-      companyId: string,
+      squadId: string,
       envValue: unknown,
       context?: Omit<SecretConsumerContext, "configPath">,
     ): Promise<{ env: Record<string, string>; secretKeys: Set<string>; manifest: RuntimeSecretManifestEntry[] }> => {
@@ -2259,7 +2259,7 @@ export function secretService(db: Db) {
           resolved[key] = binding.value;
         } else {
           const secretResolution = await resolveSecretValueInternal(
-            companyId,
+            squadId,
             binding.secretId,
             binding.version,
             context ? { ...context, configPath: `env.${key}` } : undefined,
@@ -2273,7 +2273,7 @@ export function secretService(db: Db) {
     },
 
     resolveAdapterConfigForRuntime: async (
-      companyId: string,
+      squadId: string,
       adapterConfig: Record<string, unknown>,
       context?: Omit<SecretConsumerContext, "configPath">,
     ): Promise<{ config: Record<string, unknown>; secretKeys: Set<string>; manifest: RuntimeSecretManifestEntry[] }> => {
@@ -2302,7 +2302,7 @@ export function secretService(db: Db) {
           env[key] = binding.value;
         } else {
           const secretResolution = await resolveSecretValueInternal(
-            companyId,
+            squadId,
             binding.secretId,
             binding.version,
             context ? { ...context, configPath: `env.${key}` } : undefined,

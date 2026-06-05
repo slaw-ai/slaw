@@ -22,13 +22,13 @@ The empirical Node 20 compatibility check is recorded in [PAPA-352](/PAPA/issues
 
 ## Configuration
 
-Configure Modal from `Company Settings -> Environments`, not from the plugin's instance settings page.
+Configure Modal from `Squad Settings -> Environments`, not from the plugin's instance settings page.
 
 | Field | Required | Description |
 | --- | --- | --- |
 | `appName` | yes | Modal App name. The plugin calls `modal.apps.fromName(appName, { createIfMissing: true })`, so the App is created on first acquire if it does not already exist. |
 | `image` | yes | Container image passed to `modal.images.fromRegistry()`, e.g. `python:3.13` or `node:20`. |
-| `tokenId` / `tokenSecret` | yes | Modal auth tokens. Both must be provided together. Slaw stores pasted values as company secrets. The plugin worker runs in a child process that does not inherit host env vars, so `MODAL_TOKEN_ID` / `MODAL_TOKEN_SECRET` set on the Slaw server are **not** read by the plugin — provide the tokens in this form. |
+| `tokenId` / `tokenSecret` | yes | Modal auth tokens. Both must be provided together. Slaw stores pasted values as squad secrets. The plugin worker runs in a child process that does not inherit host env vars, so `MODAL_TOKEN_ID` / `MODAL_TOKEN_SECRET` set on the Slaw server are **not** read by the plugin — provide the tokens in this form. |
 | `environment` | no | Optional Modal environment name. Falls back to the SDK profile default. |
 | `workdir` | no | Remote working directory inside the sandbox. Defaults to `/workspace/slaw`. |
 | `sandboxTimeoutMs` | no | Maximum sandbox lifetime in milliseconds. Must be a positive multiple of `1000` between `1000` and `86_400_000` (24 hours). Defaults to `3_600_000` (1 hour). |
@@ -63,7 +63,7 @@ These commands assume the repo root has already been installed once so the local
 
 1. Provision Modal credentials in your Modal account (`modal token new`) or use a service account.
 2. Install the plugin from the Slaw Plugins page.
-3. In `Company Settings -> Environments`, add a new Modal sandbox environment with at least `appName`, `image`, `tokenId`, and `tokenSecret`.
+3. In `Squad Settings -> Environments`, add a new Modal sandbox environment with at least `appName`, `image`, `tokenId`, and `tokenSecret`.
 4. Run the environment **Probe** action. A success result confirms auth, app creation, image pull, and `exec` round-trip.
 5. Run at least one Slaw task with a remote-managed adapter (for example `claude_local`) bound to that environment. The adapter should provision the sandbox, run commands in it, and clean it up.
 

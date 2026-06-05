@@ -6,7 +6,7 @@ import { OnboardingWizard } from "./components/OnboardingWizard";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { Dashboard } from "./pages/Dashboard";
 import { DashboardLive } from "./pages/DashboardLive";
-import { Companies } from "./pages/Companies";
+import { Squads } from "./pages/Squads";
 import { Agents } from "./pages/Agents";
 import { AgentDetail } from "./pages/AgentDetail";
 import { Projects } from "./pages/Projects";
@@ -28,18 +28,18 @@ import { ApprovalDetail } from "./pages/ApprovalDetail";
 import { Costs } from "./pages/Costs";
 import { Activity } from "./pages/Activity";
 import { Inbox } from "./pages/Inbox";
-import { CompanySettings } from "./pages/CompanySettings";
-import { CompanyEnvironments } from "./pages/CompanyEnvironments";
+import { SquadSettings } from "./pages/SquadSettings";
+import { SquadEnvironments } from "./pages/SquadEnvironments";
 import { CloudUpstream } from "./pages/CloudUpstream";
 import { CloudUpstreamUxLab } from "./pages/CloudUpstreamUxLab";
 import { BootstrapSetupUxLab } from "./pages/BootstrapSetupUxLab";
-import { CompanySettingsPluginPage } from "./pages/CompanySettingsPluginPage";
-import { CompanyAccess, CompanyAccessLegacyRoute } from "./pages/CompanyAccess";
-import { CompanyInvites } from "./pages/CompanyInvites";
-import { CompanySkills } from "./pages/CompanySkills";
+import { SquadSettingsPluginPage } from "./pages/SquadSettingsPluginPage";
+import { SquadAccess, SquadAccessLegacyRoute } from "./pages/SquadAccess";
+import { SquadInvites } from "./pages/SquadInvites";
+import { SquadSkills } from "./pages/SquadSkills";
 import { Secrets } from "./pages/Secrets";
-import { CompanyExport } from "./pages/CompanyExport";
-import { CompanyImport } from "./pages/CompanyImport";
+import { SquadExport } from "./pages/SquadExport";
+import { SquadImport } from "./pages/SquadImport";
 import { DesignGuide } from "./pages/DesignGuide";
 import { InstanceGeneralSettings } from "./pages/InstanceGeneralSettings";
 import { InstanceAccess } from "./pages/InstanceAccess";
@@ -58,10 +58,10 @@ import { CliAuthPage } from "./pages/CliAuth";
 import { InviteLandingPage } from "./pages/InviteLanding";
 import { JoinRequestQueue } from "./pages/JoinRequestQueue";
 import { NotFoundPage } from "./pages/NotFound";
-import { useCompany } from "./context/CompanyContext";
+import { useSquad } from "./context/SquadContext";
 import { useDialogActions } from "./context/DialogContext";
 import { loadLastInboxTab } from "./lib/inbox";
-import { shouldRedirectCompanylessRouteToOnboarding } from "./lib/onboarding-route";
+import { shouldRedirectSquadlessRouteToOnboarding } from "./lib/onboarding-route";
 
 function boardRoutes() {
   return (
@@ -70,19 +70,19 @@ function boardRoutes() {
       <Route path="dashboard" element={<Dashboard />} />
       <Route path="dashboard/live" element={<DashboardLive />} />
       <Route path="onboarding" element={<OnboardingRoutePage />} />
-      <Route path="companies" element={<Companies />} />
-      <Route path="company/settings" element={<CompanySettings />} />
-      <Route path="company/settings/environments" element={<CompanyEnvironments />} />
-      <Route path="company/settings/cloud-upstream" element={<CloudUpstream />} />
-      <Route path="company/settings/members" element={<CompanyAccess />} />
-      <Route path="company/settings/access" element={<CompanyAccessLegacyRoute />} />
-      <Route path="company/settings/cloud-upstream" element={<CloudUpstream />} />
-      <Route path="company/settings/invites" element={<CompanyInvites />} />
-      <Route path="company/export/*" element={<CompanyExport />} />
-      <Route path="company/import" element={<CompanyImport />} />
-      <Route path="company/settings/secrets" element={<Secrets />} />
-      <Route path="company/settings/:settingsRoutePath/*" element={<CompanySettingsPluginPage />} />
-      <Route path="skills/*" element={<CompanySkills />} />
+      <Route path="squads" element={<Squads />} />
+      <Route path="squad/settings" element={<SquadSettings />} />
+      <Route path="squad/settings/environments" element={<SquadEnvironments />} />
+      <Route path="squad/settings/cloud-upstream" element={<CloudUpstream />} />
+      <Route path="squad/settings/members" element={<SquadAccess />} />
+      <Route path="squad/settings/access" element={<SquadAccessLegacyRoute />} />
+      <Route path="squad/settings/cloud-upstream" element={<CloudUpstream />} />
+      <Route path="squad/settings/invites" element={<SquadInvites />} />
+      <Route path="squad/export/*" element={<SquadExport />} />
+      <Route path="squad/import" element={<SquadImport />} />
+      <Route path="squad/settings/secrets" element={<Secrets />} />
+      <Route path="squad/settings/:settingsRoutePath/*" element={<SquadSettingsPluginPage />} />
+      <Route path="skills/*" element={<SquadSkills />} />
       <Route path="settings" element={<LegacySettingsRedirect />} />
       <Route path="settings/*" element={<LegacySettingsRedirect />} />
       <Route path="plugins/:pluginId" element={<PluginPage />} />
@@ -160,23 +160,23 @@ function LegacySettingsRedirect() {
 }
 
 function OnboardingRoutePage() {
-  const { companies } = useCompany();
+  const { squads } = useSquad();
   const { openOnboarding } = useDialogActions();
-  const { companyPrefix } = useParams<{ companyPrefix?: string }>();
-  const matchedCompany = companyPrefix
-    ? companies.find((company) => company.issuePrefix.toUpperCase() === companyPrefix.toUpperCase()) ?? null
+  const { squadPrefix } = useParams<{ squadPrefix?: string }>();
+  const matchedSquad = squadPrefix
+    ? squads.find((squad) => squad.issuePrefix.toUpperCase() === squadPrefix.toUpperCase()) ?? null
     : null;
 
-  const title = matchedCompany
-    ? `Add another agent to ${matchedCompany.name}`
-    : companies.length > 0
-      ? "Create another company"
-      : "Create your first company";
-  const description = matchedCompany
-    ? "Run onboarding again to add an agent and a starter task for this company."
-    : companies.length > 0
-      ? "Run onboarding again to create another company and seed its first agent."
-      : "Get started by creating a company and your first agent.";
+  const title = matchedSquad
+    ? `Add another agent to ${matchedSquad.name}`
+    : squads.length > 0
+      ? "Create another squad"
+      : "Create your first squad";
+  const description = matchedSquad
+    ? "Run onboarding again to add an agent and a starter task for this squad."
+    : squads.length > 0
+      ? "Run onboarding again to create another squad and seed its first agent."
+      : "Get started by creating a squad and your first agent.";
 
   return (
     <div className="mx-auto max-w-xl py-10">
@@ -186,12 +186,12 @@ function OnboardingRoutePage() {
         <div className="mt-4">
           <Button
             onClick={() =>
-              matchedCompany
-                ? openOnboarding({ initialStep: 2, companyId: matchedCompany.id })
+              matchedSquad
+                ? openOnboarding({ initialStep: 2, squadId: matchedSquad.id })
                 : openOnboarding()
             }
           >
-            {matchedCompany ? "Add Agent" : "Start Onboarding"}
+            {matchedSquad ? "Add Agent" : "Start Onboarding"}
           </Button>
         </div>
       </div>
@@ -199,60 +199,60 @@ function OnboardingRoutePage() {
   );
 }
 
-function CompanyRootRedirect() {
-  const { companies, selectedCompany, loading } = useCompany();
+function SquadRootRedirect() {
+  const { squads, selectedSquad, loading } = useSquad();
   const location = useLocation();
 
   if (loading) {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading...</div>;
   }
 
-  const targetCompany = selectedCompany ?? companies[0] ?? null;
-  if (!targetCompany) {
+  const targetSquad = selectedSquad ?? squads[0] ?? null;
+  if (!targetSquad) {
     if (
-      shouldRedirectCompanylessRouteToOnboarding({
+      shouldRedirectSquadlessRouteToOnboarding({
         pathname: location.pathname,
-        hasCompanies: false,
+        hasSquads: false,
       })
     ) {
       return <Navigate to="/onboarding" replace />;
     }
-    return <NoCompaniesStartPage />;
+    return <NoSquadsStartPage />;
   }
 
-  return <Navigate to={`/${targetCompany.issuePrefix}/dashboard`} replace />;
+  return <Navigate to={`/${targetSquad.issuePrefix}/dashboard`} replace />;
 }
 
 function UnprefixedBoardRedirect() {
   const location = useLocation();
-  const { companies, selectedCompany, loading } = useCompany();
+  const { squads, selectedSquad, loading } = useSquad();
 
   if (loading) {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading...</div>;
   }
 
-  const targetCompany = selectedCompany ?? companies[0] ?? null;
-  if (!targetCompany) {
+  const targetSquad = selectedSquad ?? squads[0] ?? null;
+  if (!targetSquad) {
     if (
-      shouldRedirectCompanylessRouteToOnboarding({
+      shouldRedirectSquadlessRouteToOnboarding({
         pathname: location.pathname,
-        hasCompanies: false,
+        hasSquads: false,
       })
     ) {
       return <Navigate to="/onboarding" replace />;
     }
-    return <NoCompaniesStartPage />;
+    return <NoSquadsStartPage />;
   }
 
   return (
     <Navigate
-      to={`/${targetCompany.issuePrefix}${location.pathname}${location.search}${location.hash}`}
+      to={`/${targetSquad.issuePrefix}${location.pathname}${location.search}${location.hash}`}
       replace
     />
   );
 }
 
-function NoCompaniesStartPage() {
+function NoSquadsStartPage() {
   const { openOnboarding } = useDialogActions();
   const { t } = useTranslation();
 
@@ -260,14 +260,14 @@ function NoCompaniesStartPage() {
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
         <h1 className="text-xl font-semibold">
-          {t("app.noCompanies.title", { defaultValue: "Create your first company" })}
+          {t("app.noSquads.title", { defaultValue: "Create your first squad" })}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("app.noCompanies.description", { defaultValue: "Get started by creating a company." })}
+          {t("app.noSquads.description", { defaultValue: "Get started by creating a squad." })}
         </p>
         <div className="mt-4">
           <Button onClick={() => openOnboarding()}>
-            {t("app.noCompanies.newCompany", { defaultValue: "New Company" })}
+            {t("app.noSquads.newSquad", { defaultValue: "New Squad" })}
           </Button>
         </div>
       </div>
@@ -288,7 +288,7 @@ export function App() {
         <Route path="ux-lab/bootstrap-setup" element={<BootstrapSetupUxLab />} />
 
         <Route element={<CloudAccessGate />}>
-          <Route index element={<CompanyRootRedirect />} />
+          <Route index element={<SquadRootRedirect />} />
           <Route path="onboarding" element={<OnboardingRoutePage />} />
           <Route path="instance" element={<Navigate to="/instance/settings/general" replace />} />
           <Route path="instance/settings" element={<Layout />}>
@@ -302,7 +302,7 @@ export function App() {
             <Route path="plugins/:pluginId" element={<PluginSettings />} />
             <Route path="adapters" element={<AdapterManager />} />
           </Route>
-          <Route path="companies" element={<UnprefixedBoardRedirect />} />
+          <Route path="squads" element={<UnprefixedBoardRedirect />} />
           <Route path="issues" element={<UnprefixedBoardRedirect />} />
           <Route path="issues/:issueId" element={<UnprefixedBoardRedirect />} />
           <Route path="routines" element={<UnprefixedBoardRedirect />} />
@@ -331,7 +331,7 @@ export function App() {
           <Route path="execution-workspaces/:workspaceId/runtime-logs" element={<UnprefixedBoardRedirect />} />
           <Route path="execution-workspaces/:workspaceId/issues" element={<UnprefixedBoardRedirect />} />
           <Route path="execution-workspaces/:workspaceId/routines" element={<UnprefixedBoardRedirect />} />
-          <Route path=":companyPrefix" element={<Layout />}>
+          <Route path=":squadPrefix" element={<Layout />}>
             {boardRoutes()}
           </Route>
           <Route path="*" element={<NotFoundPage scope="global" />} />

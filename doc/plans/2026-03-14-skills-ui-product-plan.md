@@ -4,9 +4,9 @@ Status: Proposed
 Date: 2026-03-14
 Audience: Product and engineering
 Related:
-- `doc/plans/2026-03-13-company-import-export-v2.md`
+- `doc/plans/2026-03-13-squad-import-export-v2.md`
 - `doc/plans/2026-03-14-adapter-skill-sync-rollout.md`
-- `docs/companies/companies-spec.md`
+- `docs/squads/squads-spec.md`
 - `ui/src/pages/AgentDetail.tsx`
 
 ## 1. Purpose
@@ -19,7 +19,7 @@ This plan assumes:
 
 - `SKILL.md` remains Agent Skills compatible
 - `skills.sh` compatibility is a V1 requirement
-- Slaw company import/export can include skills as package content
+- Slaw squad import/export can include skills as package content
 - adapters may support persistent skill sync, ephemeral skill mounting, read-only skill discovery, or no skill integration at all
 
 ## 2. Current State
@@ -36,7 +36,7 @@ Today it supports:
 
 Current limitations:
 
-1. There is no company-level skill library UI.
+1. There is no squad-level skill library UI.
 2. There is no package import flow for skills in the website.
 3. There is no distinction between skill package management and per-agent skill attachment.
 4. There is no multi-agent desired-vs-actual view.
@@ -49,13 +49,13 @@ For V1, this plan assumes the following product decisions are already made:
 
 1. `skills.sh` compatibility is required.
 2. Agent-to-skill association in `AGENTS.md` is by shortname or slug.
-3. Company skills and agent skill attachments are separate concepts.
+3. Squad skills and agent skill attachments are separate concepts.
 4. Agent skills should move to their own tab rather than living inside configuration.
-5. Company import/export should eventually round-trip skill packages and agent skill attachments.
+5. Squad import/export should eventually round-trip skill packages and agent skill attachments.
 
 ## 3. Product Principles
 
-1. Skills are company assets first, agent attachments second.
+1. Skills are squad assets first, agent attachments second.
 2. Package management and adapter sync are different concerns and should not be conflated in one screen.
 3. The UI must always tell the truth about what Slaw knows:
    - desired state in Slaw
@@ -69,9 +69,9 @@ For V1, this plan assumes the following product decisions are already made:
 
 Slaw should treat skills at two scopes:
 
-### 4.1 Company skills
+### 4.1 Squad skills
 
-These are reusable skills known to the company.
+These are reusable skills known to the squad.
 
 Examples:
 
@@ -112,7 +112,7 @@ not by noisy relative file path.
 
 The UI should support these jobs cleanly:
 
-1. “Show me what skills this company has.”
+1. “Show me what skills this squad has.”
 2. “Import a skill from GitHub or a local folder.”
 3. “See whether a skill is safe, compatible, and who uses it.”
 4. “Attach skills to an agent.”
@@ -124,22 +124,22 @@ The UI should support these jobs cleanly:
 
 The product should have two primary skill surfaces.
 
-### 5.1 Company Skills page
+### 5.1 Squad Skills page
 
-Add a company-level page, likely:
+Add a squad-level page, likely:
 
-- `/companies/:companyId/skills`
+- `/squads/:squadId/skills`
 
 Purpose:
 
-- manage the company skill library
+- manage the squad skill library
 - import and inspect skill packages
 - understand provenance and trust
 - see which agents use which skills
 
 #### Route
 
-- `/companies/:companyId/skills`
+- `/squads/:squadId/skills`
 
 #### Primary actions
 
@@ -151,7 +151,7 @@ Purpose:
 
 #### Empty state
 
-When the company has no managed skills:
+When the squad has no managed skills:
 
 - explain what skills are
 - explain `skills.sh` / Agent Skills compatibility
@@ -208,7 +208,7 @@ Allow:
 
 Future:
 
-- install from `companies.sh`
+- install from `squads.sh`
 - install from `skills.sh`
 
 V1 requirement:
@@ -228,7 +228,7 @@ Each skill should have a detail view showing:
 
 Recommended route:
 
-- `/companies/:companyId/skills/:skillId`
+- `/squads/:squadId/skills/:skillId`
 
 Recommended sections:
 
@@ -240,7 +240,7 @@ Recommended sections:
 
 #### D. Usage view
 
-Each company skill should show which agents use it.
+Each squad skill should show which agents use it.
 
 Suggested columns:
 
@@ -257,7 +257,7 @@ Keep and evolve the existing `AgentDetail` skill sync UI, but move it out of con
 
 Purpose:
 
-- attach/detach company skills to one agent
+- attach/detach squad skills to one agent
 - inspect adapter reality for that agent
 - reconcile desired vs actual state
 - keep the association format readable and aligned with `AGENTS.md`
@@ -279,7 +279,7 @@ This is preferable to hiding skills inside configuration because:
 
 - skills are not just adapter config
 - skills need their own sync/status language
-- skills are a reusable company asset, not merely one agent field
+- skills are a reusable squad asset, not merely one agent field
 - the screen needs room for desired vs actual state, warnings, and external skill adoption
 
 #### Tab layout
@@ -300,7 +300,7 @@ Summary should show:
 
 #### A. Desired skills
 
-Show company-managed skills attached to the agent.
+Show squad-managed skills attached to the agent.
 
 Each row should show:
 
@@ -319,7 +319,7 @@ Each row should support:
 
 #### B. External or discovered skills
 
-Show skills reported by the adapter that are not company-managed.
+Show skills reported by the adapter that are not squad-managed.
 
 This matters because Codex and similar adapters may already have local skills that Slaw did not install.
 
@@ -331,7 +331,7 @@ These should be clearly marked:
 Each external row should support:
 
 - inspect
-- adopt into company library later
+- adopt into squad library later
 - attach as managed skill later if appropriate
 
 #### C. Sync controls
@@ -344,8 +344,8 @@ Support:
 
 Future:
 
-- import external skill into company library
-- promote ad hoc local skill into a managed company skill
+- import external skill into squad library
+- promote ad hoc local skill into a managed squad skill
 
 Recommended footer actions:
 
@@ -422,7 +422,7 @@ Language:
 
 This state should still allow:
 
-- attaching company skills to the agent as desired state
+- attaching squad skills to the agent as desired state
 - export/import of those desired attachments
 
 ## 7.4 Read-only adapters
@@ -439,47 +439,47 @@ Language:
 
 Recommended navigation:
 
-- company nav adds `Skills`
+- squad nav adds `Skills`
 - agent detail adds `Skills` as its own tab
-- company skill detail gets its own route when the company library ships
+- squad skill detail gets its own route when the squad library ships
 
 Recommended separation:
 
-- Company Skills page answers: “What skills do we have?”
+- Squad Skills page answers: “What skills do we have?”
 - Agent Skills tab answers: “What does this agent use, and is it synced?”
 
 ## 8.1 Proposed route map
 
-- `/companies/:companyId/skills`
-- `/companies/:companyId/skills/:skillId`
+- `/squads/:squadId/skills`
+- `/squads/:squadId/skills/:skillId`
 - `/agents/:agentId/skills`
 
 ## 8.2 Nav and discovery
 
 Recommended entry points:
 
-- company sidebar: `Skills`
+- squad sidebar: `Skills`
 - agent page tabs: `Skills`
-- company import preview: link imported skills to company skills page later
-- agent skills rows: link to company skill detail
+- squad import preview: link imported skills to squad skills page later
+- agent skills rows: link to squad skill detail
 
 ## 9. Import / Export Integration
 
-Skill UI and package portability should meet in the company skill library.
+Skill UI and package portability should meet in the squad skill library.
 
 Import behavior:
 
-- importing a company package with `SKILL.md` content should create or update company skills
+- importing a squad package with `SKILL.md` content should create or update squad skills
 - agent attachments should primarily come from `AGENTS.md` shortname associations
 - `.slaw.yaml` may add Slaw-specific fidelity, but should not replace the base shortname association model
 - referenced third-party skills should keep provenance visible
 
 Export behavior:
 
-- exporting a company should include company-managed skills when selected
+- exporting a squad should include squad-managed skills when selected
 - `AGENTS.md` should emit skill associations by shortname or slug
 - `.slaw.yaml` may add Slaw-specific skill fidelity later if needed, but should not be required for ordinary agent-to-skill association
-- adapter-only external skills should not be silently exported as managed company skills
+- adapter-only external skills should not be silently exported as managed squad skills
 
 ## 9.1 Import workflows
 
@@ -487,7 +487,7 @@ V1 workflows should support:
 
 1. import one or more skills from a local folder
 2. import one or more skills from a GitHub repo
-3. import a company package that contains skills
+3. import a squad package that contains skills
 4. attach imported skills to one or more agents
 
 Import preview for skills should show:
@@ -496,13 +496,13 @@ Import preview for skills should show:
 - source and pinning
 - trust level
 - licensing warnings
-- whether an existing company skill will be created, updated, or skipped
+- whether an existing squad skill will be created, updated, or skipped
 
 ## 9.2 Export workflows
 
 V1 should support:
 
-1. export a company with managed skills included when selected
+1. export a squad with managed skills included when selected
 2. export an agent whose `AGENTS.md` contains shortname skill associations
 3. preserve Agent Skills compatibility for each `SKILL.md`
 
@@ -514,9 +514,9 @@ Out of scope for V1:
 
 This plan implies a clean split in backend concepts.
 
-### 10.1 Company skill records
+### 10.1 Squad skill records
 
-Slaw should have a company-scoped skill model or managed package model representing:
+Slaw should have a squad-scoped skill model or managed package model representing:
 
 - identity
 - source
@@ -549,20 +549,20 @@ This already exists in rough form and should be the basis for the UI.
 
 The complete UI implies these API surfaces:
 
-- list company-managed skills
-- import company skills from path/URL/GitHub
-- get one company skill detail
+- list squad-managed skills
+- import squad skills from path/URL/GitHub
+- get one squad skill detail
 - list agents using a given skill
-- attach/detach company skills for an agent
+- attach/detach squad skills for an agent
 - list adapter sync snapshot for an agent
 - apply desired skills for an agent
 
 Existing agent-level skill sync APIs can remain the base for the agent tab.
-The company-level library APIs still need to be designed and implemented.
+The squad-level library APIs still need to be designed and implemented.
 
 ## 11. Page-by-page UX
 
-### 11.1 Company Skills list page
+### 11.1 Squad Skills list page
 
 Header:
 
@@ -580,7 +580,7 @@ Secondary content:
 
 - warnings panel for untrusted or incompatible skills
 
-### 11.2 Company Skill detail page
+### 11.2 Squad Skill detail page
 
 Header:
 
@@ -601,7 +601,7 @@ Sections:
 Actions:
 
 - attach to agent
-- remove from company library later
+- remove from squad library later
 - export later
 
 ### 11.3 Agent Skills tab
@@ -620,7 +620,7 @@ Body:
 
 ## 12. States And Empty Cases
 
-### 12.1 Company Skills page
+### 12.1 Squad Skills page
 
 States:
 
@@ -630,7 +630,7 @@ States:
 - import in progress
 - import failed
 
-### 12.2 Company Skill detail
+### 12.2 Squad Skill detail
 
 States:
 
@@ -654,9 +654,9 @@ States:
 
 Suggested V1 policy:
 
-- board users can manage company skills
+- board users can manage squad skills
 - board users can attach skills to agents
-- agents themselves do not mutate company skill library by default
+- agents themselves do not mutate squad skill library by default
 - later, certain agents may get scoped permissions for skill attachment or sync
 
 ## 14. UI Phases
@@ -670,11 +670,11 @@ Goals:
 - support desired-only state even on unsupported adapters
 - polish copy for persistent vs ephemeral adapters
 
-### Phase B: Add Company Skills page
+### Phase B: Add Squad Skills page
 
 Goals:
 
-- company-level skill library
+- squad-level skill library
 - import from GitHub/local folder
 - basic detail view
 - usage counts by agent
@@ -684,7 +684,7 @@ Goals:
 
 Goals:
 
-- importing company packages creates company skills
+- importing squad packages creates squad skills
 - exporting selected skills works cleanly
 - agent attachments round-trip primarily through `AGENTS.md` shortnames
 
@@ -693,7 +693,7 @@ Goals:
 Goals:
 
 - detect adapter external skills
-- allow importing them into company-managed state where possible
+- allow importing them into squad-managed state where possible
 - make provenance explicit
 
 ### Phase E: Advanced sync and drift UX
@@ -708,8 +708,8 @@ Goals:
 
 1. Overloading the agent page with package management will make the feature confusing.
 2. Treating unsupported adapters as broken rather than unmanaged will make the product feel inconsistent.
-3. Mixing external adapter-discovered skills with company-managed skills without clear labels will erode trust.
-4. If company skill records do not exist, import/export and UI will remain loosely coupled and round-trip fidelity will stay weak.
+3. Mixing external adapter-discovered skills with squad-managed skills without clear labels will erode trust.
+4. If squad skill records do not exist, import/export and UI will remain loosely coupled and round-trip fidelity will stay weak.
 5. If agent skill associations are path-based instead of shortname-based, the format will feel too technical and too Slaw-specific.
 
 ## 16. Recommendation
@@ -717,8 +717,8 @@ Goals:
 The next product step should be:
 
 1. move skills out of agent configuration and into a dedicated `Skills` tab
-2. add a dedicated company-level `Skills` page as the library and package-management surface
-3. make company import/export target that company skill library, not the agent page directly
+2. add a dedicated squad-level `Skills` page as the library and package-management surface
+3. make squad import/export target that squad skill library, not the agent page directly
 4. preserve adapter-aware truth in the UI by clearly separating:
    - desired
    - actual

@@ -1,5 +1,5 @@
-INSERT INTO "company_memberships" (
-  "company_id",
+INSERT INTO "squad_memberships" (
+  "squad_id",
   "principal_type",
   "principal_id",
   "status",
@@ -8,7 +8,7 @@ INSERT INTO "company_memberships" (
   "updated_at"
 )
 SELECT
-  "company_id",
+  "squad_id",
   'agent',
   "id",
   'active',
@@ -18,13 +18,13 @@ SELECT
 FROM "agents"
 WHERE "status" NOT IN ('pending_approval', 'terminated')
 ON CONFLICT (
-  "company_id",
+  "squad_id",
   "principal_type",
   "principal_id"
 ) DO NOTHING;
 
 INSERT INTO "principal_permission_grants" (
-  "company_id",
+  "squad_id",
   "principal_type",
   "principal_id",
   "permission_key",
@@ -34,7 +34,7 @@ INSERT INTO "principal_permission_grants" (
   "updated_at"
 )
 SELECT
-  memberships."company_id",
+  memberships."squad_id",
   'user',
   memberships."principal_id",
   role_defaults."permission_key",
@@ -42,7 +42,7 @@ SELECT
   NULL,
   now(),
   now()
-FROM "company_memberships" memberships
+FROM "squad_memberships" memberships
 JOIN (
   VALUES
     ('owner', 'agents:create'),
@@ -68,7 +68,7 @@ JOIN (
 WHERE memberships."principal_type" = 'user'
   AND memberships."status" = 'active'
 ON CONFLICT (
-  "company_id",
+  "squad_id",
   "principal_type",
   "principal_id",
   "permission_key"

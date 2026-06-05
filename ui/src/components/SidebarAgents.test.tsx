@@ -19,7 +19,7 @@ const mockAuthApi = vi.hoisted(() => ({
 }));
 
 const mockHeartbeatsApi = vi.hoisted(() => ({
-  liveRunsForCompany: vi.fn(),
+  liveRunsForSquad: vi.fn(),
 }));
 
 const mockResourceMembershipsApi = vi.hoisted(() => ({
@@ -56,9 +56,9 @@ vi.mock("@/lib/router", () => ({
   useLocation: () => ({ pathname: "/PAP/dashboard", search: "", hash: "", state: null }),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquadId: "squad-1",
   }),
 }));
 
@@ -119,7 +119,7 @@ async function act(callback: () => void | Promise<void>) {
 function makeAgent(overrides: Partial<Agent>): Agent {
   return {
     id: "agent-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     name: "Alpha",
     urlKey: "alpha",
     role: "engineer",
@@ -210,14 +210,14 @@ describe("SidebarAgents", () => {
       session: { id: "session-1", userId: "user-1" },
       user: { id: "user-1" },
     });
-    mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([]);
+    mockHeartbeatsApi.liveRunsForSquad.mockResolvedValue([]);
     memberships = {
       projectMemberships: {},
       agentMemberships: {},
       updatedAt: null,
     };
     mockResourceMembershipsApi.listMine.mockImplementation(() => Promise.resolve(memberships));
-    mockResourceMembershipsApi.updateAgent.mockImplementation((_companyId, agentId, data) => {
+    mockResourceMembershipsApi.updateAgent.mockImplementation((_squadId, agentId, data) => {
       memberships = {
         ...memberships,
         agentMemberships: {
@@ -264,7 +264,7 @@ describe("SidebarAgents", () => {
   }
 
   it("keeps top mode in stored org-aware order", async () => {
-    localStorage.setItem("slaw.agentOrder:company-1:user-1", JSON.stringify(["agent-b", "agent-a", "agent-c"]));
+    localStorage.setItem("slaw.agentOrder:squad-1:user-1", JSON.stringify(["agent-b", "agent-a", "agent-c"]));
     mockAgentsApi.list.mockResolvedValue([
       makeAgent({ id: "agent-a", name: "Alpha", urlKey: "alpha" }),
       makeAgent({ id: "agent-b", name: "Bravo", urlKey: "bravo" }),
@@ -300,7 +300,7 @@ describe("SidebarAgents", () => {
     expect(browseLink?.getAttribute("href")).toBe("/agents/all");
   });
 
-  it("sorts alphabetically and persists the selected mode per company and user", async () => {
+  it("sorts alphabetically and persists the selected mode per squad and user", async () => {
     mockAgentsApi.list.mockResolvedValue([
       makeAgent({ id: "agent-c", name: "Charlie", urlKey: "charlie" }),
       makeAgent({ id: "agent-a", name: "Alpha", urlKey: "alpha" }),
@@ -312,7 +312,7 @@ describe("SidebarAgents", () => {
     await chooseSortMode("Alphabetical");
 
     expect(agentLinkLabels(container)).toEqual(["Alpha", "Bravo", "Charlie"]);
-    expect(localStorage.getItem("slaw.agentSortMode:company-1:user-1")).toBe("alphabetical");
+    expect(localStorage.getItem("slaw.agentSortMode:squad-1:user-1")).toBe("alphabetical");
   });
 
   it("sorts recent agents by heartbeat, updated time, and created time descending", async () => {
@@ -393,7 +393,7 @@ describe("SidebarAgents", () => {
     });
     await flushReact();
 
-    expect(mockAgentsApi.pause).toHaveBeenCalledWith("agent-1", "company-1");
+    expect(mockAgentsApi.pause).toHaveBeenCalledWith("agent-1", "squad-1");
     expect(mockPushToast).toHaveBeenCalledWith(expect.objectContaining({ title: "Agent paused" }));
   });
 
@@ -411,7 +411,7 @@ describe("SidebarAgents", () => {
     await flushReact();
 
     expect(mockResourceMembershipsApi.updateAgent).toHaveBeenCalledWith(
-      "company-1",
+      "squad-1",
       "agent-1",
       { state: "left" },
     );
@@ -435,7 +435,7 @@ describe("SidebarAgents", () => {
     });
     await flushReact();
 
-    expect(mockAgentsApi.resume).toHaveBeenCalledWith("agent-1", "company-1");
+    expect(mockAgentsApi.resume).toHaveBeenCalledWith("agent-1", "squad-1");
     expect(mockPushToast).toHaveBeenCalledWith(expect.objectContaining({ title: "Agent resumed" }));
   });
 

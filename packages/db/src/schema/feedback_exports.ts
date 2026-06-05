@@ -1,5 +1,5 @@
 import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { feedbackVotes } from "./feedback_votes.js";
 import { issues } from "./issues.js";
 import { projects } from "./projects.js";
@@ -8,7 +8,7 @@ export const feedbackExports = pgTable(
   "feedback_exports",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     feedbackVoteId: uuid("feedback_vote_id").notNull().references(() => feedbackVotes.id, { onDelete: "cascade" }),
     issueId: uuid("issue_id").notNull().references(() => issues.id, { onDelete: "cascade" }),
     projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
@@ -36,10 +36,10 @@ export const feedbackExports = pgTable(
   },
   (table) => ({
     voteUniqueIdx: uniqueIndex("feedback_exports_feedback_vote_idx").on(table.feedbackVoteId),
-    companyCreatedIdx: index("feedback_exports_company_created_idx").on(table.companyId, table.createdAt),
-    companyStatusIdx: index("feedback_exports_company_status_idx").on(table.companyId, table.status, table.createdAt),
-    companyIssueIdx: index("feedback_exports_company_issue_idx").on(table.companyId, table.issueId, table.createdAt),
-    companyProjectIdx: index("feedback_exports_company_project_idx").on(table.companyId, table.projectId, table.createdAt),
-    companyAuthorIdx: index("feedback_exports_company_author_idx").on(table.companyId, table.authorUserId, table.createdAt),
+    squadCreatedIdx: index("feedback_exports_squad_created_idx").on(table.squadId, table.createdAt),
+    squadStatusIdx: index("feedback_exports_squad_status_idx").on(table.squadId, table.status, table.createdAt),
+    squadIssueIdx: index("feedback_exports_squad_issue_idx").on(table.squadId, table.issueId, table.createdAt),
+    squadProjectIdx: index("feedback_exports_squad_project_idx").on(table.squadId, table.projectId, table.createdAt),
+    squadAuthorIdx: index("feedback_exports_squad_author_idx").on(table.squadId, table.authorUserId, table.createdAt),
   }),
 );

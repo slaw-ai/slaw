@@ -12,7 +12,7 @@ import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
 
 interface LiveRunWidgetProps {
   issueId: string;
-  companyId?: string | null;
+  squadId?: string | null;
 }
 
 function toIsoString(value: string | Date | null | undefined): string | null {
@@ -24,7 +24,7 @@ function isRunActive(status: string): boolean {
   return status === "queued" || status === "running";
 }
 
-export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
+export function LiveRunWidget({ issueId, squadId }: LiveRunWidgetProps) {
   const queryClient = useQueryClient();
   const [cancellingRunIds, setCancellingRunIds] = useState(new Set<string>());
 
@@ -69,7 +69,7 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
     );
   }, [activeRun, issueId, liveRuns]);
 
-  const { transcriptByRun, hasOutputForRun } = useLiveRunTranscripts({ runs, companyId });
+  const { transcriptByRun, hasOutputForRun } = useLiveRunTranscripts({ runs, squadId });
 
   const handleCancelRun = async (runId: string) => {
     setCancellingRunIds((prev) => new Set(prev).add(runId));
@@ -148,7 +148,7 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
                   run={run}
                   transcript={transcript}
                   hasOutput={hasOutputForRun(run.id)}
-                  companyId={companyId}
+                  squadId={squadId}
                 />
               </div>
             </section>

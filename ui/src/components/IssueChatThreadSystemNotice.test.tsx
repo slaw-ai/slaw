@@ -107,7 +107,7 @@ describe("IssueChatThread system notice routing", () => {
   it("renders authorType=system comments as a SystemNotice rather than a user bubble", () => {
     const comment: IssueChatComment = {
       id: "comment-system",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
@@ -151,7 +151,7 @@ describe("IssueChatThread system notice routing", () => {
   it("expands metadata when detailsDefaultOpen is true", () => {
     const comment: IssueChatComment = {
       id: "comment-system-open",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
@@ -188,7 +188,7 @@ describe("IssueChatThread system notice routing", () => {
   it("falls back to legacy user bubble + handoff callout for old text-only comments", () => {
     const comment: IssueChatComment = {
       id: "comment-legacy",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "user",
       authorAgentId: null,
@@ -210,7 +210,7 @@ describe("IssueChatThread system notice routing", () => {
   it("keeps regular user comments rendering as user bubbles", () => {
     const comment: IssueChatComment = {
       id: "comment-user",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "user",
       authorAgentId: null,
@@ -231,7 +231,7 @@ describe("IssueChatThread system notice routing", () => {
   it("keeps agent-authored comments rendering as assistant bubbles even with system_notice presentation absent", () => {
     const comment: IssueChatComment = {
       id: "comment-agent",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "agent",
       authorAgentId: "agent-1",
@@ -256,7 +256,7 @@ describe("IssueChatThread system notice routing", () => {
     const agentMap = new Map<string, Agent>([[codexAgent.id, codexAgent]]);
     const comment: IssueChatComment = {
       id: "comment-system-runagent",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
@@ -292,7 +292,7 @@ describe("IssueChatThread system notice routing", () => {
     });
     const comment: IssueChatComment = {
       id: "comment-copy-link",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
@@ -325,7 +325,7 @@ describe("IssueChatThread system notice routing", () => {
   it("labels system notice source as Slaw when no run agent can be resolved", () => {
     const comment: IssueChatComment = {
       id: "comment-system-no-author",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
@@ -354,7 +354,7 @@ describe("IssueChatThread system notice routing", () => {
   it("falls back to Slaw in the system notice header when run agent is unknown to agentMap", () => {
     const comment: IssueChatComment = {
       id: "comment-system-unknown-agent",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
@@ -383,7 +383,7 @@ describe("IssueChatThread system notice routing", () => {
   it("keeps agent-authored comments as assistant bubbles even when presentation requests system_notice", () => {
     const comment: IssueChatComment = {
       id: "comment-agent-system",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "agent",
       authorAgentId: "agent-1",
@@ -408,7 +408,7 @@ describe("IssueChatThread system notice routing", () => {
   it("folds stale successful-run disposition warnings into the activity log disclosure style", () => {
     const comment: IssueChatComment = {
       id: "comment-stale-disposition-warning",
-      companyId: "company-1",
+      squadId: "squad-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,

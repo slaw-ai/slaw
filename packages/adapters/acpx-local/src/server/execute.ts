@@ -124,12 +124,12 @@ function defaultSlawInstanceDir(): string {
   });
 }
 
-function defaultStateDir(companyId: string, agentId: string): string {
-  return path.join(defaultSlawInstanceDir(), "companies", companyId, "acpx-local", "agents", agentId);
+function defaultStateDir(squadId: string, agentId: string): string {
+  return path.join(defaultSlawInstanceDir(), "squads", squadId, "acpx-local", "agents", agentId);
 }
 
-function resolveManagedCodexHomeDir(companyId: string): string {
-  return path.join(defaultSlawInstanceDir(), "companies", companyId, "codex-home");
+function resolveManagedCodexHomeDir(squadId: string): string {
+  return path.join(defaultSlawInstanceDir(), "squads", squadId, "codex-home");
 }
 
 function packageRootDir(): string {
@@ -212,7 +212,7 @@ async function ensureCopiedFile(target: string, source: string): Promise<void> {
 }
 
 async function prepareManagedCodexHome(input: {
-  companyId: string;
+  squadId: string;
   sourceHome: string;
   targetHome: string;
   onLog: AdapterExecutionContext["onLog"];
@@ -432,7 +432,7 @@ async function reconcileManagedCodexSkills(input: {
 }
 
 async function prepareCodexSkillRuntime(input: {
-  companyId: string;
+  squadId: string;
   config: Record<string, unknown>;
   env: Record<string, string>;
   onLog: AdapterExecutionContext["onLog"];
@@ -446,10 +446,10 @@ async function prepareCodexSkillRuntime(input: {
     typeof process.env.CODEX_HOME === "string" && process.env.CODEX_HOME.trim().length > 0
       ? path.resolve(process.env.CODEX_HOME.trim())
       : path.join(os.homedir(), ".codex");
-  const managedCodexHome = resolveManagedCodexHomeDir(input.companyId);
+  const managedCodexHome = resolveManagedCodexHomeDir(input.squadId);
   const effectiveCodexHome = configuredCodexHome ??
     await prepareManagedCodexHome({
-      companyId: input.companyId,
+      squadId: input.squadId,
       sourceHome: sourceCodexHome,
       targetHome: managedCodexHome,
       onLog: input.onLog,
@@ -589,15 +589,15 @@ async function writeSlawClaudeSettings(input: {
   cwd: string;
   stateDir: string;
   agentHome: string;
-  companyId: string;
+  squadId: string;
 }): Promise<SlawClaudeSettingsResult> {
   const filePath = path.join(input.cwd, ".claude", "settings.local.json");
   const instanceRoot = defaultSlawInstanceDir();
-  const companyRoot = path.join(instanceRoot, "companies", input.companyId);
+  const squadRoot = path.join(instanceRoot, "squads", input.squadId);
   const slawAdditionalDirectories = uniqueSorted([
     input.stateDir,
     input.agentHome,
-    companyRoot,
+    squadRoot,
   ]);
   const slawAllow = uniqueSorted([
     "Bash(curl:*)",
@@ -773,7 +773,7 @@ async function buildRuntime(input: {
   const requestedThinkingEffort = normalizeRequestedThinkingEffort(config);
   const fastMode = acpxAgent === "codex" && config.fastMode === true;
   const timeoutSec = asNumber(config.timeoutSec, DEFAULT_ACPX_LOCAL_TIMEOUT_SEC);
-  const stateDir = path.resolve(asString(config.stateDir, "") || defaultStateDir(agent.companyId, agent.id));
+  const stateDir = path.resolve(asString(config.stateDir, "") || defaultStateDir(agent.squadId, agent.id));
   await fs.mkdir(stateDir, { recursive: true });
 
   const envConfig = parseObject(config.env);
@@ -852,7 +852,7 @@ async function buildRuntime(input: {
       cwd,
       stateDir,
       agentHome,
-      companyId: agent.companyId,
+      squadId: agent.squadId,
     });
     skillCommandNotes.push(
       `Wrote Slaw-managed Claude settings to ${slawClaudeSettings.filePath} (defaultMode=${slawClaudeSettings.defaultMode}${
@@ -861,7 +861,7 @@ async function buildRuntime(input: {
     );
   } else if (acpxAgent === "codex") {
     const preparedSkills = await prepareCodexSkillRuntime({
-      companyId: agent.companyId,
+      squadId: agent.squadId,
       config,
       env,
       onLog: input.ctx.onLog,
@@ -916,7 +916,7 @@ async function buildRuntime(input: {
       : null,
   });
   const taskKey = asString(input.ctx.runtime.taskKey, "") || wakeTaskId || workspaceId || "default";
-  const sessionKey = `slaw:${agent.companyId}:${agent.id}:${taskKey}:${fingerprint}`;
+  const sessionKey = `slaw:${agent.squadId}:${agent.id}:${taskKey}:${fingerprint}`;
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
   const loggedEnv = buildInvocationEnvForLogs(env, {
     runtimeEnv,
@@ -1040,9 +1040,9 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
   const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
   const templateData = {
     agentId: agent.id,
-    companyId: agent.companyId,
+    squadId: agent.squadId,
     runId,
-    company: { id: agent.companyId },
+    squad: { id: agent.squadId },
     agent,
     run: { id: runId, source: "on_demand" },
     context,

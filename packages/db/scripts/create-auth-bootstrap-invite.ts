@@ -56,7 +56,7 @@ async function main() {
       .set({ revokedAt: now, updatedAt: now })
       .where(
         and(
-          eq(invites.inviteType, "bootstrap_ceo"),
+          eq(invites.inviteType, "bootstrap_squad_lead"),
           isNull(invites.revokedAt),
           isNull(invites.acceptedAt),
           gt(invites.expiresAt, now)
@@ -65,7 +65,7 @@ async function main() {
 
     const token = createInviteToken();
     await db.insert(invites).values({
-      inviteType: "bootstrap_ceo",
+      inviteType: "bootstrap_squad_lead",
       tokenHash: hashToken(token),
       allowedJoinTypes: "human",
       expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000),

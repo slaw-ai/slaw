@@ -20,14 +20,14 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
   getExperimental: vi.fn(),
 }));
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
-const mockCompanyState = vi.hoisted(() => ({
-  selectedCompany: { id: "company-1", name: "Slaw", issuePrefix: "PAP" } as
+const mockSquadState = vi.hoisted(() => ({
+  selectedSquad: { id: "squad-1", name: "Slaw", issuePrefix: "PAP" } as
     | { id: string; name: string; issuePrefix: string | null }
     | null,
-  selectedCompanyId: "company-1" as string | null,
+  selectedSquadId: "squad-1" as string | null,
 }));
 const mockLocationState = vi.hoisted(() => ({
-  pathname: "/PAP/company/settings/cloud-upstream",
+  pathname: "/PAP/squad/settings/cloud-upstream",
   search: "",
 }));
 
@@ -45,10 +45,10 @@ vi.mock("@/context/BreadcrumbContext", () => ({
   }),
 }));
 
-vi.mock("@/context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompany: mockCompanyState.selectedCompany,
-    selectedCompanyId: mockCompanyState.selectedCompanyId,
+vi.mock("@/context/SquadContext", () => ({
+  useSquad: () => ({
+    selectedSquad: mockSquadState.selectedSquad,
+    selectedSquadId: mockSquadState.selectedSquadId,
   }),
 }));
 
@@ -83,9 +83,9 @@ describe("CloudUpstream", () => {
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
-    mockCompanyState.selectedCompany = { id: "company-1", name: "Slaw", issuePrefix: "PAP" };
-    mockCompanyState.selectedCompanyId = "company-1";
-    mockLocationState.pathname = "/PAP/company/settings/cloud-upstream";
+    mockSquadState.selectedSquad = { id: "squad-1", name: "Slaw", issuePrefix: "PAP" };
+    mockSquadState.selectedSquadId = "squad-1";
+    mockLocationState.pathname = "/PAP/squad/settings/cloud-upstream";
     mockLocationState.search = "";
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableCloudSync: true });
     mockCloudUpstreamsApi.list.mockResolvedValue(stateWithRun(buildRun({ status: "succeeded" })));
@@ -147,7 +147,7 @@ describe("CloudUpstream", () => {
     expect(mockCloudUpstreamsApi.activateEntities).toHaveBeenCalledWith(
       "connection-1",
       "run-1",
-      { companyId: "company-1", entityType: "agents" },
+      { squadId: "squad-1", entityType: "agents" },
     );
 
     await act(async () => {
@@ -155,7 +155,7 @@ describe("CloudUpstream", () => {
     });
   });
 
-  it("sends a company-prefixed redirectUri when starting Connect", async () => {
+  it("sends a squad-prefixed redirectUri when starting Connect", async () => {
     mockCloudUpstreamsApi.list.mockResolvedValue({ connections: [], runs: [] });
     mockCloudUpstreamsApi.startConnect.mockResolvedValue({
       pendingConnectionId: "pending-1",
@@ -193,9 +193,9 @@ describe("CloudUpstream", () => {
     await flushReact();
 
     expect(mockCloudUpstreamsApi.startConnect).toHaveBeenCalledWith({
-      companyId: "company-1",
+      squadId: "squad-1",
       remoteUrl: "https://cloud.example/PAP/dashboard",
-      redirectUri: `${window.location.origin}/PAP/company/settings/cloud-upstream`,
+      redirectUri: `${window.location.origin}/PAP/squad/settings/cloud-upstream`,
     });
 
     await act(async () => {
@@ -203,21 +203,21 @@ describe("CloudUpstream", () => {
     });
   });
 
-  it("uses the URL pathname prefix when cleaning up the callback URL with no company context", async () => {
-    mockCompanyState.selectedCompany = null;
-    mockCompanyState.selectedCompanyId = null;
-    mockLocationState.pathname = "/PAP/company/settings/cloud-upstream";
+  it("uses the URL pathname prefix when cleaning up the callback URL with no squad context", async () => {
+    mockSquadState.selectedSquad = null;
+    mockSquadState.selectedSquadId = null;
+    mockLocationState.pathname = "/PAP/squad/settings/cloud-upstream";
     mockLocationState.search = "?code=cb-code&state=cb-state";
     mockCloudUpstreamsApi.list.mockResolvedValue({ connections: [], runs: [] });
     mockCloudUpstreamsApi.finishConnect.mockResolvedValue({
       id: "connection-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       remoteUrl: "https://cloud.example/PAP",
       target: {
         stackId: "stack-1",
         stackSlug: "stack",
         stackDisplayName: "Slaw Cloud",
-        companyId: "cloud-company-1",
+        squadId: "cloud-squad-1",
         primaryHost: "cloud.example",
         origin: "https://cloud.example",
         product: "Slaw Cloud",
@@ -254,7 +254,7 @@ describe("CloudUpstream", () => {
         code: "cb-code",
         state: "cb-state",
       });
-      expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "/PAP/company/settings/cloud-upstream");
+      expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "/PAP/squad/settings/cloud-upstream");
 
       await act(async () => {
         root.unmount();
@@ -266,7 +266,7 @@ describe("CloudUpstream", () => {
   });
 
   it("does not retry the OAuth callback finish mutation after an error", async () => {
-    mockLocationState.pathname = "/PAP/company/settings/cloud-upstream";
+    mockLocationState.pathname = "/PAP/squad/settings/cloud-upstream";
     mockLocationState.search = "?code=cb-code&state=cb-state";
     mockCloudUpstreamsApi.list.mockResolvedValue({ connections: [], runs: [] });
     mockCloudUpstreamsApi.finishConnect.mockRejectedValue(new Error("state expired"));
@@ -349,13 +349,13 @@ function stateWithRun(run: CloudUpstreamRun): CloudUpstreamsState {
     connections: [
       {
         id: "connection-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         remoteUrl: "https://slaw.example/PAP",
         target: {
           stackId: "stack-1",
           stackSlug: "stack",
           stackDisplayName: "Slaw Cloud",
-          companyId: "cloud-company-1",
+          squadId: "cloud-squad-1",
           primaryHost: "slaw.example",
           origin: "https://slaw.example",
           product: "Slaw Cloud",
@@ -382,7 +382,7 @@ function buildRun(input: {
   return {
     id: "run-1",
     connectionId: "connection-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     status: input.status,
     activeStep: input.status === "succeeded" ? "activate" : "push",
     progressPercent: input.status === "running" ? 70 : 100,

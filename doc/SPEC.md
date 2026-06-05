@@ -4,36 +4,36 @@ Target specification for the Slaw control plane. Living document — updated inc
 
 ---
 
-## 1. Company Model [DRAFT]
+## 1. Squad Model [DRAFT]
 
-A Company is a first-order object. One Slaw instance runs multiple Companies. A Company does not have a standalone "goal" field — its direction is defined by its set of Initiatives (see Task Hierarchy Mapping).
+A Squad is a first-order object. One Slaw instance runs multiple Squads. A Squad does not have a standalone "goal" field — its direction is defined by its set of Initiatives (see Task Hierarchy Mapping).
 
 ### Fields (Draft)
 
 | Field       | Type          | Notes                             |
 | ----------- | ------------- | --------------------------------- |
 | `id`        | uuid          | Primary key                       |
-| `name`      | string        | Company name                      |
+| `name`      | string        | Squad name                      |
 | `createdAt` | timestamp     |                                   |
 | `updatedAt` | timestamp     |                                   |
 
 ### Board Governance [DRAFT]
 
-Every Company has a **Board** that governs high-impact decisions. The Board is the human oversight layer.
+Every Squad has a **Board** that governs high-impact decisions. The Board is the human oversight layer.
 
 **V1: Single human Board.** One human operator.
 
 #### Board Approval Gates (V1)
 
 - New Agent hires (creating new Agents)
-- CEO's initial strategic breakdown (CEO proposes, Board approves before execution begins)
+- Squad Lead's initial strategic breakdown (Squad Lead proposes, Board approves before execution begins)
 - [TBD: other governance-gated actions — goal changes, firing Agents?]
 
 #### Board Powers (Always Available)
 
 The Board has **unrestricted access** to the entire system at all times:
 
-- **Set and modify Company budgets** — the Board sets top-level token/LLM cost budgets
+- **Set and modify Squad budgets** — the Board sets top-level token/LLM cost budgets
 - **Pause/resume any Agent** — stop an Agent's heartbeat immediately
 - **Pause/resume any work item** — pause a task, project, subtask tree, milestone. Paused items are not picked up by Agents.
 - **Full project management access** — create, edit, comment on, modify, delete, reassign any task/project/milestone through the UI
@@ -44,20 +44,20 @@ The Board is not just an approval gate — it's a live control surface. The huma
 
 #### Budget Delegation
 
-The Board sets Company-level budgets. The CEO can set budgets for Agents below them, and every manager Agent can do the same for their reports. How this cascading budget delegation works in practice is TBD, but the permission structure supports it. The Board can manually override any budget at any level.
+The Board sets Squad-level budgets. The Squad Lead can set budgets for Agents below them, and every manager Agent can do the same for their reports. How this cascading budget delegation works in practice is TBD, but the permission structure supports it. The Board can manually override any budget at any level.
 
 **Future governance models** (not V1):
 
 - Hiring budgets (auto-approve hires within $X/month)
 - Multi-member boards
-- Delegated authority (CEO can hire within limits)
+- Delegated authority (Squad Lead can hire within limits)
 
 ### Open Questions
 
 - External revenue/expense tracking — future plugin. Token/LLM cost budgeting is core.
-- Company-level settings and configuration?
-- Company lifecycle (pause, archive, delete)?
-- What governance-gated actions exist beyond hiring and CEO strategy approval?
+- Squad-level settings and configuration?
+- Squad lifecycle (pause, archive, delete)?
+- What governance-gated actions exist beyond hiring and Squad Lead strategy approval?
 
 ---
 
@@ -94,17 +94,17 @@ Each adapter type defines its own config schema. Examples:
 
 #### Exportable Org Configs
 
-A key goal: **the entire org's agent configurations are exportable.** You can export a company's complete agent setup — every agent, their adapter configs, org structure — as a portable artifact. This enables:
+A key goal: **the entire org's agent configurations are exportable.** You can export a squad's complete agent setup — every agent, their adapter configs, org structure — as a portable artifact. This enables:
 
-- Sharing company templates ("here's a pre-built marketing agency org")
-- Version controlling your company configuration
-- Duplicating/forking companies
+- Sharing squad templates ("here's a pre-built marketing agency org")
+- Version controlling your squad configuration
+- Duplicating/forking squads
 
 #### Context Delivery
 
 Configurable per agent. Two ends of the spectrum:
 
-- **Fat payload** — Slaw bundles relevant context (current tasks, messages, company state, metrics) into the heartbeat invocation. Suited for simple/stateless agents that can't call back to Slaw.
+- **Fat payload** — Slaw bundles relevant context (current tasks, messages, squad state, metrics) into the heartbeat invocation. Suited for simple/stateless agents that can't call back to Slaw.
 - **Thin ping** — Heartbeat is just a wake-up signal. Agent calls Slaw's API to fetch whatever context it needs. Suited for sophisticated agents that manage their own state.
 
 #### Minimum Contract
@@ -125,22 +125,22 @@ Slaw ships **default agents** that demonstrate full integration: progress tracki
 
 Two export modes:
 
-1. **Template export** (default) — structure only: agent definitions, org chart, adapter configs, role descriptions. Optionally includes a few seed tasks to help get started. This is the blueprint for spinning up a new company.
+1. **Template export** (default) — structure only: agent definitions, org chart, adapter configs, role descriptions. Optionally includes a few seed tasks to help get started. This is the blueprint for spinning up a new squad.
 2. **Snapshot export** — full state: structure + current tasks, progress, agent status. A complete picture you could restore or fork.
 
-The usual workflow: export a template, create a new company from it, add a couple initial tasks, go.
+The usual workflow: export a template, create a new squad from it, add a couple initial tasks, go.
 
 ---
 
 ## 3. Org Structure [DRAFT]
 
-Hierarchical reporting structure. CEO at top, reports cascade down.
+Hierarchical reporting structure. Squad Lead at top, reports cascade down.
 
 ### Agent Visibility
 
 **Full visibility across the org.** Every agent can see the entire org chart, all tasks, all agents. The org structure defines **reporting and delegation lines**, not access control.
 
-Visibility settings on an agent profile (where supported) do not alter company-level visibility for tasks, projects, issues, comments, costs, or activity. Those work-object privacy controls are not a V1 feature until centralized scoped authorization is in place.
+Visibility settings on an agent profile (where supported) do not alter squad-level visibility for tasks, projects, issues, comments, costs, or activity. Those work-object privacy controls are not a V1 feature until centralized scoped authorization is in place.
 
 Each agent publishes a short description of their responsibilities and capabilities — almost like skills ("when I'm relevant"). This lets other agents discover who can help with what.
 
@@ -262,14 +262,14 @@ There is no separate messaging or chat system. Tasks are the communication chann
 ### Implications
 
 - An agent's "inbox" is: tasks assigned to them + comments on tasks they're involved in
-- The CEO delegates by creating tasks assigned to the CTO
+- The Squad Lead delegates by creating tasks assigned to the CTO
 - The CTO breaks those down into sub-tasks assigned to engineers
 - Discussion happens in task comments, not a side channel
 - If an agent needs to escalate, they comment on the parent task or reassign
 
 ### Task Hierarchy Mapping
 
-Full hierarchy: **Initiative** (company goal) → Projects → Milestones → Issues → Sub-issues. Everything traces back to an initiative, and the "company goal" is just the first/primary initiative.
+Full hierarchy: **Initiative** (squad goal) → Projects → Milestones → Issues → Sub-issues. Everything traces back to an initiative, and the "squad goal" is just the first/primary initiative.
 
 ---
 
@@ -284,7 +284,7 @@ Fully-instrumented Agents report token/API usage back to Slaw. Costs are tracked
 - **Per Agent** — how much is this employee costing?
 - **Per task** — how much did this unit of work cost?
 - **Per project** — how much is this deliverable costing?
-- **Per Company** — total burn rate
+- **Per Squad** — total burn rate
 
 Costs should be denominated in both **tokens and dollars**.
 
@@ -294,7 +294,7 @@ Billing codes on tasks (see Org Structure) enable cost attribution across teams 
 
 Three tiers:
 
-1. **Visibility** — dashboards showing spend at every level (Agent, task, project, Company)
+1. **Visibility** — dashboards showing spend at every level (Agent, task, project, Squad)
 2. **Soft alerts** — configurable thresholds (e.g. warn at 80% of budget)
 3. **Hard ceiling** — auto-pause the Agent when budget is hit. Board notified. Board can override/raise the limit.
 
@@ -312,21 +312,21 @@ Budgets can be set to **unlimited** (no ceiling).
 
 ### Bootstrap Sequence
 
-How a Company goes from "created" to "running":
+How a Squad goes from "created" to "running":
 
-1. Human creates a Company and its initial Initiatives
+1. Human creates a Squad and its initial Initiatives
 2. Human defines initial top-level tasks
-3. Human creates the CEO Agent (using the default CEO template or custom)
-4. CEO's first heartbeat: reviews the Initiatives and tasks, proposes a strategic breakdown (org structure, sub-tasks, hiring plan)
-5. **Board approves** the CEO's strategic plan
-6. CEO begins execution — creating tasks, proposing hires (Board-approved), delegating
+3. Human creates the Squad Lead Agent (using the default Squad Lead template or custom)
+4. Squad Lead's first heartbeat: reviews the Initiatives and tasks, proposes a strategic breakdown (org structure, sub-tasks, hiring plan)
+5. **Board approves** the Squad Lead's strategic plan
+6. Squad Lead begins execution — creating tasks, proposing hires (Board-approved), delegating
 
 ### Default Agents
 
 Slaw ships default Agent templates:
 
-- **Default Agent** — a basic Claude Code or Codex loop. Knows the **Slaw Skill** (SKILL.md) so it can interact with the task system, read Company context, report status.
-- **Default CEO** — extends the Default Agent with CEO-specific behavior: strategic planning, delegation to reports, progress review, Board communication.
+- **Default Agent** — a basic Claude Code or Codex loop. Knows the **Slaw Skill** (SKILL.md) so it can interact with the task system, read Squad context, report status.
+- **Default Squad Lead** — extends the Default Agent with Squad Lead-specific behavior: strategic planning, delegation to reports, progress review, Board communication.
 
 These are starting points. Users can customize or replace them entirely.
 
@@ -334,7 +334,7 @@ These are starting points. Users can customize or replace them entirely.
 
 The default agent's loop is **config-driven**. The adapter config contains the instructions that define what the agent does on each heartbeat cycle. There is no hardcoded standard loop — each agent's config determines its behavior.
 
-This means the default CEO config tells the CEO to review strategy, check on reports, etc. The default engineer config tells the engineer to check assigned tasks, pick the highest priority, and work it. But these are config choices, not protocol requirements.
+This means the default Squad Lead config tells the Squad Lead to review strategy, check on reports, etc. The default engineer config tells the engineer to check assigned tasks, pick the highest priority, and work it. But these are config choices, not protocol requirements.
 
 ### Slaw Skill (SKILL.md)
 
@@ -342,7 +342,7 @@ A skill definition that teaches agents how to interact with Slaw. Provides:
 
 - Task CRUD (create, read, update, complete tasks)
 - Status reporting (check in, report progress)
-- Company context (read goal, org chart, current state)
+- Squad context (read goal, org chart, current state)
 - Cost reporting (log token/API usage)
 - Inter-agent communication rules
 
@@ -354,13 +354,13 @@ This skill is adapter-agnostic — it can be loaded into Claude Code, injected i
 
 ### Deployment Model
 
-**Single-tenant, self-hostable.** Not a SaaS. One instance = one operator's companies.
+**Single-tenant, self-hostable.** Not a SaaS. One instance = one operator's squads.
 
 #### Development Path (Progressive Deployment)
 
 1. **Local dev** — One command to install and run. Embedded Postgres. Everything on your machine. Agents run locally.
 2. **Hosted** — Deploy to Vercel/Supabase/AWS/anywhere. Remote agents connect to your server with a shared database. The UI is accessible via the web.
-3. **Open company** — Optionally make parts public (e.g. a job board visible to the public for open companies).
+3. **Open squad** — Optionally make parts public (e.g. a job board visible to the public for open squads).
 
 The key constraint: it must be trivial to go from "I'm trying this on my machine" to "my agents are running on remote servers talking to my Slaw instance."
 
@@ -404,7 +404,7 @@ The agents are discouraged from assigning tasks to humans in the Slaw SKILL, but
 
 ### API Design
 
-**Single unified REST API.** The same API serves both the frontend UI and agents. Authentication determines permissions — board auth has full access, agent API keys have scoped access (their own tasks, cost reporting, company context).
+**Single unified REST API.** The same API serves both the frontend UI and agents. Authentication determines permissions — board auth has full access, agent API keys have scoped access (their own tasks, cost reporting, squad context).
 
 No separate "agent API" vs. "board API." Same endpoints, different authorization levels.
 
@@ -415,7 +415,7 @@ Slaw manages task-linked work artifacts: issue documents (rich-text plans, specs
 ### Open Questions
 
 - Real-time updates to the UI — WebSocket? SSE? Polling?
-- Agent API key scoping — what exactly can an Agent access? Only their own tasks? Their team's? The whole Company?
+- Agent API key scoping — what exactly can an Agent access? Only their own tasks? Their team's? The whole Squad?
 
 ### Crash Recovery: Manual, Not Automatic
 
@@ -451,7 +451,7 @@ Each is a distinct page/route:
 3. **Dashboard** — high-level metrics: agent count, active tasks, costs, goal progress, burn rate. The "glance" view from GOAL.md.
 4. **Agent Detail** — deep dive on a single agent: their tasks, activity, costs, configuration, status history.
 5. **Project/Initiative Views** — progress tracking against milestones and goals.
-6. **Cost Dashboard** — spend visualization at every level (agent, task, project, company).
+6. **Cost Dashboard** — spend visualization at every level (agent, task, project, squad).
 
 ### Board Controls (Available Everywhere)
 
@@ -468,17 +468,17 @@ Each is a distinct page/route:
 
 ### Must Have (V1)
 
-- [ ] **Company CRUD** — create a Company with Initiatives
+- [ ] **Squad CRUD** — create a Squad with Initiatives
 - [ ] **Agent CRUD** — create/edit/pause/resume Agents with Adapter config
 - [ ] **Org chart** — define reporting structure, visualize it
 - [ ] **Process adapter** — invoke(), status(), cancel() for local child processes
-- [ ] **Task management** — full lifecycle with hierarchy (tasks trace to company goal)
+- [ ] **Task management** — full lifecycle with hierarchy (tasks trace to squad goal)
 - [ ] **Atomic task checkout** — single assignment, in_progress locking
 - [ ] **Board governance** — human approves hires, pauses Agents, sets budgets, full PM access
-- [ ] **Cost tracking** — Agents report token usage, per-Agent/task/Company visibility
+- [ ] **Cost tracking** — Agents report token usage, per-Agent/task/Squad visibility
 - [ ] **Budget controls** — soft alerts + hard ceiling with auto-pause
 - [ ] **Default agent** — basic Claude Code/Codex loop with Slaw skill
-- [ ] **Default CEO** — strategic planning, delegation, board communication
+- [ ] **Default Squad Lead** — strategic planning, delegation, board communication
 - [ ] **Slaw skill (SKILL.md)** — teaches agents to interact with the API
 - [ ] **REST API** — full API for agent interaction (Express)
 - [ ] **Web UI** — React/Vite: org chart, task board, dashboard, cost views
@@ -491,7 +491,7 @@ Each is a distinct page/route:
 - Knowledge base - a future plugin
 - Advanced governance models (hiring budgets, multi-member boards)
 - Revenue/expense tracking beyond token costs - a future plugin
-- Public job board / open company features
+- Public job board / open squad features
 
 ---
 
@@ -521,7 +521,7 @@ Things Slaw explicitly does **not** do:
 ## 13. Principles (Consolidated)
 
 1. **Unopinionated about how you run your Agents.** Any language, any framework, any runtime. Slaw is the control plane, not the execution plane.
-2. **Company is the unit of organization.** Everything lives under a Company.
+2. **Squad is the unit of organization.** Everything lives under a Squad.
 3. **Tasks are the communication channel.** All Agent communication flows through tasks + comments. No side channels.
 4. **All work traces to the goal.** Hierarchical task management — nothing exists in isolation.
 5. **Board governs.** Humans retain control through the Board. Conservative defaults (human approval required).

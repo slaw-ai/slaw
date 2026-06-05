@@ -11,7 +11,7 @@ import {
   updateSecretSchema,
 } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
-import { assertBoard, assertCompanyAccess } from "./authz.js";
+import { assertBoard, assertSquadAccess } from "./authz.js";
 import { logActivity, secretService } from "../services/index.js";
 import { getConfiguredSecretProvider } from "../secrets/configured-provider.js";
 
@@ -20,37 +20,37 @@ export function secretRoutes(db: Db) {
   const svc = secretService(db);
   const defaultProvider = getConfiguredSecretProvider();
 
-  router.get("/companies/:companyId/secret-providers", (req, res) => {
+  router.get("/squads/:squadId/secret-providers", (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     res.json(svc.listProviders());
   });
 
-  router.get("/companies/:companyId/secret-providers/health", async (req, res) => {
+  router.get("/squads/:squadId/secret-providers/health", async (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     const checks = await svc.checkProviders();
     res.json({ providers: checks });
   });
 
-  router.get("/companies/:companyId/secret-provider-configs", async (req, res) => {
+  router.get("/squads/:squadId/secret-provider-configs", async (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    res.json(await svc.listProviderConfigs(companyId));
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+    res.json(await svc.listProviderConfigs(squadId));
   });
 
   router.post(
-    "/companies/:companyId/secret-provider-configs/discovery/preview",
+    "/squads/:squadId/secret-provider-configs/discovery/preview",
     validate(secretProviderConfigDiscoveryPreviewSchema),
     async (req, res) => {
       assertBoard(req);
-      const companyId = req.params.companyId as string;
-      assertCompanyAccess(req, companyId);
+      const squadId = req.params.squadId as string;
+      assertSquadAccess(req, squadId);
 
-      const preview = await svc.previewProviderConfigDiscovery(companyId, {
+      const preview = await svc.previewProviderConfigDiscovery(squadId, {
         provider: req.body.provider,
         config: req.body.config,
         query: req.body.query,
@@ -59,12 +59,12 @@ export function secretRoutes(db: Db) {
       });
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
         action: "secret_provider_config.discovery_previewed",
         entityType: "secret_provider_config_discovery",
-        entityId: companyId,
+        entityId: squadId,
         details: {
           provider: preview.provider,
           candidateCount: preview.candidates.length,
@@ -77,13 +77,13 @@ export function secretRoutes(db: Db) {
     },
   );
 
-  router.post("/companies/:companyId/secret-provider-configs", validate(createSecretProviderConfigSchema), async (req, res) => {
+  router.post("/squads/:squadId/secret-provider-configs", validate(createSecretProviderConfigSchema), async (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
 
     const created = await svc.createProviderConfig(
-      companyId,
+      squadId,
       {
         provider: req.body.provider,
         displayName: req.body.displayName,
@@ -95,7 +95,7 @@ export function secretRoutes(db: Db) {
     );
 
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret_provider_config.created",
@@ -119,7 +119,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Provider vault not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     res.json(existing);
   });
 
@@ -131,7 +131,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Provider vault not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
 
     const updated = await svc.updateProviderConfig(id, {
       displayName: req.body.displayName,
@@ -145,7 +145,7 @@ export function secretRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: updated.companyId,
+      squadId: updated.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret_provider_config.updated",
@@ -170,7 +170,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Provider vault not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
 
     const removed = await svc.removeProviderConfig(id);
     if (!removed) {
@@ -179,7 +179,7 @@ export function secretRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: removed.companyId,
+      squadId: removed.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret_provider_config.removed",
@@ -203,7 +203,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Provider vault not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
 
     const updated = await svc.setDefaultProviderConfig(id);
     if (!updated) {
@@ -212,7 +212,7 @@ export function secretRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: updated.companyId,
+      squadId: updated.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret_provider_config.default_set",
@@ -236,7 +236,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Provider vault not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
 
     const health = await svc.checkProviderConfigHealth(id);
     if (!health) {
@@ -245,7 +245,7 @@ export function secretRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: existing.companyId,
+      squadId: existing.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret_provider_config.health_checked",
@@ -261,21 +261,21 @@ export function secretRoutes(db: Db) {
     res.json(health);
   });
 
-  router.get("/companies/:companyId/secrets", async (req, res) => {
+  router.get("/squads/:squadId/secrets", async (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    const secrets = await svc.list(companyId);
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+    const secrets = await svc.list(squadId);
     res.json(secrets);
   });
 
-  router.post("/companies/:companyId/secrets", validate(createSecretSchema), async (req, res) => {
+  router.post("/squads/:squadId/secrets", validate(createSecretSchema), async (req, res) => {
     assertBoard(req);
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
 
     const created = await svc.create(
-      companyId,
+      squadId,
       {
         name: req.body.name,
         key: req.body.key,
@@ -292,7 +292,7 @@ export function secretRoutes(db: Db) {
     );
 
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret.created",
@@ -305,14 +305,14 @@ export function secretRoutes(db: Db) {
   });
 
   router.post(
-    "/companies/:companyId/secrets/remote-import/preview",
+    "/squads/:squadId/secrets/remote-import/preview",
     validate(remoteSecretImportPreviewSchema),
     async (req, res) => {
       assertBoard(req);
-      const companyId = req.params.companyId as string;
-      assertCompanyAccess(req, companyId);
+      const squadId = req.params.squadId as string;
+      assertSquadAccess(req, squadId);
 
-      const preview = await svc.previewRemoteImport(companyId, {
+      const preview = await svc.previewRemoteImport(squadId, {
         providerConfigId: req.body.providerConfigId,
         query: req.body.query,
         nextToken: req.body.nextToken,
@@ -320,7 +320,7 @@ export function secretRoutes(db: Db) {
       });
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
         action: "secret.remote_import.previewed",
@@ -340,15 +340,15 @@ export function secretRoutes(db: Db) {
   );
 
   router.post(
-    "/companies/:companyId/secrets/remote-import",
+    "/squads/:squadId/secrets/remote-import",
     validate(remoteSecretImportSchema),
     async (req, res) => {
       assertBoard(req);
-      const companyId = req.params.companyId as string;
-      assertCompanyAccess(req, companyId);
+      const squadId = req.params.squadId as string;
+      assertSquadAccess(req, squadId);
 
       const result = await svc.importRemoteSecrets(
-        companyId,
+        squadId,
         {
           providerConfigId: req.body.providerConfigId,
           secrets: req.body.secrets,
@@ -357,7 +357,7 @@ export function secretRoutes(db: Db) {
       );
 
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "user",
         actorId: req.actor.userId ?? "board",
         action: "secret.remote_import.completed",
@@ -383,7 +383,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Secret not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     if (existing.status === "deleted") {
       res.status(404).json({ error: "Secret not found" });
       return;
@@ -401,7 +401,7 @@ export function secretRoutes(db: Db) {
     );
 
     await logActivity(db, {
-      companyId: rotated.companyId,
+      squadId: rotated.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret.rotated",
@@ -421,7 +421,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Secret not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
     if (existing.status === "deleted") {
       res.status(404).json({ error: "Secret not found" });
       return;
@@ -443,7 +443,7 @@ export function secretRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: updated.companyId,
+      squadId: updated.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret.updated",
@@ -463,8 +463,8 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Secret not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
-    const bindings = await svc.listBindingReferences(existing.companyId, existing.id);
+    assertSquadAccess(req, existing.squadId);
+    const bindings = await svc.listBindingReferences(existing.squadId, existing.id);
     res.json({ secretId: existing.id, bindings });
   });
 
@@ -476,8 +476,8 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Secret not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
-    const events = await svc.listAccessEvents(existing.companyId, existing.id);
+    assertSquadAccess(req, existing.squadId);
+    const events = await svc.listAccessEvents(existing.squadId, existing.id);
     res.json(events);
   });
 
@@ -489,7 +489,7 @@ export function secretRoutes(db: Db) {
       res.status(404).json({ error: "Secret not found" });
       return;
     }
-    assertCompanyAccess(req, existing.companyId);
+    assertSquadAccess(req, existing.squadId);
 
     const removed = await svc.remove(id);
     if (!removed) {
@@ -498,7 +498,7 @@ export function secretRoutes(db: Db) {
     }
 
     await logActivity(db, {
-      companyId: removed.companyId,
+      squadId: removed.squadId,
       actorType: "user",
       actorId: req.actor.userId ?? "board",
       action: "secret.deleted",

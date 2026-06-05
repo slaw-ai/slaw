@@ -326,28 +326,28 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
           CREATE SCHEMA "plugin_composite_fk";
           CREATE TABLE "plugin_composite_fk"."content_cases" (
             "id" uuid PRIMARY KEY,
-            "company_id" uuid NOT NULL,
+            "squad_id" uuid NOT NULL,
             "title" text NOT NULL,
-            CONSTRAINT "content_cases_company_case_unique" UNIQUE ("company_id", "id")
+            CONSTRAINT "content_cases_squad_case_unique" UNIQUE ("squad_id", "id")
           );
           CREATE TABLE "plugin_composite_fk"."content_case_signals" (
-            "company_id" uuid NOT NULL,
+            "squad_id" uuid NOT NULL,
             "case_id" uuid NOT NULL,
             "signal" text NOT NULL,
             "scopes" text[] NOT NULL,
             "warnings" jsonb DEFAULT '[]'::jsonb NOT NULL,
-            CONSTRAINT "content_case_signals_company_case"
-              FOREIGN KEY ("company_id", "case_id")
-              REFERENCES "plugin_composite_fk"."content_cases" ("company_id", "id")
+            CONSTRAINT "content_case_signals_squad_case"
+              FOREIGN KEY ("squad_id", "case_id")
+              REFERENCES "plugin_composite_fk"."content_cases" ("squad_id", "id")
               ON DELETE CASCADE
           );
-          INSERT INTO "plugin_composite_fk"."content_cases" ("company_id", "id", "title")
+          INSERT INTO "plugin_composite_fk"."content_cases" ("squad_id", "id", "title")
           VALUES (
             '11111111-1111-4111-8111-111111111111',
             '22222222-2222-4222-8222-222222222222',
             'case'
           );
-          INSERT INTO "plugin_composite_fk"."content_case_signals" ("company_id", "case_id", "signal", "scopes", "warnings")
+          INSERT INTO "plugin_composite_fk"."content_case_signals" ("squad_id", "case_id", "signal", "scopes", "warnings")
           VALUES (
             '11111111-1111-4111-8111-111111111111',
             '22222222-2222-4222-8222-222222222222',
@@ -379,7 +379,7 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
           SELECT s."signal", c."title", s."scopes", s."warnings"
           FROM "plugin_composite_fk"."content_case_signals" s
           JOIN "plugin_composite_fk"."content_cases" c
-            ON c."company_id" = s."company_id"
+            ON c."squad_id" = s."squad_id"
            AND c."id" = s."case_id"
         `);
         expect(rows).toEqual([
@@ -393,7 +393,7 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
 
         await expect(
           restoreSql.unsafe(`
-            INSERT INTO "plugin_composite_fk"."content_case_signals" ("company_id", "case_id", "signal", "scopes")
+            INSERT INTO "plugin_composite_fk"."content_case_signals" ("squad_id", "case_id", "signal", "scopes")
             VALUES (
               '11111111-1111-4111-8111-111111111111',
               '33333333-3333-4333-8333-333333333333',

@@ -31,7 +31,7 @@ export interface TelemetryEventEnvelope {
 export type TelemetryEventName =
   | "install.started"
   | "install.completed"
-  | "company.imported"
+  | "squad.imported"
   | "project.created"
   | "routine.created"
   | "routine.run"

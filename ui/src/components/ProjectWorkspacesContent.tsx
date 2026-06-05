@@ -9,12 +9,12 @@ import { ExecutionWorkspaceCloseDialog } from "./ExecutionWorkspaceCloseDialog";
 import { ProjectWorkspaceSummaryCard } from "./ProjectWorkspaceSummaryCard";
 
 export function ProjectWorkspacesContent({
-  companyId,
+  squadId,
   projectId,
   projectRef,
   summaries,
 }: {
-  companyId: string;
+  squadId: string;
   projectId: string;
   projectRef: string;
   summaries: ProjectWorkspaceSummary[];
@@ -35,18 +35,18 @@ export function ProjectWorkspacesContent({
     }) => {
       setRuntimeActionKey(`${input.key}:${input.action}`);
       if (input.kind === "project_workspace") {
-        return await projectsApi.controlWorkspaceRuntimeServices(projectId, input.workspaceId, input.action, companyId);
+        return await projectsApi.controlWorkspaceRuntimeServices(projectId, input.workspaceId, input.action, squadId);
       }
       return await executionWorkspacesApi.controlRuntimeServices(input.workspaceId, input.action);
     },
     onSettled: () => {
       setRuntimeActionKey(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(companyId, { projectId }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(squadId, { projectId }) });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(squadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(squadId, projectId) });
     },
   });
 
@@ -104,12 +104,12 @@ export function ProjectWorkspacesContent({
             if (!open) setClosingWorkspace(null);
           }}
           onClosed={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(companyId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(companyId, { projectId }) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(squadId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.list(squadId, { projectId }) });
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(companyId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, projectId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(squadId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(squadId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(squadId, projectId) });
             setClosingWorkspace(null);
           }}
         />

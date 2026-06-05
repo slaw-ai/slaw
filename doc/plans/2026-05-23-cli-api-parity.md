@@ -6,11 +6,11 @@ Status: PRD
 
 ## Summary
 
-Slaw already exposes a broad REST API, but the CLI only covers a narrow operator slice: setup/configuration, context profiles, board auth, companies import/export/delete, issues basic CRUD/comments/checkout/release, approvals, agents list/get/local CLI key export, activity, dashboard, secrets basics, plugin lifecycle basics, feedback export, and cloud sync.
+Slaw already exposes a broad REST API, but the CLI only covers a narrow operator slice: setup/configuration, context profiles, board auth, squads import/export/delete, issues basic CRUD/comments/checkout/release, approvals, agents list/get/local CLI key export, activity, dashboard, secrets basics, plugin lifecycle basics, feedback export, and cloud sync.
 
 The next CLI product slice should make the CLI a real external API entry point:
 
-1. Connect interactively as a board operator or as one agent in one company.
+1. Connect interactively as a board operator or as one agent in one squad.
 2. Mint, list, revoke, and use board and agent tokens intentionally.
 3. Provide single-command agent execution and prompt handoff for scripts.
 4. Add CLI coverage for API surfaces that are currently UI-only or curl-only.
@@ -18,7 +18,7 @@ The next CLI product slice should make the CLI a real external API entry point:
 The most important requirement is credential ergonomics. External integrations need a reliable "way in" to Slaw:
 
 - full board access via a board token approved by a user
-- individual agent access via an agent API key scoped to a specific company and agent
+- individual agent access via an agent API key scoped to a specific squad and agent
 - saved CLI profiles that know whether they are board or agent personas
 - non-interactive commands that can run from shell scripts without a prior wizard
 
@@ -27,8 +27,8 @@ The most important requirement is credential ergonomics. External integrations n
 Current top-level command families:
 
 - Setup/runtime: `onboard`, `doctor`, `configure`, `env`, `run`, `db:backup`, `allowed-hostname`, `env-lab`, `worktree`
-- Context/auth: `context`, `auth login`, `auth logout`, `auth whoami`, `auth bootstrap-ceo`
-- Companies: `company list`, `company get`, `company export`, `company import`, `company delete`, company feedback export
+- Context/auth: `context`, `auth login`, `auth logout`, `auth whoami`, `auth bootstrap-squad-lead`
+- Squads: `squad list`, `squad get`, `squad export`, `squad import`, `squad delete`, squad feedback export
 - Issues: `issue list`, `issue get`, `issue create`, `issue update`, `issue comment`, `issue checkout`, `issue release`, issue feedback export
 - Agents: `agent list`, `agent get`, `agent local-cli`
 - Approvals: `approval list/get/create/approve/reject/request-revision/resubmit/comment`
@@ -39,27 +39,27 @@ Current top-level command families:
 Current auth behavior:
 
 - `auth login` creates a CLI auth challenge, opens the board approval URL, and stores the approved board token locally.
-- `agent local-cli` creates an agent API key through board access, installs local skills, and prints `SLAW_API_URL`, `SLAW_COMPANY_ID`, `SLAW_AGENT_ID`, and `SLAW_API_KEY`.
-- Every client command can accept `--api-base`, `--api-key`, `--context`, `--profile`, `--company-id`, and `--json`.
+- `agent local-cli` creates an agent API key through board access, installs local skills, and prints `SLAW_API_URL`, `SLAW_SQUAD_ID`, `SLAW_AGENT_ID`, and `SLAW_API_KEY`.
+- Every client command can accept `--api-base`, `--api-key`, `--context`, `--profile`, `--squad-id`, and `--json`.
 
 Main limitation:
 
-- The CLI has no explicit concept of "I am connected as board" versus "I am connected as this agent in this company". It only has a raw bearer token plus optional company context.
+- The CLI has no explicit concept of "I am connected as board" versus "I am connected as this agent in this squad". It only has a raw bearer token plus optional squad context.
 
 ## Product Goals
 
 1. Make the CLI the canonical external connection surface for scripts, local agents, and human operators.
-2. Reach near-parity with first-class REST API domains, starting with company-scoped control-plane operations.
+2. Reach near-parity with first-class REST API domains, starting with squad-scoped control-plane operations.
 3. Make token creation safe and auditable: keys are named, scoped, shown once, and easy to revoke.
 4. Support both interactive and single-command flows.
-5. Preserve existing API authorization boundaries: board has operator control; agent keys remain company and agent scoped.
+5. Preserve existing API authorization boundaries: board has operator control; agent keys remain squad and agent scoped.
 
 ## Non-Goals
 
 - Do not turn the CLI into a full TUI replacement for the board UI.
 - Do not weaken agent authorization to make script flows easier.
 - Do not store plaintext tokens in repo files.
-- Do not add project/issue privacy semantics; V1 visibility remains company-scoped.
+- Do not add project/issue privacy semantics; V1 visibility remains squad-scoped.
 - Do not make a generic `curl` passthrough the primary parity story.
 
 ## API Location Requirements
@@ -95,18 +95,18 @@ slaw connect
 Flow:
 
 1. Resolve or ask for API base.
-2. Fetch accessible companies with current board auth, or trigger `auth login`.
+2. Fetch accessible squads with current board auth, or trigger `auth login`.
 3. Ask whether the user wants to connect as:
    - Board operator
-   - Agent in a company
+   - Agent in a squad
 4. If board:
    - Mint or reuse a named board token.
-   - Save profile with `persona=board`, `apiBase`, `companyId`, and token env-var preference.
+   - Save profile with `persona=board`, `apiBase`, `squadId`, and token env-var preference.
 5. If agent:
-   - Ask for company.
-   - List agents in that company.
+   - Ask for squad.
+   - List agents in that squad.
    - Create a named agent API key for the selected agent.
-   - Save profile with `persona=agent`, `companyId`, `agentId`, `agentName`, and token env-var preference.
+   - Save profile with `persona=agent`, `squadId`, `agentId`, `agentName`, and token env-var preference.
 6. Print shell exports and a verification command.
 
 Expected profile shape should evolve from today's context:
@@ -118,7 +118,7 @@ Expected profile shape should evolve from today's context:
   "profiles": {
     "default": {
       "apiBase": "http://localhost:3100",
-      "companyId": "company-id",
+      "squadId": "squad-id",
       "persona": "agent",
       "agentId": "agent-id",
       "apiKeyEnvVarName": "SLAW_API_KEY"
@@ -132,7 +132,7 @@ Expected profile shape should evolve from today's context:
 Commands:
 
 ```sh
-slaw token board create --company-id <company-id> --name "external-admin"
+slaw token board create --squad-id <squad-id> --name "external-admin"
 slaw token board list
 slaw token board revoke <key-id>
 ```
@@ -142,8 +142,8 @@ Requirements:
 - Board token creation must require an authenticated board approval or an existing board token with sufficient authority.
 - Token output shows plaintext once.
 - Tokens should have names, creation time, last-used time, expiration, and revoked status.
-- A company ID in the profile selects the operating company, but full board tokens retain the server's board authorization model.
-- If product wants company-limited board keys, add that as an explicit server-side scope rather than relying on client context.
+- A squad ID in the profile selects the operating squad, but full board tokens retain the server's board authorization model.
+- If product wants squad-limited board keys, add that as an explicit server-side scope rather than relying on client context.
 
 Current API support:
 
@@ -162,17 +162,17 @@ API gap:
 Commands:
 
 ```sh
-slaw token agent create --company-id <company-id> --agent <agent-id-or-name> --name "external-worker"
-slaw token agent list --company-id <company-id> --agent <agent-id-or-name>
+slaw token agent create --squad-id <squad-id> --agent <agent-id-or-name> --name "external-worker"
+slaw token agent list --squad-id <squad-id> --agent <agent-id-or-name>
 slaw token agent revoke --agent <agent-id-or-name> <key-id>
 ```
 
 Requirements:
 
 - Requires board access to create/list/revoke long-lived agent keys.
-- Agent selector accepts UUID, url key, or unambiguous name within company.
-- Output includes `agentId`, `companyId`, key id, key name, and plaintext token once.
-- Agent keys remain scoped to one agent and one company, matching `agent_api_keys`.
+- Agent selector accepts UUID, url key, or unambiguous name within squad.
+- Output includes `agentId`, `squadId`, key id, key name, and plaintext token once.
+- Agent keys remain scoped to one agent and one squad, matching `agent_api_keys`.
 
 Current API support:
 
@@ -209,7 +209,7 @@ Behavior:
   - Create a new issue assigned to that agent, or append to a specified issue when `--issue` is passed.
   - Optionally invoke/wake the agent when the authenticated agent is allowed to do so.
 - With board auth:
-  - Resolve company and target agent.
+  - Resolve squad and target agent.
   - Create a board-authored issue assigned to that agent.
   - Wake/invoke the agent when requested.
 
@@ -234,10 +234,10 @@ OpenAPI source audit:
 Additional gaps made explicit by the OpenAPI branch:
 
 - Public/bootstrap surfaces need CLI decisions, not just board UI paths: `GET /api/openapi.json`, board-claim get/claim, invite onboarding docs, skill docs, join key claim, and CLI auth challenge status/approve/cancel.
-- User/profile and admin surfaces were under-specified in the first PRD: auth session/profile, company user profile lookup, admin user list/promote/demote/company access.
-- Legacy compatibility routes still exist and need an explicit stance: `/api/companies/:companyId/export`, `/api/companies/import/preview`, `/api/companies/import`, `/api/companies/issues`, and bare `GET /api/issues`.
+- User/profile and admin surfaces were under-specified in the first PRD: auth session/profile, squad user profile lookup, admin user list/promote/demote/squad access.
+- Legacy compatibility routes still exist and need an explicit stance: `/api/squads/:squadId/export`, `/api/squads/import/preview`, `/api/squads/import`, `/api/squads/issues`, and bare `GET /api/issues`.
 - Agent operations need several extra CLI items: skills list/sync, `claude-login`, scheduler heartbeat visibility, org SVG/PNG export, adapter UI parser, and agent approval.
-- Cost/budget coverage must reconcile the OpenAPI branch and current main. The OpenAPI branch lists `GET /api/companies/:companyId/cost-events`; current main exposes `POST /api/companies/:companyId/cost-events` plus additional summary and finance read endpoints. Treat this as a spec/code drift item before implementation.
+- Cost/budget coverage must reconcile the OpenAPI branch and current main. The OpenAPI branch lists `GET /api/squads/:squadId/cost-events`; current main exposes `POST /api/squads/:squadId/cost-events` plus additional summary and finance read endpoints. Treat this as a spec/code drift item before implementation.
 - The current main branch includes secrets provider-config and remote-import routes beyond the OpenAPI branch list. Keep them in scope for CLI parity even though they are absent from that branch's generated spec.
 
 ### P0: Connection, Tokens, and Identity
@@ -254,7 +254,7 @@ Missing or incomplete CLI surfaces:
 - Agent token lifecycle:
   - Missing generic CLI for `GET/POST/DELETE /api/agents/:id/keys`.
 - Connect wizard:
-  - No CLI command combines company selection, persona selection, token minting, profile saving, and verification.
+  - No CLI command combines squad selection, persona selection, token minting, profile saving, and verification.
 - Public/bootstrap auth helpers:
   - `GET /api/board-claim/:token`
   - `POST /api/board-claim/:token/claim`
@@ -270,8 +270,8 @@ Missing CLI surfaces:
 
 - `POST /api/agents/:id/wakeup`
 - `POST /api/agents/:id/heartbeat/invoke` is partially covered by `heartbeat run`, but not integrated with prompt handoff.
-- `GET /api/companies/:companyId/heartbeat-runs`
-- `GET /api/companies/:companyId/live-runs`
+- `GET /api/squads/:squadId/heartbeat-runs`
+- `GET /api/squads/:squadId/live-runs`
 - `GET /api/heartbeat-runs/:runId`
 - `POST /api/heartbeat-runs/:runId/cancel`
 - `GET /api/heartbeat-runs/:runId/events`
@@ -288,7 +288,7 @@ CLI commands to add:
 
 ```sh
 slaw agent wake <agent>
-slaw run list --company-id <company-id>
+slaw run list --squad-id <squad-id>
 slaw run get <run-id>
 slaw run log <run-id>
 slaw run cancel <run-id>
@@ -299,13 +299,13 @@ slaw issue runs <issue-id>
 
 Missing CLI surfaces:
 
-- `GET /api/companies/:companyId/projects`
-- `POST /api/companies/:companyId/projects`
+- `GET /api/squads/:squadId/projects`
+- `POST /api/squads/:squadId/projects`
 - `GET /api/projects/:id`
 - `PATCH /api/projects/:id`
 - `DELETE /api/projects/:id`
-- `GET /api/companies/:companyId/goals`
-- `POST /api/companies/:companyId/goals`
+- `GET /api/squads/:squadId/goals`
+- `POST /api/squads/:squadId/goals`
 - `GET /api/goals/:id`
 - `PATCH /api/goals/:id`
 - `DELETE /api/goals/:id`
@@ -323,10 +323,10 @@ Missing CLI surfaces:
 
 - Issue counts/search/labels:
   - `GET /api/issues`
-  - `GET /api/companies/:companyId/search`
-  - `GET /api/companies/:companyId/issues/count`
-  - `GET /api/companies/issues`
-  - `GET/POST /api/companies/:companyId/labels`
+  - `GET /api/squads/:squadId/search`
+  - `GET /api/squads/:squadId/issues/count`
+  - `GET /api/squads/issues`
+  - `GET/POST /api/squads/:squadId/labels`
   - `DELETE /api/labels/:labelId`
 - Child issues:
   - `POST /api/issues/:id/children`
@@ -347,7 +347,7 @@ Missing CLI surfaces:
   - `POST/DELETE /api/issues/:id/inbox-archive`
 - Attachments:
   - `GET /api/issues/:id/attachments`
-  - `POST /api/companies/:companyId/issues/:issueId/attachments`
+  - `POST /api/squads/:squadId/issues/:issueId/attachments`
   - `GET /api/attachments/:attachmentId/content`
   - `DELETE /api/attachments/:attachmentId`
 - Comment-specific access:
@@ -376,7 +376,7 @@ slaw issue read|unread|archive|unarchive
 Missing CLI surfaces:
 
 - Create/update/pause/resume/approve/terminate/delete:
-  - `POST /api/companies/:companyId/agents`
+  - `POST /api/squads/:squadId/agents`
   - `PATCH /api/agents/:id`
   - `POST /api/agents/:id/pause`
   - `POST /api/agents/:id/resume`
@@ -384,10 +384,10 @@ Missing CLI surfaces:
   - `POST /api/agents/:id/terminate`
   - `DELETE /api/agents/:id`
 - Org and config:
-  - `GET /api/companies/:companyId/org`
-  - `GET /api/companies/:companyId/org.svg`
-  - `GET /api/companies/:companyId/org.png`
-  - `GET /api/companies/:companyId/agent-configurations`
+  - `GET /api/squads/:squadId/org`
+  - `GET /api/squads/:squadId/org.svg`
+  - `GET /api/squads/:squadId/org.png`
+  - `GET /api/squads/:squadId/agent-configurations`
   - `GET /api/agents/:id/configuration`
   - config revision list/get/rollback
   - runtime state and task sessions
@@ -416,14 +416,14 @@ slaw adapter list|models|profiles|detect|test|install|enable|disable|reload
 
 Missing CLI surfaces:
 
-- `POST /api/companies/:companyId/cost-events`
-- `GET /api/companies/:companyId/cost-events` from the OpenAPI branch needs reconciliation with main before implementation.
-- `POST /api/companies/:companyId/finance-events`
+- `POST /api/squads/:squadId/cost-events`
+- `GET /api/squads/:squadId/cost-events` from the OpenAPI branch needs reconciliation with main before implementation.
+- `POST /api/squads/:squadId/finance-events`
 - cost summaries by agent/model/provider/biller/project
 - finance summaries by biller/kind and finance events
 - quota windows and window spend
 - budget overview, budget policies, budget incident resolution
-- `PATCH /api/companies/:companyId/budgets`
+- `PATCH /api/squads/:squadId/budgets`
 - `PATCH /api/agents/:agentId/budgets`
 - `GET /api/issues/:id/cost-summary`
 
@@ -433,7 +433,7 @@ Commands:
 slaw cost summary|by-agent|by-project|by-provider|issue
 slaw cost event create
 slaw finance event create|list|summary
-slaw budget overview|set-company|set-agent|policy-create|incident-resolve
+slaw budget overview|set-squad|set-agent|policy-create|incident-resolve
 ```
 
 ### P1: Access, Invites, and Memberships
@@ -442,16 +442,16 @@ Missing CLI surfaces:
 
 - Invite creation/list/revoke and onboarding manifests
 - Join request list/approve/reject/claim API key
-- Company members and user directory
+- Squad members and user directory
 - Member role/grant/permission updates
-- Admin users and company access management
+- Admin users and squad access management
 - Board claim endpoints
 - Skills index/invite onboarding docs
 - Auth/profile endpoints:
   - `GET /api/auth/get-session`
   - `GET /api/auth/profile`
   - `PATCH /api/auth/profile`
-  - `GET /api/companies/:companyId/users/:userSlug/profile`
+  - `GET /api/squads/:squadId/users/:userSlug/profile`
 
 Commands:
 
@@ -459,7 +459,7 @@ Commands:
 slaw invite create|list|revoke|show|onboarding
 slaw join list|approve|reject|claim-key
 slaw member list|update|archive|permissions
-slaw admin user list|promote|demote|company-access
+slaw admin user list|promote|demote|squad-access
 ```
 
 ### P2: Routines, Workspaces, Environments
@@ -490,7 +490,7 @@ Missing CLI surfaces:
 - Instance settings general/experimental and database backups API
 - Sidebar preferences and sidebar badges
 - Asset image/logo upload and asset content download
-- User profile read/update and company user profile lookup
+- User profile read/update and squad user profile lookup
 - LLM prompt docs endpoints
 - Public API documentation endpoint:
   - `GET /api/openapi.json`
@@ -499,15 +499,15 @@ Missing CLI surfaces:
   - UI contributions
   - plugin config/test
   - plugin health/logs/jobs/webhooks/local folders/dashboard
-- Company create/update/archive/branding/stats are missing or partial in CLI.
-- Company portability compatibility routes:
-  - `POST /api/companies/:companyId/export`
-  - `POST /api/companies/import/preview`
-  - `POST /api/companies/import`
-  - `POST /api/companies/:companyId/exports`
-  - `POST /api/companies/:companyId/exports/preview`
-  - `POST /api/companies/:companyId/imports/preview`
-  - `POST /api/companies/:companyId/imports/apply`
+- Squad create/update/archive/branding/stats are missing or partial in CLI.
+- Squad portability compatibility routes:
+  - `POST /api/squads/:squadId/export`
+  - `POST /api/squads/import/preview`
+  - `POST /api/squads/import`
+  - `POST /api/squads/:squadId/exports`
+  - `POST /api/squads/:squadId/exports/preview`
+  - `POST /api/squads/:squadId/imports/preview`
+  - `POST /api/squads/:squadId/imports/apply`
 
 ## Command Taxonomy
 
@@ -544,21 +544,21 @@ Alias policy:
 
 - Board commands should use board tokens and fail clearly when an agent key is supplied.
 - Agent commands should prefer `GET /api/agents/me` to establish identity instead of trusting CLI flags.
-- `--company-id` is a context selector, not an authorization bypass.
+- `--squad-id` is a context selector, not an authorization bypass.
 - Token creation and revocation must log activity through existing server routes.
-- Commands that mutate company state should print the actor type and target company in `--json` output when practical.
+- Commands that mutate squad state should print the actor type and target squad in `--json` output when practical.
 
 ## Testing Rules
 
 Automated tests should prefer mocked HTTP/server fixtures where possible. Live/API verification is allowed, but it must be isolated:
 
-- Live tests must create a new disposable company specifically for that test run.
-- Live tests must never use an existing company from the operator's profile, local instance, or shared environment.
-- The disposable company name should include a clear prefix such as `CLI Parity Test` plus a timestamp or random suffix.
-- All agents, projects, issues, tokens, budgets, secrets, routines, workspaces, and other test data must be created inside the disposable company.
-- Agent API keys used in tests must be minted only for agents created inside the disposable company.
+- Live tests must create a new disposable squad specifically for that test run.
+- Live tests must never use an existing squad from the operator's profile, local instance, or shared environment.
+- The disposable squad name should include a clear prefix such as `CLI Parity Test` plus a timestamp or random suffix.
+- All agents, projects, issues, tokens, budgets, secrets, routines, workspaces, and other test data must be created inside the disposable squad.
+- Agent API keys used in tests must be minted only for agents created inside the disposable squad.
 - Board token tests must use a test-specific key name and revoke the key during cleanup when the API supports it.
-- Cleanup should archive or delete the disposable company when the server permits it. If deletion is disabled, the test must leave the company clearly named as disposable and report its ID.
+- Cleanup should archive or delete the disposable squad when the server permits it. If deletion is disabled, the test must leave the squad clearly named as disposable and report its ID.
 - Commands must provide a `--yes` or non-interactive path for test setup so CI and local verification do not depend on manual prompts.
 - Destructive tests must require an explicit test opt-in such as an env var or a dedicated test command; normal unit tests must not mutate a real running Slaw instance.
 
@@ -573,7 +573,7 @@ Automated tests should prefer mocked HTTP/server fixtures where possible. Live/A
 - Add `agent prompt` and `prompt` using issue create/comment plus optional wake.
 - Harden API base resolution and connection diagnostics.
 - Add tests around context migration, explicit token precedence, and persona mismatch failures.
-- Add live-test helpers that always create a disposable company before exercising real API mutations.
+- Add live-test helpers that always create a disposable squad before exercising real API mutations.
 
 ### Phase 2: Board Token Management
 
@@ -599,15 +599,15 @@ Automated tests should prefer mocked HTTP/server fixtures where possible. Live/A
 ## Acceptance Criteria
 
 - A new user can run `slaw connect`, confirm or override the API base, select board or agent, and get a saved working profile tied to that API base.
-- A board operator can mint an agent key for a selected agent in a selected company without using `agent local-cli`.
+- A board operator can mint an agent key for a selected agent in a selected squad without using `agent local-cli`.
 - A script can run a one-liner equivalent to:
 
 ```sh
 slaw agent-prompt AgentName "$AGENT_API_KEY" "Prompt here"
 ```
 
-- The one-liner creates or updates Slaw work, does not require a browser, and fails with a clear company/agent mismatch error when the token does not belong to the requested agent.
-- Live/API verification creates and uses a disposable company only; no existing company is used for testing.
+- The one-liner creates or updates Slaw work, does not require a browser, and fails with a clear squad/agent mismatch error when the token does not belong to the requested agent.
+- Live/API verification creates and uses a disposable squad only; no existing squad is used for testing.
 - CLI docs list which API route families are covered and which remain UI-only.
 - Token creation, revocation, and prompt handoff have tests for board and agent auth paths.
 

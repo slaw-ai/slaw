@@ -4,8 +4,8 @@ import { and, asc, desc, eq, getTableColumns, gte, lte, ne, or } from "drizzle-o
 import type { Db } from "@slaw/db";
 import {
   agents,
-  companies,
-  companySkills,
+  squads,
+  squadSkills,
   costEvents,
   documentRevisions,
   documents,
@@ -74,7 +74,7 @@ type PendingFeedbackExportRow = typeof feedbackExports.$inferSelect;
 
 type IssueFeedbackContext = {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   identifier: string | null;
   title: string;
@@ -203,7 +203,7 @@ function normalizeSkillReference(value: string) {
 }
 
 function matchesSkillReference(
-  skill: typeof companySkills.$inferSelect,
+  skill: typeof squadSkills.$inferSelect,
   reference: string,
 ) {
   const normalized = normalizeSkillReference(reference);
@@ -379,7 +379,7 @@ function captureStatusFromFiles(files: FeedbackTraceBundleFile[]): FeedbackTrace
 }
 
 async function buildCodexTraceFiles(input: {
-  companyId: string;
+  squadId: string;
   sessionId: string | null;
   state: ReturnType<typeof createFeedbackRedactionState>;
   notes: string[];
@@ -392,8 +392,8 @@ async function buildCodexTraceFiles(input: {
 
   const managedRoot = path.join(
     resolveSlawInstanceRoot(),
-    "companies",
-    input.companyId,
+    "squads",
+    input.squadId,
     "codex-home",
     "sessions",
   );
@@ -748,7 +748,7 @@ function mapTraceRow(row: FeedbackTraceRow, includePayload: boolean): FeedbackTr
   const targetSummary = asRecord(row.targetSummary) as unknown as FeedbackTraceTargetSummary | null;
   return {
     id: row.id,
-    companyId: row.companyId,
+    squadId: row.squadId,
     feedbackVoteId: row.feedbackVoteId,
     issueId: row.issueId,
     projectId: row.projectId ?? null,
@@ -797,7 +797,7 @@ async function resolveFeedbackTarget(
       .select({
         id: issueComments.id,
         issueId: issueComments.issueId,
-        companyId: issueComments.companyId,
+        squadId: issueComments.squadId,
         authorAgentId: issueComments.authorAgentId,
         authorUserId: issueComments.authorUserId,
         authorType: issueComments.authorType,
@@ -811,7 +811,7 @@ async function resolveFeedbackTarget(
       .where(eq(issueComments.id, targetId))
       .then((rows) => rows[0] ?? null);
 
-    if (!targetComment || targetComment.issueId !== issue.id || targetComment.companyId !== issue.companyId) {
+    if (!targetComment || targetComment.issueId !== issue.id || targetComment.squadId !== issue.squadId) {
       throw notFound("Feedback target not found");
     }
     if (!targetComment.authorAgentId) {
@@ -857,7 +857,7 @@ async function resolveFeedbackTarget(
     const targetRevision = await db
       .select({
         id: documentRevisions.id,
-        companyId: documentRevisions.companyId,
+        squadId: documentRevisions.squadId,
         documentId: documentRevisions.documentId,
         revisionNumber: documentRevisions.revisionNumber,
         body: documentRevisions.body,
@@ -875,7 +875,7 @@ async function resolveFeedbackTarget(
       .where(eq(documentRevisions.id, targetId))
       .then((rows) => rows.find((row) => row.issueId === issue.id) ?? null);
 
-    if (!targetRevision || targetRevision.companyId !== issue.companyId) {
+    if (!targetRevision || targetRevision.squadId !== issue.squadId) {
       throw notFound("Feedback target not found");
     }
     if (!targetRevision.createdByAgentId) {
@@ -936,7 +936,7 @@ async function listIssueContextItems(
         createdByRunId: issueComments.createdByRunId,
       })
       .from(issueComments)
-      .where(and(eq(issueComments.companyId, issue.companyId), eq(issueComments.issueId, issue.id))),
+      .where(and(eq(issueComments.squadId, issue.squadId), eq(issueComments.issueId, issue.id))),
     db
       .select({
         targetId: documentRevisions.id,
@@ -953,7 +953,7 @@ async function listIssueContextItems(
       .from(documentRevisions)
       .innerJoin(documents, eq(documentRevisions.documentId, documents.id))
       .innerJoin(issueDocuments, eq(issueDocuments.documentId, documents.id))
-      .where(and(eq(documentRevisions.companyId, issue.companyId), eq(issueDocuments.issueId, issue.id))),
+      .where(and(eq(documentRevisions.squadId, issue.squadId), eq(issueDocuments.issueId, issue.id))),
   ]);
 
   const issuePath = buildIssuePath(issue.identifier);
@@ -1073,7 +1073,7 @@ async function buildIssueContext(
 
 async function buildAgentContext(
   db: Pick<Db, "select">,
-  companyId: string,
+  squadId: string,
   authorAgentId: string | null,
   createdByRunId: string | null,
   state: ReturnType<typeof createFeedbackRedactionState>,
@@ -1086,7 +1086,7 @@ async function buildAgentContext(
   const agent = await db
     .select({
       id: agents.id,
-      companyId: agents.companyId,
+      squadId: agents.squadId,
       name: agents.name,
       role: agents.role,
       title: agents.title,
@@ -1099,7 +1099,7 @@ async function buildAgentContext(
     .where(eq(agents.id, authorAgentId))
     .then((rows) => rows[0] ?? null);
 
-  if (!agent || agent.companyId !== companyId) {
+  if (!agent || agent.squadId !== squadId) {
     state.notes.add("author_agent_unavailable");
     return null;
   }
@@ -1111,8 +1111,8 @@ async function buildAgentContext(
     ? []
     : await db
       .select()
-      .from(companySkills)
-      .where(eq(companySkills.companyId, companyId));
+      .from(squadSkills)
+      .where(eq(squadSkills.squadId, squadId));
   const matchedSkills = availableSkills
     .filter((skill) => desiredSkillRefs.some((reference) => matchesSkillReference(skill, reference)))
     .slice(0, MAX_SKILLS);
@@ -1128,7 +1128,7 @@ async function buildAgentContext(
     ? await db
       .select({
         id: heartbeatRuns.id,
-        companyId: heartbeatRuns.companyId,
+        squadId: heartbeatRuns.squadId,
         agentId: heartbeatRuns.agentId,
         invocationSource: heartbeatRuns.invocationSource,
         status: heartbeatRuns.status,
@@ -1156,7 +1156,7 @@ async function buildAgentContext(
         costCents: costEvents.costCents,
       })
       .from(costEvents)
-      .where(and(eq(costEvents.companyId, companyId), eq(costEvents.heartbeatRunId, run.id)))
+      .where(and(eq(costEvents.squadId, squadId), eq(costEvents.heartbeatRunId, run.id)))
     : [];
 
   const usage = asRecord(run?.usageJson) ?? {};
@@ -1212,7 +1212,7 @@ async function buildAgentContext(
 
   const instructionsBundle = await instructionsSvc.getBundle({
     id: agent.id,
-    companyId: agent.companyId,
+    squadId: agent.squadId,
     name: agent.name,
     adapterConfig: agent.adapterConfig,
   }).catch(() => null);
@@ -1227,7 +1227,7 @@ async function buildAgentContext(
     if (readableEntryPath) {
       const entryFile = await instructionsSvc.readFile({
         id: agent.id,
-        companyId: agent.companyId,
+        squadId: agent.squadId,
         name: agent.name,
         adapterConfig: agent.adapterConfig,
       }, readableEntryPath).catch(() => null);
@@ -1413,7 +1413,7 @@ async function buildPayloadArtifacts(
   const exportId = buildExportId(input.voteId, input.now);
   const [issueContext, agentContext] = await Promise.all([
     buildIssueContext(db, input.issue, input.target, state),
-    buildAgentContext(db, input.issue.companyId, input.target.authorAgentId, input.target.createdByRunId, state),
+    buildAgentContext(db, input.issue.squadId, input.target.authorAgentId, input.target.createdByRunId, state),
   ]);
 
   const payloadSnapshot = {
@@ -1462,7 +1462,7 @@ async function buildFeedbackTraceBundleFromRow(
     const run = await db
       .select({
         id: heartbeatRuns.id,
-        companyId: heartbeatRuns.companyId,
+        squadId: heartbeatRuns.squadId,
         agentId: heartbeatRuns.agentId,
         invocationSource: heartbeatRuns.invocationSource,
         status: heartbeatRuns.status,
@@ -1492,7 +1492,7 @@ async function buildFeedbackTraceBundleFromRow(
       .where(eq(heartbeatRuns.id, sourceRunId))
       .then((rows) => rows[0] ?? null);
 
-    if (!run || run.companyId !== row.companyId) {
+    if (!run || run.squadId !== row.squadId) {
       appendNote(notes, "source_run_unavailable");
     } else {
       adapterType = run.adapterType;
@@ -1511,7 +1511,7 @@ async function buildFeedbackTraceBundleFromRow(
       slawRun = sanitizeFeedbackValue(
         {
           id: run.id,
-          companyId: run.companyId,
+          squadId: run.squadId,
           agentId: run.agentId,
           agentName: run.agentName,
           agentRole: run.agentRole,
@@ -1575,7 +1575,7 @@ async function buildFeedbackTraceBundleFromRow(
 
       if (run.adapterType === "codex_local") {
         const adapter = await buildCodexTraceFiles({
-          companyId: row.companyId,
+          squadId: row.squadId,
           sessionId: run.sessionIdAfter ?? run.sessionIdBefore,
           state,
           notes,
@@ -1622,7 +1622,7 @@ async function buildFeedbackTraceBundleFromRow(
     {
       traceId: trace.id,
       exportId: trace.exportId,
-      companyId: trace.companyId,
+      squadId: trace.squadId,
       feedbackVoteId: trace.feedbackVoteId,
       issueId: trace.issueId,
       issueIdentifier: trace.issueIdentifier,
@@ -1660,7 +1660,7 @@ async function buildFeedbackTraceBundleFromRow(
   const bundle: FeedbackTraceBundle = {
     traceId: trace.id,
     exportId: trace.exportId,
-    companyId: trace.companyId,
+    squadId: trace.squadId,
     issueId: trace.issueId,
     issueIdentifier: trace.issueIdentifier,
     adapterType,
@@ -1699,7 +1699,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
         .where(and(eq(feedbackVotes.issueId, issueId), eq(feedbackVotes.authorUserId, authorUserId))),
 
     listFeedbackTraces: async (input: {
-      companyId: string;
+      squadId: string;
       issueId?: string;
       projectId?: string;
       targetType?: FeedbackTargetType;
@@ -1710,7 +1710,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
       sharedOnly?: boolean;
       includePayload?: boolean;
     }) => {
-      const filters = [eq(feedbackExports.companyId, input.companyId)];
+      const filters = [eq(feedbackExports.squadId, input.squadId)];
       if (input.issueId) filters.push(eq(feedbackExports.issueId, input.issueId));
       if (input.projectId) filters.push(eq(feedbackExports.projectId, input.projectId));
       if (input.targetType) filters.push(eq(feedbackExports.targetType, input.targetType));
@@ -1763,7 +1763,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
     },
 
     flushPendingFeedbackTraces: async (input?: {
-      companyId?: string;
+      squadId?: string;
       traceId?: string;
       limit?: number;
       now?: Date;
@@ -1771,8 +1771,8 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
       const shareClient = options.shareClient;
       if (!shareClient) {
         const filters = [eq(feedbackExports.status, "pending")];
-        if (input?.companyId) {
-          filters.push(eq(feedbackExports.companyId, input.companyId));
+        if (input?.squadId) {
+          filters.push(eq(feedbackExports.squadId, input.squadId));
         }
         if (input?.traceId) {
           filters.push(eq(feedbackExports.id, input.traceId));
@@ -1813,8 +1813,8 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
       const filters = [
         or(eq(feedbackExports.status, "pending"), eq(feedbackExports.status, "failed")),
       ];
-      if (input?.companyId) {
-        filters.push(eq(feedbackExports.companyId, input.companyId));
+      if (input?.squadId) {
+        filters.push(eq(feedbackExports.squadId, input.squadId));
       }
       if (input?.traceId) {
         filters.push(eq(feedbackExports.id, input.traceId));
@@ -1891,7 +1891,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
         const issue = await tx
           .select({
             id: issues.id,
-            companyId: issues.companyId,
+            squadId: issues.squadId,
             projectId: issues.projectId,
             identifier: issues.identifier,
             title: issues.title,
@@ -1904,28 +1904,28 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
 
         const target = await resolveFeedbackTarget(tx, issue, input.targetType, input.targetId);
 
-        const existingCompany = await tx
+        const existingSquad = await tx
           .select({
-            feedbackDataSharingEnabled: companies.feedbackDataSharingEnabled,
-            feedbackDataSharingTermsVersion: companies.feedbackDataSharingTermsVersion,
+            feedbackDataSharingEnabled: squads.feedbackDataSharingEnabled,
+            feedbackDataSharingTermsVersion: squads.feedbackDataSharingTermsVersion,
           })
-          .from(companies)
-          .where(eq(companies.id, issue.companyId))
+          .from(squads)
+          .where(eq(squads.id, issue.squadId))
           .then((rows) => rows[0] ?? null);
-        if (!existingCompany) throw notFound("Company not found");
+        if (!existingSquad) throw notFound("Squad not found");
 
         const now = new Date();
         const normalizedReason = normalizeReason(input.vote, input.reason);
         const sharedWithLabs = input.allowSharing === true;
         let consentEnabledNow = false;
-        let consentVersion = existingCompany.feedbackDataSharingTermsVersion ?? null;
+        let consentVersion = existingSquad.feedbackDataSharingTermsVersion ?? null;
         let persistedSharingPreference: "allowed" | "not_allowed" | null = null;
 
-        if (sharedWithLabs && !existingCompany.feedbackDataSharingEnabled) {
+        if (sharedWithLabs && !existingSquad.feedbackDataSharingEnabled) {
           consentEnabledNow = true;
           consentVersion = DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION;
           await tx
-            .update(companies)
+            .update(squads)
             .set({
               feedbackDataSharingEnabled: true,
               feedbackDataSharingConsentAt: now,
@@ -1933,7 +1933,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
               feedbackDataSharingTermsVersion: consentVersion,
               updatedAt: now,
             })
-            .where(eq(companies.id, issue.companyId));
+            .where(eq(squads.id, issue.squadId));
         }
 
         const existingInstanceSettings = await tx
@@ -1989,7 +1989,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
         const [savedVote] = await tx
           .insert(feedbackVotes)
           .values({
-            companyId: issue.companyId,
+            squadId: issue.squadId,
             issueId: issue.id,
             targetType: input.targetType,
             targetId: input.targetId,
@@ -2004,7 +2004,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
           })
           .onConflictDoUpdate({
             target: [
-              feedbackVotes.companyId,
+              feedbackVotes.squadId,
               feedbackVotes.targetType,
               feedbackVotes.targetId,
               feedbackVotes.authorUserId,
@@ -2044,7 +2044,7 @@ export function feedbackService(db: Db, options: FeedbackServiceOptions = {}) {
         const [savedTrace] = await tx
           .insert(feedbackExports)
           .values({
-            companyId: issue.companyId,
+            squadId: issue.squadId,
             feedbackVoteId: savedVote.id,
             issueId: issue.id,
             projectId: issue.projectId,

@@ -167,7 +167,7 @@ describe("cursor execute", () => {
         runId: "run-fresh-lease-1",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},
@@ -304,7 +304,7 @@ printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-sessio
         runId: "run-fresh-lease-managed",
         agent: {
           id: "agent-1",
-          companyId: "company-1",
+          squadId: "squad-1",
           name: "Cursor Coder",
           adapterType: "cursor",
           adapterConfig: {},

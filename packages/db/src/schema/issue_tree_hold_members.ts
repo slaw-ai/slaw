@@ -1,6 +1,6 @@
 import { index, pgTable, text, timestamp, uniqueIndex, uuid, boolean, integer } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
-import { companies } from "./companies.js";
+import { squads } from "./squads.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";
 import { issues } from "./issues.js";
 import { issueTreeHolds } from "./issue_tree_holds.js";
@@ -9,7 +9,7 @@ export const issueTreeHoldMembers = pgTable(
   "issue_tree_hold_members",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    companyId: uuid("company_id").notNull().references(() => companies.id),
+    squadId: uuid("squad_id").notNull().references(() => squads.id),
     holdId: uuid("hold_id").notNull().references(() => issueTreeHolds.id, { onDelete: "cascade" }),
     issueId: uuid("issue_id").notNull().references(() => issues.id, { onDelete: "cascade" }),
     parentIssueId: uuid("parent_issue_id").references(() => issues.id, { onDelete: "set null" }),
@@ -27,7 +27,7 @@ export const issueTreeHoldMembers = pgTable(
   },
   (table) => ({
     holdIssueUniqueIdx: uniqueIndex("issue_tree_hold_members_hold_issue_uq").on(table.holdId, table.issueId),
-    companyIssueIdx: index("issue_tree_hold_members_company_issue_idx").on(table.companyId, table.issueId),
+    squadIssueIdx: index("issue_tree_hold_members_squad_issue_idx").on(table.squadId, table.issueId),
     holdDepthIdx: index("issue_tree_hold_members_hold_depth_idx").on(table.holdId, table.depth),
   }),
 );

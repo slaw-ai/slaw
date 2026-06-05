@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "routine_revisions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"routine_id" uuid NOT NULL,
 	"revision_number" integer NOT NULL,
 	"title" text NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS "routine_revisions" (
 ALTER TABLE "routines" ADD COLUMN IF NOT EXISTS "latest_revision_id" uuid;--> statement-breakpoint
 ALTER TABLE "routines" ADD COLUMN IF NOT EXISTS "latest_revision_number" integer DEFAULT 1 NOT NULL;--> statement-breakpoint
 DO $$ BEGIN
-	ALTER TABLE "routine_revisions" ADD CONSTRAINT "routine_revisions_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;
+	ALTER TABLE "routine_revisions" ADD CONSTRAINT "routine_revisions_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
 	WHEN duplicate_object THEN NULL;
 END $$;
@@ -47,12 +47,12 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "routine_revisions_routine_revision_uq" ON "routine_revisions" USING btree ("routine_id","revision_number");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routine_revisions_company_routine_created_idx" ON "routine_revisions" USING btree ("company_id","routine_id","created_at");
+CREATE INDEX IF NOT EXISTS "routine_revisions_squad_routine_created_idx" ON "routine_revisions" USING btree ("squad_id","routine_id","created_at");
 --> statement-breakpoint
 WITH inserted_revisions AS (
 	INSERT INTO "routine_revisions" (
 		"id",
-		"company_id",
+		"squad_id",
 		"routine_id",
 		"revision_number",
 		"title",
@@ -65,7 +65,7 @@ WITH inserted_revisions AS (
 	)
 	SELECT
 		gen_random_uuid(),
-		r."company_id",
+		r."squad_id",
 		r."id",
 		1,
 		r."title",
@@ -74,7 +74,7 @@ WITH inserted_revisions AS (
 			'version', 1,
 			'routine', jsonb_build_object(
 				'id', r."id",
-				'companyId', r."company_id",
+				'squadId', r."squad_id",
 				'projectId', r."project_id",
 				'goalId', r."goal_id",
 				'parentIssueId', r."parent_issue_id",
@@ -105,7 +105,7 @@ WITH inserted_revisions AS (
 					)
 					FROM "routine_triggers" rt
 					WHERE rt."routine_id" = r."id"
-						AND rt."company_id" = r."company_id"
+						AND rt."squad_id" = r."squad_id"
 				),
 				'[]'::jsonb
 			)

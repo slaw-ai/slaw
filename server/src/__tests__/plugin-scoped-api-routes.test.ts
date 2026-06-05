@@ -96,7 +96,7 @@ async function createApp(input: {
 
 describe.sequential("plugin scoped API routes", () => {
   const pluginId = "11111111-1111-4111-8111-111111111111";
-  const companyId = "22222222-2222-4222-8222-222222222222";
+  const squadId = "22222222-2222-4222-8222-222222222222";
   const agentId = "33333333-3333-4333-8333-333333333333";
   const peerAgentId = "33333333-3333-4333-8333-333333333334";
   const runId = "44444444-4444-4444-8444-444444444444";
@@ -114,15 +114,15 @@ describe.sequential("plugin scoped API routes", () => {
     });
   });
 
-  it("dispatches a board GET route with params, query, actor, and company context", async () => {
+  it("dispatches a board GET route with params, query, actor, and squad context", async () => {
     const apiRoutes = manifest([
       {
         routeKey: "summary.get",
         method: "GET",
-        path: "/companies/:companySlug/summary",
+        path: "/squads/:squadSlug/summary",
         auth: "board",
         capability: "api.routes.register",
-        companyResolution: { from: "query", key: "companyId" },
+        squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app, workerManager } = await createApp({
@@ -142,7 +142,7 @@ describe.sequential("plugin scoped API routes", () => {
     });
 
     const res = await request(app)
-      .get(`/api/plugins/${pluginId}/api/companies/acme/summary?companyId=${companyId}&view=compact`)
+      .get(`/api/plugins/${pluginId}/api/squads/acme/summary?squadId=${squadId}&view=compact`)
       .set("Authorization", "Bearer should-not-forward");
 
     expect(res.status).toBe(201);
@@ -150,9 +150,9 @@ describe.sequential("plugin scoped API routes", () => {
     expect(workerManager.call).toHaveBeenCalledWith(pluginId, "handleApiRequest", expect.objectContaining({
       routeKey: "summary.get",
       method: "GET",
-      params: { companySlug: "acme" },
-      query: { companyId, view: "compact" },
-      companyId,
+      params: { squadSlug: "acme" },
+      query: { squadId, view: "compact" },
+      squadId,
       actor: expect.objectContaining({ actorType: "user", actorId: "user-1" }),
     }));
     expect(workerManager.call.mock.calls[0]?.[2].headers.authorization).toBeUndefined();
@@ -163,10 +163,10 @@ describe.sequential("plugin scoped API routes", () => {
       {
         routeKey: "summary.get",
         method: "GET",
-        path: "/companies/:companySlug/summary",
+        path: "/squads/:squadSlug/summary",
         auth: "board",
         capability: "api.routes.register",
-        companyResolution: { from: "query", key: "companyId" },
+        squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app } = await createApp({
@@ -195,7 +195,7 @@ describe.sequential("plugin scoped API routes", () => {
     });
 
     const res = await request(app)
-      .get(`/api/plugins/${pluginId}/api/companies/acme/summary?companyId=${companyId}`);
+      .get(`/api/plugins/${pluginId}/api/squads/acme/summary?squadId=${squadId}`);
 
     expect(res.status).toBe(200);
     expect(res.headers["cache-control"]).toBe("no-store");
@@ -213,12 +213,12 @@ describe.sequential("plugin scoped API routes", () => {
         auth: "agent",
         capability: "api.routes.register",
         checkoutPolicy: "required-for-agent-in-progress",
-        companyResolution: { from: "issue", param: "issueId" },
+        squadResolution: { from: "issue", param: "issueId" },
       },
     ]);
     mockIssueService.getById.mockResolvedValue({
       id: issueId,
-      companyId,
+      squadId,
       status: "in_progress",
       assigneeAgentId: agentId,
     });
@@ -226,7 +226,7 @@ describe.sequential("plugin scoped API routes", () => {
       actor: {
         type: "agent",
         agentId,
-        companyId,
+        squadId,
         runId,
         source: "agent_key",
       },
@@ -249,7 +249,7 @@ describe.sequential("plugin scoped API routes", () => {
       params: { issueId },
       body: { step: "next" },
       actor: expect.objectContaining({ actorType: "agent", agentId, runId }),
-      companyId,
+      squadId,
     }));
   });
 
@@ -262,12 +262,12 @@ describe.sequential("plugin scoped API routes", () => {
         auth: "agent",
         capability: "api.routes.register",
         checkoutPolicy: "required-for-agent-in-progress",
-        companyResolution: { from: "issue", param: "issueId" },
+        squadResolution: { from: "issue", param: "issueId" },
       },
     ]);
     mockIssueService.getById.mockResolvedValue({
       id: issueId,
-      companyId,
+      squadId,
       status: "in_progress",
       assigneeAgentId: agentId,
     });
@@ -275,7 +275,7 @@ describe.sequential("plugin scoped API routes", () => {
       actor: {
         type: "agent",
         agentId: peerAgentId,
-        companyId,
+        squadId,
         runId,
         source: "agent_key",
       },
@@ -298,7 +298,7 @@ describe.sequential("plugin scoped API routes", () => {
       params: { issueId },
       body: { step: "next" },
       actor: expect.objectContaining({ actorType: "agent", agentId: peerAgentId, runId }),
-      companyId,
+      squadId,
     }));
   });
 
@@ -311,12 +311,12 @@ describe.sequential("plugin scoped API routes", () => {
         auth: "agent",
         capability: "api.routes.register",
         checkoutPolicy: "required-for-agent-in-progress",
-        companyResolution: { from: "issue", param: "issueId" },
+        squadResolution: { from: "issue", param: "issueId" },
       },
     ]);
     mockIssueService.getById.mockResolvedValue({
       id: issueId,
-      companyId,
+      squadId,
       status: "in_progress",
       assigneeAgentId: agentId,
     });
@@ -324,7 +324,7 @@ describe.sequential("plugin scoped API routes", () => {
       actor: {
         type: "agent",
         agentId,
-        companyId,
+        squadId,
         source: "agent_key",
       },
       plugin: {
@@ -352,12 +352,12 @@ describe.sequential("plugin scoped API routes", () => {
         auth: "agent",
         capability: "api.routes.register",
         checkoutPolicy: "always-for-agent",
-        companyResolution: { from: "issue", param: "issueId" },
+        squadResolution: { from: "issue", param: "issueId" },
       },
     ]);
     mockIssueService.getById.mockResolvedValue({
       id: issueId,
-      companyId,
+      squadId,
       status: "in_progress",
       assigneeAgentId: agentId,
     });
@@ -368,7 +368,7 @@ describe.sequential("plugin scoped API routes", () => {
       actor: {
         type: "agent",
         agentId,
-        companyId,
+        squadId,
         runId,
         source: "agent_key",
       },
@@ -396,7 +396,7 @@ describe.sequential("plugin scoped API routes", () => {
         path: "/summary",
         auth: "board",
         capability: "api.routes.register",
-        companyResolution: { from: "query", key: "companyId" },
+        squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app, workerManager } = await createApp({
@@ -415,7 +415,7 @@ describe.sequential("plugin scoped API routes", () => {
     });
 
     const res = await request(app)
-      .get(`/api/plugins/${pluginId}/api/summary?companyId=${companyId}`);
+      .get(`/api/plugins/${pluginId}/api/summary?squadId=${squadId}`);
 
     expect(res.status).toBe(503);
     expect(res.body.error).toContain("disabled");
@@ -430,7 +430,7 @@ describe.sequential("plugin scoped API routes", () => {
         path: "/summary",
         auth: "board",
         capability: "api.routes.register",
-        companyResolution: { from: "query", key: "companyId" },
+        squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app, workerManager } = await createApp({
@@ -450,7 +450,7 @@ describe.sequential("plugin scoped API routes", () => {
     });
 
     const res = await request(app)
-      .get(`/api/plugins/${pluginId}/api/summary?companyId=${companyId}`);
+      .get(`/api/plugins/${pluginId}/api/summary?squadId=${squadId}`);
 
     expect(res.status).toBe(503);
     expect(res.body.error).toContain("worker is not running");

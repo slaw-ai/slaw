@@ -24,8 +24,8 @@ import {
 
 const ORGS: Record<string, OrgNode> = {
   sm: {
-    id: "ceo",
-    name: "CEO",
+    id: "squad_lead",
+    name: "Squad Lead",
     role: "Chief Executive",
     status: "active",
     reports: [
@@ -34,8 +34,8 @@ const ORGS: Record<string, OrgNode> = {
     ],
   },
   med: {
-    id: "ceo",
-    name: "CEO",
+    id: "squad_lead",
+    name: "Squad Lead",
     role: "Chief Executive",
     status: "active",
     reports: [
@@ -64,8 +64,8 @@ const ORGS: Record<string, OrgNode> = {
     ],
   },
   lg: {
-    id: "ceo",
-    name: "CEO",
+    id: "squad_lead",
+    name: "Squad Lead",
     role: "Chief Executive",
     status: "active",
     reports: [
@@ -209,7 +209,7 @@ async function main() {
     It runs on any Node.js route, generates in &lt;10ms, and produces identical output every time.
   </p>
   <p>
-    Routes: <code>GET /api/companies/:id/org.svg?style=monochrome</code> and <code>GET /api/companies/:id/org.png?style=circuit</code>
+    Routes: <code>GET /api/squads/:id/org.svg?style=monochrome</code> and <code>GET /api/squads/:id/org.png?style=circuit</code>
   </p>
 </div>
 </body></html>`;

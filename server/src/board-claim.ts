@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@slaw/db";
-import { companies, companyMemberships, instanceUserRoles } from "@slaw/db";
+import { squads, squadMemberships, instanceUserRoles } from "@slaw/db";
 import type { DeploymentMode } from "@slaw/shared";
 import { ensureHumanRoleDefaultGrants } from "./services/principal-access-compatibility.js";
 
@@ -90,7 +90,7 @@ export async function claimBoardOwnership(
   const status = getChallengeStatus(opts.token, opts.code);
   if (status !== "available") return { status };
 
-  const claimedCompanyIds: string[] = [];
+  const claimedSquadIds: string[] = [];
   await db.transaction(async (tx) => {
     const existingTargetAdmin = await tx
       .select({ id: instanceUserRoles.id })
@@ -108,24 +108,24 @@ export async function claimBoardOwnership(
       .delete(instanceUserRoles)
       .where(and(eq(instanceUserRoles.userId, LOCAL_BOARD_USER_ID), eq(instanceUserRoles.role, "instance_admin")));
 
-    const allCompanies = await tx.select({ id: companies.id }).from(companies);
-    for (const company of allCompanies) {
-      claimedCompanyIds.push(company.id);
+    const allSquads = await tx.select({ id: squads.id }).from(squads);
+    for (const squad of allSquads) {
+      claimedSquadIds.push(squad.id);
       const existing = await tx
-        .select({ id: companyMemberships.id, status: companyMemberships.status })
-        .from(companyMemberships)
+        .select({ id: squadMemberships.id, status: squadMemberships.status })
+        .from(squadMemberships)
         .where(
           and(
-            eq(companyMemberships.companyId, company.id),
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, opts.userId),
+            eq(squadMemberships.squadId, squad.id),
+            eq(squadMemberships.principalType, "user"),
+            eq(squadMemberships.principalId, opts.userId),
           ),
         )
         .then((rows) => rows[0] ?? null);
 
       if (!existing) {
-        await tx.insert(companyMemberships).values({
-          companyId: company.id,
+        await tx.insert(squadMemberships).values({
+          squadId: squad.id,
           principalType: "user",
           principalId: opts.userId,
           status: "active",
@@ -136,16 +136,16 @@ export async function claimBoardOwnership(
 
       if (existing.status !== "active") {
         await tx
-          .update(companyMemberships)
+          .update(squadMemberships)
           .set({ status: "active", membershipRole: "owner", updatedAt: new Date() })
-          .where(eq(companyMemberships.id, existing.id));
+          .where(eq(squadMemberships.id, existing.id));
       }
     }
   });
 
-  for (const companyId of claimedCompanyIds) {
+  for (const squadId of claimedSquadIds) {
     await ensureHumanRoleDefaultGrants(db, {
-      companyId,
+      squadId,
       principalId: opts.userId,
       membershipRole: "owner",
       grantedByUserId: opts.userId,

@@ -2,7 +2,7 @@ export const API_PREFIX = "/api";
 
 export const API = {
   health: `${API_PREFIX}/health`,
-  companies: `${API_PREFIX}/companies`,
+  squads: `${API_PREFIX}/squads`,
   agents: `${API_PREFIX}/agents`,
   projects: `${API_PREFIX}/projects`,
   issues: `${API_PREFIX}/issues`,
@@ -12,7 +12,7 @@ export const API = {
   approvals: `${API_PREFIX}/approvals`,
   secrets: `${API_PREFIX}/secrets`,
   secretProviderConfigs: `${API_PREFIX}/secret-provider-configs`,
-  secretProviderConfigDiscoveryPreview: `${API_PREFIX}/companies/:companyId/secret-provider-configs/discovery/preview`,
+  secretProviderConfigDiscoveryPreview: `${API_PREFIX}/squads/:squadId/secret-provider-configs/discovery/preview`,
   costs: `${API_PREFIX}/costs`,
   activity: `${API_PREFIX}/activity`,
   dashboard: `${API_PREFIX}/dashboard`,

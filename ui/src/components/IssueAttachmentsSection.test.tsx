@@ -45,7 +45,7 @@ async function act(callback: () => void | Promise<void>) {
 function makeAttachment(overrides: Partial<IssueAttachment> = {}): IssueAttachment {
   return {
     id: "attachment-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     issueId: "issue-1",
     issueCommentId: null,
     assetId: "asset-1",

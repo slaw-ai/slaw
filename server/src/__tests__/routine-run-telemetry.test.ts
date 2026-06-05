@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   agents,
-  companies,
+  squads,
   createDb,
   executionWorkspaces,
   heartbeatRuns,
@@ -61,7 +61,7 @@ describeEmbeddedPostgres("routine run telemetry", () => {
     await db.delete(projectWorkspaces);
     await db.delete(projects);
     await db.delete(agents);
-    await db.delete(companies);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -69,20 +69,20 @@ describeEmbeddedPostgres("routine run telemetry", () => {
   });
 
   async function seedFixture() {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const agentId = randomUUID();
     const projectId = randomUUID();
 
-    await db.insert(companies).values({
-      id: companyId,
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
       id: agentId,
-      companyId,
+      squadId,
       name: "CodexCoder",
       role: "engineer",
       status: "active",
@@ -94,7 +94,7 @@ describeEmbeddedPostgres("routine run telemetry", () => {
 
     await db.insert(projects).values({
       id: projectId,
-      companyId,
+      squadId,
       name: "Routines",
       status: "in_progress",
     });
@@ -110,7 +110,7 @@ describeEmbeddedPostgres("routine run telemetry", () => {
           const queuedRunId = randomUUID();
           await db.insert(heartbeatRuns).values({
             id: queuedRunId,
-            companyId,
+            squadId,
             agentId: wakeupAgentId,
             invocationSource: wakeupOpts.source ?? "assignment",
             triggerDetail: wakeupOpts.triggerDetail ?? null,
@@ -130,7 +130,7 @@ describeEmbeddedPostgres("routine run telemetry", () => {
     });
 
     const routine = await svc.create(
-      companyId,
+      squadId,
       {
         projectId,
         goalId: null,

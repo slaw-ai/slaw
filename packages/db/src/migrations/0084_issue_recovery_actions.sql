@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "issue_recovery_actions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"source_issue_id" uuid NOT NULL,
 	"recovery_issue_id" uuid,
 	"kind" text NOT NULL,
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS "issue_recovery_actions" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
-	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'issue_recovery_actions_company_id_companies_id_fk') THEN
-		ALTER TABLE "issue_recovery_actions" ADD CONSTRAINT "issue_recovery_actions_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'issue_recovery_actions_squad_id_squads_id_fk') THEN
+		ALTER TABLE "issue_recovery_actions" ADD CONSTRAINT "issue_recovery_actions_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE no action ON UPDATE no action;
 	END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
@@ -57,8 +57,8 @@ DO $$ BEGIN
 		ALTER TABLE "issue_recovery_actions" ADD CONSTRAINT "issue_recovery_actions_return_owner_agent_id_agents_id_fk" FOREIGN KEY ("return_owner_agent_id") REFERENCES "public"."agents"("id") ON DELETE set null ON UPDATE no action;
 	END IF;
 END $$;--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "issue_recovery_actions_company_source_status_idx" ON "issue_recovery_actions" USING btree ("company_id","source_issue_id","status");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "issue_recovery_actions_company_owner_status_idx" ON "issue_recovery_actions" USING btree ("company_id","owner_agent_id","status");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "issue_recovery_actions_company_recovery_issue_idx" ON "issue_recovery_actions" USING btree ("company_id","recovery_issue_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "issue_recovery_actions_active_source_uq" ON "issue_recovery_actions" USING btree ("company_id","source_issue_id") WHERE "issue_recovery_actions"."status" in ('active', 'escalated');--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "issue_recovery_actions_active_fingerprint_uq" ON "issue_recovery_actions" USING btree ("company_id","source_issue_id","cause","fingerprint") WHERE "issue_recovery_actions"."status" in ('active', 'escalated');
+CREATE INDEX IF NOT EXISTS "issue_recovery_actions_squad_source_status_idx" ON "issue_recovery_actions" USING btree ("squad_id","source_issue_id","status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "issue_recovery_actions_squad_owner_status_idx" ON "issue_recovery_actions" USING btree ("squad_id","owner_agent_id","status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "issue_recovery_actions_squad_recovery_issue_idx" ON "issue_recovery_actions" USING btree ("squad_id","recovery_issue_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "issue_recovery_actions_active_source_uq" ON "issue_recovery_actions" USING btree ("squad_id","source_issue_id") WHERE "issue_recovery_actions"."status" in ('active', 'escalated');--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "issue_recovery_actions_active_fingerprint_uq" ON "issue_recovery_actions" USING btree ("squad_id","source_issue_id","cause","fingerprint") WHERE "issue_recovery_actions"."status" in ('active', 'escalated');

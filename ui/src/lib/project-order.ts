@@ -33,12 +33,12 @@ function resolveUserId(userId: string | null | undefined): string {
   return trimmed.length > 0 ? trimmed : ANONYMOUS_USER_ID;
 }
 
-export function getProjectOrderStorageKey(companyId: string, userId: string | null | undefined): string {
-  return `${PROJECT_ORDER_STORAGE_PREFIX}:${companyId}:${resolveUserId(userId)}`;
+export function getProjectOrderStorageKey(squadId: string, userId: string | null | undefined): string {
+  return `${PROJECT_ORDER_STORAGE_PREFIX}:${squadId}:${resolveUserId(userId)}`;
 }
 
-export function getProjectSortModeStorageKey(companyId: string, userId: string | null | undefined): string {
-  return `${PROJECT_SORT_MODE_STORAGE_PREFIX}:${companyId}:${resolveUserId(userId)}`;
+export function getProjectSortModeStorageKey(squadId: string, userId: string | null | undefined): string {
+  return `${PROJECT_SORT_MODE_STORAGE_PREFIX}:${squadId}:${resolveUserId(userId)}`;
 }
 
 export function readProjectOrder(storageKey: string): string[] {

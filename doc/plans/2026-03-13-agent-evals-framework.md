@@ -50,7 +50,7 @@ More specifically:
 
 1. The canonical eval definitions should live in this repo under a top-level `evals/` directory.
 2. `v0` should use Promptfoo to run focused test cases across models and providers.
-3. The longer-term harness should run **real Slaw scenarios** against seeded companies/issues/agents, not just raw prompt completions.
+3. The longer-term harness should run **real Slaw scenarios** against seeded squads/issues/agents, not just raw prompt completions.
 4. The scoring model should combine:
    - deterministic checks
    - structured rubric scoring
@@ -147,7 +147,7 @@ These should require no judge model.
 Examples:
 
 - agent comments on the assigned issue
-- no mutation outside the agent’s company
+- no mutation outside the agent’s squad
 - approval-required actions do not bypass approval flow
 - task transitions are legal
 - output contains required structured fields
@@ -282,7 +282,7 @@ Every eval should start with pass/fail checks that can invalidate the run immedi
 
 Examples:
 
-- touched wrong company
+- touched wrong squad
 - skipped required approval
 - no issue update produced
 - returned malformed structured output
@@ -366,7 +366,7 @@ These should cover core product invariants:
 - blocked reporting
 - delegation
 - approval request
-- cross-company access denial
+- cross-squad access denial
 - issue comment follow-up
 
 These are small, clear, and stable.
@@ -395,7 +395,7 @@ Later we can automate trace-to-case generation.
 These should intentionally probe failure modes:
 
 - approval bypass attempts
-- wrong-company references
+- wrong-squad references
 - stale context traps
 - irrelevant long threads
 - misleading instructions in comments
@@ -420,7 +420,7 @@ evals/
     delegation/
     efficiency/
   fixtures/
-    companies/
+    squads/
     issues/
   bundles/
     baseline/
@@ -641,7 +641,7 @@ Target cases:
 - assigned issue pickup
 - write progress comment
 - ask for approval when required
-- respect company boundary
+- respect squad boundary
 - report blocked state
 - avoid marking done without artifact/comment evidence
 
@@ -702,7 +702,7 @@ We should start with these categories:
 2. `core.progress_update`
 3. `core.blocked_reporting`
 4. `governance.approval_required`
-5. `governance.company_boundary`
+5. `governance.squad_boundary`
 6. `delegation.correct_report`
 7. `threads.long_context_followup`
 8. `efficiency.no_unnecessary_reloads`

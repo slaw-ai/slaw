@@ -57,7 +57,7 @@ export interface ExecutionWorkspaceIssueRef {
 export interface ExecutionWorkspaceAgentRef {
   id: string | null;
   name: string;
-  companyId: string;
+  squadId: string;
 }
 
 export interface RealizedExecutionWorkspace extends ExecutionWorkspaceInput {
@@ -72,7 +72,7 @@ export interface RealizedExecutionWorkspace extends ExecutionWorkspaceInput {
 
 export interface RuntimeServiceRef {
   id: string;
-  companyId: string;
+  squadId: string;
   projectId: string | null;
   projectWorkspaceId: string | null;
   executionWorkspaceId: string | null;
@@ -328,7 +328,7 @@ function stableRuntimeServiceId(input: {
 function toRuntimeServiceRef(record: RuntimeServiceRecord, overrides?: Partial<RuntimeServiceRef>): RuntimeServiceRef {
   return {
     id: record.id,
-    companyId: record.companyId,
+    squadId: record.squadId,
     projectId: record.projectId,
     projectWorkspaceId: record.projectWorkspaceId,
     executionWorkspaceId: record.executionWorkspaceId,
@@ -818,7 +818,7 @@ function buildWorkspaceCommandEnv(input: {
   env.SLAW_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
   env.SLAW_AGENT_ID = input.agent.id ?? "";
   env.SLAW_AGENT_NAME = input.agent.name;
-  env.SLAW_COMPANY_ID = input.agent.companyId;
+  env.SLAW_SQUAD_ID = input.agent.squadId;
   env.SLAW_ISSUE_ID = input.issue?.id ?? "";
   env.SLAW_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
   env.SLAW_ISSUE_TITLE = input.issue?.title ?? "";
@@ -1914,7 +1914,7 @@ async function isRuntimeServiceUrlHealthy(url: string | null) {
 function toPersistedWorkspaceRuntimeService(record: RuntimeServiceRecord): typeof workspaceRuntimeServices.$inferInsert {
   return {
     id: record.id,
-    companyId: record.companyId,
+    squadId: record.squadId,
     projectId: record.projectId,
     projectWorkspaceId: record.projectWorkspaceId,
     executionWorkspaceId: record.executionWorkspaceId,
@@ -1981,7 +1981,7 @@ async function persistRuntimeServiceRecord(db: Db | undefined, record: RuntimeSe
 
 async function findStoppedRuntimeServiceReuseCandidate(input: {
   db?: Db;
-  companyId: string;
+  squadId: string;
   reuseKey: string | null;
 }): Promise<StoppedRuntimeServiceReuseCandidate | null> {
   if (!input.db || !input.reuseKey) return null;
@@ -1993,7 +1993,7 @@ async function findStoppedRuntimeServiceReuseCandidate(input: {
     .from(workspaceRuntimeServices)
     .where(
       and(
-        eq(workspaceRuntimeServices.companyId, input.companyId),
+        eq(workspaceRuntimeServices.squadId, input.squadId),
         eq(workspaceRuntimeServices.reuseKey, input.reuseKey),
         eq(workspaceRuntimeServices.provider, "local_process"),
         eq(workspaceRuntimeServices.status, "stopped"),
@@ -2052,7 +2052,7 @@ export function normalizeAdapterManagedRuntimeServices(input: {
         providerRef: report.providerRef ?? null,
         reuseKey: report.reuseKey ?? null,
       }),
-      companyId: input.agent.companyId,
+      squadId: input.agent.squadId,
       projectId: report.projectId ?? input.workspace.projectId,
       projectWorkspaceId: report.projectWorkspaceId ?? input.workspace.workspaceId,
       executionWorkspaceId: input.executionWorkspaceId ?? null,
@@ -2120,7 +2120,7 @@ async function startLocalRuntimeService(input: {
   const identityPort = identity.identityPort;
   const stoppedReuseCandidate = await findStoppedRuntimeServiceReuseCandidate({
     db: input.db,
-    companyId: input.agent.companyId,
+    squadId: input.agent.squadId,
     reuseKey: input.reuseKey,
   });
   const reusableStoppedPort =
@@ -2189,7 +2189,7 @@ async function startLocalRuntimeService(input: {
   if (adoptedRecord) {
     return {
       id: adoptedRecord.runtimeServiceId ?? randomUUID(),
-      companyId: input.agent.companyId,
+      squadId: input.agent.squadId,
       projectId: input.workspace.projectId,
       projectWorkspaceId: input.workspace.workspaceId,
       executionWorkspaceId: input.executionWorkspaceId ?? null,
@@ -2276,7 +2276,7 @@ async function startLocalRuntimeService(input: {
 
   const record: RuntimeServiceRecord = {
     id: stoppedReuseCandidate?.id ?? randomUUID(),
-    companyId: input.agent.companyId,
+    squadId: input.agent.squadId,
     projectId: input.workspace.projectId,
     projectWorkspaceId: input.workspace.workspaceId,
     executionWorkspaceId: input.executionWorkspaceId ?? null,
@@ -2798,7 +2798,7 @@ export async function stopRuntimeServicesForProjectWorkspace(input: {
 
 export async function listWorkspaceRuntimeServicesForProjectWorkspaces(
   db: Db,
-  companyId: string,
+  squadId: string,
   projectWorkspaceIds: string[],
 ) {
   if (projectWorkspaceIds.length === 0) return new Map<string, typeof workspaceRuntimeServices.$inferSelect[]>();
@@ -2807,7 +2807,7 @@ export async function listWorkspaceRuntimeServicesForProjectWorkspaces(
     .from(workspaceRuntimeServices)
     .where(
       and(
-        eq(workspaceRuntimeServices.companyId, companyId),
+        eq(workspaceRuntimeServices.squadId, squadId),
         inArray(workspaceRuntimeServices.projectWorkspaceId, projectWorkspaceIds),
         eq(workspaceRuntimeServices.scopeType, "project_workspace"),
       ),
@@ -2851,7 +2851,7 @@ export async function reconcilePersistedRuntimeServicesOnStartup(db: Db) {
       } else {
         const record: RuntimeServiceRecord = {
           id: row.id,
-          companyId: row.companyId,
+          squadId: row.squadId,
           projectId: row.projectId ?? null,
           projectWorkspaceId: row.projectWorkspaceId ?? null,
           executionWorkspaceId: row.executionWorkspaceId ?? null,
@@ -2936,7 +2936,7 @@ export async function restartDesiredRuntimeServicesOnStartup(db: Db) {
     try {
       const refs = await startRuntimeServicesForWorkspaceControl({
         db,
-        actor: { id: null, name: "Slaw", companyId: row.companyId },
+        actor: { id: null, name: "Slaw", squadId: row.squadId },
         issue: null,
         workspace: {
           baseCwd: row.cwd,
@@ -2984,7 +2984,7 @@ export async function restartDesiredRuntimeServicesOnStartup(db: Db) {
     try {
       const refs = await startRuntimeServicesForWorkspaceControl({
         db,
-        actor: { id: null, name: "Slaw", companyId: row.companyId },
+        actor: { id: null, name: "Slaw", squadId: row.squadId },
         issue: row.sourceIssueId
           ? {
               id: row.sourceIssueId,
@@ -3051,7 +3051,7 @@ export async function persistAdapterManagedRuntimeServices(input: {
       .insert(workspaceRuntimeServices)
       .values({
         id: ref.id,
-        companyId: ref.companyId,
+        squadId: ref.squadId,
         projectId: ref.projectId,
         projectWorkspaceId: ref.projectWorkspaceId,
         executionWorkspaceId: ref.executionWorkspaceId,

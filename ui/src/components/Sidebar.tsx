@@ -20,7 +20,7 @@ import { SidebarNavItem } from "./SidebarNavItem";
 import { SidebarProjects } from "./SidebarProjects";
 import { SidebarAgents } from "./SidebarAgents";
 import { useDialogActions } from "../context/DialogContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
@@ -28,35 +28,35 @@ import { useInboxBadge } from "../hooks/useInboxBadge";
 import { Button } from "@/components/ui/button";
 import { PluginSlotOutlet } from "@/plugins/slots";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
-import { SidebarCompanyMenu } from "./SidebarCompanyMenu";
+import { SidebarSquadMenu } from "./SidebarSquadMenu";
 
 export function Sidebar() {
   const { openNewIssue } = useDialogActions();
-  const { selectedCompanyId, selectedCompany } = useCompany();
-  const inboxBadge = useInboxBadge(selectedCompanyId);
+  const { selectedSquadId, selectedSquad } = useSquad();
+  const inboxBadge = useInboxBadge(selectedSquadId);
   const { data: experimentalSettings } = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
   });
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(selectedCompanyId!),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
+    queryKey: queryKeys.liveRuns(selectedSquadId!),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(selectedSquadId!),
+    enabled: !!selectedSquadId,
     refetchInterval: 10_000,
   });
   const liveRunCount = liveRuns?.length ?? 0;
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
 
   const pluginContext = {
-    companyId: selectedCompanyId,
-    companyPrefix: selectedCompany?.issuePrefix ?? null,
+    squadId: selectedSquadId,
+    squadPrefix: selectedSquad?.issuePrefix ?? null,
   };
 
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
-      {/* Top bar: Company name (bold) + Search — aligned with top sections (no visible border) */}
+      {/* Top bar: Squad name (bold) + Search — aligned with top sections (no visible border) */}
       <div className="flex items-center gap-1 px-3 h-12 shrink-0">
-        <SidebarCompanyMenu />
+        <SidebarSquadMenu />
         <Button
           asChild
           variant="ghost"
@@ -119,12 +119,12 @@ export function Sidebar() {
 
         <SidebarAgents />
 
-        <SidebarSection label="Company">
+        <SidebarSection label="Squad">
           <SidebarNavItem to="/org" label="Org" icon={Network} />
           <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
           <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
           <SidebarNavItem to="/activity" label="Activity" icon={History} />
-          <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
+          <SidebarNavItem to="/squad/settings" label="Settings" icon={Settings} />
         </SidebarSection>
 
         <PluginSlotOutlet

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import type { Db } from "@slaw/db";
 import { validate } from "../middleware/validate.js";
-import { assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertSquadAccess, getActorInfo } from "./authz.js";
 import { inboxDismissalService, logActivity } from "../services/index.js";
 
 const inboxDismissalSchema = z.object({
@@ -13,9 +13,9 @@ export function inboxDismissalRoutes(db: Db) {
   const router = Router();
   const svc = inboxDismissalService(db);
 
-  router.get("/companies/:companyId/inbox-dismissals", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
+  router.get("/squads/:squadId/inbox-dismissals", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
     if (req.actor.type !== "board") {
       res.status(403).json({ error: "Board authentication required" });
       return;
@@ -24,16 +24,16 @@ export function inboxDismissalRoutes(db: Db) {
       res.status(403).json({ error: "Board user context required" });
       return;
     }
-    const dismissals = await svc.list(companyId, req.actor.userId);
+    const dismissals = await svc.list(squadId, req.actor.userId);
     res.json(dismissals);
   });
 
   router.post(
-    "/companies/:companyId/inbox-dismissals",
+    "/squads/:squadId/inbox-dismissals",
     validate(inboxDismissalSchema),
     async (req, res) => {
-      const companyId = req.params.companyId as string;
-      assertCompanyAccess(req, companyId);
+      const squadId = req.params.squadId as string;
+      assertSquadAccess(req, squadId);
       if (req.actor.type !== "board") {
         res.status(403).json({ error: "Board authentication required" });
         return;
@@ -43,17 +43,17 @@ export function inboxDismissalRoutes(db: Db) {
         return;
       }
 
-      const dismissal = await svc.dismiss(companyId, req.actor.userId, req.body.itemKey, new Date());
+      const dismissal = await svc.dismiss(squadId, req.actor.userId, req.body.itemKey, new Date());
       const actor = getActorInfo(req);
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: actor.actorType,
         actorId: actor.actorId,
         agentId: actor.agentId,
         runId: actor.runId,
         action: "inbox.dismissed",
-        entityType: "company",
-        entityId: companyId,
+        entityType: "squad",
+        entityId: squadId,
         details: {
           userId: req.actor.userId,
           itemKey: dismissal.itemKey,

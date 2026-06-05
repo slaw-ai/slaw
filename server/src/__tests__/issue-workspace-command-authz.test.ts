@@ -43,7 +43,7 @@ const mockHeartbeatService = vi.hoisted(() => ({
 
 const mockInstanceSettingsService = vi.hoisted(() => ({
   get: vi.fn(),
-  listCompanyIds: vi.fn(),
+  listSquadIds: vi.fn(),
 }));
 
 const mockLogActivity = vi.hoisted(() => vi.fn());
@@ -90,8 +90,8 @@ function registerRouteMocks() {
   }));
 
   vi.doMock("../services/index.js", () => ({
-    companyService: () => ({
-      getById: vi.fn(async () => ({ id: "company-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
+    squadService: () => ({
+      getById: vi.fn(async () => ({ id: "squad-1", attachmentMaxBytes: 10 * 1024 * 1024 })),
     }),
     accessService: () => mockAccessService,
     agentService: () => mockAgentService,
@@ -152,7 +152,7 @@ async function createApp(actor: Record<string, unknown>) {
 function makeIssue(overrides: Record<string, unknown> = {}) {
   return {
     id: "issue-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     status: "todo",
     priority: "medium",
     projectId: null,
@@ -221,7 +221,7 @@ describe("issue workspace command authorization", () => {
         feedbackDataSharingPreference: "prompt",
       },
     });
-    mockInstanceSettingsService.listCompanyIds.mockResolvedValue(["company-1"]);
+    mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);
     mockLogActivity.mockResolvedValue(undefined);
     mockRoutineService.syncRunStatusForIssue.mockResolvedValue(undefined);
   });
@@ -230,13 +230,13 @@ describe("issue workspace command authorization", () => {
     const app = await createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });
 
     const res = await request(app)
-      .post("/api/companies/company-1/issues")
+      .post("/api/squads/squad-1/issues")
       .send({
         title: "Exploit",
         executionWorkspaceSettings: {
@@ -257,7 +257,7 @@ describe("issue workspace command authorization", () => {
     const app = await createApp({
       type: "agent",
       agentId: "agent-1",
-      companyId: "company-1",
+      squadId: "squad-1",
       source: "agent_key",
       runId: "run-1",
     });

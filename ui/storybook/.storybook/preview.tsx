@@ -3,7 +3,7 @@ import type { Preview } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "@/lib/router";
 import { BreadcrumbProvider } from "@/context/BreadcrumbContext";
-import { CompanyProvider } from "@/context/CompanyContext";
+import { SquadProvider } from "@/context/SquadContext";
 import { DialogProvider } from "@/context/DialogContext";
 import { EditorAutocompleteProvider } from "@/context/EditorAutocompleteContext";
 import { PanelProvider } from "@/context/PanelContext";
@@ -15,7 +15,7 @@ import {
   storybookAgents,
   storybookApprovals,
   storybookAuthSession,
-  storybookCompanies,
+  storybookSquads,
   storybookDashboardSummary,
   storybookIssues,
   storybookLiveRuns,
@@ -62,11 +62,11 @@ function installStorybookApiFixtures() {
       return Response.json(storybookAuthSession);
     }
 
-    if (url.pathname === "/api/companies") {
-      return Response.json(storybookCompanies);
+    if (url.pathname === "/api/squads") {
+      return Response.json(storybookSquads);
     }
 
-    if (url.pathname === "/api/companies/company-storybook/user-directory") {
+    if (url.pathname === "/api/squads/squad-storybook/user-directory") {
       return Response.json({
         users: [
           {
@@ -136,7 +136,7 @@ function installStorybookApiFixtures() {
     }
 
     const adapterModelsMatch = url.pathname.match(
-      /^\/api\/companies\/[^/]+\/adapters\/([^/]+)\/(models|model-profiles)$/,
+      /^\/api\/squads\/[^/]+\/adapters\/([^/]+)\/(models|model-profiles)$/,
     );
     if (adapterModelsMatch) {
       const [, , resource] = adapterModelsMatch;
@@ -171,33 +171,33 @@ function installStorybookApiFixtures() {
       if (schema) return Response.json(schema);
     }
 
-    const secretsListMatch = url.pathname.match(/^\/api\/companies\/([^/]+)\/secrets$/);
+    const secretsListMatch = url.pathname.match(/^\/api\/squads\/([^/]+)\/secrets$/);
     if (secretsListMatch) {
-      const [, companyId] = secretsListMatch;
-      return Response.json(companyId === "company-storybook" ? storybookSecrets : []);
+      const [, squadId] = secretsListMatch;
+      return Response.json(squadId === "squad-storybook" ? storybookSecrets : []);
     }
 
-    const secretProvidersMatch = url.pathname.match(/^\/api\/companies\/([^/]+)\/secret-providers$/);
+    const secretProvidersMatch = url.pathname.match(/^\/api\/squads\/([^/]+)\/secret-providers$/);
     if (secretProvidersMatch) {
       return Response.json(storybookSecretProviders);
     }
 
     const secretProviderHealthMatch = url.pathname.match(
-      /^\/api\/companies\/([^/]+)\/secret-providers\/health$/,
+      /^\/api\/squads\/([^/]+)\/secret-providers\/health$/,
     );
     if (secretProviderHealthMatch) {
       return Response.json(storybookSecretProviderHealth);
     }
 
     const secretProviderConfigsMatch = url.pathname.match(
-      /^\/api\/companies\/([^/]+)\/secret-provider-configs$/,
+      /^\/api\/squads\/([^/]+)\/secret-provider-configs$/,
     );
     if (secretProviderConfigsMatch) {
       return Response.json(storybookSecretProviderConfigs);
     }
 
     const secretProviderConfigDiscoveryPreviewMatch = url.pathname.match(
-      /^\/api\/companies\/([^/]+)\/secret-provider-configs\/discovery\/preview$/,
+      /^\/api\/squads\/([^/]+)\/secret-provider-configs\/discovery\/preview$/,
     );
     if (secretProviderConfigDiscoveryPreviewMatch && init?.method?.toUpperCase() === "POST") {
       return Response.json(storybookSecretProviderDiscoveryPreview);
@@ -218,36 +218,36 @@ function installStorybookApiFixtures() {
       return Response.json(storybookSecretAccessEvents.filter((event) => event.secretId === secretId));
     }
 
-    const companyResourceMatch = url.pathname.match(/^\/api\/companies\/([^/]+)\/([^/]+)$/);
-    if (companyResourceMatch) {
-      const [, companyId, resource] = companyResourceMatch;
+    const squadResourceMatch = url.pathname.match(/^\/api\/squads\/([^/]+)\/([^/]+)$/);
+    if (squadResourceMatch) {
+      const [, squadId, resource] = squadResourceMatch;
       if (resource === "agents") {
-        return Response.json(companyId === "company-storybook" ? storybookAgents : []);
+        return Response.json(squadId === "squad-storybook" ? storybookAgents : []);
       }
       if (resource === "projects") {
-        return Response.json(companyId === "company-storybook" ? storybookProjects : []);
+        return Response.json(squadId === "squad-storybook" ? storybookProjects : []);
       }
       if (resource === "approvals") {
-        return Response.json(companyId === "company-storybook" ? storybookApprovals : []);
+        return Response.json(squadId === "squad-storybook" ? storybookApprovals : []);
       }
       if (resource === "dashboard") {
         return Response.json({
           ...storybookDashboardSummary,
-          companyId,
+          squadId,
         });
       }
       if (resource === "heartbeat-runs") {
         return Response.json([]);
       }
       if (resource === "live-runs") {
-        return Response.json(companyId === "company-storybook" ? storybookLiveRuns : []);
+        return Response.json(squadId === "squad-storybook" ? storybookLiveRuns : []);
       }
       if (resource === "inbox-dismissals") {
         return Response.json([]);
       }
       if (resource === "sidebar-badges") {
         return Response.json(
-          companyId === "company-storybook"
+          squadId === "squad-storybook"
             ? storybookSidebarBadges
             : { inbox: 0, approvals: 0, failedRuns: 0, joinRequests: 0 },
         );
@@ -257,7 +257,7 @@ function installStorybookApiFixtures() {
       }
       if (resource === "issues") {
         const query = url.searchParams.get("q")?.trim().toLowerCase();
-        const issues = companyId === "company-storybook" ? storybookIssues : [];
+        const issues = squadId === "squad-storybook" ? storybookIssues : [];
         return Response.json(
           query
             ? issues.filter((issue) =>
@@ -318,7 +318,7 @@ function StorybookProviders({
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <MemoryRouter initialEntries={["/PAP/storybook"]}>
-          <CompanyProvider>
+          <SquadProvider>
             <EditorAutocompleteProvider>
               <ToastProvider>
                 <TooltipProvider>
@@ -332,7 +332,7 @@ function StorybookProviders({
                 </TooltipProvider>
               </ToastProvider>
             </EditorAutocompleteProvider>
-          </CompanyProvider>
+          </SquadProvider>
         </MemoryRouter>
       </ThemeProvider>
     </QueryClientProvider>

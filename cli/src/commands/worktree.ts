@@ -24,7 +24,7 @@ import {
   applyPendingMigrations,
   agents,
   assets,
-  companies,
+  squads,
   createDb,
   documentRevisions,
   documents,
@@ -114,7 +114,7 @@ type WorktreeListOptions = {
 type WorktreeMergeHistoryOptions = {
   from?: string;
   to?: string;
-  company?: string;
+  squad?: string;
   scope?: string;
   apply?: boolean;
   dry?: boolean;
@@ -248,13 +248,13 @@ function resolveWorktreeStartPoint(explicit?: string): string | undefined {
 }
 
 type ConfiguredStorage = {
-  getObject(companyId: string, objectKey: string): Promise<Buffer>;
-  putObject(companyId: string, objectKey: string, body: Buffer, contentType: string): Promise<void>;
+  getObject(squadId: string, objectKey: string): Promise<Buffer>;
+  putObject(squadId: string, objectKey: string, body: Buffer, contentType: string): Promise<void>;
 };
 
-function assertStorageCompanyPrefix(companyId: string, objectKey: string): void {
-  if (!objectKey.startsWith(`${companyId}/`) || objectKey.includes("..")) {
-    throw new Error(`Invalid object key for company ${companyId}.`);
+function assertStorageSquadPrefix(squadId: string, objectKey: string): void {
+  if (!objectKey.startsWith(`${squadId}/`) || objectKey.includes("..")) {
+    throw new Error(`Invalid object key for squad ${squadId}.`);
   }
 }
 
@@ -327,12 +327,12 @@ function createConfiguredStorageFromSlawConfig(config: SlawConfig): ConfiguredSt
   if (config.storage.provider === "local_disk") {
     const baseDir = expandHomePrefix(config.storage.localDisk.baseDir);
     return {
-      async getObject(companyId: string, objectKey: string) {
-        assertStorageCompanyPrefix(companyId, objectKey);
+      async getObject(squadId: string, objectKey: string) {
+        assertStorageSquadPrefix(squadId, objectKey);
         return await fsPromises.readFile(resolveLocalStoragePath(baseDir, objectKey));
       },
-      async putObject(companyId: string, objectKey: string, body: Buffer) {
-        assertStorageCompanyPrefix(companyId, objectKey);
+      async putObject(squadId: string, objectKey: string, body: Buffer) {
+        assertStorageSquadPrefix(squadId, objectKey);
         const filePath = resolveLocalStoragePath(baseDir, objectKey);
         await fsPromises.mkdir(path.dirname(filePath), { recursive: true });
         await fsPromises.writeFile(filePath, body);
@@ -360,8 +360,8 @@ function createConfiguredStorageFromSlawConfig(config: SlawConfig): ConfiguredSt
   }
   const bucket = config.storage.s3.bucket;
   return {
-    async getObject(companyId: string, objectKey: string) {
-      assertStorageCompanyPrefix(companyId, objectKey);
+    async getObject(squadId: string, objectKey: string) {
+      assertStorageSquadPrefix(squadId, objectKey);
       const { sdk, client } = await getS3Client();
       const response = await client.send(
         new sdk.GetObjectCommand({
@@ -371,8 +371,8 @@ function createConfiguredStorageFromSlawConfig(config: SlawConfig): ConfiguredSt
       );
       return await s3BodyToBuffer(response.Body);
     },
-    async putObject(companyId: string, objectKey: string, body: Buffer, contentType: string) {
-      assertStorageCompanyPrefix(companyId, objectKey);
+    async putObject(squadId: string, objectKey: string, body: Buffer, contentType: string) {
+      assertStorageSquadPrefix(squadId, objectKey);
       const { sdk, client } = await getS3Client();
       await client.send(
         new sdk.PutObjectCommand({
@@ -415,12 +415,12 @@ export function isMissingStorageObjectError(error: unknown): boolean {
 
 export async function readSourceAttachmentBody(
   sourceStorages: Array<Pick<ConfiguredStorage, "getObject">>,
-  companyId: string,
+  squadId: string,
   objectKey: string,
 ): Promise<Buffer | null> {
   for (const sourceStorage of sourceStorages) {
     try {
-      return await sourceStorage.getObject(companyId, objectKey);
+      return await sourceStorage.getObject(squadId, objectKey);
     } catch (error) {
       if (isMissingStorageObjectError(error)) {
         continue;
@@ -1222,7 +1222,7 @@ export async function quarantineSeededWorktreeExecutionState(
       const affectedIssues = await tx
         .select({
           id: issues.id,
-          companyId: issues.companyId,
+          squadId: issues.squadId,
           status: issues.status,
         })
         .from(issues)
@@ -1253,7 +1253,7 @@ export async function quarantineSeededWorktreeExecutionState(
         if (issue.status === "in_progress") {
           summary.quarantinedInProgressIssues += 1;
           await tx.insert(issueComments).values({
-            companyId: issue.companyId,
+            squadId: issue.squadId,
             issueId: issue.id,
             body:
               "Quarantined during worktree seed so copied in-flight work does not auto-run in this isolated instance. " +
@@ -1901,7 +1901,7 @@ type OpenDbHandle = {
   stop: () => Promise<void>;
 };
 
-type ResolvedMergeCompany = {
+type ResolvedMergeSquad = {
   id: string;
   name: string;
   issuePrefix: string;
@@ -1987,37 +1987,37 @@ async function openConfiguredDb(configPath: string): Promise<OpenDbHandle> {
   }
 }
 
-async function resolveMergeCompany(input: {
+async function resolveMergeSquad(input: {
   sourceDb: ClosableDb;
   targetDb: ClosableDb;
   selector?: string;
-}): Promise<ResolvedMergeCompany> {
-  const [sourceCompanies, targetCompanies] = await Promise.all([
+}): Promise<ResolvedMergeSquad> {
+  const [sourceSquads, targetSquads] = await Promise.all([
     input.sourceDb
       .select({
-        id: companies.id,
-        name: companies.name,
-        issuePrefix: companies.issuePrefix,
+        id: squads.id,
+        name: squads.name,
+        issuePrefix: squads.issuePrefix,
       })
-      .from(companies),
+      .from(squads),
     input.targetDb
       .select({
-        id: companies.id,
-        name: companies.name,
-        issuePrefix: companies.issuePrefix,
+        id: squads.id,
+        name: squads.name,
+        issuePrefix: squads.issuePrefix,
       })
-      .from(companies),
+      .from(squads),
   ]);
 
-  const targetById = new Map(targetCompanies.map((company) => [company.id, company]));
-  const shared = sourceCompanies.filter((company) => targetById.has(company.id));
+  const targetById = new Map(targetSquads.map((squad) => [squad.id, squad]));
+  const shared = sourceSquads.filter((squad) => targetById.has(squad.id));
   const selector = nonEmpty(input.selector);
   if (selector) {
     const matched = shared.find(
-      (company) => company.id === selector || company.issuePrefix.toLowerCase() === selector.toLowerCase(),
+      (squad) => squad.id === selector || squad.issuePrefix.toLowerCase() === selector.toLowerCase(),
     );
     if (!matched) {
-      throw new Error(`Could not resolve company "${selector}" in both source and target databases.`);
+      throw new Error(`Could not resolve squad "${selector}" in both source and target databases.`);
     }
     return matched;
   }
@@ -2027,13 +2027,13 @@ async function resolveMergeCompany(input: {
   }
 
   if (shared.length === 0) {
-    throw new Error("Source and target databases do not share a company id. Pass --company explicitly once both sides match.");
+    throw new Error("Source and target databases do not share a squad id. Pass --squad explicitly once both sides match.");
   }
 
   const options = shared
-    .map((company) => `${company.issuePrefix} (${company.name})`)
+    .map((squad) => `${squad.issuePrefix} (${squad.name})`)
     .join(", ");
-  throw new Error(`Multiple shared companies found. Re-run with --company <id-or-prefix>. Options: ${options}`);
+  throw new Error(`Multiple shared squads found. Re-run with --squad <id-or-prefix>. Options: ${options}`);
 }
 
 function renderMergePlan(plan: Awaited<ReturnType<typeof collectMergePlan>>["plan"], extras: {
@@ -2052,7 +2052,7 @@ function renderMergePlan(plan: Awaited<ReturnType<typeof collectMergePlan>>["pla
     `Mode: preview`,
     `Source: ${extras.sourcePath}`,
     `Target: ${extras.targetPath}`,
-    `Company: ${plan.companyName} (${plan.issuePrefix})`,
+    `Squad: ${plan.squadName} (${plan.issuePrefix})`,
     "",
     "Projects",
     `- import: ${plan.counts.projectsToImport}`,
@@ -2147,14 +2147,14 @@ function resolveRunningEmbeddedPostgresPid(config: SlawConfig): number | null {
 async function collectMergePlan(input: {
   sourceDb: ClosableDb;
   targetDb: ClosableDb;
-  company: ResolvedMergeCompany;
+  squad: ResolvedMergeSquad;
   scopes: ReturnType<typeof parseWorktreeMergeScopes>;
   importProjectIds?: Iterable<string>;
   projectIdOverrides?: Record<string, string | null | undefined>;
 }) {
-  const companyId = input.company.id;
+  const squadId = input.squad.id;
   const [
-    targetCompanyRow,
+    targetSquadRow,
     sourceIssuesRows,
     targetIssuesRows,
     sourceCommentsRows,
@@ -2175,33 +2175,33 @@ async function collectMergePlan(input: {
   ] = await Promise.all([
     input.targetDb
       .select({
-        issueCounter: companies.issueCounter,
+        issueCounter: squads.issueCounter,
       })
-      .from(companies)
-      .where(eq(companies.id, companyId))
+      .from(squads)
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0] ?? null),
     input.sourceDb
       .select()
       .from(issues)
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.targetDb
       .select()
       .from(issues)
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.scopes.includes("comments")
       ? input.sourceDb
         .select()
         .from(issueComments)
-        .where(eq(issueComments.companyId, companyId))
+        .where(eq(issueComments.squadId, squadId))
       : Promise.resolve([]),
     input.targetDb
       .select()
       .from(issueComments)
-      .where(eq(issueComments.companyId, companyId)),
+      .where(eq(issueComments.squadId, squadId)),
     input.sourceDb
       .select({
         id: issueDocuments.id,
-        companyId: issueDocuments.companyId,
+        squadId: issueDocuments.squadId,
         issueId: issueDocuments.issueId,
         documentId: issueDocuments.documentId,
         key: issueDocuments.key,
@@ -2222,11 +2222,11 @@ async function collectMergePlan(input: {
       .from(issueDocuments)
       .innerJoin(documents, eq(issueDocuments.documentId, documents.id))
       .innerJoin(issues, eq(issueDocuments.issueId, issues.id))
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.targetDb
       .select({
         id: issueDocuments.id,
-        companyId: issueDocuments.companyId,
+        squadId: issueDocuments.squadId,
         issueId: issueDocuments.issueId,
         documentId: issueDocuments.documentId,
         key: issueDocuments.key,
@@ -2247,11 +2247,11 @@ async function collectMergePlan(input: {
       .from(issueDocuments)
       .innerJoin(documents, eq(issueDocuments.documentId, documents.id))
       .innerJoin(issues, eq(issueDocuments.issueId, issues.id))
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.sourceDb
       .select({
         id: documentRevisions.id,
-        companyId: documentRevisions.companyId,
+        squadId: documentRevisions.squadId,
         documentId: documentRevisions.documentId,
         revisionNumber: documentRevisions.revisionNumber,
         body: documentRevisions.body,
@@ -2263,11 +2263,11 @@ async function collectMergePlan(input: {
       .from(documentRevisions)
       .innerJoin(issueDocuments, eq(documentRevisions.documentId, issueDocuments.documentId))
       .innerJoin(issues, eq(issueDocuments.issueId, issues.id))
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.targetDb
       .select({
         id: documentRevisions.id,
-        companyId: documentRevisions.companyId,
+        squadId: documentRevisions.squadId,
         documentId: documentRevisions.documentId,
         revisionNumber: documentRevisions.revisionNumber,
         body: documentRevisions.body,
@@ -2279,11 +2279,11 @@ async function collectMergePlan(input: {
       .from(documentRevisions)
       .innerJoin(issueDocuments, eq(documentRevisions.documentId, issueDocuments.documentId))
       .innerJoin(issues, eq(issueDocuments.issueId, issues.id))
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.sourceDb
       .select({
         id: issueAttachments.id,
-        companyId: issueAttachments.companyId,
+        squadId: issueAttachments.squadId,
         issueId: issueAttachments.issueId,
         issueCommentId: issueAttachments.issueCommentId,
         assetId: issueAttachments.assetId,
@@ -2303,11 +2303,11 @@ async function collectMergePlan(input: {
       .from(issueAttachments)
       .innerJoin(assets, eq(issueAttachments.assetId, assets.id))
       .innerJoin(issues, eq(issueAttachments.issueId, issues.id))
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.targetDb
       .select({
         id: issueAttachments.id,
-        companyId: issueAttachments.companyId,
+        squadId: issueAttachments.squadId,
         issueId: issueAttachments.issueId,
         issueCommentId: issueAttachments.issueCommentId,
         assetId: issueAttachments.assetId,
@@ -2327,46 +2327,46 @@ async function collectMergePlan(input: {
       .from(issueAttachments)
       .innerJoin(assets, eq(issueAttachments.assetId, assets.id))
       .innerJoin(issues, eq(issueAttachments.issueId, issues.id))
-      .where(eq(issues.companyId, companyId)),
+      .where(eq(issues.squadId, squadId)),
     input.sourceDb
       .select()
       .from(projects)
-      .where(eq(projects.companyId, companyId)),
+      .where(eq(projects.squadId, squadId)),
     input.sourceDb
       .select()
       .from(projectWorkspaces)
-      .where(eq(projectWorkspaces.companyId, companyId)),
+      .where(eq(projectWorkspaces.squadId, squadId)),
     input.targetDb
       .select()
       .from(projects)
-      .where(eq(projects.companyId, companyId)),
+      .where(eq(projects.squadId, squadId)),
     input.targetDb
       .select()
       .from(agents)
-      .where(eq(agents.companyId, companyId)),
+      .where(eq(agents.squadId, squadId)),
     input.targetDb
       .select()
       .from(projectWorkspaces)
-      .where(eq(projectWorkspaces.companyId, companyId)),
+      .where(eq(projectWorkspaces.squadId, squadId)),
     input.targetDb
       .select()
       .from(goals)
-      .where(eq(goals.companyId, companyId)),
+      .where(eq(goals.squadId, squadId)),
     input.sourceDb
       .select({ count: sql<number>`count(*)::int` })
       .from(heartbeatRuns)
-      .where(eq(heartbeatRuns.companyId, companyId)),
+      .where(eq(heartbeatRuns.squadId, squadId)),
   ]);
 
-  if (!targetCompanyRow) {
-    throw new Error(`Target company ${companyId} was not found.`);
+  if (!targetSquadRow) {
+    throw new Error(`Target squad ${squadId} was not found.`);
   }
 
   const plan = buildWorktreeMergePlan({
-    companyId,
-    companyName: input.company.name,
-    issuePrefix: input.company.issuePrefix,
-    previewIssueCounterStart: targetCompanyRow.issueCounter,
+    squadId,
+    squadName: input.squad.name,
+    issuePrefix: input.squad.issuePrefix,
+    previewIssueCounterStart: targetSquadRow.issueCounter,
     scopes: input.scopes,
     sourceIssues: sourceIssuesRows,
     targetIssues: targetIssuesRows,
@@ -2588,10 +2588,10 @@ async function applyMergePlan(input: {
   sourceStorages: ConfiguredStorage[];
   targetStorage: ConfiguredStorage;
   targetDb: ClosableDb;
-  company: ResolvedMergeCompany;
+  squad: ResolvedMergeSquad;
   plan: Awaited<ReturnType<typeof collectMergePlan>>["plan"];
 }) {
-  const companyId = input.company.id;
+  const squadId = input.squad.id;
 
   return await input.targetDb.transaction(async (tx) => {
     const importedProjectIds = input.plan.projectImports.map((project) => project.source.id);
@@ -2621,7 +2621,7 @@ async function applyMergePlan(input: {
     for (const project of projectImports) {
       await tx.insert(projects).values({
         id: project.source.id,
-        companyId,
+        squadId,
         goalId: project.targetGoalId,
         name: project.source.name,
         description: project.source.description,
@@ -2642,7 +2642,7 @@ async function applyMergePlan(input: {
         if (existingImportedWorkspaceIds.has(workspace.id)) continue;
         await tx.insert(projectWorkspaces).values({
           id: workspace.id,
-          companyId,
+          squadId,
           projectId: project.source.id,
           name: workspace.name,
           sourceType: workspace.sourceType,
@@ -2682,12 +2682,12 @@ async function applyMergePlan(input: {
 
     let nextIssueNumber = 0;
     if (issueInserts.length > 0) {
-      const [companyRow] = await tx
-        .update(companies)
-        .set({ issueCounter: sql`${companies.issueCounter} + ${issueInserts.length}` })
-        .where(eq(companies.id, companyId))
-        .returning({ issueCounter: companies.issueCounter });
-      nextIssueNumber = companyRow.issueCounter - issueInserts.length + 1;
+      const [squadRow] = await tx
+        .update(squads)
+        .set({ issueCounter: sql`${squads.issueCounter} + ${issueInserts.length}` })
+        .where(eq(squads.id, squadId))
+        .returning({ issueCounter: squads.issueCounter });
+      nextIssueNumber = squadRow.issueCounter - issueInserts.length + 1;
     }
 
     const insertedIssueIdentifiers = new Map<string, string>();
@@ -2695,11 +2695,11 @@ async function applyMergePlan(input: {
     for (const issue of issueInserts) {
       const issueNumber = nextIssueNumber;
       nextIssueNumber += 1;
-      const identifier = `${input.company.issuePrefix}-${issueNumber}`;
+      const identifier = `${input.squad.issuePrefix}-${issueNumber}`;
       insertedIssueIdentifiers.set(issue.source.id, identifier);
       await tx.insert(issues).values({
         id: issue.source.id,
-        companyId,
+        squadId,
         projectId: issue.targetProjectId,
         projectWorkspaceId: issue.targetProjectWorkspaceId,
         goalId: issue.targetGoalId,
@@ -2754,12 +2754,12 @@ async function applyMergePlan(input: {
       const parentExists = await tx
         .select({ id: issues.id })
         .from(issues)
-        .where(and(eq(issues.id, comment.source.issueId), eq(issues.companyId, companyId)))
+        .where(and(eq(issues.id, comment.source.issueId), eq(issues.squadId, squadId)))
         .then((rows) => rows[0] ?? null);
       if (!parentExists) continue;
       await tx.insert(issueComments).values({
         id: comment.source.id,
-        companyId,
+        squadId,
         issueId: comment.source.issueId,
         authorAgentId: comment.targetAuthorAgentId,
         authorUserId: comment.source.authorUserId,
@@ -2781,7 +2781,7 @@ async function applyMergePlan(input: {
       const parentExists = await tx
         .select({ id: issues.id })
         .from(issues)
-        .where(and(eq(issues.id, documentPlan.source.issueId), eq(issues.companyId, companyId)))
+        .where(and(eq(issues.id, documentPlan.source.issueId), eq(issues.squadId, squadId)))
         .then((rows) => rows[0] ?? null);
       if (!parentExists) continue;
 
@@ -2806,7 +2806,7 @@ async function applyMergePlan(input: {
       if (!existingDocument) {
         await tx.insert(documents).values({
           id: documentPlan.source.documentId,
-          companyId,
+          squadId,
           title: documentPlan.source.title,
           format: documentPlan.source.format,
           latestBody: documentPlan.source.latestBody,
@@ -2821,7 +2821,7 @@ async function applyMergePlan(input: {
         });
         await tx.insert(issueDocuments).values({
           id: documentPlan.source.id,
-          companyId,
+          squadId,
           issueId: documentPlan.source.issueId,
           documentId: documentPlan.source.documentId,
           key: documentPlan.source.key,
@@ -2838,7 +2838,7 @@ async function applyMergePlan(input: {
         if (!existingLink) {
           await tx.insert(issueDocuments).values({
             id: documentPlan.source.id,
-            companyId,
+            squadId,
             issueId: documentPlan.source.issueId,
             documentId: documentPlan.source.documentId,
             key: documentPlan.source.key,
@@ -2884,7 +2884,7 @@ async function applyMergePlan(input: {
         if (existingRevisionIds.has(revisionPlan.source.id)) continue;
         await tx.insert(documentRevisions).values({
           id: revisionPlan.source.id,
-          companyId,
+          squadId,
           documentId: documentPlan.source.documentId,
           revisionNumber: revisionPlan.targetRevisionNumber,
           body: revisionPlan.source.body,
@@ -2905,7 +2905,7 @@ async function applyMergePlan(input: {
         await tx
           .select({ id: issueAttachments.id })
           .from(issueAttachments)
-          .where(eq(issueAttachments.companyId, companyId))
+          .where(eq(issueAttachments.squadId, squadId))
       ).map((row) => row.id),
     );
     let insertedAttachments = 0;
@@ -2915,13 +2915,13 @@ async function applyMergePlan(input: {
       const parentExists = await tx
         .select({ id: issues.id })
         .from(issues)
-        .where(and(eq(issues.id, attachment.source.issueId), eq(issues.companyId, companyId)))
+        .where(and(eq(issues.id, attachment.source.issueId), eq(issues.squadId, squadId)))
         .then((rows) => rows[0] ?? null);
       if (!parentExists) continue;
 
       const body = await readSourceAttachmentBody(
         input.sourceStorages,
-        companyId,
+        squadId,
         attachment.source.objectKey,
       );
       if (!body) {
@@ -2929,7 +2929,7 @@ async function applyMergePlan(input: {
         continue;
       }
       await input.targetStorage.putObject(
-        companyId,
+        squadId,
         attachment.source.objectKey,
         body,
         attachment.source.contentType,
@@ -2937,7 +2937,7 @@ async function applyMergePlan(input: {
 
       await tx.insert(assets).values({
         id: attachment.source.assetId,
-        companyId,
+        squadId,
         provider: attachment.source.provider,
         objectKey: attachment.source.objectKey,
         contentType: attachment.source.contentType,
@@ -2952,7 +2952,7 @@ async function applyMergePlan(input: {
 
       await tx.insert(issueAttachments).values({
         id: attachment.source.id,
-        companyId,
+        squadId,
         issueId: attachment.source.issueId,
         assetId: attachment.source.assetId,
         issueCommentId: attachment.targetIssueCommentId,
@@ -3009,15 +3009,15 @@ export async function worktreeMergeHistoryCommand(sourceArg: string | undefined,
   const targetStorage = openConfiguredStorage(targetEndpoint.configPath);
 
   try {
-    const company = await resolveMergeCompany({
+    const squad = await resolveMergeSquad({
       sourceDb: sourceHandle.db,
       targetDb: targetHandle.db,
-      selector: opts.company,
+      selector: opts.squad,
     });
     let collected = await collectMergePlan({
       sourceDb: sourceHandle.db,
       targetDb: targetHandle.db,
-      company,
+      squad,
       scopes,
     });
     if (!opts.yes) {
@@ -3033,7 +3033,7 @@ export async function worktreeMergeHistoryCommand(sourceArg: string | undefined,
         collected = await collectMergePlan({
           sourceDb: sourceHandle.db,
           targetDb: targetHandle.db,
-          company,
+          squad,
           scopes,
           importProjectIds: projectSelections.importProjectIds,
           projectIdOverrides: projectSelections.projectIdOverrides,
@@ -3066,7 +3066,7 @@ export async function worktreeMergeHistoryCommand(sourceArg: string | undefined,
       sourceStorages,
       targetStorage,
       targetDb: targetHandle.db,
-      company,
+      squad,
       plan: collected.plan,
     });
     if (applied.skippedMissingAttachmentObjects > 0) {
@@ -3076,7 +3076,7 @@ export async function worktreeMergeHistoryCommand(sourceArg: string | undefined,
     }
     p.outro(
       pc.green(
-        `Imported ${applied.insertedProjects} projects (${applied.insertedProjectWorkspaces} workspaces), ${applied.insertedIssues} issues, ${applied.insertedComments} comments, ${applied.insertedDocuments} documents (${applied.insertedDocumentRevisions} revisions, ${applied.mergedDocuments} merged), and ${applied.insertedAttachments} attachments into ${company.issuePrefix}.`,
+        `Imported ${applied.insertedProjects} projects (${applied.insertedProjectWorkspaces} workspaces), ${applied.insertedIssues} issues, ${applied.insertedComments} comments, ${applied.insertedDocuments} documents (${applied.insertedDocumentRevisions} revisions, ${applied.mergedDocuments} merged), and ${applied.insertedAttachments} attachments into ${squad.issuePrefix}.`,
       ),
     );
   } finally {
@@ -3323,7 +3323,7 @@ export function registerWorktreeCommands(program: Command): void {
     .argument("[source]", "Optional source worktree path, directory name, or branch name (back-compat alias for --from)")
     .option("--from <worktree>", "Source worktree path, directory name, branch name, or current")
     .option("--to <worktree>", "Target worktree path, directory name, branch name, or current (defaults to current)")
-    .option("--company <id-or-prefix>", "Shared company id or issue prefix inside the chosen source/target instances")
+    .option("--squad <id-or-prefix>", "Shared squad id or issue prefix inside the chosen source/target instances")
     .option("--scope <items>", "Comma-separated scopes to import (issues, comments)", "issues,comments")
     .option("--apply", "Apply the import after previewing the plan", false)
     .option("--dry", "Preview only and do not import anything", false)

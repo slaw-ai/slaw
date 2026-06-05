@@ -10,7 +10,7 @@
 
 - Use HS256 JWTs with claims:
   - `sub` (agent id)
-  - `company_id`
+  - `squad_id`
   - `adapter_type`
   - `run_id`
   - `iat`
@@ -27,7 +27,7 @@
 1. Keep the existing DB key lookup path unchanged (`agent_api_keys` hash lookup).
 2. If no DB key matches, add JWT verification in `server/src/middleware/auth.ts`.
 3. On JWT success:
-   - set `req.actor = { type: "agent", agentId, companyId }`.
+   - set `req.actor = { type: "agent", agentId, squadId }`.
    - optionally guard against terminated agents.
 4. Continue board fallback for requests without valid authentication.
 
@@ -54,7 +54,7 @@
   - if user already sets `SLAW_API_KEY`, do not overwrite it.
 - Continue injecting:
   - `SLAW_AGENT_ID`
-  - `SLAW_COMPANY_ID`
+  - `SLAW_SQUAD_ID`
   - `SLAW_API_URL`
 
 ## 5) Documentation updates
@@ -67,6 +67,6 @@
 
 - Local adapters authenticate without manual `SLAW_API_KEY` config.
 - Existing static keys (`agent_api_keys`) still work unchanged.
-- Auth remains company-scoped (`req.actor.companyId` used by existing checks).
+- Auth remains squad-scoped (`req.actor.squadId` used by existing checks).
 - JWT generation and verification errors are logged as non-leaking structured events.
 - Scope remains local-only (`claude_local`, `codex_local`) while adapter capability model is generic.

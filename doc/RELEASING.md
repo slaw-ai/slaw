@@ -191,9 +191,9 @@ Minimum checks:
 - onboarding completes without crashes
 - authenticated login works with the smoke credentials
 - the browser lands in onboarding on a fresh instance
-- company creation succeeds
-- the first CEO agent is created
-- the first CEO heartbeat run is triggered
+- squad creation succeeds
+- the first Squad Lead agent is created
+- the first Squad Lead heartbeat run is triggered
 
 ## Rollback
 

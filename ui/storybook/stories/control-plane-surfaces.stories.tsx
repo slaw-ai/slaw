@@ -55,7 +55,7 @@ function ControlPlaneSurfaces() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">company scoped</Badge>
+              <Badge variant="outline">squad scoped</Badge>
               <Badge variant="outline">single assignee</Badge>
               <Badge variant="outline">auditable</Badge>
             </div>

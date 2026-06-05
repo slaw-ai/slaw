@@ -2,7 +2,7 @@ import { and, eq, ne } from "drizzle-orm";
 import type { Db } from "@slaw/db";
 import {
   agents,
-  companies,
+  squads,
   pluginEntities,
   pluginManagedResources,
 } from "@slaw/db";
@@ -25,11 +25,11 @@ interface PluginManagedAgentServiceOptions {
   pluginId: string;
   pluginKey: string;
   manifest?: SlawPluginManifestV1 | null;
-  instructionTemplateVariables?: (companyId: string) => Promise<Record<string, string | null | undefined>>;
+  instructionTemplateVariables?: (squadId: string) => Promise<Record<string, string | null | undefined>>;
 }
 
-function bindingExternalId(companyId: string, agentKey: string) {
-  return `managed:agent:${companyId}:${agentKey}`;
+function bindingExternalId(squadId: string, agentKey: string) {
+  return `managed:agent:${squadId}:${agentKey}`;
 }
 
 function managedMetadata(
@@ -186,7 +186,7 @@ export function pluginManagedAgentService(
     return declaration;
   }
 
-  async function getBinding(companyId: string, agentKey: string) {
+  async function getBinding(squadId: string, agentKey: string) {
     return db
       .select()
       .from(pluginEntities)
@@ -194,20 +194,20 @@ export function pluginManagedAgentService(
         and(
           eq(pluginEntities.pluginId, options.pluginId),
           eq(pluginEntities.entityType, MANAGED_AGENT_ENTITY_TYPE),
-          eq(pluginEntities.externalId, bindingExternalId(companyId, agentKey)),
+          eq(pluginEntities.externalId, bindingExternalId(squadId, agentKey)),
         ),
       )
       .then((rows) => rows[0] ?? null);
   }
 
   async function upsertBinding(
-    companyId: string,
+    squadId: string,
     declaration: PluginManagedAgentDeclaration,
     agentId: string,
     extraData: Record<string, unknown> = {},
     effectiveAdapterType?: string,
   ) {
-    const adapterType = effectiveAdapterType ?? (await resolveManagedAdapterType(companyId, declaration));
+    const adapterType = effectiveAdapterType ?? (await resolveManagedAdapterType(squadId, declaration));
     const defaultsJson = {
       agentKey: declaration.agentKey,
       displayName: declaration.displayName,
@@ -227,7 +227,7 @@ export function pluginManagedAgentService(
       .select({ id: pluginManagedResources.id })
       .from(pluginManagedResources)
       .where(and(
-        eq(pluginManagedResources.companyId, companyId),
+        eq(pluginManagedResources.squadId, squadId),
         eq(pluginManagedResources.pluginId, options.pluginId),
         eq(pluginManagedResources.resourceKind, "agent"),
         eq(pluginManagedResources.resourceKey, declaration.agentKey),
@@ -240,7 +240,7 @@ export function pluginManagedAgentService(
         .where(eq(pluginManagedResources.id, managedResource.id));
     } else {
       await db.insert(pluginManagedResources).values({
-        companyId,
+        squadId,
         pluginId: options.pluginId,
         pluginKey: options.pluginKey,
         resourceKind: "agent",
@@ -250,7 +250,7 @@ export function pluginManagedAgentService(
       });
     }
 
-    const externalId = bindingExternalId(companyId, declaration.agentKey);
+    const externalId = bindingExternalId(squadId, declaration.agentKey);
     const data = {
       pluginKey: options.pluginKey,
       resourceKind: "agent",
@@ -261,13 +261,13 @@ export function pluginManagedAgentService(
       lastReconciledAt: new Date().toISOString(),
       ...extraData,
     };
-    const existing = await getBinding(companyId, declaration.agentKey);
+    const existing = await getBinding(squadId, declaration.agentKey);
     if (existing) {
       return db
         .update(pluginEntities)
         .set({
-          scopeKind: "company",
-          scopeId: companyId,
+          scopeKind: "squad",
+          scopeId: squadId,
           title: declaration.displayName,
           status: "resolved",
           data,
@@ -282,8 +282,8 @@ export function pluginManagedAgentService(
       .values({
         pluginId: options.pluginId,
         entityType: MANAGED_AGENT_ENTITY_TYPE,
-        scopeKind: "company",
-        scopeId: companyId,
+        scopeKind: "squad",
+        scopeId: squadId,
         externalId,
         title: declaration.displayName,
         status: "resolved",
@@ -293,19 +293,19 @@ export function pluginManagedAgentService(
       .then((rows) => rows[0]);
   }
 
-  async function findRelinkCandidate(companyId: string, declaration: PluginManagedAgentDeclaration) {
+  async function findRelinkCandidate(squadId: string, declaration: PluginManagedAgentDeclaration) {
     const rows = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.companyId, companyId), ne(agents.status, "terminated")));
+      .where(and(eq(agents.squadId, squadId), ne(agents.status, "terminated")));
     return rows.find((row) => rowIsManagedAgent(row, options.pluginKey, declaration.agentKey)) ?? null;
   }
 
-  async function companyAdapterUsage(companyId: string) {
+  async function squadAdapterUsage(squadId: string) {
     const rows = await db
       .select({ adapterType: agents.adapterType })
       .from(agents)
-      .where(and(eq(agents.companyId, companyId), ne(agents.status, "terminated")));
+      .where(and(eq(agents.squadId, squadId), ne(agents.status, "terminated")));
     const counts = new Map<string, number>();
     for (const row of rows) {
       const adapterType = normalizeAdapterType(row.adapterType);
@@ -318,17 +318,17 @@ export function pluginManagedAgentService(
       .slice(0, 10);
   }
 
-  async function resolveManagedAdapterType(companyId: string, declaration: PluginManagedAgentDeclaration) {
-    return selectPreferredAdapterType(declaration, await companyAdapterUsage(companyId));
+  async function resolveManagedAdapterType(squadId: string, declaration: PluginManagedAgentDeclaration) {
+    return selectPreferredAdapterType(declaration, await squadAdapterUsage(squadId));
   }
 
   async function materializeDeclaredInstructions(
-    companyId: string,
+    squadId: string,
     agent: Agent,
     declaration: PluginManagedAgentDeclaration,
     materializeOptions: { replaceExisting: boolean },
   ): Promise<Agent> {
-    const variables = await optionsForInstructionVariables(companyId);
+    const variables = await optionsForInstructionVariables(squadId);
     const declared = declaredInstructionFiles(declaration, variables);
     if (!declared) return agent;
 
@@ -352,12 +352,12 @@ export function pluginManagedAgentService(
   }
 
   async function managedInstructionDefaultDrift(
-    companyId: string,
+    squadId: string,
     agent: Agent | null,
     declaration: PluginManagedAgentDeclaration,
   ): Promise<PluginManagedAgentResolution["defaultDrift"]> {
     if (!agent) return null;
-    const variables = await optionsForInstructionVariables(companyId);
+    const variables = await optionsForInstructionVariables(squadId);
     const declared = declaredInstructionFiles(declaration, variables);
     if (!declared) return null;
 
@@ -378,8 +378,8 @@ export function pluginManagedAgentService(
     return changedFiles.length > 0 ? { entryFile: declared.entryFile, changedFiles } : null;
   }
 
-  async function optionsForInstructionVariables(companyId: string) {
-    return options.instructionTemplateVariables ? options.instructionTemplateVariables(companyId) : {};
+  async function optionsForInstructionVariables(squadId: string) {
+    return options.instructionTemplateVariables ? options.instructionTemplateVariables(squadId) : {};
   }
 
   function optionsForRevisionSource() {
@@ -387,7 +387,7 @@ export function pluginManagedAgentService(
   }
 
   async function resolution(
-    companyId: string,
+    squadId: string,
     declaration: PluginManagedAgentDeclaration,
     agent: Agent | null,
     status: PluginManagedAgentResolution["status"],
@@ -397,37 +397,37 @@ export function pluginManagedAgentService(
       pluginKey: options.pluginKey,
       resourceKind: "agent",
       resourceKey: declaration.agentKey,
-      companyId,
+      squadId,
       agentId: agent?.id ?? null,
       agent,
       status,
       approvalId: approvalId ?? null,
-      defaultDrift: await managedInstructionDefaultDrift(companyId, agent, declaration),
+      defaultDrift: await managedInstructionDefaultDrift(squadId, agent, declaration),
     };
   }
 
-  async function createManagedAgent(companyId: string, declaration: PluginManagedAgentDeclaration) {
-    const company = await db
+  async function createManagedAgent(squadId: string, declaration: PluginManagedAgentDeclaration) {
+    const squad = await db
       .select()
-      .from(companies)
-      .where(eq(companies.id, companyId))
+      .from(squads)
+      .where(eq(squads.id, squadId))
       .then((rows) => rows[0] ?? null);
-    if (!company) throw notFound("Company not found");
+    if (!squad) throw notFound("Squad not found");
 
-    const requiresApproval = company.requireBoardApprovalForNewAgents;
-    const adapterType = await resolveManagedAdapterType(companyId, declaration);
-    let created = await agentSvc.create(companyId, {
+    const requiresApproval = squad.requireBoardApprovalForNewAgents;
+    const adapterType = await resolveManagedAdapterType(squadId, declaration);
+    let created = await agentSvc.create(squadId, {
       ...declarationPatch(declaration, { adapterType }),
       status: requiresApproval ? "pending_approval" : declaration.status ?? "idle",
       metadata: managedMetadata(options.pluginId, options.pluginKey, declaration),
       spentMonthlyCents: 0,
       lastHeartbeatAt: null,
     }) as Agent;
-    created = await materializeDeclaredInstructions(companyId, created, declaration, { replaceExisting: true });
+    created = await materializeDeclaredInstructions(squadId, created, declaration, { replaceExisting: true });
 
     let approvalId: string | null = null;
     if (requiresApproval) {
-      const approval = await approvalSvc.create(companyId, {
+      const approval = await approvalSvc.create(squadId, {
         type: "hire_agent",
         requestedByAgentId: null,
         requestedByUserId: null,
@@ -456,7 +456,7 @@ export function pluginManagedAgentService(
       });
       approvalId = approval.id;
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "plugin",
         actorId: options.pluginId,
         action: "approval.created",
@@ -471,9 +471,9 @@ export function pluginManagedAgentService(
       });
     }
 
-    await upsertBinding(companyId, declaration, created.id, { approvalId }, adapterType);
+    await upsertBinding(squadId, declaration, created.id, { approvalId }, adapterType);
     await logActivity(db, {
-      companyId,
+      squadId,
       actorType: "plugin",
       actorId: options.pluginId,
       action: "plugin.managed_agent.created",
@@ -487,47 +487,47 @@ export function pluginManagedAgentService(
         approvalId,
       },
     });
-    return resolution(companyId, declaration, created as Agent, "created", approvalId);
+    return resolution(squadId, declaration, created as Agent, "created", approvalId);
   }
 
-  async function get(agentKey: string, companyId: string) {
+  async function get(agentKey: string, squadId: string) {
       const declaration = declarationFor(agentKey);
-      const binding = await getBinding(companyId, agentKey);
+      const binding = await getBinding(squadId, agentKey);
       const boundAgentId = typeof binding?.data?.agentId === "string" ? binding.data.agentId : null;
-      if (!boundAgentId) return resolution(companyId, declaration, null, "missing");
+      if (!boundAgentId) return resolution(squadId, declaration, null, "missing");
       const agent = await agentSvc.getById(boundAgentId);
-      if (!agent || agent.companyId !== companyId || agent.status === "terminated") {
-        return resolution(companyId, declaration, null, "missing");
+      if (!agent || agent.squadId !== squadId || agent.status === "terminated") {
+        return resolution(squadId, declaration, null, "missing");
       }
-      return resolution(companyId, declaration, agent as Agent, "resolved");
+      return resolution(squadId, declaration, agent as Agent, "resolved");
   }
 
-  async function reconcile(agentKey: string, companyId: string) {
+  async function reconcile(agentKey: string, squadId: string) {
       const declaration = declarationFor(agentKey);
-      const current = await get(agentKey, companyId);
+      const current = await get(agentKey, squadId);
       if (current.agent) {
-        await upsertBinding(companyId, declaration, current.agent.id);
+        await upsertBinding(squadId, declaration, current.agent.id);
         return current;
       }
 
-      const relinkCandidate = await findRelinkCandidate(companyId, declaration);
+      const relinkCandidate = await findRelinkCandidate(squadId, declaration);
       if (relinkCandidate) {
-        await upsertBinding(companyId, declaration, relinkCandidate.id);
+        await upsertBinding(squadId, declaration, relinkCandidate.id);
         const agent = await agentSvc.getById(relinkCandidate.id);
-        return resolution(companyId, declaration, agent as Agent, "relinked");
+        return resolution(squadId, declaration, agent as Agent, "relinked");
       }
 
-      return createManagedAgent(companyId, declaration);
+      return createManagedAgent(squadId, declaration);
   }
 
-  async function reset(agentKey: string, companyId: string) {
+  async function reset(agentKey: string, squadId: string) {
       const declaration = declarationFor(agentKey);
-      const reconciled = await reconcile(agentKey, companyId);
+      const reconciled = await reconcile(agentKey, squadId);
       if (!reconciled.agent) return reconciled;
       const currentMetadata = reconciled.agent.metadata && typeof reconciled.agent.metadata === "object"
         ? reconciled.agent.metadata
         : {};
-      const adapterType = await resolveManagedAdapterType(companyId, declaration);
+      const adapterType = await resolveManagedAdapterType(squadId, declaration);
       const updated = await agentSvc.update(reconciled.agent.id, {
         ...declarationPatch(declaration, { adapterType }),
         metadata: managedMetadata(options.pluginId, options.pluginKey, declaration, currentMetadata),
@@ -537,10 +537,10 @@ export function pluginManagedAgentService(
         },
       });
       if (!updated) throw notFound("Managed agent not found");
-      const updatedAgent = await materializeDeclaredInstructions(companyId, updated as Agent, declaration, { replaceExisting: true });
-      await upsertBinding(companyId, declaration, updatedAgent.id, {}, adapterType);
+      const updatedAgent = await materializeDeclaredInstructions(squadId, updated as Agent, declaration, { replaceExisting: true });
+      await upsertBinding(squadId, declaration, updatedAgent.id, {}, adapterType);
       await logActivity(db, {
-        companyId,
+        squadId,
         actorType: "plugin",
         actorId: options.pluginId,
         action: "plugin.managed_agent.reset",
@@ -551,7 +551,7 @@ export function pluginManagedAgentService(
           managedResourceKey: declaration.agentKey,
         },
       });
-      return resolution(companyId, declaration, updatedAgent, "reset");
+      return resolution(squadId, declaration, updatedAgent, "reset");
   }
 
   return {

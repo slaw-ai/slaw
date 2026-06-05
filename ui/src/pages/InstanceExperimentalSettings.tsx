@@ -270,7 +270,7 @@ export function InstanceExperimentalSettings() {
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Enable Environments</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Show environment management in company settings and allow project and agent environment assignment
+              Show environment management in squad settings and allow project and agent environment assignment
               controls.
             </p>
           </div>

@@ -100,7 +100,7 @@ describe("instance database backup routes", () => {
         userId: "user-1",
         source: "session",
         isInstanceAdmin: false,
-        companyIds: ["company-1"],
+        squadIds: ["squad-1"],
       },
       service,
     );
@@ -116,7 +116,7 @@ describe("instance database backup routes", () => {
       {
         type: "agent",
         agentId: "agent-1",
-        companyId: "company-1",
+        squadId: "squad-1",
         source: "agent_key",
       },
       service,

@@ -7,7 +7,7 @@ import type { AdapterExecutionTarget } from "./execution-target.js";
 
 export interface AdapterAgent {
   id: string;
-  companyId: string;
+  squadId: string;
   name: string;
   adapterType: string | null;
   adapterConfig: unknown;
@@ -185,7 +185,7 @@ export type AdapterSkillState =
   | "external";
 
 export type AdapterSkillOrigin =
-  | "company_managed"
+  | "squad_managed"
   | "slaw_required"
   | "user_installed"
   | "external_unknown";
@@ -218,13 +218,13 @@ export interface AdapterSkillSnapshot {
 
 export interface AdapterSkillContext {
   agentId: string;
-  companyId: string;
+  squadId: string;
   adapterType: string;
   config: Record<string, unknown>;
 }
 
 export interface AdapterEnvironmentTestContext {
-  companyId: string;
+  squadId: string;
   adapterType: string;
   config: Record<string, unknown>;
   /**
@@ -251,7 +251,7 @@ export interface AdapterEnvironmentTestContext {
 
 /** Payload for the onHireApproved adapter lifecycle hook (e.g. join-request or hire_agent approval). */
 export interface HireApprovedPayload {
-  companyId: string;
+  squadId: string;
   agentId: string;
   agentName: string;
   adapterType: string;

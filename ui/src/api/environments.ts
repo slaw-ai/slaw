@@ -2,17 +2,17 @@ import type { Environment, EnvironmentCapabilities, EnvironmentLease, Environmen
 import { api } from "./client";
 
 export const environmentsApi = {
-  list: (companyId: string) => api.get<Environment[]>(`/companies/${companyId}/environments`),
-  capabilities: (companyId: string) =>
-    api.get<EnvironmentCapabilities>(`/companies/${companyId}/environments/capabilities`),
+  list: (squadId: string) => api.get<Environment[]>(`/squads/${squadId}/environments`),
+  capabilities: (squadId: string) =>
+    api.get<EnvironmentCapabilities>(`/squads/${squadId}/environments/capabilities`),
   lease: (leaseId: string) => api.get<EnvironmentLease>(`/environment-leases/${leaseId}`),
-  create: (companyId: string, body: {
+  create: (squadId: string, body: {
     name: string;
     description?: string | null;
     driver: "local" | "ssh" | "sandbox" | "plugin";
     config?: Record<string, unknown>;
     metadata?: Record<string, unknown> | null;
-  }) => api.post<Environment>(`/companies/${companyId}/environments`, body),
+  }) => api.post<Environment>(`/squads/${squadId}/environments`, body),
   update: (environmentId: string, body: {
     name?: string;
     description?: string | null;
@@ -22,11 +22,11 @@ export const environmentsApi = {
     metadata?: Record<string, unknown> | null;
   }) => api.patch<Environment>(`/environments/${environmentId}`, body),
   probe: (environmentId: string) => api.post<EnvironmentProbeResult>(`/environments/${environmentId}/probe`, {}),
-  probeConfig: (companyId: string, body: {
+  probeConfig: (squadId: string, body: {
     name?: string;
     driver: "local" | "ssh" | "sandbox" | "plugin";
     description?: string | null;
     config?: Record<string, unknown>;
     metadata?: Record<string, unknown> | null;
-  }) => api.post<EnvironmentProbeResult>(`/companies/${companyId}/environments/probe-config`, body),
+  }) => api.post<EnvironmentProbeResult>(`/squads/${squadId}/environments/probe-config`, body),
 };

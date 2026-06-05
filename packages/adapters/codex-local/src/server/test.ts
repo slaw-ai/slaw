@@ -63,7 +63,7 @@ const CODEX_AUTH_REQUIRED_RE =
 
 async function prepareCodexHelloProbe(input: {
   runId: string;
-  companyId: string;
+  squadId: string;
   target: AdapterEnvironmentTestContext["executionTarget"] | null;
   targetIsRemote: boolean;
   cwd: string;
@@ -88,7 +88,7 @@ async function prepareCodexHelloProbe(input: {
   };
 
   if (input.targetIsRemote && !input.probeApiKey) {
-    const managedHome = await prepareManagedCodexHome(process.env, async () => {}, input.companyId, {
+    const managedHome = await prepareManagedCodexHome(process.env, async () => {}, input.squadId, {
       apiKey: null,
     });
     preparedRuntimeWorkspaceLocalDir = await fs.mkdtemp(
@@ -306,7 +306,7 @@ export async function testEnvironment(
           : null;
       const preparedProbe = await prepareCodexHelloProbe({
         runId,
-        companyId: ctx.companyId,
+        squadId: ctx.squadId,
         target,
         targetIsRemote,
         cwd,

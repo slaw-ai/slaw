@@ -17,7 +17,7 @@ import type {
 import type { IssueTimelineEvent } from "@/lib/issue-timeline-events";
 import { storybookAgentMap, storybookAgents } from "../fixtures/slawData";
 
-const companyId = "company-storybook";
+const squadId = "squad-storybook";
 const projectId = "project-board-ui";
 const issueId = "issue-chat-comments";
 const currentUserId = "user-board";
@@ -87,7 +87,7 @@ function createComment(overrides: Partial<StoryComment>): StoryComment {
   const authorAgentId = overrides.authorAgentId ?? null;
   return {
     id: "comment-default",
-    companyId,
+    squadId,
     issueId,
     authorAgentId: null,
     authorUserId: currentUserId,
@@ -285,7 +285,7 @@ const commentLinkedRuns = [
 const feedbackVotes: FeedbackVote[] = [
   {
     id: "feedback-chat-comment-01",
-    companyId,
+    squadId,
     issueId,
     targetType: "issue_comment",
     targetId: "comment-issue-agent",
@@ -603,7 +603,7 @@ function ThreadProps({
       queuedComments={queuedComments}
       linkedRuns={commentLinkedRuns}
       timelineEvents={timelineEvents}
-      companyId={companyId}
+      squadId={squadId}
       projectId={projectId}
       issueStatus="in_progress"
       agentMap={storybookAgentMap}
@@ -649,7 +649,7 @@ function RunChatMatrix() {
             run={liveRun}
             transcript={liveRunTranscript}
             hasOutput
-            companyId={companyId}
+            squadId={squadId}
           />
         </div>
         <Card className="shadow-none">
@@ -689,7 +689,7 @@ function IssueChatMatrix() {
             liveRuns={[liveRun]}
             feedbackVotes={feedbackVotes}
             feedbackDataSharingPreference="allowed"
-            companyId={companyId}
+            squadId={squadId}
             projectId={projectId}
             issueStatus="in_progress"
             agentMap={storybookAgentMap}
@@ -718,7 +718,7 @@ function IssueChatMatrix() {
               timelineEvents={[]}
               linkedRuns={[]}
               liveRuns={[]}
-              companyId={companyId}
+              squadId={squadId}
               projectId={projectId}
               agentMap={storybookAgentMap}
               currentUserId={currentUserId}
@@ -733,7 +733,7 @@ function IssueChatMatrix() {
               timelineEvents={[]}
               linkedRuns={[]}
               liveRuns={[]}
-              companyId={companyId}
+              squadId={squadId}
               projectId={projectId}
               agentMap={storybookAgentMap}
               currentUserId={currentUserId}
@@ -752,7 +752,7 @@ function IssueChatMatrix() {
               timelineEvents={[]}
               linkedRuns={[]}
               liveRuns={[]}
-              companyId={companyId}
+              squadId={squadId}
               projectId={projectId}
               agentMap={storybookAgentMap}
               currentUserId={currentUserId}
@@ -780,7 +780,7 @@ function IssueThreadNoticeReview() {
               timelineEvents={issueThreadNoticeReviewTimelineEvents}
               linkedRuns={[]}
               liveRuns={[]}
-              companyId={companyId}
+              squadId={squadId}
               projectId={projectId}
               issueStatus="done"
               successfulRunHandoff={{

@@ -40,8 +40,8 @@ import { heartbeatsApi } from "@/api/heartbeats";
 import { issuesApi } from "@/api/issues";
 import { projectsApi } from "@/api/projects";
 import {
-  buildCompanyUserInlineOptions,
-} from "@/lib/company-members";
+  buildSquadUserInlineOptions,
+} from "@/lib/squad-members";
 import { collectLiveIssueIds } from "@/lib/liveIssueIds";
 import { useProjectOrder } from "@/hooks/useProjectOrder";
 import {
@@ -162,7 +162,7 @@ type PluginIssuesListFilters = {
 };
 
 type PluginIssuesListProps = {
-  companyId: string | null;
+  squadId: string | null;
   projectId?: string | null;
   filters?: PluginIssuesListFilters;
   viewStateKey?: string;
@@ -177,7 +177,7 @@ type PluginAssigneePickerSelection = {
 };
 
 type PluginAssigneePickerProps = {
-  companyId?: string | null;
+  squadId?: string | null;
   value: string;
   onChange: (value: string, selection: PluginAssigneePickerSelection) => void;
   placeholder?: string;
@@ -191,7 +191,7 @@ type PluginAssigneePickerProps = {
 };
 
 type PluginProjectPickerProps = {
-  companyId?: string | null;
+  squadId?: string | null;
   value: string;
   onChange: (projectId: string) => void;
   placeholder?: string;
@@ -237,7 +237,7 @@ function compactIssueFilters(filters: PluginIssuesListFilters): PluginIssuesList
 }
 
 function PluginSdkIssuesList({
-  companyId,
+  squadId,
   projectId = null,
   filters,
   viewStateKey = "slaw:plugin-issues-view",
@@ -256,54 +256,54 @@ function PluginSdkIssuesList({
   const originKindPrefix = issueFilters.originKindPrefix ?? null;
   const resolvedProjectId = issueFilters.projectId ?? projectId ?? null;
   const issuesQueryKey = useMemo(
-    () => ["plugins", "sdk-ui", "issues-list", companyId ?? "__no-company__", issueFilters] as const,
-    [companyId, issueFilters],
+    () => ["plugins", "sdk-ui", "issues-list", squadId ?? "__no-squad__", issueFilters] as const,
+    [squadId, issueFilters],
   );
 
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(companyId ?? "__no-company__"),
-    queryFn: () => agentsApi.list(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.agents.list(squadId ?? "__no-squad__"),
+    queryFn: () => agentsApi.list(squadId!),
+    enabled: !!squadId,
   });
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(companyId ?? "__no-company__"),
-    queryFn: () => projectsApi.list(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.projects.list(squadId ?? "__no-squad__"),
+    queryFn: () => projectsApi.list(squadId!),
+    enabled: !!squadId,
   });
   const { data: liveRuns } = useQuery({
-    queryKey: queryKeys.liveRuns(companyId ?? "__no-company__"),
-    queryFn: () => heartbeatsApi.liveRunsForCompany(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.liveRuns(squadId ?? "__no-squad__"),
+    queryFn: () => heartbeatsApi.liveRunsForSquad(squadId!),
+    enabled: !!squadId,
     refetchInterval: 5000,
   });
   const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
 
   const { data: issues, isLoading, error } = useQuery({
     queryKey: issuesQueryKey,
-    queryFn: () => issuesApi.list(companyId!, issueFilters),
-    enabled: !!companyId,
+    queryFn: () => issuesApi.list(squadId!, issueFilters),
+    enabled: !!squadId,
   });
 
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       issuesApi.update(id, data),
     onSuccess: () => {
-      if (!companyId) return;
-      queryClient.invalidateQueries({ queryKey: ["plugins", "sdk-ui", "issues-list", companyId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
+      if (!squadId) return;
+      queryClient.invalidateQueries({ queryKey: ["plugins", "sdk-ui", "issues-list", squadId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(squadId) });
       if (resolvedProjectId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, resolvedProjectId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(squadId, resolvedProjectId) });
         if (originKindPrefix) {
           queryClient.invalidateQueries({
-            queryKey: queryKeys.issues.listPluginOperationsByProject(companyId, resolvedProjectId, originKindPrefix),
+            queryKey: queryKeys.issues.listPluginOperationsByProject(squadId, resolvedProjectId, originKindPrefix),
           });
         }
       }
     },
   });
 
-  if (!companyId) {
-    return createElement("div", { className: "text-sm text-muted-foreground" }, "Select a company to view issues.");
+  if (!squadId) {
+    return createElement("div", { className: "text-sm text-muted-foreground" }, "Select a squad to view issues.");
   }
 
   return createElement(HostIssuesList, {
@@ -323,7 +323,7 @@ function PluginSdkIssuesList({
 }
 
 function PluginSdkAssigneePicker({
-  companyId,
+  squadId,
   value,
   onChange,
   placeholder = "Assignee",
@@ -336,7 +336,7 @@ function PluginSdkAssigneePicker({
   onConfirm,
 }: PluginAssigneePickerProps) {
   const hostContext = useHostContext();
-  const resolvedCompanyId = companyId ?? hostContext.companyId ?? null;
+  const resolvedSquadId = squadId ?? hostContext.squadId ?? null;
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -344,14 +344,14 @@ function PluginSdkAssigneePicker({
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const { data: agents } = useQuery({
-    queryKey: queryKeys.agents.list(resolvedCompanyId ?? "__no-company__"),
-    queryFn: () => agentsApi.list(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId,
+    queryKey: queryKeys.agents.list(resolvedSquadId ?? "__no-squad__"),
+    queryFn: () => agentsApi.list(resolvedSquadId!),
+    enabled: !!resolvedSquadId,
   });
-  const { data: companyMembers } = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(resolvedCompanyId ?? "__no-company__"),
-    queryFn: () => accessApi.listUserDirectory(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId && includeUsers,
+  const { data: squadMembers } = useQuery({
+    queryKey: queryKeys.access.squadUserDirectory(resolvedSquadId ?? "__no-squad__"),
+    queryFn: () => accessApi.listUserDirectory(resolvedSquadId!),
+    enabled: !!resolvedSquadId && includeUsers,
   });
   const recentAssigneeSelectionIds = useMemo(() => getRecentAssigneeSelectionIds(), []);
   const recentAssigneeIds = useMemo(
@@ -371,7 +371,7 @@ function PluginSdkAssigneePicker({
     () => [
       ...(includeUsers ? currentUserAssigneeOption(currentUserId) : []),
       ...(includeUsers
-        ? buildCompanyUserInlineOptions(companyMembers?.users, { excludeUserIds: [currentUserId] })
+        ? buildSquadUserInlineOptions(squadMembers?.users, { excludeUserIds: [currentUserId] })
         : []),
       ...sortedAgents.map((agent) => ({
         id: assigneeValueFromSelection({ assigneeAgentId: agent.id }),
@@ -379,7 +379,7 @@ function PluginSdkAssigneePicker({
         searchText: `${agent.name} ${agent.role} ${agent.title ?? ""}`,
       })),
     ],
-    [companyMembers?.users, currentUserId, includeUsers, sortedAgents],
+    [squadMembers?.users, currentUserId, includeUsers, sortedAgents],
   );
   const selectedAssignee = parseAssigneeValue(value);
   const selectedAgent = selectedAssignee.assigneeAgentId
@@ -433,7 +433,7 @@ function PluginSdkAssigneePicker({
 }
 
 function PluginSdkProjectPicker({
-  companyId,
+  squadId,
   value,
   onChange,
   placeholder = "Project",
@@ -445,16 +445,16 @@ function PluginSdkProjectPicker({
   onConfirm,
 }: PluginProjectPickerProps) {
   const hostContext = useHostContext();
-  const resolvedCompanyId = companyId ?? hostContext.companyId ?? null;
+  const resolvedSquadId = squadId ?? hostContext.squadId ?? null;
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(resolvedCompanyId ?? "__no-company__"),
-    queryFn: () => projectsApi.list(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId,
+    queryKey: queryKeys.projects.list(resolvedSquadId ?? "__no-squad__"),
+    queryFn: () => projectsApi.list(resolvedSquadId!),
+    enabled: !!resolvedSquadId,
   });
   const visibleProjects = useMemo(
     () => (projects ?? []).filter((project) => includeArchived || !project.archivedAt),
@@ -462,7 +462,7 @@ function PluginSdkProjectPicker({
   );
   const { orderedProjects } = useProjectOrder({
     projects: visibleProjects,
-    companyId: resolvedCompanyId,
+    squadId: resolvedSquadId,
     userId: currentUserId,
   });
   const recentProjectIds = useMemo(() => getRecentProjectIds(), []);

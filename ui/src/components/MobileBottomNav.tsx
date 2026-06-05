@@ -7,7 +7,7 @@ import {
   Users,
   Inbox,
 } from "lucide-react";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { cn } from "../lib/utils";
@@ -36,9 +36,9 @@ type MobileNavItem = MobileNavLinkItem | MobileNavActionItem;
 
 export function MobileBottomNav({ visible }: MobileBottomNavProps) {
   const location = useLocation();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { openNewIssue } = useDialogActions();
-  const inboxBadge = useInboxBadge(selectedCompanyId);
+  const inboxBadge = useInboxBadge(selectedSquadId);
 
   const items = useMemo<MobileNavItem[]>(
     () => [

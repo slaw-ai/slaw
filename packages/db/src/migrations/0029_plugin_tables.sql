@@ -1,9 +1,9 @@
 -- Rollback:
 --   DROP INDEX IF EXISTS "plugin_logs_level_idx";
 --   DROP INDEX IF EXISTS "plugin_logs_plugin_time_idx";
---   DROP INDEX IF EXISTS "plugin_company_settings_company_plugin_uq";
---   DROP INDEX IF EXISTS "plugin_company_settings_plugin_idx";
---   DROP INDEX IF EXISTS "plugin_company_settings_company_idx";
+--   DROP INDEX IF EXISTS "plugin_squad_settings_squad_plugin_uq";
+--   DROP INDEX IF EXISTS "plugin_squad_settings_plugin_idx";
+--   DROP INDEX IF EXISTS "plugin_squad_settings_squad_idx";
 --   DROP INDEX IF EXISTS "plugin_webhook_deliveries_key_idx";
 --   DROP INDEX IF EXISTS "plugin_webhook_deliveries_status_idx";
 --   DROP INDEX IF EXISTS "plugin_webhook_deliveries_plugin_idx";
@@ -22,7 +22,7 @@
 --   DROP INDEX IF EXISTS "plugins_status_idx";
 --   DROP INDEX IF EXISTS "plugins_plugin_key_idx";
 --   DROP TABLE IF EXISTS "plugin_logs";
---   DROP TABLE IF EXISTS "plugin_company_settings";
+--   DROP TABLE IF EXISTS "plugin_squad_settings";
 --   DROP TABLE IF EXISTS "plugin_webhook_deliveries";
 --   DROP TABLE IF EXISTS "plugin_job_runs";
 --   DROP TABLE IF EXISTS "plugin_jobs";
@@ -123,9 +123,9 @@ CREATE TABLE "plugin_webhook_deliveries" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "plugin_company_settings" (
+CREATE TABLE "plugin_squad_settings" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"plugin_id" uuid NOT NULL,
 	"settings_json" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"last_error" text,
@@ -150,8 +150,8 @@ ALTER TABLE "plugin_jobs" ADD CONSTRAINT "plugin_jobs_plugin_id_plugins_id_fk" F
 ALTER TABLE "plugin_job_runs" ADD CONSTRAINT "plugin_job_runs_job_id_plugin_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."plugin_jobs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "plugin_job_runs" ADD CONSTRAINT "plugin_job_runs_plugin_id_plugins_id_fk" FOREIGN KEY ("plugin_id") REFERENCES "public"."plugins"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "plugin_webhook_deliveries" ADD CONSTRAINT "plugin_webhook_deliveries_plugin_id_plugins_id_fk" FOREIGN KEY ("plugin_id") REFERENCES "public"."plugins"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "plugin_company_settings" ADD CONSTRAINT "plugin_company_settings_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "plugin_company_settings" ADD CONSTRAINT "plugin_company_settings_plugin_id_plugins_id_fk" FOREIGN KEY ("plugin_id") REFERENCES "public"."plugins"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "plugin_squad_settings" ADD CONSTRAINT "plugin_squad_settings_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "plugin_squad_settings" ADD CONSTRAINT "plugin_squad_settings_plugin_id_plugins_id_fk" FOREIGN KEY ("plugin_id") REFERENCES "public"."plugins"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "plugin_logs" ADD CONSTRAINT "plugin_logs_plugin_id_plugins_id_fk" FOREIGN KEY ("plugin_id") REFERENCES "public"."plugins"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "plugins_plugin_key_idx" ON "plugins" USING btree ("plugin_key");--> statement-breakpoint
 CREATE INDEX "plugins_status_idx" ON "plugins" USING btree ("status");--> statement-breakpoint
@@ -170,8 +170,8 @@ CREATE INDEX "plugin_job_runs_status_idx" ON "plugin_job_runs" USING btree ("sta
 CREATE INDEX "plugin_webhook_deliveries_plugin_idx" ON "plugin_webhook_deliveries" USING btree ("plugin_id");--> statement-breakpoint
 CREATE INDEX "plugin_webhook_deliveries_status_idx" ON "plugin_webhook_deliveries" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "plugin_webhook_deliveries_key_idx" ON "plugin_webhook_deliveries" USING btree ("webhook_key");--> statement-breakpoint
-CREATE INDEX "plugin_company_settings_company_idx" ON "plugin_company_settings" USING btree ("company_id");--> statement-breakpoint
-CREATE INDEX "plugin_company_settings_plugin_idx" ON "plugin_company_settings" USING btree ("plugin_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "plugin_company_settings_company_plugin_uq" ON "plugin_company_settings" USING btree ("company_id","plugin_id");--> statement-breakpoint
+CREATE INDEX "plugin_squad_settings_squad_idx" ON "plugin_squad_settings" USING btree ("squad_id");--> statement-breakpoint
+CREATE INDEX "plugin_squad_settings_plugin_idx" ON "plugin_squad_settings" USING btree ("plugin_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "plugin_squad_settings_squad_plugin_uq" ON "plugin_squad_settings" USING btree ("squad_id","plugin_id");--> statement-breakpoint
 CREATE INDEX "plugin_logs_plugin_time_idx" ON "plugin_logs" USING btree ("plugin_id","created_at");--> statement-breakpoint
 CREATE INDEX "plugin_logs_level_idx" ON "plugin_logs" USING btree ("level");

@@ -1,6 +1,6 @@
 import { generateKeyPairSync, randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { companies, cloudUpstreamConnections, cloudUpstreamRuns, companySkills, createDb } from "@slaw/db";
+import { squads, cloudUpstreamConnections, cloudUpstreamRuns, squadSkills, createDb } from "@slaw/db";
 
 import { HttpError } from "../errors.js";
 import {
@@ -83,8 +83,8 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
     vi.restoreAllMocks();
     await db.delete(cloudUpstreamRuns);
     await db.delete(cloudUpstreamConnections);
-    await db.delete(companySkills);
-    await db.delete(companies);
+    await db.delete(squadSkills);
+    await db.delete(squads);
   });
 
   afterAll(async () => {
@@ -97,8 +97,8 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
   });
 
   it("encrypts stored upstream credentials while keeping connection flows usable", async () => {
-    const companyId = randomUUID();
-    await seedCompany(companyId);
+    const squadId = randomUUID();
+    await seedSquad(squadId);
     const tokenUrl = "https://cloud.example.test/oauth/token";
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
       const url = String(input);
@@ -107,7 +107,7 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
           product: "Slaw Cloud",
           stack: {
             id: "stack-1",
-            companyId: "cloud-company-1",
+            squadId: "cloud-squad-1",
             origin: "https://cloud.example.test",
             primaryHost: "cloud.example.test",
           },
@@ -142,7 +142,7 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
 
     const service = cloudUpstreamService(db, { instanceId: "test" });
     const started = await service.startConnect({
-      companyId,
+      squadId,
       remoteUrl: "https://cloud.example.test",
       redirectUri: "http://localhost:3100/callback",
     });
@@ -160,15 +160,15 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
   });
 
   it("marks orphaned running runs failed during startup reconciliation", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const connectionId = randomUUID();
     const runningRunId = randomUUID();
     const succeededRunId = randomUUID();
     const reconciledAt = new Date("2026-05-22T13:00:00.000Z");
-    await seedCompany(companyId);
+    await seedSquad(squadId);
     await db.insert(cloudUpstreamConnections).values({
       id: connectionId,
-      companyId,
+      squadId,
       remoteUrl: "https://cloud.example.test",
       sourceInstanceId: "source-1",
       sourceInstanceFingerprint: "sha256:test",
@@ -180,7 +180,7 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
       accessToken: "legacy-token",
       tokenId: "token-1",
       targetStackId: "stack-1",
-      targetCompanyId: "cloud-company-1",
+      targetSquadId: "cloud-squad-1",
       targetOrigin: "https://cloud.example.test",
       targetPrimaryHost: "cloud.example.test",
       targetProduct: "Slaw Cloud",
@@ -188,8 +188,8 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
       targetMaxChunkBytes: 8192,
     });
     await db.insert(cloudUpstreamRuns).values([
-      cloudRunRow({ id: runningRunId, connectionId, companyId, status: "running" }),
-      cloudRunRow({ id: succeededRunId, connectionId, companyId, status: "succeeded", completedAt: reconciledAt }),
+      cloudRunRow({ id: runningRunId, connectionId, squadId, status: "running" }),
+      cloudRunRow({ id: succeededRunId, connectionId, squadId, status: "succeeded", completedAt: reconciledAt }),
     ]);
 
     await expect(reconcileCloudUpstreamRunsOnStartup(db, reconciledAt)).resolves.toEqual({ reconciled: 1 });
@@ -208,26 +208,26 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
   });
 
   it("rejects a new run when the connection already has a running run", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const connectionId = randomUUID();
     const runningRunId = randomUUID();
-    await seedCompany(companyId);
-    await db.insert(cloudUpstreamConnections).values(cloudConnectionRow({ id: connectionId, companyId }));
+    await seedSquad(squadId);
+    await db.insert(cloudUpstreamConnections).values(cloudConnectionRow({ id: connectionId, squadId }));
     await db.insert(cloudUpstreamRuns).values(
-      cloudRunRow({ id: runningRunId, connectionId, companyId, status: "running" }),
+      cloudRunRow({ id: runningRunId, connectionId, squadId, status: "running" }),
     );
 
-    await expect(cloudUpstreamService(db).createRun({ connectionId, companyId })).rejects.toMatchObject({
+    await expect(cloudUpstreamService(db).createRun({ connectionId, squadId })).rejects.toMatchObject({
       status: 409,
       details: { runId: runningRunId },
     });
   });
 
   it("preserves a cancelled run when an in-flight createRun tries to finish", async () => {
-    const companyId = randomUUID();
+    const squadId = randomUUID();
     const connectionId = randomUUID();
-    await seedCompany(companyId);
-    await db.insert(cloudUpstreamConnections).values(cloudConnectionRow({ id: connectionId, companyId }));
+    await seedSquad(squadId);
+    await db.insert(cloudUpstreamConnections).values(cloudConnectionRow({ id: connectionId, squadId }));
 
     const service = cloudUpstreamService(db);
     const remoteCalls: string[] = [];
@@ -240,7 +240,7 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
       if (path.endsWith("/chunks")) {
         const run = await db.select().from(cloudUpstreamRuns).then((rows) => rows[0]);
         expect(run?.status).toBe("running");
-        await service.cancelRun(connectionId, run.id, companyId);
+        await service.cancelRun(connectionId, run.id, squadId);
         return jsonResponse({ ok: true });
       }
       if (path.endsWith("/cancel")) {
@@ -255,7 +255,7 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
       return jsonResponse({ error: "not_found" }, 404);
     }) as typeof fetch;
 
-    const result = await service.createRun({ connectionId, companyId });
+    const result = await service.createRun({ connectionId, squadId });
 
     expect(result.status).toBe("cancelled");
     expect(remoteCalls.some((path) => path.endsWith("/apply"))).toBe(false);
@@ -264,11 +264,11 @@ describeEmbeddedPostgres("cloud upstream persistence", () => {
     expect(rows[0]?.status).toBe("cancelled");
   });
 
-  async function seedCompany(companyId: string) {
-    await db.insert(companies).values({
-      id: companyId,
+  async function seedSquad(squadId: string) {
+    await db.insert(squads).values({
+      id: squadId,
       name: "Slaw",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
   }
@@ -281,11 +281,11 @@ function jsonResponse(body: unknown): Response {
   });
 }
 
-function cloudConnectionRow(input: { id: string; companyId: string }) {
+function cloudConnectionRow(input: { id: string; squadId: string }) {
   const { privateKey } = generateKeyPairSync("ed25519");
   return {
     id: input.id,
-    companyId: input.companyId,
+    squadId: input.squadId,
     remoteUrl: "https://cloud.example.test",
     sourceInstanceId: "source-1",
     sourceInstanceFingerprint: "sha256:test",
@@ -297,7 +297,7 @@ function cloudConnectionRow(input: { id: string; companyId: string }) {
     accessToken: "legacy-token",
     tokenId: "token-1",
     targetStackId: "stack-1",
-    targetCompanyId: "cloud-company-1",
+    targetSquadId: "cloud-squad-1",
     targetOrigin: "https://cloud.example.test",
     targetPrimaryHost: "cloud.example.test",
     targetProduct: "Slaw Cloud",
@@ -309,14 +309,14 @@ function cloudConnectionRow(input: { id: string; companyId: string }) {
 function cloudRunRow(input: {
   id: string;
   connectionId: string;
-  companyId: string;
+  squadId: string;
   status: string;
   completedAt?: Date;
 }) {
   return {
     id: input.id,
     connectionId: input.connectionId,
-    companyId: input.companyId,
+    squadId: input.squadId,
     status: input.status,
     activeStep: "push",
     progressPercent: input.status === "running" ? 45 : 100,

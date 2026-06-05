@@ -56,7 +56,7 @@ describe("applyAgentSkillSnapshot", () => {
     });
   });
 
-  it("treats user-installed entries outside the company library as read-only unmanaged skills", () => {
+  it("treats user-installed entries outside the squad library as read-only unmanaged skills", () => {
     expect(isReadOnlyUnmanagedSkillEntry({
       key: "crack-python",
       runtimeName: "crack-python",
@@ -67,14 +67,14 @@ describe("applyAgentSkillSnapshot", () => {
     }, new Set(["slaw"]))).toBe(true);
   });
 
-  it("keeps company-library entries in the managed section even when the adapter reports an external conflict", () => {
+  it("keeps squad-library entries in the managed section even when the adapter reports an external conflict", () => {
     expect(isReadOnlyUnmanagedSkillEntry({
       key: "slaw",
       runtimeName: "slaw",
       desired: true,
       managed: false,
       state: "external",
-      origin: "company_managed",
+      origin: "squad_managed",
     }, new Set(["slaw"]))).toBe(false);
   });
 

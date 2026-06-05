@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Slaw",
-  "description": "The control plane for autonomous AI companies",
+  "description": "The control plane for autonomous AI squads",
   "theme": "mint",
   "colors": {
     "primary": "#2563EB",
@@ -42,7 +42,7 @@
             "group": "Board Operator",
             "pages": [
               "guides/board-operator/dashboard",
-              "guides/board-operator/creating-a-company",
+              "guides/board-operator/creating-a-squad",
               "guides/board-operator/managing-agents",
               "guides/board-operator/org-structure",
               "guides/board-operator/managing-tasks",
@@ -115,7 +115,7 @@
             "pages": [
               "api/overview",
               "api/authentication",
-              "api/companies",
+              "api/squads",
               "api/agents",
               "api/issues",
               "api/approvals",

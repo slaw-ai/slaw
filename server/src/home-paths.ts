@@ -65,19 +65,19 @@ function sanitizeFriendlyPathSegment(value: string | null | undefined, fallback 
 }
 
 export function resolveManagedProjectWorkspaceDir(input: {
-  companyId: string;
+  squadId: string;
   projectId: string;
   repoName?: string | null;
 }): string {
-  const companyId = input.companyId.trim();
+  const squadId = input.squadId.trim();
   const projectId = input.projectId.trim();
-  if (!companyId || !projectId) {
-    throw new Error("Managed project workspace path requires companyId and projectId.");
+  if (!squadId || !projectId) {
+    throw new Error("Managed project workspace path requires squadId and projectId.");
   }
   return path.resolve(
     resolveSlawInstanceRoot(),
     "projects",
-    sanitizeFriendlyPathSegment(companyId, "company"),
+    sanitizeFriendlyPathSegment(squadId, "squad"),
     sanitizeFriendlyPathSegment(projectId, "project"),
     sanitizeFriendlyPathSegment(input.repoName, "_default"),
   );

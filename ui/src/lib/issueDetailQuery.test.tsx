@@ -22,7 +22,7 @@ function makeIssue(overrides: Partial<Issue> = {}): Issue {
   const now = new Date("2026-04-13T20:00:00.000Z");
   return {
     id: "issue-1",
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     projectWorkspaceId: null,
     goalId: null,

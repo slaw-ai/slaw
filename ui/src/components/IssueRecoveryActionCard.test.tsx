@@ -45,7 +45,7 @@ function click(element: Element | null) {
 
 const ownerAgent: Agent = {
   id: "11111111-1111-1111-1111-111111111111",
-  companyId: "company-1",
+  squadId: "squad-1",
   name: "ClaudeCoder",
   role: "engineer",
   status: "idle",
@@ -66,7 +66,7 @@ const returnAgent: Agent = {
 function buildAction(overrides: Partial<IssueRecoveryAction> = {}): IssueRecoveryAction {
   return {
     id: "00000000-0000-0000-0000-0000000000aa",
-    companyId: "company-1",
+    squadId: "squad-1",
     sourceIssueId: "00000000-0000-0000-0000-0000000000ff",
     recoveryIssueId: null,
     kind: "missing_disposition",

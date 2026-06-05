@@ -14,7 +14,7 @@ interface BreadcrumbContextValue {
 
 interface BreadcrumbProviderProps {
   children: ReactNode;
-  companyName?: string | null;
+  squadName?: string | null;
 }
 
 const BreadcrumbContext = createContext<BreadcrumbContextValue | null>(null);
@@ -30,16 +30,16 @@ function breadcrumbsEqual(left: Breadcrumb[], right: Breadcrumb[]) {
   return true;
 }
 
-export function buildDocumentTitle(breadcrumbs: Breadcrumb[], companyName?: string | null) {
+export function buildDocumentTitle(breadcrumbs: Breadcrumb[], squadName?: string | null) {
   const pageParts = breadcrumbs.length === 0
     ? []
     : [...breadcrumbs].reverse().map((breadcrumb) => breadcrumb.label);
-  const companyPart = companyName?.trim() ? [companyName.trim()] : [];
-  const parts = [...pageParts, ...companyPart, "Slaw"];
+  const squadPart = squadName?.trim() ? [squadName.trim()] : [];
+  const parts = [...pageParts, ...squadPart, "Slaw"];
   return parts.join(" • ");
 }
 
-export function BreadcrumbProvider({ children, companyName }: BreadcrumbProviderProps) {
+export function BreadcrumbProvider({ children, squadName }: BreadcrumbProviderProps) {
   const [breadcrumbs, setBreadcrumbsState] = useState<Breadcrumb[]>([]);
   const [mobileToolbar, setMobileToolbarState] = useState<ReactNode | null>(null);
 
@@ -52,8 +52,8 @@ export function BreadcrumbProvider({ children, companyName }: BreadcrumbProvider
   }, []);
 
   useEffect(() => {
-    document.title = buildDocumentTitle(breadcrumbs, companyName);
-  }, [breadcrumbs, companyName]);
+    document.title = buildDocumentTitle(breadcrumbs, squadName);
+  }, [breadcrumbs, squadName]);
 
   return (
     <BreadcrumbContext.Provider value={{ breadcrumbs, setBreadcrumbs, mobileToolbar, setMobileToolbar }}>

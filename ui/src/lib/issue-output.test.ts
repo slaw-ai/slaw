@@ -9,7 +9,7 @@ import {
 
 function makeWorkProduct(overrides: Partial<IssueWorkProduct> & { id: string }): IssueWorkProduct {
   return {
-    companyId: "company-1",
+    squadId: "squad-1",
     projectId: null,
     issueId: "issue-1",
     executionWorkspaceId: null,

@@ -27,8 +27,8 @@ vi.mock("@/lib/router", () => ({
   ),
 }));
 
-vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({ selectedCompanyId: "company-1" }),
+vi.mock("../context/SquadContext", () => ({
+  useSquad: () => ({ selectedSquadId: "squad-1" }),
 }));
 
 vi.mock("../context/DialogContext", () => ({
@@ -65,7 +65,7 @@ async function act(callback: () => void | Promise<void>) {
 function makeProject(overrides: Partial<Project>): Project {
   return {
     id: "project-a",
-    companyId: "company-1",
+    squadId: "squad-1",
     urlKey: "alpha",
     goalId: null,
     goalIds: [],

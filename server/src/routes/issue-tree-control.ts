@@ -9,7 +9,7 @@ import {
 } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { heartbeatService, issueService, issueTreeControlService, logActivity } from "../services/index.js";
-import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertSquadAccess, getActorInfo } from "./authz.js";
 
 const TREE_RUN_CANCELLATION_RESPONSE_WAIT_MS = 1_000;
 
@@ -50,12 +50,12 @@ export function issueTreeControlRoutes(db: Db) {
       res.status(404).json({ error: "Root issue not found" });
       return;
     }
-    assertCompanyAccess(req, root.companyId);
+    assertSquadAccess(req, root.squadId);
 
-    const preview = await treeControlSvc.preview(root.companyId, root.id, req.body);
+    const preview = await treeControlSvc.preview(root.squadId, root.id, req.body);
     const actor = getActorInfo(req);
     await logActivity(db, {
-      companyId: root.companyId,
+      squadId: root.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -80,7 +80,7 @@ export function issueTreeControlRoutes(db: Db) {
       res.status(404).json({ error: "Root issue not found" });
       return;
     }
-    assertCompanyAccess(req, root.companyId);
+    assertSquadAccess(req, root.squadId);
 
     const actor = getActorInfo(req);
     const actorInput = {
@@ -90,12 +90,12 @@ export function issueTreeControlRoutes(db: Db) {
       userId: actor.actorType === "user" ? actor.actorId : null,
       runId: actor.runId,
     };
-    let result = await treeControlSvc.createHold(root.companyId, root.id, {
+    let result = await treeControlSvc.createHold(root.squadId, root.id, {
       ...req.body,
       actor: actorInput,
     });
     await logActivity(db, {
-      companyId: root.companyId,
+      squadId: root.squadId,
       actorType: actor.actorType,
       actorId: actor.actorId,
       agentId: actor.agentId,
@@ -120,7 +120,7 @@ export function issueTreeControlRoutes(db: Db) {
           try {
             await heartbeat.cancelRun(heartbeatRunId);
             await logActivity(db, {
-              companyId: root.companyId,
+              squadId: root.squadId,
               actorType: actor.actorType,
               actorId: actor.actorId,
               agentId: actor.agentId,
@@ -136,7 +136,7 @@ export function issueTreeControlRoutes(db: Db) {
             });
           } catch (error) {
             await Promise.resolve(logActivity(db, {
-              companyId: root.companyId,
+              squadId: root.squadId,
               actorType: actor.actorType,
               actorId: actor.actorId,
               agentId: actor.agentId,
@@ -157,7 +157,7 @@ export function issueTreeControlRoutes(db: Db) {
       }
 
       const cancelledWakeups = await treeControlSvc.cancelUnclaimedWakeupsForTree(
-        root.companyId,
+        root.squadId,
         root.id,
         result.hold.mode === "pause"
           ? "Cancelled because an active subtree pause hold was created"
@@ -165,7 +165,7 @@ export function issueTreeControlRoutes(db: Db) {
       );
       for (const wakeup of cancelledWakeups) {
         await logActivity(db, {
-          companyId: root.companyId,
+          squadId: root.squadId,
           actorType: actor.actorType,
           actorId: actor.actorId,
           agentId: actor.agentId,
@@ -184,9 +184,9 @@ export function issueTreeControlRoutes(db: Db) {
     }
 
     if (result.hold.mode === "cancel") {
-      const statusUpdate = await treeControlSvc.cancelIssueStatusesForHold(root.companyId, root.id, result.hold.id);
+      const statusUpdate = await treeControlSvc.cancelIssueStatusesForHold(root.squadId, root.id, result.hold.id);
       await logActivity(db, {
-        companyId: root.companyId,
+        squadId: root.squadId,
         actorType: actor.actorType,
         actorId: actor.actorId,
         agentId: actor.agentId,
@@ -209,12 +209,12 @@ export function issueTreeControlRoutes(db: Db) {
     if (result.hold.mode === "restore") {
       let statusUpdate;
       try {
-        statusUpdate = await treeControlSvc.restoreIssueStatusesForHold(root.companyId, root.id, result.hold.id, {
+        statusUpdate = await treeControlSvc.restoreIssueStatusesForHold(root.squadId, root.id, result.hold.id, {
           reason: result.hold.reason,
           actor: actorInput,
         });
       } catch (error) {
-        await treeControlSvc.releaseHold(root.companyId, root.id, result.hold.id, {
+        await treeControlSvc.releaseHold(root.squadId, root.id, result.hold.id, {
           reason: "Restore operation failed before subtree status updates completed",
           metadata: {
             cleanup: "restore_failed_before_apply",
@@ -227,7 +227,7 @@ export function issueTreeControlRoutes(db: Db) {
         result = { ...result, hold: statusUpdate.restoreHold };
       }
       await logActivity(db, {
-        companyId: root.companyId,
+        squadId: root.squadId,
         actorType: actor.actorType,
         actorId: actor.actorId,
         agentId: actor.agentId,
@@ -273,7 +273,7 @@ export function issueTreeControlRoutes(db: Db) {
             .catch(() => null);
           if (!wakeRun) continue;
           await logActivity(db, {
-            companyId: root.companyId,
+            squadId: root.squadId,
             actorType: actor.actorType,
             actorId: actor.actorId,
             agentId: actor.agentId,
@@ -305,8 +305,8 @@ export function issueTreeControlRoutes(db: Db) {
       res.status(404).json({ error: "Issue not found" });
       return;
     }
-    assertCompanyAccess(req, issue.companyId);
-    const activePauseHold = await treeControlSvc.getActivePauseHoldGate(issue.companyId, issue.id);
+    assertSquadAccess(req, issue.squadId);
+    const activePauseHold = await treeControlSvc.getActivePauseHoldGate(issue.squadId, issue.id);
     res.json({ activePauseHold });
   });
 
@@ -317,11 +317,11 @@ export function issueTreeControlRoutes(db: Db) {
       res.status(404).json({ error: "Root issue not found" });
       return;
     }
-    assertCompanyAccess(req, root.companyId);
+    assertSquadAccess(req, root.squadId);
     const statusParam = typeof req.query.status === "string" ? req.query.status : null;
     const modeParam = typeof req.query.mode === "string" ? req.query.mode : null;
     const includeMembers = req.query.includeMembers === "true";
-    const holds = await treeControlSvc.listHolds(root.companyId, root.id, {
+    const holds = await treeControlSvc.listHolds(root.squadId, root.id, {
       status: statusParam === "active" || statusParam === "released" ? statusParam : undefined,
       mode:
         modeParam === "pause" || modeParam === "resume" || modeParam === "cancel" || modeParam === "restore"
@@ -339,7 +339,7 @@ export function issueTreeControlRoutes(db: Db) {
       res.status(404).json({ error: "Root issue not found" });
       return;
     }
-    assertCompanyAccess(req, root.companyId);
+    assertSquadAccess(req, root.squadId);
 
     const holdId = req.params.holdId as string;
     if (!isUuidLike(holdId)) {
@@ -347,7 +347,7 @@ export function issueTreeControlRoutes(db: Db) {
       return;
     }
 
-    const hold = await treeControlSvc.getHold(root.companyId, holdId);
+    const hold = await treeControlSvc.getHold(root.squadId, holdId);
     if (!hold || hold.rootIssueId !== root.id) {
       res.status(404).json({ error: "Issue tree hold not found" });
       return;
@@ -365,7 +365,7 @@ export function issueTreeControlRoutes(db: Db) {
         res.status(404).json({ error: "Root issue not found" });
         return;
       }
-      assertCompanyAccess(req, root.companyId);
+      assertSquadAccess(req, root.squadId);
 
       const holdId = req.params.holdId as string;
       if (!isUuidLike(holdId)) {
@@ -374,7 +374,7 @@ export function issueTreeControlRoutes(db: Db) {
       }
 
       const actor = getActorInfo(req);
-      const hold = await treeControlSvc.releaseHold(root.companyId, root.id, holdId, {
+      const hold = await treeControlSvc.releaseHold(root.squadId, root.id, holdId, {
         ...req.body,
         actor: {
           actorType: actor.actorType,
@@ -385,7 +385,7 @@ export function issueTreeControlRoutes(db: Db) {
         },
       });
       await logActivity(db, {
-        companyId: root.companyId,
+        squadId: root.squadId,
         actorType: actor.actorType,
         actorId: actor.actorId,
         agentId: actor.agentId,

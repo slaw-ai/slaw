@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "routine_runs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"routine_id" uuid NOT NULL,
 	"trigger_id" uuid,
 	"source" text NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS "routine_runs" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "routine_triggers" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"routine_id" uuid NOT NULL,
 	"kind" text NOT NULL,
 	"label" text,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS "routine_triggers" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "routines" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"project_id" uuid NOT NULL,
 	"goal_id" uuid,
 	"parent_issue_id" uuid,
@@ -68,8 +68,8 @@ ALTER TABLE "issues" ADD COLUMN IF NOT EXISTS "origin_kind" text DEFAULT 'manual
 ALTER TABLE "issues" ADD COLUMN IF NOT EXISTS "origin_id" text;--> statement-breakpoint
 ALTER TABLE "issues" ADD COLUMN IF NOT EXISTS "origin_run_id" text;--> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routine_runs_company_id_companies_id_fk') THEN
-  ALTER TABLE "routine_runs" ADD CONSTRAINT "routine_runs_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routine_runs_squad_id_squads_id_fk') THEN
+  ALTER TABLE "routine_runs" ADD CONSTRAINT "routine_runs_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE cascade ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
@@ -88,8 +88,8 @@ DO $$ BEGIN
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routine_triggers_company_id_companies_id_fk') THEN
-  ALTER TABLE "routine_triggers" ADD CONSTRAINT "routine_triggers_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routine_triggers_squad_id_squads_id_fk') THEN
+  ALTER TABLE "routine_triggers" ADD CONSTRAINT "routine_triggers_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE cascade ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
@@ -98,8 +98,8 @@ DO $$ BEGIN
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routine_triggers_secret_id_company_secrets_id_fk') THEN
-  ALTER TABLE "routine_triggers" ADD CONSTRAINT "routine_triggers_secret_id_company_secrets_id_fk" FOREIGN KEY ("secret_id") REFERENCES "public"."company_secrets"("id") ON DELETE set null ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routine_triggers_secret_id_squad_secrets_id_fk') THEN
+  ALTER TABLE "routine_triggers" ADD CONSTRAINT "routine_triggers_secret_id_squad_secrets_id_fk" FOREIGN KEY ("secret_id") REFERENCES "public"."squad_secrets"("id") ON DELETE set null ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
@@ -113,8 +113,8 @@ DO $$ BEGIN
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routines_company_id_companies_id_fk') THEN
-  ALTER TABLE "routines" ADD CONSTRAINT "routines_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'routines_squad_id_squads_id_fk') THEN
+  ALTER TABLE "routines" ADD CONSTRAINT "routines_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE cascade ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
 DO $$ BEGIN
@@ -147,15 +147,15 @@ DO $$ BEGIN
   ALTER TABLE "routines" ADD CONSTRAINT "routines_updated_by_agent_id_agents_id_fk" FOREIGN KEY ("updated_by_agent_id") REFERENCES "public"."agents"("id") ON DELETE set null ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routine_runs_company_routine_idx" ON "routine_runs" USING btree ("company_id","routine_id","created_at");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "routine_runs_squad_routine_idx" ON "routine_runs" USING btree ("squad_id","routine_id","created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "routine_runs_trigger_idx" ON "routine_runs" USING btree ("trigger_id","created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "routine_runs_linked_issue_idx" ON "routine_runs" USING btree ("linked_issue_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "routine_runs_trigger_idempotency_idx" ON "routine_runs" USING btree ("trigger_id","idempotency_key");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routine_triggers_company_routine_idx" ON "routine_triggers" USING btree ("company_id","routine_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routine_triggers_company_kind_idx" ON "routine_triggers" USING btree ("company_id","kind");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "routine_triggers_squad_routine_idx" ON "routine_triggers" USING btree ("squad_id","routine_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "routine_triggers_squad_kind_idx" ON "routine_triggers" USING btree ("squad_id","kind");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "routine_triggers_next_run_idx" ON "routine_triggers" USING btree ("next_run_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "routine_triggers_public_id_idx" ON "routine_triggers" USING btree ("public_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routines_company_status_idx" ON "routines" USING btree ("company_id","status");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routines_company_assignee_idx" ON "routines" USING btree ("company_id","assignee_agent_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "routines_company_project_idx" ON "routines" USING btree ("company_id","project_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "issues_company_origin_idx" ON "issues" USING btree ("company_id","origin_kind","origin_id");
+CREATE INDEX IF NOT EXISTS "routines_squad_status_idx" ON "routines" USING btree ("squad_id","status");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "routines_squad_assignee_idx" ON "routines" USING btree ("squad_id","assignee_agent_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "routines_squad_project_idx" ON "routines" USING btree ("squad_id","project_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "issues_squad_origin_idx" ON "issues" USING btree ("squad_id","origin_kind","origin_id");

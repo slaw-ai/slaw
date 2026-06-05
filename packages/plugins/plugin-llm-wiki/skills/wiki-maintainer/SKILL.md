@@ -1,11 +1,11 @@
 ---
 name: "LLM Wiki Maintainer"
-description: "Use the LLM Wiki plugin tools to maintain a cited local company wiki."
+description: "Use the LLM Wiki plugin tools to maintain a cited local squad wiki."
 ---
 
 # LLM Wiki Maintainer
 
-Use this skill when maintaining the company LLM Wiki, answering questions from it, ingesting durable source material, refreshing the index, or linting wiki structure.
+Use this skill when maintaining the squad LLM Wiki, answering questions from it, ingesting durable source material, refreshing the index, or linting wiki structure.
 
 Before changing wiki files, resolve the configured wiki root, read its AGENTS.md, inspect wiki/index.md and recent wiki/log.md entries, then use the LLM Wiki plugin tools for source reads, page writes, patch proposals, backlinks, and logging.
 

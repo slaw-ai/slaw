@@ -7,7 +7,7 @@ import {
   type ClaudeLoginResult,
   type AgentPermissionUpdate,
 } from "../api/agents";
-import { companySkillsApi } from "../api/companySkills";
+import { squadSkillsApi } from "../api/squadSkills";
 import { budgetsApi } from "../api/budgets";
 import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
@@ -17,7 +17,7 @@ import { activityApi } from "../api/activity";
 import { issuesApi } from "../api/issues";
 import { usePanel } from "../context/PanelContext";
 import { useSidebar } from "../context/SidebarContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { useToastActions } from "../context/ToastContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -116,15 +116,15 @@ import {
 
 async function loadDuplicateInstructionsBundle(
   agentId: string,
-  companyId?: string,
+  squadId?: string,
 ): Promise<DuplicateInstructionsBundle | null> {
-  const bundle = await agentsApi.instructionsBundle(agentId, companyId);
+  const bundle = await agentsApi.instructionsBundle(agentId, squadId);
   const files: Record<string, string> = {};
 
   for (const summary of bundle.files) {
     const path = duplicateInstructionFilePath(bundle, summary);
     if (!path) continue;
-    const file = await agentsApi.instructionsFile(agentId, summary.path, companyId);
+    const file = await agentsApi.instructionsFile(agentId, summary.path, squadId);
     files[path] = file.content;
   }
 
@@ -667,13 +667,13 @@ function WorkspaceOperationsSection({
 }
 
 export function AgentDetail() {
-  const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
-    companyPrefix?: string;
+  const { squadPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
+    squadPrefix?: string;
     agentId: string;
     tab?: string;
     runId?: string;
   }>();
-  const { companies, selectedCompanyId, setSelectedCompanyId } = useCompany();
+  const { squads, selectedSquadId, setSelectedSquadId } = useSquad();
   const { closePanel } = usePanel();
   const { openNewIssue } = useDialogActions();
   const { pushToast } = useToastActions();
@@ -693,59 +693,59 @@ export function AgentDetail() {
   const cancelConfigActionRef = useRef<(() => void) | null>(null);
   const { isMobile } = useSidebar();
   const routeAgentRef = agentId ?? "";
-  const routeCompanyId = useMemo(() => {
-    if (!companyPrefix) return null;
-    const requestedPrefix = companyPrefix.toUpperCase();
-    return companies.find((company) => company.issuePrefix.toUpperCase() === requestedPrefix)?.id ?? null;
-  }, [companies, companyPrefix]);
-  const lookupCompanyId = routeCompanyId ?? selectedCompanyId ?? undefined;
-  const canFetchAgent = routeAgentRef.length > 0 && (isUuidLike(routeAgentRef) || Boolean(lookupCompanyId));
+  const routeSquadId = useMemo(() => {
+    if (!squadPrefix) return null;
+    const requestedPrefix = squadPrefix.toUpperCase();
+    return squads.find((squad) => squad.issuePrefix.toUpperCase() === requestedPrefix)?.id ?? null;
+  }, [squads, squadPrefix]);
+  const lookupSquadId = routeSquadId ?? selectedSquadId ?? undefined;
+  const canFetchAgent = routeAgentRef.length > 0 && (isUuidLike(routeAgentRef) || Boolean(lookupSquadId));
   const setSaveConfigAction = useCallback((fn: (() => void) | null) => { saveConfigActionRef.current = fn; }, []);
   const setCancelConfigAction = useCallback((fn: (() => void) | null) => { cancelConfigActionRef.current = fn; }, []);
 
   const { data: agent, isLoading, error } = useQuery<AgentDetailRecord>({
-    queryKey: [...queryKeys.agents.detail(routeAgentRef), lookupCompanyId ?? null],
-    queryFn: () => agentsApi.get(routeAgentRef, lookupCompanyId),
+    queryKey: [...queryKeys.agents.detail(routeAgentRef), lookupSquadId ?? null],
+    queryFn: () => agentsApi.get(routeAgentRef, lookupSquadId),
     enabled: canFetchAgent,
   });
-  const resolvedCompanyId = agent?.companyId ?? selectedCompanyId;
+  const resolvedSquadId = agent?.squadId ?? selectedSquadId;
   const canonicalAgentRef = agent ? agentRouteRef(agent) : routeAgentRef;
   const agentLookupRef = agent?.id ?? routeAgentRef;
   const resolvedAgentId = agent?.id ?? null;
-  const membershipsQuery = useResourceMemberships(resolvedCompanyId);
-  const membershipMutation = useResourceMembershipMutation(resolvedCompanyId);
+  const membershipsQuery = useResourceMemberships(resolvedSquadId);
+  const membershipMutation = useResourceMembershipMutation(resolvedSquadId);
   const agentMembershipState = resolvedAgentId
     ? resourceMembershipState(membershipsQuery.data, "agent", resolvedAgentId)
     : "joined";
 
   const { data: runtimeState } = useQuery({
     queryKey: queryKeys.agents.runtimeState(resolvedAgentId ?? routeAgentRef),
-    queryFn: () => agentsApi.runtimeState(resolvedAgentId!, resolvedCompanyId ?? undefined),
+    queryFn: () => agentsApi.runtimeState(resolvedAgentId!, resolvedSquadId ?? undefined),
     enabled: Boolean(resolvedAgentId) && needsDashboardData,
   });
 
   const { data: heartbeats } = useQuery({
-    queryKey: queryKeys.heartbeats(resolvedCompanyId!, agent?.id ?? undefined),
-    queryFn: () => heartbeatsApi.list(resolvedCompanyId!, agent?.id ?? undefined),
-    enabled: !!resolvedCompanyId && !!agent?.id && shouldLoadHeartbeats,
+    queryKey: queryKeys.heartbeats(resolvedSquadId!, agent?.id ?? undefined),
+    queryFn: () => heartbeatsApi.list(resolvedSquadId!, agent?.id ?? undefined),
+    enabled: !!resolvedSquadId && !!agent?.id && shouldLoadHeartbeats,
   });
 
   const { data: allIssues } = useQuery({
-    queryKey: [...queryKeys.issues.list(resolvedCompanyId!), "participant-agent", resolvedAgentId ?? "__none__"],
-    queryFn: () => issuesApi.list(resolvedCompanyId!, { participantAgentId: resolvedAgentId! }),
-    enabled: !!resolvedCompanyId && !!resolvedAgentId && needsDashboardData,
+    queryKey: [...queryKeys.issues.list(resolvedSquadId!), "participant-agent", resolvedAgentId ?? "__none__"],
+    queryFn: () => issuesApi.list(resolvedSquadId!, { participantAgentId: resolvedAgentId! }),
+    enabled: !!resolvedSquadId && !!resolvedAgentId && needsDashboardData,
   });
 
   const { data: allAgents } = useQuery({
-    queryKey: queryKeys.agents.list(resolvedCompanyId!),
-    queryFn: () => agentsApi.list(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId && needsDashboardData,
+    queryKey: queryKeys.agents.list(resolvedSquadId!),
+    queryFn: () => agentsApi.list(resolvedSquadId!),
+    enabled: !!resolvedSquadId && needsDashboardData,
   });
 
   const { data: budgetOverview } = useQuery({
-    queryKey: queryKeys.budgets.overview(resolvedCompanyId ?? "__none__"),
-    queryFn: () => budgetsApi.overview(resolvedCompanyId!),
-    enabled: !!resolvedCompanyId,
+    queryKey: queryKeys.budgets.overview(resolvedSquadId ?? "__none__"),
+    queryFn: () => budgetsApi.overview(resolvedSquadId!),
+    enabled: !!resolvedSquadId,
     refetchInterval: 30_000,
     staleTime: 5_000,
   });
@@ -763,7 +763,7 @@ export function AgentDetail() {
     const spentMonthlyCents = agent?.spentMonthlyCents ?? 0;
     return {
       policyId: "",
-      companyId: resolvedCompanyId ?? "",
+      squadId: resolvedSquadId ?? "",
       scopeType: "agent",
       scopeId: agent?.id ?? routeAgentRef,
       scopeName: agent?.name ?? "Agent",
@@ -784,7 +784,7 @@ export function AgentDetail() {
       windowStart: new Date(),
       windowEnd: new Date(),
     } satisfies BudgetPolicySummary;
-  }, [agent, budgetOverview?.policies, resolvedCompanyId, routeAgentRef]);
+  }, [agent, budgetOverview?.policies, resolvedSquadId, routeAgentRef]);
   const mobileLiveRun = useMemo(
     () => (heartbeats ?? []).find((r) => r.status === "running" || r.status === "queued") ?? null,
     [heartbeats],
@@ -817,19 +817,19 @@ export function AgentDetail() {
   }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate]);
 
   useEffect(() => {
-    if (!agent?.companyId || agent.companyId === selectedCompanyId) return;
-    setSelectedCompanyId(agent.companyId, { source: "route_sync" });
-  }, [agent?.companyId, selectedCompanyId, setSelectedCompanyId]);
+    if (!agent?.squadId || agent.squadId === selectedSquadId) return;
+    setSelectedSquadId(agent.squadId, { source: "route_sync" });
+  }, [agent?.squadId, selectedSquadId, setSelectedSquadId]);
 
   const agentAction = useMutation({
     mutationFn: async (action: "invoke" | "pause" | "resume" | "approve" | "terminate") => {
       if (!agentLookupRef) return Promise.reject(new Error("No agent reference"));
       switch (action) {
-        case "invoke": return agentsApi.invoke(agentLookupRef, resolvedCompanyId ?? undefined);
-        case "pause": return agentsApi.pause(agentLookupRef, resolvedCompanyId ?? undefined);
-        case "resume": return agentsApi.resume(agentLookupRef, resolvedCompanyId ?? undefined);
-        case "approve": return agentsApi.approve(agentLookupRef, resolvedCompanyId ?? undefined);
-        case "terminate": return agentsApi.terminate(agentLookupRef, resolvedCompanyId ?? undefined);
+        case "invoke": return agentsApi.invoke(agentLookupRef, resolvedSquadId ?? undefined);
+        case "pause": return agentsApi.pause(agentLookupRef, resolvedSquadId ?? undefined);
+        case "resume": return agentsApi.resume(agentLookupRef, resolvedSquadId ?? undefined);
+        case "approve": return agentsApi.approve(agentLookupRef, resolvedSquadId ?? undefined);
+        case "terminate": return agentsApi.terminate(agentLookupRef, resolvedSquadId ?? undefined);
       }
     },
     onSuccess: (data, action) => {
@@ -838,10 +838,10 @@ export function AgentDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentLookupRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.runtimeState(agentLookupRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.taskSessions(agentLookupRef) });
-      if (resolvedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
+      if (resolvedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedSquadId) });
         if (agent?.id) {
-          queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(resolvedCompanyId, agent.id) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(resolvedSquadId, agent.id) });
         }
       }
       if (action === "invoke" && data && typeof data === "object" && "id" in data) {
@@ -855,18 +855,18 @@ export function AgentDetail() {
 
   const duplicateAgent = useMutation({
     mutationFn: async () => {
-      if (!agent?.id || !resolvedCompanyId) {
+      if (!agent?.id || !resolvedSquadId) {
         throw new Error("Agent is not ready to duplicate");
       }
 
-      const instructionsBundle = await loadDuplicateInstructionsBundle(agent.id, resolvedCompanyId);
+      const instructionsBundle = await loadDuplicateInstructionsBundle(agent.id, resolvedSquadId);
       const payload = buildDuplicateAgentPayload(agent, instructionsBundle);
 
       try {
-        return await agentsApi.create(resolvedCompanyId, payload);
+        return await agentsApi.create(resolvedSquadId, payload);
       } catch (error) {
         if (error instanceof ApiError && error.status === 409 && error.message.includes("requires board approval")) {
-          const hire = await agentsApi.hire(resolvedCompanyId, payload);
+          const hire = await agentsApi.hire(resolvedSquadId, payload);
           return hire.agent;
         }
         throw error;
@@ -874,8 +874,8 @@ export function AgentDetail() {
     },
     onSuccess: async (createdAgent) => {
       setActionError(null);
-      if (resolvedCompanyId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
+      if (resolvedSquadId) {
+        await queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedSquadId) });
       }
       pushToast({
         title: "Agent duplicated",
@@ -906,36 +906,36 @@ export function AgentDetail() {
 
   const budgetMutation = useMutation({
     mutationFn: (amount: number) =>
-      budgetsApi.upsertPolicy(resolvedCompanyId!, {
+      budgetsApi.upsertPolicy(resolvedSquadId!, {
         scopeType: "agent",
         scopeId: agent?.id ?? routeAgentRef,
         amount,
         windowKind: "calendar_month_utc",
       }),
     onSuccess: () => {
-      if (!resolvedCompanyId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.overview(resolvedCompanyId) });
+      if (!resolvedSquadId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.overview(resolvedSquadId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(routeAgentRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentLookupRef) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(resolvedCompanyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedSquadId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(resolvedSquadId) });
     },
   });
 
   const updateIcon = useMutation({
-    mutationFn: (icon: string) => agentsApi.update(agentLookupRef, { icon }, resolvedCompanyId ?? undefined),
+    mutationFn: (icon: string) => agentsApi.update(agentLookupRef, { icon }, resolvedSquadId ?? undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(routeAgentRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentLookupRef) });
-      if (resolvedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
+      if (resolvedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedSquadId) });
       }
     },
   });
 
   const resetTaskSession = useMutation({
     mutationFn: (taskKey: string | null) =>
-      agentsApi.resetSession(agentLookupRef, taskKey, resolvedCompanyId ?? undefined),
+      agentsApi.resetSession(agentLookupRef, taskKey, resolvedSquadId ?? undefined),
     onSuccess: () => {
       setActionError(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.runtimeState(agentLookupRef) });
@@ -948,13 +948,13 @@ export function AgentDetail() {
 
   const updatePermissions = useMutation({
     mutationFn: (permissions: AgentPermissionUpdate) =>
-      agentsApi.updatePermissions(agentLookupRef, permissions, resolvedCompanyId ?? undefined),
+      agentsApi.updatePermissions(agentLookupRef, permissions, resolvedSquadId ?? undefined),
     onSuccess: () => {
       setActionError(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(routeAgentRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentLookupRef) });
-      if (resolvedCompanyId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
+      if (resolvedSquadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedSquadId) });
       }
     },
     onError: (err) => {
@@ -1272,7 +1272,7 @@ export function AgentDetail() {
       {activeView === "instructions" && (
         <PromptsTab
           agent={agent}
-          companyId={resolvedCompanyId ?? undefined}
+          squadId={resolvedSquadId ?? undefined}
           onDirtyChange={setConfigDirty}
           onSaveActionChange={setSaveConfigAction}
           onCancelActionChange={setCancelConfigAction}
@@ -1284,7 +1284,7 @@ export function AgentDetail() {
         <AgentConfigurePage
           agent={agent}
           agentId={agent.id}
-          companyId={resolvedCompanyId ?? undefined}
+          squadId={resolvedSquadId ?? undefined}
           onDirtyChange={setConfigDirty}
           onSaveActionChange={setSaveConfigAction}
           onCancelActionChange={setCancelConfigAction}
@@ -1296,14 +1296,14 @@ export function AgentDetail() {
       {activeView === "skills" && (
         <AgentSkillsTab
           agent={agent}
-          companyId={resolvedCompanyId ?? undefined}
+          squadId={resolvedSquadId ?? undefined}
         />
       )}
 
       {activeView === "runs" && (
         <RunsTab
           runs={heartbeats ?? []}
-          companyId={resolvedCompanyId!}
+          squadId={resolvedSquadId!}
           agentId={agent.id}
           agentRouteId={canonicalAgentRef}
           selectedRunId={urlRunId ?? null}
@@ -1312,7 +1312,7 @@ export function AgentDetail() {
         />
       )}
 
-      {activeView === "budget" && resolvedCompanyId ? (
+      {activeView === "budget" && resolvedSquadId ? (
         <div className="max-w-3xl">
           <BudgetPolicyCard
             summary={agentBudgetSummary}
@@ -1587,7 +1587,7 @@ function CostsSection({
 function AgentConfigurePage({
   agent,
   agentId,
-  companyId,
+  squadId,
   onDirtyChange,
   onSaveActionChange,
   onCancelActionChange,
@@ -1596,7 +1596,7 @@ function AgentConfigurePage({
 }: {
   agent: AgentDetailRecord;
   agentId: string;
-  companyId?: string;
+  squadId?: string;
   onDirtyChange: (dirty: boolean) => void;
   onSaveActionChange: (save: (() => void) | null) => void;
   onCancelActionChange: (cancel: (() => void) | null) => void;
@@ -1608,11 +1608,11 @@ function AgentConfigurePage({
 
   const { data: configRevisions } = useQuery({
     queryKey: queryKeys.agents.configRevisions(agent.id),
-    queryFn: () => agentsApi.listConfigRevisions(agent.id, companyId),
+    queryFn: () => agentsApi.listConfigRevisions(agent.id, squadId),
   });
 
   const rollbackConfig = useMutation({
-    mutationFn: (revisionId: string) => agentsApi.rollbackConfigRevision(agent.id, revisionId, companyId),
+    mutationFn: (revisionId: string) => agentsApi.rollbackConfigRevision(agent.id, revisionId, squadId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.urlKey) });
@@ -1629,13 +1629,13 @@ function AgentConfigurePage({
         onCancelActionChange={onCancelActionChange}
         onSavingChange={onSavingChange}
         updatePermissions={updatePermissions}
-        companyId={companyId}
+        squadId={squadId}
         hidePromptTemplate
         hideInstructionsFile
       />
       <div>
         <h3 className="text-sm font-medium mb-3">API Keys</h3>
-        <KeysTab agentId={agentId} companyId={companyId} />
+        <KeysTab agentId={agentId} squadId={squadId} />
       </div>
 
       {/* Configuration Revisions — collapsible at the bottom */}
@@ -1696,7 +1696,7 @@ function AgentConfigurePage({
 
 function ConfigurationTab({
   agent,
-  companyId,
+  squadId,
   onDirtyChange,
   onSaveActionChange,
   onCancelActionChange,
@@ -1706,7 +1706,7 @@ function ConfigurationTab({
   hideInstructionsFile,
 }: {
   agent: AgentDetailRecord;
-  companyId?: string;
+  squadId?: string;
   onDirtyChange: (dirty: boolean) => void;
   onSaveActionChange: (save: (() => void) | null) => void;
   onCancelActionChange: (cancel: (() => void) | null) => void;
@@ -1722,15 +1722,15 @@ function ConfigurationTab({
 
   const { data: adapterModels } = useQuery({
     queryKey:
-      companyId
-        ? queryKeys.agents.adapterModels(companyId, agent.adapterType)
+      squadId
+        ? queryKeys.agents.adapterModels(squadId, agent.adapterType)
         : ["agents", "none", "adapter-models", agent.adapterType],
-    queryFn: () => agentsApi.adapterModels(companyId!, agent.adapterType),
-    enabled: Boolean(companyId),
+    queryFn: () => agentsApi.adapterModels(squadId!, agent.adapterType),
+    enabled: Boolean(squadId),
   });
 
   const updateAgent = useMutation({
-    mutationFn: (data: Record<string, unknown>) => agentsApi.update(agent.id, data, companyId),
+    mutationFn: (data: Record<string, unknown>) => agentsApi.update(agent.id, data, squadId),
     onMutate: () => {
       setAwaitingRefreshAfterSave(true);
     },
@@ -1738,7 +1738,7 @@ function ConfigurationTab({
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.urlKey) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.configRevisions(agent.id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(agent.companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(agent.squadId) });
     },
     onError: (err) => {
       setAwaitingRefreshAfterSave(false);
@@ -1767,16 +1767,16 @@ function ConfigurationTab({
   const canCreateAgents = Boolean(agent.permissions?.canCreateAgents);
   const canAssignTasks = Boolean(agent.access?.canAssignTasks);
   const taskAssignSource = agent.access?.taskAssignSource ?? "none";
-  const taskAssignLocked = agent.role === "ceo" || canCreateAgents;
+  const taskAssignLocked = agent.role === "squad_lead" || canCreateAgents;
   const taskAssignHint =
-    taskAssignSource === "ceo_role"
-      ? "Enabled automatically for CEO agents."
+    taskAssignSource === "squad_lead_role"
+      ? "Enabled automatically for Squad Lead agents."
       : taskAssignSource === "agent_creator"
         ? "Enabled automatically while this agent can create new agents."
         : taskAssignSource === "explicit_grant"
-          ? "Enabled via explicit company permission grant."
+          ? "Enabled via explicit squad permission grant."
           : taskAssignSource === "simple_default"
-            ? "Enabled by simple company-wide task assignment defaults."
+            ? "Enabled by simple squad-wide task assignment defaults."
             : "Disabled unless explicitly granted.";
 
   return (
@@ -1845,21 +1845,21 @@ function ConfigurationTab({
 
 function PromptsTab({
   agent,
-  companyId,
+  squadId,
   onDirtyChange,
   onSaveActionChange,
   onCancelActionChange,
   onSavingChange,
 }: {
   agent: Agent;
-  companyId?: string;
+  squadId?: string;
   onDirtyChange: (dirty: boolean) => void;
   onSaveActionChange: (save: (() => void) | null) => void;
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
 }) {
   const queryClient = useQueryClient();
-  const { selectedCompanyId } = useCompany();
+  const { selectedSquadId } = useSquad();
   const { isMobile } = useSidebar();
   const [selectedFile, setSelectedFile] = useState<string>("AGENTS.md");
   const [showFilePanel, setShowFilePanel] = useState(false);
@@ -1903,8 +1903,8 @@ function PromptsTab({
 
   const { data: bundle, isLoading: bundleLoading } = useQuery({
     queryKey: queryKeys.agents.instructionsBundle(agent.id),
-    queryFn: () => agentsApi.instructionsBundle(agent.id, companyId),
-    enabled: Boolean(companyId && isLocal),
+    queryFn: () => agentsApi.instructionsBundle(agent.id, squadId),
+    enabled: Boolean(squadId && isLocal),
   });
 
   const persistedMode = bundle?.mode ?? "managed";
@@ -1940,8 +1940,8 @@ function PromptsTab({
 
   const { data: selectedFileDetail, isLoading: fileLoading } = useQuery({
     queryKey: queryKeys.agents.instructionsFile(agent.id, selectedOrEntryFile),
-    queryFn: () => agentsApi.instructionsFile(agent.id, selectedOrEntryFile, companyId),
-    enabled: Boolean(companyId && isLocal && selectedFileExists),
+    queryFn: () => agentsApi.instructionsFile(agent.id, selectedOrEntryFile, squadId),
+    enabled: Boolean(squadId && isLocal && selectedFileExists),
   });
 
   const updateBundle = useMutation({
@@ -1950,7 +1950,7 @@ function PromptsTab({
       rootPath?: string | null;
       entryFile?: string;
       clearLegacyPromptTemplate?: boolean;
-    }) => agentsApi.updateInstructionsBundle(agent.id, data, companyId),
+    }) => agentsApi.updateInstructionsBundle(agent.id, data, squadId),
     onMutate: () => setAwaitingRefresh(true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.instructionsBundle(agent.id) });
@@ -1962,7 +1962,7 @@ function PromptsTab({
 
   const saveFile = useMutation({
     mutationFn: (data: { path: string; content: string; clearLegacyPromptTemplate?: boolean }) =>
-      agentsApi.saveInstructionsFile(agent.id, data, companyId),
+      agentsApi.saveInstructionsFile(agent.id, data, squadId),
     onMutate: () => setAwaitingRefresh(true),
     onSuccess: (_, variables) => {
       setPendingFiles((prev) => prev.filter((f) => f !== variables.path));
@@ -1975,7 +1975,7 @@ function PromptsTab({
   });
 
   const deleteFile = useMutation({
-    mutationFn: (relativePath: string) => agentsApi.deleteInstructionsFile(agent.id, relativePath, companyId),
+    mutationFn: (relativePath: string) => agentsApi.deleteInstructionsFile(agent.id, relativePath, squadId),
     onMutate: () => setAwaitingRefresh(true),
     onSuccess: (_, relativePath) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.instructionsBundle(agent.id) });
@@ -1988,8 +1988,8 @@ function PromptsTab({
 
   const uploadMarkdownImage = useMutation({
     mutationFn: async ({ file, namespace }: { file: File; namespace: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to upload images");
-      return assetsApi.uploadImage(selectedCompanyId, file, namespace);
+      if (!selectedSquadId) throw new Error("Select a squad to upload images");
+      return assetsApi.uploadImage(selectedSquadId, file, namespace);
     },
   });
 
@@ -2638,10 +2638,10 @@ function PromptEditorSkeleton() {
 
 export function AgentSkillsTab({
   agent,
-  companyId,
+  squadId,
 }: {
   agent: Agent;
-  companyId?: string;
+  squadId?: string;
 }) {
   type SkillRow = {
     id: string;
@@ -2666,18 +2666,18 @@ export function AgentSkillsTab({
 
   const { data: skillSnapshot, isLoading } = useQuery({
     queryKey: queryKeys.agents.skills(agent.id),
-    queryFn: () => agentsApi.skills(agent.id, companyId),
-    enabled: Boolean(companyId),
+    queryFn: () => agentsApi.skills(agent.id, squadId),
+    enabled: Boolean(squadId),
   });
 
-  const { data: companySkills } = useQuery({
-    queryKey: queryKeys.companySkills.list(companyId ?? ""),
-    queryFn: () => companySkillsApi.list(companyId!),
-    enabled: Boolean(companyId),
+  const { data: squadSkills } = useQuery({
+    queryKey: queryKeys.squadSkills.list(squadId ?? ""),
+    queryFn: () => squadSkillsApi.list(squadId!),
+    enabled: Boolean(squadId),
   });
 
   const syncSkills = useMutation({
-    mutationFn: (desiredSkills: string[]) => agentsApi.syncSkills(agent.id, desiredSkills, companyId),
+    mutationFn: (desiredSkills: string[]) => agentsApi.syncSkills(agent.id, desiredSkills, squadId),
     onSuccess: async (snapshot) => {
       queryClient.setQueryData(queryKeys.agents.skills(agent.id), snapshot);
       lastSavedSkillsRef.current = snapshot.desiredSkills;
@@ -2732,13 +2732,13 @@ export function AgentSkillsTab({
     return () => window.clearTimeout(timeout);
   }, [skillDraft, skillSnapshot, syncSkills.isPending, syncSkills.mutate]);
 
-  const companySkillByKey = useMemo(
-    () => new Map((companySkills ?? []).map((skill) => [skill.key, skill])),
-    [companySkills],
+  const squadSkillByKey = useMemo(
+    () => new Map((squadSkills ?? []).map((skill) => [skill.key, skill])),
+    [squadSkills],
   );
-  const companySkillKeys = useMemo(
-    () => new Set((companySkills ?? []).map((skill) => skill.key)),
-    [companySkills],
+  const squadSkillKeys = useMemo(
+    () => new Set((squadSkills ?? []).map((skill) => skill.key)),
+    [squadSkills],
   );
   const adapterEntryByKey = useMemo(
     () => new Map((skillSnapshot?.entries ?? []).map((entry) => [entry.key, entry])),
@@ -2746,7 +2746,7 @@ export function AgentSkillsTab({
   );
   const optionalSkillRows = useMemo<SkillRow[]>(
     () =>
-      (companySkills ?? [])
+      (squadSkills ?? [])
         .filter((skill) => !adapterEntryByKey.get(skill.key)?.required)
         .map((skill) => ({
           id: skill.id,
@@ -2760,33 +2760,33 @@ export function AgentSkillsTab({
           readOnly: false,
           adapterEntry: adapterEntryByKey.get(skill.key) ?? null,
         })),
-    [adapterEntryByKey, companySkills],
+    [adapterEntryByKey, squadSkills],
   );
   const requiredSkillRows = useMemo<SkillRow[]>(
     () =>
       (skillSnapshot?.entries ?? [])
         .filter((entry) => entry.required)
         .map((entry) => {
-          const companySkill = companySkillByKey.get(entry.key);
+          const squadSkill = squadSkillByKey.get(entry.key);
           return {
-            id: companySkill?.id ?? `required:${entry.key}`,
+            id: squadSkill?.id ?? `required:${entry.key}`,
             key: entry.key,
-            name: companySkill?.name ?? entry.key,
-            description: companySkill?.description ?? null,
+            name: squadSkill?.name ?? entry.key,
+            description: squadSkill?.description ?? null,
             detail: entry.detail ?? null,
             locationLabel: entry.locationLabel ?? null,
             originLabel: entry.originLabel ?? null,
-            linkTo: companySkill ? `/skills/${companySkill.id}` : null,
+            linkTo: squadSkill ? `/skills/${squadSkill.id}` : null,
             readOnly: false,
             adapterEntry: entry,
           };
         }),
-    [companySkillByKey, skillSnapshot],
+    [squadSkillByKey, skillSnapshot],
   );
   const unmanagedSkillRows = useMemo<SkillRow[]>(
     () =>
       (skillSnapshot?.entries ?? [])
-        .filter((entry) => isReadOnlyUnmanagedSkillEntry(entry, companySkillKeys))
+        .filter((entry) => isReadOnlyUnmanagedSkillEntry(entry, squadSkillKeys))
         .map((entry) => ({
           id: `external:${entry.key}`,
           key: entry.key,
@@ -2799,7 +2799,7 @@ export function AgentSkillsTab({
           readOnly: true,
           adapterEntry: entry,
         })),
-    [companySkillKeys, skillSnapshot],
+    [squadSkillKeys, skillSnapshot],
   );
   const installedSkillRows = useMemo(
     () => optionalSkillRows.filter((skill) => skillDraft.includes(skill.key)),
@@ -2810,8 +2810,8 @@ export function AgentSkillsTab({
     [optionalSkillRows, skillDraft],
   );
   const desiredOnlyMissingSkills = useMemo(
-    () => skillDraft.filter((key) => !companySkillByKey.has(key)),
-    [companySkillByKey, skillDraft],
+    () => skillDraft.filter((key) => !squadSkillByKey.has(key)),
+    [squadSkillByKey, skillDraft],
   );
   const skillApplicationLabel = useMemo(() => {
     switch (skillSnapshot?.mode) {
@@ -2850,7 +2850,7 @@ export function AgentSkillsTab({
           to="/skills"
           className="text-sm font-medium text-foreground underline-offset-4 no-underline transition-colors hover:text-foreground/70 hover:underline"
         >
-          View company skills library
+          View squad skills library
         </Link>
         {saveStatusLabel ? (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -2998,7 +2998,7 @@ export function AgentSkillsTab({
               return (
                 <section className="border-y border-border">
                   <div className="px-3 py-6 text-sm text-muted-foreground">
-                    Import skills into the company library first, then attach them here.
+                    Import skills into the squad library first, then attach them here.
                   </div>
                 </section>
               );
@@ -3010,7 +3010,7 @@ export function AgentSkillsTab({
                   ? renderSkillSection(
                       "Installed skills",
                       installedSkillRows,
-                      "No company-library skills installed on this agent.",
+                      "No squad-library skills installed on this agent.",
                     )
                   : null}
 
@@ -3041,7 +3041,7 @@ export function AgentSkillsTab({
 
           {desiredOnlyMissingSkills.length > 0 && (
             <div className="rounded-xl border border-amber-300/60 bg-amber-50/60 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-200">
-              <div className="font-medium">Requested skills missing from the company library</div>
+              <div className="font-medium">Requested skills missing from the squad library</div>
               <div className="mt-1 text-xs">
                 {desiredOnlyMissingSkills.join(", ")}
               </div>
@@ -3131,7 +3131,7 @@ function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelect
 
 function RunsTab({
   runs,
-  companyId,
+  squadId,
   agentId,
   agentRouteId,
   selectedRunId,
@@ -3139,7 +3139,7 @@ function RunsTab({
   adapterConfig,
 }: {
   runs: HeartbeatRun[];
-  companyId: string;
+  squadId: string;
   agentId: string;
   agentRouteId: string;
   selectedRunId: string | null;
@@ -3233,7 +3233,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   const cancelRun = useMutation({
     mutationFn: () => heartbeatsApi.cancel(run.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(run.companyId, run.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(run.squadId, run.agentId) });
     },
   });
   const canResumeLostRun = run.errorCode === "process_lost" && run.status === "failed";
@@ -3260,14 +3260,14 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
         triggerDetail: "manual",
         reason: "resume_process_lost_run",
         payload: resumePayload,
-      }, run.companyId);
+      }, run.squadId);
       if (!("id" in result)) {
         throw new Error(result.message ?? "Resume request was skipped.");
       }
       return result;
     },
     onSuccess: (resumedRun) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(run.companyId, run.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(run.squadId, run.agentId) });
       navigate(`/agents/${agentRouteId}/runs/${resumedRun.id}`);
     },
   });
@@ -3292,14 +3292,14 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
         triggerDetail: "manual",
         reason: "retry_failed_run",
         payload: retryPayload,
-      }, run.companyId);
+      }, run.squadId);
       if (!("id" in result)) {
         throw new Error(result.message ?? "Retry was skipped.");
       }
       return result;
     },
     onSuccess: (newRun) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(run.companyId, run.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(run.squadId, run.agentId) });
       navigate(`/agents/${agentRouteId}/runs/${newRun.id}`);
     },
   });
@@ -3316,7 +3316,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   const clearSessionsForTouchedIssues = useMutation({
     mutationFn: async () => {
       if (touchedIssueIds.length === 0) return 0;
-      await Promise.all(touchedIssueIds.map((issueId) => agentsApi.resetSession(run.agentId, issueId, run.companyId)));
+      await Promise.all(touchedIssueIds.map((issueId) => agentsApi.resetSession(run.agentId, issueId, run.squadId)));
       return touchedIssueIds.length;
     },
     onSuccess: () => {
@@ -3327,7 +3327,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   });
 
   const runClaudeLogin = useMutation({
-    mutationFn: () => agentsApi.loginWithClaude(run.agentId, run.companyId),
+    mutationFn: () => agentsApi.loginWithClaude(run.agentId, run.squadId),
     onSuccess: (data) => {
       setClaudeLoginResult(data);
     },
@@ -3952,7 +3952,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
     const connect = () => {
       if (closed) return;
       const url = buildSameOriginWebSocketUrl(
-        `/api/companies/${encodeURIComponent(run.companyId)}/events/ws`,
+        `/api/squads/${encodeURIComponent(run.squadId)}/events/ws`,
       );
       socket = new WebSocket(url);
 
@@ -3971,7 +3971,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
           return;
         }
 
-        if (event.companyId !== run.companyId) return;
+        if (event.squadId !== run.squadId) return;
         const payload = asRecord(event.payload);
         const eventRunId = asNonEmptyString(payload?.runId);
         if (!payload || eventRunId !== run.id) return;
@@ -4004,7 +4004,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
 
         const liveEvent: HeartbeatRunEvent = {
           id: seq,
-          companyId: run.companyId,
+          squadId: run.squadId,
           runId: run.id,
           agentId: run.agentId,
           seq,
@@ -4047,7 +4047,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
         socket.close(1000, "run_detail_unmount");
       }
     };
-  }, [isLive, run.companyId, run.id, run.agentId]);
+  }, [isLive, run.squadId, run.id, run.agentId]);
 
   const censorUsernameInLogs = useQuery({
     queryKey: queryKeys.instance.generalSettings,
@@ -4264,7 +4264,7 @@ function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: strin
 
 /* ---- Keys Tab ---- */
 
-function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }) {
+function KeysTab({ agentId, squadId }: { agentId: string; squadId?: string }) {
   const queryClient = useQueryClient();
   const [newKeyName, setNewKeyName] = useState("");
   const [newToken, setNewToken] = useState<string | null>(null);
@@ -4273,11 +4273,11 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
 
   const { data: keys, isLoading } = useQuery({
     queryKey: queryKeys.agents.keys(agentId),
-    queryFn: () => agentsApi.listKeys(agentId, companyId),
+    queryFn: () => agentsApi.listKeys(agentId, squadId),
   });
 
   const createKey = useMutation({
-    mutationFn: () => agentsApi.createKey(agentId, newKeyName.trim() || "Default", companyId),
+    mutationFn: () => agentsApi.createKey(agentId, newKeyName.trim() || "Default", squadId),
     onSuccess: (data) => {
       setNewToken(data.token);
       setTokenVisible(true);
@@ -4287,7 +4287,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
   });
 
   const revokeKey = useMutation({
-    mutationFn: (keyId: string) => agentsApi.revokeKey(agentId, keyId, companyId),
+    mutationFn: (keyId: string) => agentsApi.revokeKey(agentId, keyId, squadId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.keys(agentId) });
     },

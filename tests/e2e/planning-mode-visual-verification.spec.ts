@@ -2,42 +2,42 @@ import { expect, test } from "@playwright/test";
 
 const SKIP_LLM = process.env.SLAW_E2E_SKIP_LLM !== "false";
 
-const AGENT_NAME = "CEO";
+const AGENT_NAME = "Squad Lead";
 const TASK_TITLE = "PAP-3413 planning mode evidence";
 
 test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   const timestamp = Date.now();
-  const companyName = `PAP-3413-${timestamp}`;
+  const squadName = `PAP-3413-${timestamp}`;
   const screenshotDir = "test-results/planning-mode";
 
   await page.goto("/onboarding");
-  await expect(page.locator("h3", { hasText: "Name your company" })).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator("h3", { hasText: "Name your squad" })).toBeVisible({ timeout: 5_000 });
 
-  await page.locator('input[placeholder="Acme Corp"]').fill(companyName);
+  await page.locator('input[placeholder="Acme Corp"]').fill(squadName);
   await page.getByRole("button", { name: "Next" }).click();
 
   await expect(page.locator("h3", { hasText: "Create your first agent" })).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator('input[placeholder="CEO"]')).toHaveValue(AGENT_NAME);
+  await expect(page.locator('input[placeholder="Squad Lead"]')).toHaveValue(AGENT_NAME);
   await page.getByRole("button", { name: "Next" }).click();
 
   await expect(page.locator("h3", { hasText: "Give it something to do" })).toBeVisible({ timeout: 30_000 });
   const baseUrl = page.url().split("/").slice(0, 3).join("/");
 
   if (SKIP_LLM) {
-    const companiesAfterAgentRes = await page.request.get(`${baseUrl}/api/companies`);
-    expect(companiesAfterAgentRes.ok()).toBe(true);
-    const companiesAfterAgent = await companiesAfterAgentRes.json();
-    const companyAfterAgent = companiesAfterAgent.find((c: { name: string }) => c.name === companyName);
-    expect(companyAfterAgent).toBeTruthy();
+    const squadsAfterAgentRes = await page.request.get(`${baseUrl}/api/squads`);
+    expect(squadsAfterAgentRes.ok()).toBe(true);
+    const squadsAfterAgent = await squadsAfterAgentRes.json();
+    const squadAfterAgent = squadsAfterAgent.find((c: { name: string }) => c.name === squadName);
+    expect(squadAfterAgent).toBeTruthy();
 
-    const agentsAfterCreateRes = await page.request.get(`${baseUrl}/api/companies/${companyAfterAgent.id}/agents`);
+    const agentsAfterCreateRes = await page.request.get(`${baseUrl}/api/squads/${squadAfterAgent.id}/agents`);
     expect(agentsAfterCreateRes.ok()).toBe(true);
     const agentsAfterCreate = await agentsAfterCreateRes.json();
     const ceoAgentAfterCreate = agentsAfterCreate.find((a: { name: string }) => a.name === AGENT_NAME);
     expect(ceoAgentAfterCreate).toBeTruthy();
 
     const disableWakeRes = await page.request.patch(
-      `${baseUrl}/api/agents/${ceoAgentAfterCreate.id}?companyId=${encodeURIComponent(companyAfterAgent.id)}`,
+      `${baseUrl}/api/agents/${ceoAgentAfterCreate.id}?squadId=${encodeURIComponent(squadAfterAgent.id)}`,
       {
         data: {
           runtimeConfig: {
@@ -67,12 +67,12 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   const openedIssueUrl = page.url();
   const openedIssueIdentifier = openedIssueUrl.split("/").filter(Boolean).pop();
   const baseOrigin = new URL(openedIssueUrl).origin;
-  const companyRes = await page.request.get(`${baseOrigin}/api/companies`);
-  expect(companyRes.ok()).toBe(true);
-  const companies = await companyRes.json();
-  const company = companies.find((c: { name: string }) => c.name === companyName);
-  expect(company).toBeTruthy();
-  const issueRes = await page.request.get(`${baseOrigin}/api/companies/${company.id}/issues`);
+  const squadRes = await page.request.get(`${baseOrigin}/api/squads`);
+  expect(squadRes.ok()).toBe(true);
+  const squads = await squadRes.json();
+  const squad = squads.find((c: { name: string }) => c.name === squadName);
+  expect(squad).toBeTruthy();
+  const issueRes = await page.request.get(`${baseOrigin}/api/squads/${squad.id}/issues`);
   expect(issueRes.ok()).toBe(true);
   const issues = await issueRes.json();
   const planningSeedIssue = issues.find(
@@ -83,8 +83,8 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
 
   const issue = planningSeedIssue;
   const issueIdentifier = issue.identifier ?? issue.id;
-  const issuePath = `/${company.issuePrefix ?? company.id}/issues/${issueIdentifier}`;
-  const companyPrefix = company.issuePrefix ?? company.id;
+  const issuePath = `/${squad.issuePrefix ?? squad.id}/issues/${issueIdentifier}`;
+  const squadPrefix = squad.issuePrefix ?? squad.id;
   const issueLinkSelector = `a[href$="/issues/${issueIdentifier}"]`;
 
   const setMode = async (mode: "standard" | "planning") => {
@@ -117,7 +117,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
     fullPage: true,
   });
 
-  await page.goto(`/${companyPrefix}/issues`);
+  await page.goto(`/${squadPrefix}/issues`);
   await expect(page.locator(issueLinkSelector)).toBeVisible();
   await expect(page.locator(issueLinkSelector)).not.toContainText("Planning");
   await page.screenshot({
@@ -147,7 +147,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
     fullPage: true,
   });
 
-  await page.goto(`/${companyPrefix}/issues`);
+  await page.goto(`/${squadPrefix}/issues`);
   await expect(page.locator(issueLinkSelector)).toBeVisible();
   await expect(page.locator(issueLinkSelector)).not.toContainText("Planning");
   await page.screenshot({

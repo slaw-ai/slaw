@@ -3,7 +3,7 @@
  *
  * Workers emit stream events via JSON-RPC notifications. The bus fans out
  * each event to all connected SSE clients that match the (pluginId, channel,
- * companyId) tuple.
+ * squadId) tuple.
  *
  * @see PLUGIN_SPEC.md §19.8 — Real-Time Streaming
  */
@@ -14,32 +14,32 @@ export type StreamEventType = "message" | "open" | "close" | "error";
 export type StreamSubscriber = (event: unknown, eventType: StreamEventType) => void;
 
 /**
- * Composite key for stream subscriptions: pluginId:channel:companyId
+ * Composite key for stream subscriptions: pluginId:channel:squadId
  */
-function streamKey(pluginId: string, channel: string, companyId: string): string {
-  return `${pluginId}:${channel}:${companyId}`;
+function streamKey(pluginId: string, channel: string, squadId: string): string {
+  return `${pluginId}:${channel}:${squadId}`;
 }
 
 export interface PluginStreamBus {
   /**
-   * Subscribe to stream events for a specific (pluginId, channel, companyId).
+   * Subscribe to stream events for a specific (pluginId, channel, squadId).
    * Returns an unsubscribe function.
    */
   subscribe(
     pluginId: string,
     channel: string,
-    companyId: string,
+    squadId: string,
     listener: StreamSubscriber,
   ): () => void;
 
   /**
-   * Publish an event to all subscribers of (pluginId, channel, companyId).
+   * Publish an event to all subscribers of (pluginId, channel, squadId).
    * Called by the worker manager when it receives a stream notification.
    */
   publish(
     pluginId: string,
     channel: string,
-    companyId: string,
+    squadId: string,
     event: unknown,
     eventType?: StreamEventType,
   ): void;
@@ -52,8 +52,8 @@ export function createPluginStreamBus(): PluginStreamBus {
   const subscribers = new Map<string, Set<StreamSubscriber>>();
 
   return {
-    subscribe(pluginId, channel, companyId, listener) {
-      const key = streamKey(pluginId, channel, companyId);
+    subscribe(pluginId, channel, squadId, listener) {
+      const key = streamKey(pluginId, channel, squadId);
       let set = subscribers.get(key);
       if (!set) {
         set = new Set();
@@ -69,8 +69,8 @@ export function createPluginStreamBus(): PluginStreamBus {
       };
     },
 
-    publish(pluginId, channel, companyId, event, eventType: StreamEventType = "message") {
-      const key = streamKey(pluginId, channel, companyId);
+    publish(pluginId, channel, squadId, event, eventType: StreamEventType = "message") {
+      const key = streamKey(pluginId, channel, squadId);
       const set = subscribers.get(key);
       if (!set) return;
       for (const listener of set) {

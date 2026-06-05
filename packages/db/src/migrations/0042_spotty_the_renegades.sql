@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS "company_skills" (
+CREATE TABLE IF NOT EXISTS "squad_skills" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"squad_id" uuid NOT NULL,
 	"key" text NOT NULL,
 	"slug" text NOT NULL,
 	"name" text NOT NULL,
@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS "company_skills" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'company_skills_company_id_companies_id_fk') THEN
-  ALTER TABLE "company_skills" ADD CONSTRAINT "company_skills_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'squad_skills_squad_id_squads_id_fk') THEN
+  ALTER TABLE "squad_skills" ADD CONSTRAINT "squad_skills_squad_id_squads_id_fk" FOREIGN KEY ("squad_id") REFERENCES "public"."squads"("id") ON DELETE no action ON UPDATE no action;
  END IF;
 END $$;--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "company_skills_company_key_idx" ON "company_skills" USING btree ("company_id","key");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "company_skills_company_name_idx" ON "company_skills" USING btree ("company_id","name");
+CREATE UNIQUE INDEX IF NOT EXISTS "squad_skills_squad_key_idx" ON "squad_skills" USING btree ("squad_id","key");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "squad_skills_squad_name_idx" ON "squad_skills" USING btree ("squad_id","name");

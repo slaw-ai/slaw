@@ -7,7 +7,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Cpu, Plus, Power, Trash2, FolderOpen, Package, RefreshCw, Download } from "lucide-react";
-import { useCompany } from "@/context/CompanyContext";
+import { useSquad } from "@/context/SquadContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { adaptersApi } from "@/api/adapters";
 import type { AdapterInfo } from "@/api/adapters";
@@ -252,7 +252,7 @@ function ReinstallDialog({
 }
 
 export function AdapterManager() {
-  const { selectedCompany } = useCompany();
+  const { selectedSquad } = useSquad();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -266,11 +266,11 @@ export function AdapterManager() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
+      { label: selectedSquad?.name ?? "Squad", href: "/dashboard" },
       { label: "Settings", href: "/instance/settings/general" },
       { label: "Adapters" },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs]);
+  }, [selectedSquad?.name, setBreadcrumbs]);
 
   const { data: adapters, isLoading } = useQuery({
     queryKey: queryKeys.adapters.all,

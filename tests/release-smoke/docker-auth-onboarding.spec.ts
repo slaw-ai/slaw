@@ -9,8 +9,8 @@ const ADMIN_PASSWORD =
   process.env.SMOKE_ADMIN_PASSWORD ??
   "slaw-smoke-password";
 
-const COMPANY_NAME = `Release-Smoke-${Date.now()}`;
-const AGENT_NAME = "CEO";
+const SQUAD_NAME = `Release-Smoke-${Date.now()}`;
+const AGENT_NAME = "Squad Lead";
 const TASK_TITLE = "Release smoke task";
 
 async function signIn(page: Page) {
@@ -25,7 +25,7 @@ async function signIn(page: Page) {
 }
 
 async function openOnboarding(page: Page) {
-  const wizardHeading = page.locator("h3", { hasText: "Name your company" });
+  const wizardHeading = page.locator("h3", { hasText: "Name your squad" });
   const startButton = page.getByRole("button", { name: "Start Onboarding" });
 
   await expect(wizardHeading.or(startButton)).toBeVisible({ timeout: 20_000 });
@@ -38,20 +38,20 @@ async function openOnboarding(page: Page) {
 }
 
 test.describe("Docker authenticated onboarding smoke", () => {
-  test("logs in, completes onboarding, and triggers the first CEO run", async ({
+  test("logs in, completes onboarding, and triggers the first Squad Lead run", async ({
     page,
   }) => {
     await signIn(page);
     await openOnboarding(page);
 
-    await page.locator('input[placeholder="Acme Corp"]').fill(COMPANY_NAME);
+    await page.locator('input[placeholder="Acme Corp"]').fill(SQUAD_NAME);
     await page.getByRole("button", { name: "Next" }).click();
 
     await expect(
       page.locator("h3", { hasText: "Create your first agent" })
     ).toBeVisible({ timeout: 10_000 });
 
-    await expect(page.locator('input[placeholder="CEO"]')).toHaveValue(AGENT_NAME);
+    await expect(page.locator('input[placeholder="Squad Lead"]')).toHaveValue(AGENT_NAME);
     await page.getByRole("button", { name: "Next" }).click();
 
     await expect(
@@ -65,7 +65,7 @@ test.describe("Docker authenticated onboarding smoke", () => {
     await expect(
       page.locator("h3", { hasText: "Ready to launch" })
     ).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(COMPANY_NAME)).toBeVisible();
+    await expect(page.getByText(SQUAD_NAME)).toBeVisible();
     await expect(page.getByText(AGENT_NAME)).toBeVisible();
     await expect(page.getByText(TASK_TITLE)).toBeVisible();
 
@@ -74,14 +74,14 @@ test.describe("Docker authenticated onboarding smoke", () => {
 
     const baseUrl = new URL(page.url()).origin;
 
-    const companiesRes = await page.request.get(`${baseUrl}/api/companies`);
-    expect(companiesRes.ok()).toBe(true);
-    const companies = (await companiesRes.json()) as Array<{ id: string; name: string }>;
-    const company = companies.find((entry) => entry.name === COMPANY_NAME);
-    expect(company).toBeTruthy();
+    const squadsRes = await page.request.get(`${baseUrl}/api/squads`);
+    expect(squadsRes.ok()).toBe(true);
+    const squads = (await squadsRes.json()) as Array<{ id: string; name: string }>;
+    const squad = squads.find((entry) => entry.name === SQUAD_NAME);
+    expect(squad).toBeTruthy();
 
     const agentsRes = await page.request.get(
-      `${baseUrl}/api/companies/${company!.id}/agents`
+      `${baseUrl}/api/squads/${squad!.id}/agents`
     );
     expect(agentsRes.ok()).toBe(true);
     const agents = (await agentsRes.json()) as Array<{
@@ -92,11 +92,11 @@ test.describe("Docker authenticated onboarding smoke", () => {
     }>;
     const ceoAgent = agents.find((entry) => entry.name === AGENT_NAME);
     expect(ceoAgent).toBeTruthy();
-    expect(ceoAgent!.role).toBe("ceo");
+    expect(ceoAgent!.role).toBe("squad_lead");
     expect(ceoAgent!.adapterType).not.toBe("process");
 
     const issuesRes = await page.request.get(
-      `${baseUrl}/api/companies/${company!.id}/issues`
+      `${baseUrl}/api/squads/${squad!.id}/issues`
     );
     expect(issuesRes.ok()).toBe(true);
     const issues = (await issuesRes.json()) as Array<{
@@ -111,7 +111,7 @@ test.describe("Docker authenticated onboarding smoke", () => {
     await expect.poll(
       async () => {
         const runsRes = await page.request.get(
-          `${baseUrl}/api/companies/${company!.id}/heartbeat-runs?agentId=${ceoAgent!.id}`
+          `${baseUrl}/api/squads/${squad!.id}/heartbeat-runs?agentId=${ceoAgent!.id}`
         );
         expect(runsRes.ok()).toBe(true);
         const runs = (await runsRes.json()) as Array<{

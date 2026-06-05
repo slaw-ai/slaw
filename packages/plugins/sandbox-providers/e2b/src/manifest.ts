@@ -35,7 +35,7 @@ const manifest: SlawPluginManifestV1 = {
             type: "string",
             format: "secret-ref",
             description:
-              "Environment-specific E2B API key. Paste a key or an existing Slaw secret reference; saved environments store pasted values as company secrets. Falls back to E2B_API_KEY if omitted.",
+              "Environment-specific E2B API key. Paste a key or an existing Slaw secret reference; saved environments store pasted values as squad secrets. Falls back to E2B_API_KEY if omitted.",
           },
           timeoutMs: {
             type: "number",

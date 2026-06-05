@@ -29,13 +29,13 @@ system might have captured a value.
 
 ## Using Secrets In Runs
 
-Creating a company secret does not automatically create an environment variable.
+Creating a squad secret does not automatically create an environment variable.
 You use a secret by binding it into an agent, project, environment, or plugin
 configuration field that supports secret references.
 
 For agent and project environment variables:
 
-1. Create or link the secret in `Company Settings > Secrets`.
+1. Create or link the secret in `Squad Settings > Secrets`.
 2. Open the agent's `Environment variables` field, or the project's `Env`
    field.
 3. Add the environment variable key the process expects, such as `GH_TOKEN` or
@@ -88,7 +88,7 @@ Validate secrets config:
 
 ```sh
 pnpm slaw doctor
-pnpm slaw secrets doctor --company-id <company-id>
+pnpm slaw secrets doctor --squad-id <squad-id>
 ```
 
 ### Environment Overrides
@@ -130,8 +130,8 @@ backup/rotation/incident runbooks — in `doc/SECRETS-AWS-PROVIDER.md`.
 
 ## Provider Vaults
 
-A *provider vault* is a named, company-scoped configuration that points secret
-material at one of the supported provider backends. Each company can configure
+A *provider vault* is a named, squad-scoped configuration that points secret
+material at one of the supported provider backends. Each squad can configure
 multiple vaults, including more than one vault per provider family, and pick a
 default vault per family for new secret operations. Existing secrets created
 before any vault was configured continue to resolve through the deployment-level
@@ -139,17 +139,17 @@ default provider — no migration is required.
 
 ### Where to configure
 
-Open `Company Settings → Secrets` in the board UI and switch to the
+Open `Squad Settings → Secrets` in the board UI and switch to the
 `Provider vaults` tab. From there you can:
 
 - Create a vault for any supported provider family.
 - Edit the non-secret config of an existing vault.
-- Set one ready vault per provider family as the company default.
+- Set one ready vault per provider family as the squad default.
 - Disable a vault (a soft delete that keeps audit history).
 - Run a health check against a vault and read the latest result inline.
 
 The same operations are exposed under
-`/api/companies/{companyId}/secret-provider-configs` for automation. See the
+`/api/squads/{squadId}/secret-provider-configs` for automation. See the
 [secrets API reference](/api/secrets#provider-vaults) for the full route table.
 
 ### Custody Of Provider Credentials
@@ -164,7 +164,7 @@ at validation time.
 
 That keeps the bootstrap rule from the AWS provider applicable to every
 provider family: **provider credentials live in deployment infrastructure
-identity, not in Slaw company secrets**. Allowed credential sources are
+identity, not in Slaw squad secrets**. Allowed credential sources are
 workload identity attached to the Slaw server (instance profile, IRSA, ECS
 task role), `AWS_PROFILE` / SSO / shared config for local runs, an orchestrator
 secret store that boots the server, or short-lived shell credentials for local
@@ -189,7 +189,7 @@ runtime-locked error.
 
 ### Default Vault Behavior
 
-A company can mark **one** ready (or warning) vault per provider family as the
+A squad can mark **one** ready (or warning) vault per provider family as the
 default. The secret create and rotate dialogs preselect the default vault for
 the chosen provider so operators don't have to remember which vault to pick.
 Coming-soon and disabled vaults cannot be marked default; attempting to do so
@@ -211,7 +211,7 @@ Multiple vaults from the same provider family are first-class. Common patterns:
   separation.
 - A staging Vault address alongside a production address.
 - A dedicated GCP project for a single product line while the rest of the
-  company uses another.
+  squad uses another.
 
 Each vault has its own display name, status, default flag, and health record.
 Operators choose the vault explicitly when creating or rotating a secret; the
@@ -243,7 +243,7 @@ credentials still come from the AWS SDK default credential chain — see
 
 **GCP Secret Manager** and **HashiCorp Vault** vaults are coming soon. You can
 save draft `projectId`, `location`, `namespace`, `address`, and `mountPath`
-metadata so the company is ready to flip them on when the provider modules
+metadata so the squad is ready to flip them on when the provider modules
 ship. Vault `address` values must be origin-only `http(s)://host[:port]` URLs;
 addresses with embedded credentials, paths, query strings, or fragments are
 rejected.
@@ -258,7 +258,7 @@ value during preview or import.
 
 Operator flow in the board UI:
 
-1. Open `Company Settings -> Secrets`.
+1. Open `Squad Settings -> Secrets`.
 2. Confirm at least one AWS provider vault is `ready` or `warning`.
 3. In the `Secrets` tab, choose `Import from vault`.
 4. Select an AWS vault, search the remote inventory, and load more pages as
@@ -323,7 +323,7 @@ Each provider family has a different backup story:
 - `aws_secrets_manager`: back up Slaw's database for vault metadata
   (vault id, region, prefix, KMS key id, default flag, bindings, version
   pointers). The actual secret values live in AWS Secrets Manager under the
-  configured prefix; restore by pointing the same Slaw company at the
+  configured prefix; restore by pointing the same Slaw squad at the
   same AWS namespace and confirming the runtime role still has
   `GetSecretValue` plus KMS decrypt. The full restore checklist lives in
   `doc/SECRETS-AWS-PROVIDER.md`.
@@ -334,9 +334,9 @@ Each provider family has a different backup story:
 ### AWS Provider Bootstrap Boundary
 
 The AWS Secrets Manager provider cannot bootstrap itself from Slaw
-`company_secrets`. Its initial AWS access must be present before the server can
-create or resolve AWS-backed company secrets, regardless of whether you use the
-deployment-level default or a per-company vault.
+`squad_secrets`. Its initial AWS access must be present before the server can
+create or resolve AWS-backed squad secrets, regardless of whether you use the
+deployment-level default or a per-squad vault.
 
 For Slaw Cloud, provision the server runtime IAM role/workload identity,
 KMS key, deployment prefix, and non-secret `SLAW_SECRETS_AWS_*` environment
@@ -355,8 +355,8 @@ store.
 If you have existing agents with inline API keys in their config, migrate them to encrypted secret refs:
 
 ```sh
-pnpm slaw secrets migrate-inline-env --company-id <company-id>
-pnpm slaw secrets migrate-inline-env --company-id <company-id> --apply
+pnpm slaw secrets migrate-inline-env --squad-id <squad-id>
+pnpm slaw secrets migrate-inline-env --squad-id <squad-id> --apply
 
 # low-level script for direct database maintenance
 pnpm secrets:migrate-inline-env         # dry run
@@ -369,11 +369,11 @@ audit logging.
 
 ## Portable Declarations
 
-Company exports include only environment declarations. They do not include
+Squad exports include only environment declarations. They do not include
 secret IDs, provider references, encrypted material, or plaintext values.
 
 ```sh
-pnpm slaw secrets declarations --company-id <company-id> --kind secret
+pnpm slaw secrets declarations --squad-id <squad-id> --kind secret
 ```
 
 Before importing a package into another instance, use those declarations to

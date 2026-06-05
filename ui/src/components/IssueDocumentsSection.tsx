@@ -15,7 +15,7 @@ import { ApiError } from "../api/client";
 import { issuesApi } from "../api/issues";
 import { useAutosaveIndicator } from "../hooks/useAutosaveIndicator";
 import { deriveDocumentRevisionState } from "../lib/document-revisions";
-import type { CompanyUserProfile } from "../lib/company-members";
+import type { SquadUserProfile } from "../lib/squad-members";
 import { queryKeys } from "../lib/queryKeys";
 import { cn, relativeTime } from "../lib/utils";
 import { FoldCurtain } from "./FoldCurtain";
@@ -124,7 +124,7 @@ function documentHasUnsavedChanges(doc: IssueDocument, draft: DraftState | null)
 function toDocumentSummary(document: IssueDocument) {
   return {
     id: document.id,
-    companyId: document.companyId,
+    squadId: document.squadId,
     issueId: document.issueId,
     key: document.key,
     title: document.title,
@@ -175,7 +175,7 @@ export function IssueDocumentsSection({
   ) => Promise<void>;
   extraActions?: ReactNode;
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
+  userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
   /**
    * Seed which document annotation panels are open on first render. Mostly useful
    * for Storybook / screenshot harnesses; runtime callers usually omit this.

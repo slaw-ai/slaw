@@ -5,7 +5,7 @@ import type { AuthSession, CurrentUserProfile, UpdateCurrentUserProfile } from "
 import { authApi } from "@/api/auth";
 import { assetsApi } from "@/api/assets";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useCompany } from "../context/CompanyContext";
+import { useSquad } from "../context/SquadContext";
 import { queryKeys } from "../lib/queryKeys";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ function deriveInitials(name: string) {
 
 export function ProfileSettings() {
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { selectedCompanyId, selectedCompany } = useCompany();
+  const { selectedSquadId, selectedSquad } = useSquad();
   const queryClient = useQueryClient();
   const avatarInputId = useId();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -84,12 +84,12 @@ export function ProfileSettings() {
 
   const uploadAvatarMutation = useMutation({
     mutationFn: async (file: File) => {
-      if (!selectedCompanyId) {
-        throw new Error("Select a company before uploading a profile avatar.");
+      if (!selectedSquadId) {
+        throw new Error("Select a squad before uploading a profile avatar.");
       }
 
       const asset = await assetsApi.uploadImage(
-        selectedCompanyId,
+        selectedSquadId,
         file,
         `profiles/${sessionQuery.data?.user.id ?? "board-user"}`,
       );
@@ -133,9 +133,9 @@ export function ProfileSettings() {
   const currentImage = image.trim() || null;
   const initials = deriveInitials(currentName);
   const isSavingProfile = updateMutation.isPending || uploadAvatarMutation.isPending || removeAvatarMutation.isPending;
-  const uploadHint = selectedCompany
-    ? `Stored in Slaw file storage for ${selectedCompany.name}.`
-    : "Select a company to upload an avatar into Slaw storage.";
+  const uploadHint = selectedSquad
+    ? `Stored in Slaw file storage for ${selectedSquad.name}.`
+    : "Select a squad to upload an avatar into Slaw storage.";
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -172,7 +172,7 @@ export function ProfileSettings() {
                     type="file"
                     accept="image/*"
                     className="sr-only"
-                    disabled={!selectedCompanyId || isSavingProfile}
+                    disabled={!selectedSquadId || isSavingProfile}
                     onChange={(event) => {
                       const file = event.target.files?.[0];
                       if (!file) return;
@@ -194,7 +194,7 @@ export function ProfileSettings() {
                     type="button"
                     variant="secondary"
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={!selectedCompanyId || isSavingProfile}
+                    disabled={!selectedSquadId || isSavingProfile}
                   >
                     {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
                     {currentImage ? "Change photo" : "Upload photo"}
