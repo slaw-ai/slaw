@@ -4,6 +4,8 @@ import { useTranslation } from "@/i18n";
 import { Layout } from "./components/Layout";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { CloudAccessGate } from "./components/CloudAccessGate";
+import { BotfatherEnrollmentGate } from "./components/BotfatherEnrollmentGate";
+import { InstanceControlTowerSettings } from "./pages/InstanceControlTowerSettings";
 import { Dashboard } from "./pages/Dashboard";
 import { DashboardLive } from "./pages/DashboardLive";
 import { Squads } from "./pages/Squads";
@@ -287,6 +289,7 @@ export function App() {
         <Route path="ux-lab/cloud-upstream" element={<CloudUpstreamUxLab />} />
         <Route path="ux-lab/bootstrap-setup" element={<BootstrapSetupUxLab />} />
 
+        <Route element={<BotfatherEnrollmentGate />}>
         <Route element={<CloudAccessGate />}>
           <Route index element={<SquadRootRedirect />} />
           <Route path="onboarding" element={<OnboardingRoutePage />} />
@@ -295,6 +298,7 @@ export function App() {
             <Route index element={<Navigate to="general" replace />} />
             <Route path="profile" element={<ProfileSettings />} />
             <Route path="general" element={<InstanceGeneralSettings />} />
+            <Route path="control-tower" element={<InstanceControlTowerSettings />} />
             <Route path="access" element={<InstanceAccess />} />
             <Route path="heartbeats" element={<InstanceSettings />} />
             <Route path="experimental" element={<InstanceExperimentalSettings />} />
@@ -335,6 +339,7 @@ export function App() {
             {boardRoutes()}
           </Route>
           <Route path="*" element={<NotFoundPage scope="global" />} />
+        </Route>
         </Route>
       </Routes>
       <OnboardingWizard />
