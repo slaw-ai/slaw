@@ -83,7 +83,9 @@ export class BotfatherReporter {
     if (!apiKey) return;
     const { db } = this.deps;
 
-    const [counts] = (await db.execute(sql`
+    // node-postgres returns a QueryResult ({ rows }); normalize so destructuring
+    // never throws (a thrown heartbeat = tower never sees liveness → "offline").
+    const hbResult = (await db.execute(sql`
       SELECT
         (SELECT count(*)::int FROM squads) AS squads,
         (SELECT count(*)::int FROM agents) AS agents,
@@ -91,14 +93,19 @@ export class BotfatherReporter {
         (SELECT count(*)::int FROM issues WHERE status NOT IN ('done','closed','completed','cancelled')) AS open_issues,
         (SELECT coalesce(sum(cost_cents),0)::int FROM cost_events WHERE occurred_at >= date_trunc('day', now() at time zone 'utc')) AS today_cents,
         (SELECT coalesce(sum(cost_cents),0)::int FROM cost_events WHERE occurred_at >= date_trunc('month', now() at time zone 'utc')) AS month_cents
-    `)) as unknown as Array<{
+    `)) as unknown;
+    type HbCounts = {
       squads: number;
       agents: number;
       active_runs: number;
       open_issues: number;
       today_cents: number;
       month_cents: number;
-    }>;
+    };
+    const hbRows: HbCounts[] = Array.isArray(hbResult)
+      ? (hbResult as HbCounts[])
+      : ((hbResult as { rows?: HbCounts[] })?.rows ?? []);
+    const counts = hbRows[0];
 
     const body: HeartbeatRequest = {
       protocolVersion: 1,
