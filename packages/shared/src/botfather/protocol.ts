@@ -132,6 +132,28 @@ export const agentUpsertSchema = z.object({
   adapterType: z.string().max(64),
   budgetMonthlyCents: cents.nullable(),
   spentMonthlyCents: cents,
+  /** display title / job title (metadata, read-only) */
+  title: z.string().max(255).nullable().optional(),
+  /** free-text persona / operating instructions for the agent (metadata, read-only) */
+  capabilities: z.string().max(20_000).nullable().optional(),
+  /** localId of the agent this one reports to, if any */
+  reportsToLocalId: localId.nullable().optional(),
+  updatedAt: z.string().datetime(),
+});
+
+/**
+ * Skills are squad-scoped in SLAW (one library per squad). Metadata only —
+ * the skill markdown body itself is NOT synced to the tower, just its descriptor.
+ */
+export const squadSkillUpsertSchema = z.object({
+  type: z.literal("squad_skill"),
+  localId,
+  squadLocalId: localId,
+  key: z.string().max(255),
+  name: z.string().max(255),
+  description: z.string().max(2_000).nullable().optional(),
+  sourceType: z.string().max(64),
+  trustLevel: z.string().max(64),
   updatedAt: z.string().datetime(),
 });
 
@@ -159,6 +181,7 @@ export const issueUpsertSchema = z.object({
 export const entityUpsertSchema = z.discriminatedUnion("type", [
   squadUpsertSchema,
   agentUpsertSchema,
+  squadSkillUpsertSchema,
   projectUpsertSchema,
   issueUpsertSchema,
 ]);

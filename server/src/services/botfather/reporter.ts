@@ -3,6 +3,7 @@ import type { Db } from "@slaw/db";
 import {
   squads,
   agents,
+  squadSkills,
   projects,
   issues,
   costEvents,
@@ -179,6 +180,10 @@ export class BotfatherReporter {
         role: a.role,
         status: a.status,
         adapterType: a.adapterType,
+        // read-only metadata for the tower's agent drill-down (no config/secrets)
+        title: a.title ?? null,
+        capabilities: a.capabilities ?? null,
+        reportsToLocalId: a.reportsTo ?? null,
         budgetMonthlyCents: a.budgetMonthlyCents ?? null,
         spentMonthlyCents: a.spentMonthlyCents ?? 0,
         updatedAt: a.updatedAt.toISOString(),
@@ -187,6 +192,31 @@ export class BotfatherReporter {
     if (agentRows.length) {
       const last = agentRows[agentRows.length - 1];
       advances.push({ type: "agent", at: last.updatedAt, id: last.id });
+    }
+
+    // ── squad skills (squad-scoped library; descriptor metadata only, no body) ──
+    const skillRows = await db
+      .select()
+      .from(squadSkills)
+      .where(afterCursor(squadSkills.updatedAt, squadSkills.id, cursors.get("squad_skill")))
+      .orderBy(asc(squadSkills.updatedAt), asc(squadSkills.id))
+      .limit(BATCH);
+    for (const sk of skillRows) {
+      upserts.push({
+        type: "squad_skill",
+        localId: sk.id,
+        squadLocalId: sk.squadId,
+        key: sk.key,
+        name: sk.name,
+        description: sk.description ?? null,
+        sourceType: sk.sourceType,
+        trustLevel: sk.trustLevel,
+        updatedAt: sk.updatedAt.toISOString(),
+      });
+    }
+    if (skillRows.length) {
+      const last = skillRows[skillRows.length - 1];
+      advances.push({ type: "squad_skill", at: last.updatedAt, id: last.id });
     }
 
     const projectRows = await db
@@ -395,9 +425,25 @@ export class BotfatherReporter {
         role: a.role,
         status: a.status,
         adapterType: a.adapterType,
+        title: a.title ?? null,
+        capabilities: a.capabilities ?? null,
+        reportsToLocalId: a.reportsTo ?? null,
         budgetMonthlyCents: a.budgetMonthlyCents ?? null,
         spentMonthlyCents: a.spentMonthlyCents ?? 0,
         updatedAt: a.updatedAt.toISOString(),
+      });
+    }
+    for (const sk of await db.select().from(squadSkills).limit(2000)) {
+      upserts.push({
+        type: "squad_skill",
+        localId: sk.id,
+        squadLocalId: sk.squadId,
+        key: sk.key,
+        name: sk.name,
+        description: sk.description ?? null,
+        sourceType: sk.sourceType,
+        trustLevel: sk.trustLevel,
+        updatedAt: sk.updatedAt.toISOString(),
       });
     }
     for (const p of await db.select().from(projects).limit(2000)) {
