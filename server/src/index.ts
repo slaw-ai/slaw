@@ -40,6 +40,7 @@ import {
 } from "./services/index.js";
 import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
 import { BotfatherService } from "./services/botfather/service.js";
+import { writeBotfatherConfigSection } from "./config-file.js";
 import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
 import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
 import { createStorageServiceFromConfig } from "./storage/index.js";
@@ -631,7 +632,9 @@ export async function startServer(): Promise<StartedServer> {
 
   // Botfather control-tower reporting. Constructed always; a no-op shell when
   // no botfather.url is configured (standalone). started() after the app boots.
-  const botfatherService = new BotfatherService(db as any, config.botfather, logger);
+  const botfatherService = new BotfatherService(db as any, config.botfather, logger, (patch) =>
+    writeBotfatherConfigSection(patch),
+  );
 
   const app = await createApp(db as any, {
     uiMode,

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Radio } from "lucide-react";
 import { botfatherApi, type BotfatherStatus } from "@/api/botfather";
@@ -34,6 +34,24 @@ export function InstanceControlTowerSettings() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["botfather", "status"] }),
   });
 
+  const [url, setUrl] = useState("");
+  const [enforcement, setEnforcement] = useState<"enforce" | "advisory">("enforce");
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const connect = useMutation({
+    mutationFn: () => botfatherApi.connect(url.trim(), enforcement),
+    onSuccess: () => {
+      setFormError(null);
+      queryClient.invalidateQueries({ queryKey: ["botfather", "status"] });
+    },
+    onError: (e) => setFormError(e instanceof Error ? e.message : "Failed to connect"),
+  });
+
+  const disconnect = useMutation({
+    mutationFn: () => botfatherApi.disconnect(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["botfather", "status"] }),
+  });
+
   const s = statusQuery.data;
   const standalone = !s || s.state === "standalone";
 
@@ -49,12 +67,41 @@ export function InstanceControlTowerSettings() {
       </div>
 
       {standalone ? (
-        <section className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">
-            This instance is <b>standalone</b> — no control tower is configured. It runs fully locally and
-            reports to no one. Set <code className="font-mono text-xs">botfather.url</code> in your instance
-            config to enrol with a tower.
-          </p>
+        <section className="space-y-4 rounded-xl border border-border bg-card p-5">
+          <div>
+            <h2 className="text-sm font-semibold">Connect to a control tower</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              This instance is <b>standalone</b> — it runs fully locally and reports to no one. Enter your
+              organisation&apos;s botfather URL to enrol. It will appear in the tower&apos;s approval queue
+              for an admin to approve.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <label className="block text-xs font-medium text-muted-foreground">
+              Control tower URL
+              <input
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                placeholder="https://botfather.your-org.internal"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+              />
+            </label>
+            <label className="block text-xs font-medium text-muted-foreground">
+              Enforcement
+              <select
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                value={enforcement}
+                onChange={(e) => setEnforcement(e.target.value as "enforce" | "advisory")}
+              >
+                <option value="enforce">Enforce — block SLAW until approved</option>
+                <option value="advisory">Advisory — report but never block</option>
+              </select>
+            </label>
+            {formError && <p className="text-xs text-red-500">{formError}</p>}
+            <Button onClick={() => connect.mutate()} disabled={!url.trim() || connect.isPending}>
+              {connect.isPending ? "Connecting…" : "Connect"}
+            </Button>
+          </div>
         </section>
       ) : (
         <>
@@ -96,11 +143,21 @@ export function InstanceControlTowerSettings() {
             </p>
           </section>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => reenroll.mutate()} disabled={reenroll.isPending}>
               {reenroll.isPending ? "Re-enrolling…" : "Re-enrol"}
             </Button>
-            {s!.enforcement === "enforce" && (
+            {s!.enforcement === "advisory" ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (confirm("Disconnect this instance from the control tower?")) disconnect.mutate();
+                }}
+                disabled={disconnect.isPending}
+              >
+                {disconnect.isPending ? "Disconnecting…" : "Disconnect"}
+              </Button>
+            ) : (
               <span className="self-center text-xs text-muted-foreground">
                 Disconnect is managed by your organisation (enforce mode).
               </span>

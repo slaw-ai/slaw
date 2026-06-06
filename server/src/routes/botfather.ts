@@ -18,6 +18,27 @@ export function botfatherRoutes(service: BotfatherService | undefined): Router {
     res.json({ ...status, gated: service.isGated() });
   });
 
+  // Connect a running instance to a control tower (Settings → Control Tower).
+  router.post("/botfather/connect", (req, res) => {
+    if (!service) {
+      res.status(409).json({ error: "botfather_unavailable" });
+      return;
+    }
+    const body = (req.body ?? {}) as { url?: unknown; enforcement?: unknown };
+    const url = typeof body.url === "string" ? body.url.trim() : "";
+    const enforcement = body.enforcement === "advisory" ? "advisory" : "enforce";
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error("scheme");
+    } catch {
+      res.status(400).json({ error: "invalid_url" });
+      return;
+    }
+    const status = service.connect(parsed.toString().replace(/\/$/, ""), enforcement);
+    res.json({ ...status, gated: service.isGated() });
+  });
+
   router.post("/botfather/reenroll", async (_req, res) => {
     if (!service || !service.enabled) {
       res.status(409).json({ error: "no_control_tower_configured" });
@@ -38,8 +59,8 @@ export function botfatherRoutes(service: BotfatherService | undefined): Router {
       res.status(403).json({ error: "disconnect_blocked_by_policy" });
       return;
     }
-    service.enrollment.onRevoked();
-    res.json({ ...service.status(), gated: service.isGated() });
+    const status = service.disconnect();
+    res.json({ ...status, gated: service.isGated() });
   });
 
   return router;

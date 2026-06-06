@@ -17,15 +17,18 @@ export interface BotfatherServiceLogger {
  * A no-op shell is returned when no botfather.url is configured (standalone).
  */
 export class BotfatherService {
-  readonly enrollment: BotfatherEnrollment;
-  private readonly reporter: BotfatherReporter | null;
+  enrollment: BotfatherEnrollment;
+  private reporter: BotfatherReporter | null;
   private timers: NodeJS.Timeout[] = [];
   private syncing = false;
+  private started = false;
 
   constructor(
     private readonly db: Db,
-    private readonly config: BotfatherConfig,
+    private config: BotfatherConfig,
     private readonly logger: BotfatherServiceLogger,
+    /** persists a config patch to disk so the connection survives restart */
+    private readonly persistConfig?: (patch: BotfatherConfig) => void,
   ) {
     this.enrollment = new BotfatherEnrollment({
       url: config.url,
@@ -46,6 +49,50 @@ export class BotfatherService {
     return !!this.config.url;
   }
 
+  /**
+   * Attach a running instance to a control tower (Settings → Control Tower).
+   * Persists the url+enforcement, rebuilds enrollment+reporter, and starts the
+   * loops live — no restart needed. Re-connecting to a new url clears the old
+   * credentials so a fresh enrollment is forced.
+   */
+  connect(url: string, enforcement: "enforce" | "advisory"): EnrollmentStatus {
+    const changedUrl = url !== this.config.url;
+    this.stop();
+    this.config = { ...this.config, url, enforcement };
+    this.persistConfig?.(this.config);
+
+    this.enrollment = new BotfatherEnrollment({
+      url,
+      enforcement,
+      reportIssueTitles: this.config.reportIssueTitles,
+    });
+    if (changedUrl) this.enrollment.onRevoked(); // drop any stale key for a new tower
+    this.reporter = new BotfatherReporter({
+      db: this.db,
+      client: createBotfatherClient(url),
+      enrollment: this.enrollment,
+      reportIssueTitles: this.config.reportIssueTitles,
+    });
+    this.started = false;
+    this.start();
+    return this.enrollment.status();
+  }
+
+  /** Detach from the tower (advisory only — see route guard). */
+  disconnect(): EnrollmentStatus {
+    this.stop();
+    this.enrollment.onRevoked();
+    this.config = { ...this.config, url: undefined };
+    this.persistConfig?.(this.config);
+    this.enrollment = new BotfatherEnrollment({
+      url: undefined,
+      enforcement: this.config.enforcement,
+      reportIssueTitles: this.config.reportIssueTitles,
+    });
+    this.reporter = null;
+    return this.enrollment.status();
+  }
+
   status(): EnrollmentStatus {
     return this.enrollment.status();
   }
@@ -56,10 +103,12 @@ export class BotfatherService {
 
   /** Start enrollment + the heartbeat/sync loops. Safe no-op when standalone. */
   start(): void {
+    if (this.started) return;
     if (!this.enabled || !this.reporter) {
       this.logger.info({}, "botfather: standalone (no url configured); reporter disabled");
       return;
     }
+    this.started = true;
     this.logger.info(
       { url: this.config.url, enforcement: this.config.enforcement },
       "botfather: starting reporter",
@@ -107,5 +156,6 @@ export class BotfatherService {
   stop(): void {
     for (const t of this.timers) clearInterval(t);
     this.timers = [];
+    this.started = false;
   }
 }
