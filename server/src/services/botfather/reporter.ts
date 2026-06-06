@@ -296,6 +296,64 @@ export class BotfatherReporter {
       throw err;
     }
   }
+
+  /**
+   * Re-send recent cost_events regardless of cursor so the tower's token/cost
+   * totals self-heal. SLAW cost_events are insert-only, but a row can be
+   * observed by the cursor sweep before its usage is fully attached, leaving a
+   * stale 0-token fact upstream; and any history created before enrollment is
+   * never re-examined by the forward-only cursor. The tower upserts cost facts
+   * on (instanceFk, localId), so re-sending is idempotent and corrects values.
+   * Bounded to a recent window to stay cheap.
+   */
+  async reconcileRecentCosts(windowHours = 48): Promise<number> {
+    const apiKey = this.deps.enrollment.apiKey;
+    if (!apiKey) return 0;
+    const { db, reportIssueTitles } = this.deps;
+    const since = new Date(Date.now() - windowHours * 3600_000);
+
+    const rows = await db
+      .select()
+      .from(costEvents)
+      .where(gt(costEvents.occurredAt, since))
+      .orderBy(asc(costEvents.occurredAt), asc(costEvents.id))
+      .limit(2000);
+    if (rows.length === 0) return 0;
+
+    const facts: FactEvent[] = rows.map((c) => ({
+      type: "cost_event",
+      localId: c.id,
+      squadLocalId: c.squadId,
+      agentLocalId: c.agentId ?? null,
+      issueLocalId: c.issueId ?? null,
+      projectLocalId: c.projectId ?? null,
+      provider: c.provider,
+      biller: c.biller ?? null,
+      billingType: normalizeBillingType(c.billingType),
+      model: c.model,
+      inputTokens: c.inputTokens ?? 0,
+      cachedInputTokens: c.cachedInputTokens ?? 0,
+      outputTokens: c.outputTokens ?? 0,
+      costCents: c.costCents,
+      occurredAt: c.occurredAt.toISOString(),
+    }));
+    // reportIssueTitles is irrelevant to cost facts; referenced to keep parity
+    void reportIssueTitles;
+
+    try {
+      const res = await this.deps.client.sync(apiKey, {
+        protocolVersion: 1,
+        sentAt: new Date().toISOString(),
+        batchCursor: `reconcile-${Date.now()}`,
+        upserts: [],
+        facts,
+      });
+      return res.accepted.facts;
+    } catch (err) {
+      if (BotfatherEnrollment.isRevokedError(err)) this.deps.enrollment.onRevoked();
+      throw err;
+    }
+  }
 }
 
 function normalizeBillingType(v: string): "metered_api" | "subscription_included" | "subscription_overage" {

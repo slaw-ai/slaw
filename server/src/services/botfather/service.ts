@@ -131,16 +131,25 @@ export class BotfatherService {
       }, this.config.heartbeatIntervalSec * 1000),
     );
 
-    // Sync loop (guarded against overlap).
+    // Sync loop (guarded against overlap). Every Nth tick also re-sends recent
+    // cost_events so the tower's token/cost totals self-heal (stale 0-token
+    // facts, pre-enrollment history). Cheap + idempotent (tower upserts).
+    let tick = 0;
+    const RECONCILE_EVERY = 10; // ~every 10 minutes at 60s interval
     this.timers.push(
       setInterval(() => {
         if (!this.enrollment.apiKey || this.syncing) return;
         this.syncing = true;
+        const doReconcile = tick++ % RECONCILE_EVERY === 0;
         void this.reporter!
           .sync()
-          .then((r) => {
+          .then(async (r) => {
             if (r.upserts > 0 || r.facts > 0) {
               this.logger.info({ upserts: r.upserts, facts: r.facts }, "botfather sync sent deltas");
+            }
+            if (doReconcile) {
+              const healed = await this.reporter!.reconcileRecentCosts();
+              if (healed > 0) this.logger.info({ healed }, "botfather reconciled recent cost facts");
             }
           })
           .catch((err) => this.logger.warn({ err: String(err) }, "botfather sync failed"))
