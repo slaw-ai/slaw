@@ -150,6 +150,8 @@ export class BotfatherService {
             if (doReconcile) {
               const healed = await this.reporter!.reconcileRecentCosts();
               if (healed > 0) this.logger.info({ healed }, "botfather reconciled recent cost facts");
+              const entities = await this.reporter!.reconcileEntities();
+              if (entities > 0) this.logger.info({ entities }, "botfather reconciled entity state");
             }
           })
           .catch((err) => this.logger.warn({ err: String(err) }, "botfather sync failed"))

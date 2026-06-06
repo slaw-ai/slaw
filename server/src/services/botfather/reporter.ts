@@ -361,6 +361,83 @@ export class BotfatherReporter {
       throw err;
     }
   }
+
+  /**
+   * Re-send current entity state (squads/agents/projects/issues) regardless of
+   * cursor so the tower converges even for rows created before enrollment or
+   * missed by the forward-only cursor. Idempotent — the tower upserts entities
+   * on (instanceFk, localId). Issues drive the per-instance drill-down, so this
+   * is what backfills an empty Issues panel after enrolment.
+   */
+  async reconcileEntities(): Promise<number> {
+    const apiKey = this.deps.enrollment.apiKey;
+    if (!apiKey) return 0;
+    const { db, reportIssueTitles } = this.deps;
+    const upserts: EntityUpsert[] = [];
+
+    for (const s of await db.select().from(squads).limit(2000)) {
+      upserts.push({
+        type: "squad",
+        localId: s.id,
+        name: s.name,
+        status: s.status,
+        budgetMonthlyCents: s.budgetMonthlyCents ?? null,
+        spentMonthlyCents: s.spentMonthlyCents ?? 0,
+        updatedAt: s.updatedAt.toISOString(),
+      });
+    }
+    for (const a of await db.select().from(agents).limit(2000)) {
+      upserts.push({
+        type: "agent",
+        localId: a.id,
+        squadLocalId: a.squadId,
+        name: a.name,
+        role: a.role,
+        status: a.status,
+        adapterType: a.adapterType,
+        budgetMonthlyCents: a.budgetMonthlyCents ?? null,
+        spentMonthlyCents: a.spentMonthlyCents ?? 0,
+        updatedAt: a.updatedAt.toISOString(),
+      });
+    }
+    for (const p of await db.select().from(projects).limit(2000)) {
+      upserts.push({
+        type: "project",
+        localId: p.id,
+        squadLocalId: p.squadId,
+        name: p.name,
+        status: p.status,
+        updatedAt: p.updatedAt.toISOString(),
+      });
+    }
+    for (const i of await db.select().from(issues).limit(2000)) {
+      upserts.push({
+        type: "issue",
+        localId: i.id,
+        squadLocalId: i.squadId,
+        projectLocalId: i.projectId ?? null,
+        title: reportIssueTitles ? i.title : i.id,
+        status: i.status,
+        assigneeAgentLocalId: i.assigneeAgentId ?? null,
+        updatedAt: i.updatedAt.toISOString(),
+      });
+    }
+    if (upserts.length === 0) return 0;
+
+    try {
+      const res = await this.deps.client.sync(apiKey, {
+        protocolVersion: 1,
+        sentAt: new Date().toISOString(),
+        batchCursor: `reconcile-entities-${Date.now()}`,
+        upserts,
+        facts: [],
+      });
+      return res.accepted.upserts;
+    } catch (err) {
+      if (BotfatherEnrollment.isRevokedError(err)) this.deps.enrollment.onRevoked();
+      throw err;
+    }
+  }
 }
 
 function normalizeBillingType(v: string): "metered_api" | "subscription_included" | "subscription_overage" {
