@@ -48,6 +48,23 @@ export function botfatherRoutes(service: BotfatherService | undefined): Router {
     res.json({ ...service.status(), state, gated: service.isGated() });
   });
 
+  // Manually sync everything to the tower now (Settings → Control Tower).
+  router.post("/botfather/force-sync", async (_req, res) => {
+    if (!service || !service.enabled) {
+      res.status(409).json({ error: "no_control_tower_configured" });
+      return;
+    }
+    try {
+      const result = await service.forceSync();
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "force_sync_failed";
+      // not_enrolled is a client-state issue (409); anything else is a transient
+      // sync/transport failure (502 — the tower or network is the problem).
+      res.status(code === "not_enrolled" ? 409 : 502).json({ error: code });
+    }
+  });
+
   router.post("/botfather/disconnect", (_req, res) => {
     // Disconnect is only permitted when policy allows (advisory). Under
     // enforce, IT-managed config keeps the tower attached.

@@ -34,6 +34,24 @@ export function InstanceControlTowerSettings() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["botfather", "status"] }),
   });
 
+  const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [syncErr, setSyncErr] = useState<string | null>(null);
+  const forceSync = useMutation({
+    mutationFn: () => botfatherApi.forceSync(),
+    onMutate: () => {
+      setSyncMsg(null);
+      setSyncErr(null);
+    },
+    onSuccess: (r) => {
+      setSyncMsg(
+        `Synced — ${r.upserts} updates, ${r.facts} cost/run events sent; ` +
+          `reconciled ${r.entities} records, ${r.healed} cost facts.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["botfather", "status"] });
+    },
+    onError: (e) => setSyncErr(e instanceof Error ? e.message : "Force sync failed"),
+  });
+
   const [url, setUrl] = useState("");
   const [enforcement, setEnforcement] = useState<"enforce" | "advisory">("enforce");
   const [formError, setFormError] = useState<string | null>(null);
@@ -144,6 +162,17 @@ export function InstanceControlTowerSettings() {
           </section>
 
           <div className="flex items-center gap-2">
+            <Button
+              onClick={() => forceSync.mutate()}
+              disabled={forceSync.isPending || s!.state !== "active"}
+              title={
+                s!.state !== "active"
+                  ? "Available once the instance is connected & enrolled"
+                  : "Sync all squads, agents, skills, issues, tokens & costs to the tower now"
+              }
+            >
+              {forceSync.isPending ? "Syncing…" : "Force Sync"}
+            </Button>
             <Button variant="outline" onClick={() => reenroll.mutate()} disabled={reenroll.isPending}>
               {reenroll.isPending ? "Re-enrolling…" : "Re-enrol"}
             </Button>
@@ -163,6 +192,9 @@ export function InstanceControlTowerSettings() {
               </span>
             )}
           </div>
+
+          {syncMsg && <p className="text-xs text-emerald-600">{syncMsg}</p>}
+          {syncErr && <p className="text-xs text-red-500">Force sync failed: {syncErr}</p>}
         </>
       )}
     </div>

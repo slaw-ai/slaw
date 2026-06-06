@@ -101,6 +101,57 @@ export class BotfatherService {
     return this.enrollment.isGated();
   }
 
+  /**
+   * Manually sync everything to the tower right now (Settings → Control Tower →
+   * Force Sync). Drains the delta cursor (loops sync() until no more rows), then
+   * runs a full reconcile (heartbeat + recent costs + all entity state) so the
+   * tower converges even on rows the forward-only cursor skipped. Idempotent —
+   * the tower upserts. Returns aggregate counts for UI feedback.
+   */
+  async forceSync(): Promise<{
+    upserts: number;
+    facts: number;
+    healed: number;
+    entities: number;
+    iterations: number;
+  }> {
+    if (!this.enabled || !this.reporter) {
+      throw new Error("no_control_tower_configured");
+    }
+    if (!this.enrollment.apiKey) {
+      throw new Error("not_enrolled");
+    }
+    // Serialise against the background sync loop to avoid cursor races.
+    while (this.syncing) await new Promise((r) => setTimeout(r, 50));
+    this.syncing = true;
+    try {
+      let upserts = 0;
+      let facts = 0;
+      let iterations = 0;
+      // Drain the delta cursor. sync() pulls up to one batch (500/entity) per
+      // call, so loop until a pass sends nothing. Cap to avoid a runaway loop.
+      const MAX_ITERATIONS = 50;
+      for (; iterations < MAX_ITERATIONS; iterations++) {
+        const r = await this.reporter.sync();
+        upserts += r.upserts;
+        facts += r.facts;
+        if (r.skipped) throw new Error(r.skipped);
+        if (r.upserts === 0 && r.facts === 0) break;
+      }
+      // Liveness + full reconcile so the tower self-heals stale/skipped rows.
+      await this.reporter.heartbeat();
+      const healed = await this.reporter.reconcileRecentCosts();
+      const entities = await this.reporter.reconcileEntities();
+      this.logger.info(
+        { upserts, facts, healed, entities, iterations },
+        "botfather force sync complete",
+      );
+      return { upserts, facts, healed, entities, iterations };
+    } finally {
+      this.syncing = false;
+    }
+  }
+
   /** Start enrollment + the heartbeat/sync loops. Safe no-op when standalone. */
   start(): void {
     if (this.started) return;

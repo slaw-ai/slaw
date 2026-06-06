@@ -67,3 +67,71 @@ describe("BotfatherService connect/disconnect (running instance)", () => {
     svc.stop();
   });
 });
+
+describe("BotfatherService.forceSync", () => {
+  it("rejects when standalone (no tower configured)", async () => {
+    const svc = new BotfatherService({} as never, baseConfig, noopLogger);
+    await expect(svc.forceSync()).rejects.toThrow("no_control_tower_configured");
+  });
+
+  it("rejects when connected but not yet enrolled (no api key)", async () => {
+    const svc = new BotfatherService({} as never, baseConfig, noopLogger);
+    svc.connect("https://botfather.corp", "advisory");
+    // enrollment has no apiKey until an admin approves
+    await expect(svc.forceSync()).rejects.toThrow("not_enrolled");
+    svc.stop();
+  });
+
+  it("drains the delta cursor then reconciles, aggregating counts", async () => {
+    const svc = new BotfatherService({} as never, baseConfig, noopLogger);
+    svc.connect("https://botfather.corp", "advisory");
+    svc.stop(); // we drive the reporter manually, no background loops
+
+    // pretend an admin approved us: apiKey is a getter backed by credentials
+    vi.spyOn(creds, "readBotfatherCredentials").mockReturnValue({
+      apiKey: "key-123",
+      enrollmentId: "enr-1",
+    } as never);
+
+    // sync() returns deltas twice, then drains (0/0)
+    const sync = vi
+      .fn()
+      .mockResolvedValueOnce({ upserts: 5, facts: 3 })
+      .mockResolvedValueOnce({ upserts: 2, facts: 0 })
+      .mockResolvedValue({ upserts: 0, facts: 0 });
+    const heartbeat = vi.fn().mockResolvedValue(undefined);
+    const reconcileRecentCosts = vi.fn().mockResolvedValue(4);
+    const reconcileEntities = vi.fn().mockResolvedValue(9);
+    (svc as unknown as { reporter: unknown }).reporter = {
+      sync,
+      heartbeat,
+      reconcileRecentCosts,
+      reconcileEntities,
+    };
+
+    const r = await svc.forceSync();
+    expect(r).toEqual({ upserts: 7, facts: 3, healed: 4, entities: 9, iterations: 2 });
+    expect(sync).toHaveBeenCalledTimes(3); // two with deltas + one empty pass to confirm drained
+    expect(heartbeat).toHaveBeenCalledTimes(1);
+    expect(reconcileRecentCosts).toHaveBeenCalledTimes(1);
+    expect(reconcileEntities).toHaveBeenCalledTimes(1);
+  });
+
+  it("surfaces a skipped sync (e.g. revoked) as an error", async () => {
+    const svc = new BotfatherService({} as never, baseConfig, noopLogger);
+    svc.connect("https://botfather.corp", "advisory");
+    svc.stop();
+    vi.spyOn(creds, "readBotfatherCredentials").mockReturnValue({
+      apiKey: "key-123",
+      enrollmentId: "enr-1",
+    } as never);
+    (svc as unknown as { reporter: unknown }).reporter = {
+      sync: vi.fn().mockResolvedValue({ upserts: 0, facts: 0, skipped: "revoked" }),
+      heartbeat: vi.fn(),
+      reconcileRecentCosts: vi.fn(),
+      reconcileEntities: vi.fn(),
+    };
+    await expect(svc.forceSync()).rejects.toThrow("revoked");
+    svc.stop();
+  });
+});
