@@ -1,4 +1,4 @@
-import { readConfigFile } from "./config-file.js";
+import { readConfigFile, readBotfatherConfigSection } from "./config-file.js";
 import { execFileSync } from "node:child_process";
 import { existsSync, realpathSync } from "node:fs";
 import { resolve } from "node:path";
@@ -336,7 +336,10 @@ export function loadConfig(): Config {
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
     squadDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
-    botfather: resolveBotfatherConfig(fileConfig?.botfather),
+    // Fall back to the resiliently-salvaged botfather section if the full-file
+    // read failed (e.g. a partial config file written on a zero-config dev
+    // setup). This keeps the control-tower connection alive across restarts.
+    botfather: resolveBotfatherConfig(fileConfig?.botfather ?? readBotfatherConfigSection()),
   };
 }
 
