@@ -23,6 +23,12 @@ import type {
 } from "@slaw/shared";
 import { notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
+import {
+  getInstanceLimitBlock,
+  computeInstanceUsageMtd,
+  evaluateInstanceLimit,
+} from "./botfather/instance-limit-enforcement.js";
+import { readInstanceLimit } from "./botfather/limits-store.js";
 
 type ScopeRecord = {
   squadId: string;
@@ -711,6 +717,40 @@ export function budgetService(db: Db, hooks: BudgetServiceHooks = {}) {
           }
         }
       }
+
+      // Tower-governed instance-wide limit (additive to the squad policies
+      // above). Emit a budget threshold activity when the instance crosses its
+      // warn/ceiling so the control tower alerts on it. Hard blocking happens at
+      // run start (getInvocationBlock); here we only signal.
+      try {
+        const instLimit = await readInstanceLimit(db);
+        if (instLimit.mode !== "off") {
+          const usage = await computeInstanceUsageMtd(db);
+          const ev = evaluateInstanceLimit(instLimit, usage);
+          if (ev.metric && (ev.exceeded || ev.warned)) {
+            await logActivity(db, {
+              squadId: event.squadId,
+              actorType: "system",
+              actorId: "budget_service",
+              action: ev.exceeded
+                ? "budget.hard_threshold_crossed"
+                : "budget.soft_threshold_crossed",
+              entityType: "instance_limit",
+              entityId: "default",
+              details: {
+                scopeType: "instance",
+                metric: ev.metric,
+                amountObserved: Math.round(ev.observed),
+                amountLimit: ev.ceiling,
+                percent: ev.percent,
+                mode: instLimit.mode,
+              },
+            });
+          }
+        }
+      } catch {
+        // never let limit signalling break cost ingestion
+      }
     },
 
     getInvocationBlock: async (
@@ -718,6 +758,20 @@ export function budgetService(db: Db, hooks: BudgetServiceHooks = {}) {
       agentId: string,
       context?: { issueId?: string | null; projectId?: string | null },
     ) => {
+      // Tower-governed instance-wide ceiling (hard mode only). This is ADDITIVE
+      // — local squad/agent budget checks below still apply and may be stricter.
+      // Surfaced with the squad scope (the block shape is squad/agent/project);
+      // the reason text identifies it as a control-tower limit.
+      const instanceBlock = await getInstanceLimitBlock(db);
+      if (instanceBlock) {
+        return {
+          scopeType: "squad" as const,
+          scopeId: squadId,
+          scopeName: "Control tower limit",
+          reason: instanceBlock.reason,
+        };
+      }
+
       const agent = await db
         .select({
           status: agents.status,

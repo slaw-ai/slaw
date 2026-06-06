@@ -32,10 +32,19 @@ export function shouldApplyLimit(current: { version: number }, pushed: { version
 
 /** Read the currently-applied tower limit for this instance (singleton). */
 export async function readInstanceLimit(db: Db): Promise<StoredInstanceLimit> {
-  const res = await db.execute(sql`
-    SELECT cost_limit_cents, token_limit, warn_percent, mode, version
-    FROM instance_limits WHERE singleton_key = ${SINGLETON} LIMIT 1
-  `);
+  // Defensive: if the table doesn't exist yet (pre-migration) or the db handle
+  // can't run raw SQL, treat as "no limit" rather than throwing — limit
+  // enforcement must never break run-gating or cost ingestion.
+  if (typeof (db as { execute?: unknown }).execute !== "function") return OFF;
+  let res: unknown;
+  try {
+    res = await db.execute(sql`
+      SELECT cost_limit_cents, token_limit, warn_percent, mode, version
+      FROM instance_limits WHERE singleton_key = ${SINGLETON} LIMIT 1
+    `);
+  } catch {
+    return OFF;
+  }
   const rows = (res as { rows?: Record<string, unknown>[] }).rows ?? (res as Record<string, unknown>[]);
   const r = Array.isArray(rows) ? rows[0] : undefined;
   if (!r) return OFF;
