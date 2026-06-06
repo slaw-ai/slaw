@@ -666,6 +666,13 @@
 			"when": 1780040470887,
 			"tag": "0094_botfather_sync_state",
 			"breakpoints": true
+		},
+		{
+			"idx": 95,
+			"version": "7",
+			"when": 1780040470888,
+			"tag": "0095_instance_limits",
+			"breakpoints": true
 		}
 	]
 }

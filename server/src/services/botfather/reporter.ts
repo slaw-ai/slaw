@@ -17,6 +17,7 @@ import type {
 } from "@slaw/shared/botfather/protocol";
 import type { BotfatherClient } from "./client.js";
 import { BotfatherEnrollment } from "./enrollment.js";
+import { applyDirectives, appliedLimitVersion } from "./limits-store.js";
 
 const BATCH = 500;
 
@@ -121,10 +122,14 @@ export class BotfatherReporter {
       },
       spend: { todayCents: counts?.today_cents ?? 0, monthCents: counts?.month_cents ?? 0 },
       lastEventCursor: null,
+      // echo the limit version we have applied so the tower stops re-pushing
+      appliedLimitVersion: await appliedLimitVersion(db),
     };
 
     try {
-      await this.deps.client.heartbeat(apiKey, body);
+      const res = await this.deps.client.heartbeat(apiKey, body);
+      // tower may push a budget limit (or other directives) on the response
+      await applyDirectives(db, res?.directives);
     } catch (err) {
       if (BotfatherEnrollment.isRevokedError(err)) this.deps.enrollment.onRevoked();
       throw err;
@@ -310,6 +315,8 @@ export class BotfatherReporter {
 
     try {
       const res = await this.deps.client.sync(apiKey, batch);
+      // tower may push a budget limit (or other directives) on the response
+      await applyDirectives(db, res?.directives);
       // only advance cursors after the tower acks
       for (const a of advances) {
         const added =

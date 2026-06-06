@@ -1,5 +1,6 @@
 export { squads } from "./squads.js";
 export { botfatherSyncState } from "./botfather_sync_state.js";
+export { instanceLimits } from "./instance_limits.js";
 export { squadLogos } from "./squad_logos.js";
 export { authUsers, authSessions, authAccounts, authVerifications } from "./auth.js";
 export { instanceSettings } from "./instance_settings.js";
