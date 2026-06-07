@@ -103,6 +103,7 @@ type SkillSourceInfoTarget = Pick<
   | "sourceType"
   | "sourceLocator"
   | "metadata"
+  | "towerSkillVersion"
 >;
 
 type ImportedSkill = {
@@ -214,6 +215,9 @@ function selectSquadSkillColumns() {
     compatibility: squadSkills.compatibility,
     fileInventory: squadSkills.fileInventory,
     metadata: squadSkills.metadata,
+    isTowerManaged: squadSkills.isTowerManaged,
+    towerSkillKey: squadSkills.towerSkillKey,
+    towerSkillVersion: squadSkills.towerSkillVersion,
     createdAt: squadSkills.createdAt,
     updatedAt: squadSkills.updatedAt,
   };
@@ -1278,6 +1282,9 @@ function toSquadSkill(row: SquadSkillRow): SquadSkill {
       })
       : [],
     metadata: isPlainRecord(row.metadata) ? row.metadata : null,
+    isTowerManaged: row.isTowerManaged ?? false,
+    towerSkillKey: row.towerSkillKey ?? null,
+    towerSkillVersion: row.towerSkillVersion ?? null,
   };
 }
 
@@ -1761,6 +1768,17 @@ function deriveSkillSourceInfo(skill: SkillSourceInfoTarget): {
       editableReason: "Bundled Slaw skills are read-only.",
       sourceLabel: "Slaw bundled",
       sourceBadge: "slaw",
+      sourcePath: null,
+    };
+  }
+
+  if (skill.sourceType === "botfather") {
+    const version = skill.towerSkillVersion ?? null;
+    return {
+      editable: false,
+      editableReason: "Skills are managed by your control tower and are read-only here.",
+      sourceLabel: version ? `Control tower · v${version}` : "Control tower",
+      sourceBadge: "botfather",
       sourcePath: null,
     };
   }
@@ -3419,9 +3437,105 @@ export function squadSkillService(db: Db) {
     return skill;
   }
 
+  /* ───────────── tower-mastered skills (botfather skill registry) ─────────────
+   * The control tower is the master skill registry. Its skills are pulled DOWN
+   * and installed onto a chosen local squad as `botfather`-sourced rows: the
+   * markdown body is stored locally (so the squad works offline) but is governed
+   * centrally — read-only locally and refreshed when the tower publishes a new
+   * version. Squad composition stays fully local; only the skill content is
+   * tower-mastered. See DESIGN-skill-registry.md. */
+  type TowerSkillContent = {
+    key: string;
+    slug?: string;
+    name: string;
+    description?: string | null;
+    trustLevel?: string;
+    version: number;
+    markdown: string;
+    files?: Array<{ path: string; content: string; encoding?: string }>;
+  };
+
+  async function upsertTowerSkill(squadId: string, content: TowerSkillContent): Promise<SquadSkill> {
+    const squad = await db.select().from(squads).where(eq(squads.id, squadId)).then((rows) => rows[0]);
+    if (!squad) throw notFound("Squad not found");
+
+    const slug = normalizeSkillSlug(content.slug ?? content.name) ?? normalizeSkillSlug(content.key) ?? content.key;
+    const fileInventory = serializeFileInventory(
+      (content.files ?? []).map((f) => ({ path: f.path, kind: "other" as const })),
+    );
+    const values = {
+      squadId,
+      key: content.key,
+      slug,
+      name: content.name,
+      description: content.description ?? null,
+      markdown: content.markdown,
+      sourceType: "botfather" as const,
+      sourceLocator: null,
+      sourceRef: String(content.version),
+      // The tower owns the trust level; SLAW honors it, never escalates locally.
+      trustLevel: content.trustLevel ?? "markdown_only",
+      compatibility: "compatible" as const,
+      fileInventory,
+      metadata: { towerManaged: true } as Record<string, unknown>,
+      isTowerManaged: true,
+      towerSkillKey: content.key,
+      towerSkillVersion: content.version,
+      updatedAt: new Date(),
+    };
+
+    const existing = await db
+      .select()
+      .from(squadSkills)
+      .where(and(eq(squadSkills.squadId, squadId), eq(squadSkills.key, content.key)))
+      .then((rows) => rows[0] ?? null);
+
+    const row = existing
+      ? await db.update(squadSkills).set(values).where(eq(squadSkills.id, existing.id)).returning().then((r) => r[0])
+      : await db.insert(squadSkills).values(values).returning().then((r) => r[0]);
+    if (!row) throw notFound("Failed to persist tower skill");
+    return toSquadSkill(row);
+  }
+
+  /** List the tower-managed skills installed on a squad (or all squads). */
+  async function listTowerManagedSkills(squadId?: string) {
+    const where = squadId
+      ? and(eq(squadSkills.isTowerManaged, true), eq(squadSkills.squadId, squadId))
+      : eq(squadSkills.isTowerManaged, true);
+    const rows = await db
+      .select({
+        id: squadSkills.id,
+        squadId: squadSkills.squadId,
+        key: squadSkills.key,
+        towerSkillKey: squadSkills.towerSkillKey,
+        towerSkillVersion: squadSkills.towerSkillVersion,
+      })
+      .from(squadSkills)
+      .where(where);
+    return rows;
+  }
+
+  /** Remove a tower-managed skill from a squad (the user opts out; the tower
+   * library is unaffected). */
+  async function removeTowerSkill(squadId: string, key: string): Promise<void> {
+    const existing = await db
+      .select()
+      .from(squadSkills)
+      .where(and(eq(squadSkills.squadId, squadId), eq(squadSkills.key, key)))
+      .then((rows) => rows[0] ?? null);
+    if (!existing) return;
+    await db.delete(squadSkills).where(eq(squadSkills.id, existing.id));
+    await fs
+      .rm(resolveRuntimeSkillMaterializedPath(squadId, toSquadSkill(existing)), { recursive: true, force: true })
+      .catch(() => {});
+  }
+
   return {
     list,
     listFull,
+    upsertTowerSkill,
+    listTowerManagedSkills,
+    removeTowerSkill,
     getById,
     getByKey,
     resolveRequestedSkillKeys: async (squadId: string, requestedReferences: string[]) => {

@@ -87,6 +87,7 @@ import {
   Save,
   Search,
   ShieldCheck,
+  Sparkles,
   Trash2,
   Users,
   XOctagon,
@@ -186,6 +187,8 @@ function sourceMeta(sourceBadge: SquadSkillSourceBadge, sourceLabel: string | nu
     normalizedLabel.includes("skills.sh") || normalizedLabel.includes("vercel-labs/skills");
 
   switch (sourceBadge) {
+    case "botfather":
+      return { icon: Sparkles, label: sourceLabel ?? "Control tower", managedLabel: "Control tower managed" };
     case "skills_sh":
       return { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" };
     case "github":

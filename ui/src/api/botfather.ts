@@ -68,6 +68,47 @@ async function forceSync(): Promise<ForceSyncResult> {
   return res.json();
 }
 
+export type SkillCatalogEntry = {
+  key: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  trustLevel: string;
+  version: number;
+  contentHash: string;
+  hasFiles: boolean;
+  updatedAt: string;
+};
+export type SkillCatalogResult = { catalogVersion: number; skills: SkillCatalogEntry[] };
+
+async function getJson<T>(path: string): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    method: "GET",
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) {
+    const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(payload?.error ?? `botfather ${path} failed (${res.status})`);
+  }
+  return res.json() as Promise<T>;
+}
+
+async function postBody<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "content-type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(payload?.error ?? `botfather ${path} failed (${res.status})`);
+  }
+  return res.json() as Promise<T>;
+}
+
 export const botfatherApi = {
   status: () => req("/botfather/status"),
   connect: (url: string, enforcement: "enforce" | "advisory") =>
@@ -75,4 +116,15 @@ export const botfatherApi = {
   reenroll: () => req("/botfather/reenroll", "POST"),
   disconnect: () => req("/botfather/disconnect", "POST"),
   forceSync,
+  /** list the control tower's published skill catalog */
+  skillCatalog: () => getJson<SkillCatalogResult>("/botfather/skills/catalog"),
+  /** install a catalog skill onto a chosen local squad */
+  installSkill: (squadId: string, key: string) =>
+    postBody<{ ok: true; skill: unknown }>("/botfather/skills/install", { squadId, key }),
+  /** re-pull the catalog and refresh installed managed skills */
+  refreshSkills: () =>
+    postBody<{ ok: true; catalogVersion: number; refreshed: number; checked: number }>(
+      "/botfather/skills/refresh",
+      {},
+    ),
 };

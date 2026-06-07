@@ -14,7 +14,8 @@ import { trackSkillImported } from "@slaw/shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { accessService, agentService, squadSkillService, logActivity } from "../services/index.js";
 import { getCatalogSkillOrThrow, listCatalogSkills, readCatalogSkillFile } from "../services/skills-catalog.js";
-import { forbidden } from "../errors.js";
+import { isTowerGoverned } from "../services/botfather/authoring-lock.js";
+import { conflict, forbidden } from "../errors.js";
 import { assertAuthenticated, assertSquadAccess, getActorInfo } from "./authz.js";
 import { getTelemetryClient } from "../telemetry.js";
 
@@ -61,6 +62,22 @@ export function squadSkillRoutes(db: Db) {
     if (typeof value === "string") return value;
     if (Array.isArray(value) && typeof value[0] === "string") return value[0];
     return undefined;
+  }
+
+  /**
+   * Tower-only authoring lock. When this instance is connected to a control
+   * tower AND enrolled (active credentials present), skills are mastered
+   * centrally — local skill creation/import is disabled. Catalog install + the
+   * automatic refresh of already-installed tower skills stay allowed. Standalone
+   * (un-enrolled) instances are unaffected. See DESIGN-skill-registry.md §8.1.
+   */
+  function assertLocalAuthoringAllowed() {
+    if (isTowerGoverned()) {
+      throw conflict(
+        "Skills are managed by your control tower. Add skills from the catalog instead of authoring them locally.",
+        { code: "skills_managed_by_tower" },
+      );
+    }
   }
 
   async function assertCanMutateSquadSkills(req: Request, squadId: string) {
@@ -165,6 +182,7 @@ export function squadSkillRoutes(db: Db) {
     async (req, res) => {
       const squadId = req.params.squadId as string;
       await assertCanMutateSquadSkills(req, squadId);
+      assertLocalAuthoringAllowed();
       const result = await svc.createLocalSkill(squadId, req.body);
 
       const actor = getActorInfo(req);
@@ -194,6 +212,7 @@ export function squadSkillRoutes(db: Db) {
       const squadId = req.params.squadId as string;
       const skillId = req.params.skillId as string;
       await assertCanMutateSquadSkills(req, squadId);
+      assertLocalAuthoringAllowed();
       const result = await svc.updateFile(
         squadId,
         skillId,
@@ -227,6 +246,7 @@ export function squadSkillRoutes(db: Db) {
     async (req, res) => {
       const squadId = req.params.squadId as string;
       await assertCanMutateSquadSkills(req, squadId);
+      assertLocalAuthoringAllowed();
       const source = String(req.body.source ?? "");
       const result = await svc.importFromSource(squadId, source);
 

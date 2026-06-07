@@ -1,10 +1,10 @@
-export type SquadSkillSourceType = "local_path" | "github" | "url" | "catalog" | "skills_sh";
+export type SquadSkillSourceType = "local_path" | "github" | "url" | "catalog" | "skills_sh" | "botfather";
 
 export type SquadSkillTrustLevel = "markdown_only" | "assets" | "scripts_executables";
 
 export type SquadSkillCompatibility = "compatible" | "unknown" | "invalid";
 
-export type SquadSkillSourceBadge = "slaw" | "github" | "local" | "url" | "catalog" | "skills_sh";
+export type SquadSkillSourceBadge = "slaw" | "github" | "local" | "url" | "catalog" | "skills_sh" | "botfather";
 
 export interface SquadSkillFileInventoryEntry {
   path: string;
@@ -26,6 +26,12 @@ export interface SquadSkill {
   compatibility: SquadSkillCompatibility;
   fileInventory: SquadSkillFileInventoryEntry[];
   metadata: Record<string, unknown> | null;
+  /** true when this skill is mastered by the control tower (read-only locally) */
+  isTowerManaged?: boolean;
+  /** the tower skill_library key this was installed from (tower-managed only) */
+  towerSkillKey?: string | null;
+  /** the tower skill version currently installed locally */
+  towerSkillVersion?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -18,6 +18,7 @@ import type {
 import type { BotfatherClient } from "./client.js";
 import { BotfatherEnrollment } from "./enrollment.js";
 import { applyDirectives, appliedLimitVersion } from "./limits-store.js";
+import { appliedSkillCatalogVersion, handleSkillDirectives } from "./skill-catalog.js";
 
 const BATCH = 500;
 
@@ -124,12 +125,18 @@ export class BotfatherReporter {
       lastEventCursor: null,
       // echo the limit version we have applied so the tower stops re-pushing
       appliedLimitVersion: await appliedLimitVersion(db),
+      // echo the skill catalog version we've seen (observability; never forced)
+      appliedSkillCatalogVersion: await appliedSkillCatalogVersion(db),
     };
 
     try {
       const res = await this.deps.client.heartbeat(apiKey, body);
       // tower may push a budget limit (or other directives) on the response
       await applyDirectives(db, res?.directives);
+      // a skills_updated hint → pull the catalog + refresh installed managed
+      // skills (best-effort; a network error here shouldn't fail the heartbeat
+      // liveness that already succeeded).
+      await handleSkillDirectives(db, this.deps.client, apiKey, res?.directives).catch(() => {});
     } catch (err) {
       if (BotfatherEnrollment.isRevokedError(err)) this.deps.enrollment.onRevoked();
       throw err;
@@ -317,6 +324,8 @@ export class BotfatherReporter {
       const res = await this.deps.client.sync(apiKey, batch);
       // tower may push a budget limit (or other directives) on the response
       await applyDirectives(db, res?.directives);
+      // a skills_updated hint → pull catalog + refresh installed managed skills
+      await handleSkillDirectives(db, this.deps.client, apiKey, res?.directives).catch(() => {});
       // only advance cursors after the tower acks
       for (const a of advances) {
         const added =

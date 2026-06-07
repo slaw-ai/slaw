@@ -70,6 +70,80 @@ export const enrollPollResponseSchema = z.object({
 });
 export type EnrollPollResponse = z.infer<typeof enrollPollResponseSchema>;
 
+/* ────────────────────────── budget limits (tower-governed) ────────────── */
+
+/**
+ * A centrally-governed budget limit pushed from the tower to an instance.
+ * Plan-aware: enforce on COST (cents) for metered/API runs, and on TOKENS for
+ * subscription runs (where cost is ~$0). Either ceiling may be null (no cap on
+ * that metric). The instance de-dupes pushes by `version` (monotonic).
+ */
+export const limitSpecSchema = z.object({
+  costLimitCents: z.number().int().nonnegative().nullable(),
+  tokenLimit: z.number().int().nonnegative().nullable(),
+  window: z.enum(["calendar_month_utc"]).default("calendar_month_utc"),
+  warnPercent: z.number().int().min(1).max(100).default(80),
+  mode: z.enum(["off", "soft", "hard"]).default("soft"),
+  /** monotonic; the instance applies a push only when version > the stored one */
+  version: z.number().int().nonnegative(),
+});
+export type LimitSpec = z.infer<typeof limitSpecSchema>;
+
+/* ────────────────────────── skill registry (tower-mastered) ───────────── */
+
+/**
+ * Botfather is the master skill registry. Skills are authored centrally and
+ * propagate tower → instance (the body flows DOWN). The instance pulls the
+ * catalog (descriptors) and then per-skill content for skills a user installs
+ * onto a local squad. The fleet-wide `catalogVersion` lets the instance detect
+ * "the catalog changed" cheaply; each skill carries its own monotonic version.
+ */
+
+/** Lightweight descriptor returned by the catalog list (no markdown body). */
+export const skillCatalogEntrySchema = z.object({
+  key: z.string().min(1).max(255),
+  slug: z.string().max(255),
+  name: z.string().max(255),
+  description: z.string().max(2_000).nullable(),
+  category: z.string().max(64).nullable(),
+  trustLevel: z.string().max(64),
+  version: z.number().int().positive(),
+  contentHash: z.string().max(128),
+  hasFiles: z.boolean().default(false),
+  updatedAt: z.string().datetime(),
+});
+export type SkillCatalogEntry = z.infer<typeof skillCatalogEntrySchema>;
+
+/** GET /api/ingest/v1/skills — the full published catalog (descriptors only). */
+export const skillCatalogResponseSchema = z.object({
+  catalogVersion: z.number().int().nonnegative(),
+  skills: z.array(skillCatalogEntrySchema).default([]),
+});
+export type SkillCatalogResponse = z.infer<typeof skillCatalogResponseSchema>;
+
+/** One file beyond the canonical .md. */
+export const skillFileSchema = z.object({
+  path: z.string().min(1).max(1024),
+  content: z.string(),
+  encoding: z.enum(["utf8", "base64"]).default("utf8"),
+});
+export type SkillFile = z.infer<typeof skillFileSchema>;
+
+/** GET /api/ingest/v1/skills/:key — full content for one skill (pulled on install/update). */
+export const skillContentResponseSchema = z.object({
+  key: z.string().min(1).max(255),
+  slug: z.string().max(255),
+  name: z.string().max(255),
+  description: z.string().max(2_000).nullable(),
+  category: z.string().max(64).nullable(),
+  trustLevel: z.string().max(64),
+  version: z.number().int().positive(),
+  contentHash: z.string().max(128),
+  markdown: z.string(),
+  files: z.array(skillFileSchema).default([]),
+});
+export type SkillContentResponse = z.infer<typeof skillContentResponseSchema>;
+
 /* ────────────────────────── directives (tower → instance back-channel) ── */
 
 export const directiveSchema = z.discriminatedUnion("kind", [
@@ -77,6 +151,10 @@ export const directiveSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("request_reconciliation") }),
   z.object({ kind: z.literal("request_live_stream"), durationSec: z.number().int().positive() }),
   z.object({ kind: z.literal("stop_live_stream") }),
+  // Push (or clear, with mode:"off") the effective budget limit for this instance.
+  z.object({ kind: z.literal("set_limits"), limit: limitSpecSchema }),
+  // HINT only (no body): the skill catalog advanced; pull at your leisure.
+  z.object({ kind: z.literal("skills_updated"), catalogVersion: z.number().int().nonnegative() }),
 ]);
 export type Directive = z.infer<typeof directiveSchema>;
 
@@ -98,6 +176,10 @@ export const heartbeatRequestSchema = z.object({
     monthCents: z.number().int().nonnegative(),
   }),
   lastEventCursor: z.string().nullable(),
+  /** version of the budget limit the instance has currently applied (de-dupe) */
+  appliedLimitVersion: z.number().int().nonnegative().optional(),
+  /** catalog version the instance has last seen/pulled (observability; never forced) */
+  appliedSkillCatalogVersion: z.number().int().nonnegative().optional(),
 });
 export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 

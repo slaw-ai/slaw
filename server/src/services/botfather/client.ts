@@ -7,6 +7,8 @@ import {
   type HeartbeatResponse,
   type SyncRequest,
   type SyncResponse,
+  type SkillCatalogResponse,
+  type SkillContentResponse,
 } from "@slaw/shared/botfather/protocol";
 
 /**
@@ -64,6 +66,36 @@ async function postJson<T>(url: string, body: unknown, apiKey?: string, timeoutM
   }
 }
 
+async function getJson<T>(url: string, apiKey: string, timeoutMs = 15_000): Promise<T> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { authorization: `Bearer ${apiKey}` },
+      signal: ctrl.signal,
+    });
+    const text = await res.text();
+    let parsed: unknown = undefined;
+    try {
+      parsed = text ? JSON.parse(text) : undefined;
+    } catch {
+      /* non-JSON body */
+    }
+    if (!res.ok) {
+      const code = (parsed as { code?: string } | undefined)?.code;
+      throw new BotfatherHttpError(
+        (parsed as { error?: string } | undefined)?.error ?? `HTTP ${res.status}`,
+        res.status,
+        code,
+      );
+    }
+    return parsed as T;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function createBotfatherClient(baseUrl: string) {
   const ingest = (p: string) => joinUrl(baseUrl, `api/ingest/v1/${p}`);
   return {
@@ -87,6 +119,14 @@ export function createBotfatherClient(baseUrl: string) {
     },
     async sync(apiKey: string, body: SyncRequest): Promise<SyncResponse> {
       return postJson<SyncResponse>(ingest("sync"), body, apiKey);
+    },
+    /** pull the tower's published skill catalog (descriptors only) */
+    async skillCatalog(apiKey: string): Promise<SkillCatalogResponse> {
+      return getJson<SkillCatalogResponse>(ingest("skills"), apiKey);
+    },
+    /** pull full content (markdown + files) for one published skill */
+    async skillContent(apiKey: string, key: string): Promise<SkillContentResponse> {
+      return getJson<SkillContentResponse>(ingest(`skills/${encodeURIComponent(key)}`), apiKey);
     },
   };
 }

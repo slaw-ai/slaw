@@ -1,6 +1,7 @@
 import type { Db } from "@slaw/db";
 import type { BotfatherConfig } from "@slaw/shared";
 import { createBotfatherClient } from "./client.js";
+import { installCatalogSkill, syncSkillCatalog } from "./skill-catalog.js";
 import { BotfatherEnrollment, type EnrollmentStatus } from "./enrollment.js";
 import { BotfatherReporter } from "./reporter.js";
 
@@ -150,6 +151,33 @@ export class BotfatherService {
     } finally {
       this.syncing = false;
     }
+  }
+
+  /* ── skill registry (tower-mastered) ──
+   * The instance pulls the tower's published catalog and installs chosen skills
+   * onto a local squad. Reuses the same client + per-instance apiKey as sync. */
+
+  /** List the tower's published skill catalog (descriptors only). */
+  async listSkillCatalog() {
+    if (!this.enabled || !this.config.url) throw new Error("no_control_tower_configured");
+    if (!this.enrollment.apiKey) throw new Error("not_enrolled");
+    return createBotfatherClient(this.config.url).skillCatalog(this.enrollment.apiKey);
+  }
+
+  /** Install one catalog skill onto a chosen local squad (pulls full content). */
+  async installSkill(squadId: string, key: string) {
+    if (!this.enabled || !this.config.url) throw new Error("no_control_tower_configured");
+    if (!this.enrollment.apiKey) throw new Error("not_enrolled");
+    const client = createBotfatherClient(this.config.url);
+    return installCatalogSkill(this.db, client, this.enrollment.apiKey, squadId, key);
+  }
+
+  /** Manually re-pull the catalog and refresh installed managed skills. */
+  async refreshSkills() {
+    if (!this.enabled || !this.config.url) throw new Error("no_control_tower_configured");
+    if (!this.enrollment.apiKey) throw new Error("not_enrolled");
+    const client = createBotfatherClient(this.config.url);
+    return syncSkillCatalog(this.db, client, this.enrollment.apiKey);
   }
 
   /** Start enrollment + the heartbeat/sync loops. Safe no-op when standalone. */

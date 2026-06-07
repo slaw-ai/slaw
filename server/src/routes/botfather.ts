@@ -65,6 +65,53 @@ export function botfatherRoutes(service: BotfatherService | undefined): Router {
     }
   });
 
+  /* ── skill registry (tower-mastered) ── */
+  router.get("/botfather/skills/catalog", async (_req, res) => {
+    if (!service || !service.enabled) {
+      res.status(409).json({ error: "no_control_tower_configured" });
+      return;
+    }
+    try {
+      res.json(await service.listSkillCatalog());
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "catalog_failed";
+      res.status(code === "not_enrolled" || code === "no_control_tower_configured" ? 409 : 502).json({ error: code });
+    }
+  });
+
+  router.post("/botfather/skills/install", async (req, res) => {
+    if (!service || !service.enabled) {
+      res.status(409).json({ error: "no_control_tower_configured" });
+      return;
+    }
+    const squadId = typeof req.body?.squadId === "string" ? req.body.squadId : "";
+    const key = typeof req.body?.key === "string" ? req.body.key : "";
+    if (!squadId || !key) {
+      res.status(400).json({ error: "squadId and key are required" });
+      return;
+    }
+    try {
+      const skill = await service.installSkill(squadId, key);
+      res.status(201).json({ ok: true, skill });
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "install_failed";
+      res.status(code === "not_enrolled" || code === "no_control_tower_configured" ? 409 : 502).json({ error: code });
+    }
+  });
+
+  router.post("/botfather/skills/refresh", async (_req, res) => {
+    if (!service || !service.enabled) {
+      res.status(409).json({ error: "no_control_tower_configured" });
+      return;
+    }
+    try {
+      res.json({ ok: true, ...(await service.refreshSkills()) });
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "refresh_failed";
+      res.status(code === "not_enrolled" || code === "no_control_tower_configured" ? 409 : 502).json({ error: code });
+    }
+  });
+
   router.post("/botfather/disconnect", (_req, res) => {
     // Disconnect is only permitted when policy allows (advisory). Under
     // enforce, IT-managed config keeps the tower attached.

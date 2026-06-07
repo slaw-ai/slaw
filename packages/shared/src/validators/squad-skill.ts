@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-export const squadSkillSourceTypeSchema = z.enum(["local_path", "github", "url", "catalog", "skills_sh"]);
+export const squadSkillSourceTypeSchema = z.enum(["local_path", "github", "url", "catalog", "skills_sh", "botfather"]);
 export const squadSkillTrustLevelSchema = z.enum(["markdown_only", "assets", "scripts_executables"]);
 export const squadSkillCompatibilitySchema = z.enum(["compatible", "unknown", "invalid"]);
-export const squadSkillSourceBadgeSchema = z.enum(["slaw", "github", "local", "url", "catalog", "skills_sh"]);
+export const squadSkillSourceBadgeSchema = z.enum(["slaw", "github", "local", "url", "catalog", "skills_sh", "botfather"]);
 
 export const squadSkillFileInventoryEntrySchema = z.object({
   path: z.string().min(1),
