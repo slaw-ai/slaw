@@ -108,7 +108,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: issuePrefix(squadId),
-      requireBoardApprovalForNewAgents: options.requireApproval ?? false,
+      requireOperatorApprovalForNewAgents: options.requireApproval ?? false,
     });
     await db.insert(plugins).values({
       id: pluginId,
@@ -342,7 +342,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     expect(binding?.data).toMatchObject({ agentId });
   });
 
-  it("respects board approval policy for new managed agents", async () => {
+  it("respects operator approval policy for new managed agents", async () => {
     const { squadId, services } = await seedSquadAndPlugin({ requireApproval: true });
 
     const created = await services.agents.managedReconcile({ squadId, agentKey: "wiki-maintainer" });

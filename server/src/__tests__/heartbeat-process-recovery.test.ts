@@ -80,7 +80,7 @@ vi.mock("../adapters/index.ts", async () => {
 
 import {
   heartbeatService,
-  redactDetectedSuccessfulRunProgressSummaryForBoard,
+  redactDetectedSuccessfulRunProgressSummaryForOperator,
 } from "../services/heartbeat.ts";
 import {
   SUCCESSFUL_RUN_HANDOFF_EXHAUSTED_NOTICE_BODY,
@@ -442,7 +442,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -574,7 +574,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -690,7 +690,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -856,7 +856,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -1558,7 +1558,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const { agentId, runId, issueId } = await seedQueuedIssueRunFixture();
     const bearerSecret = "live-bearer-token-value";
     const apiKeySecret = "sk-testsuccessfulhandoffsecret";
-    const redactedDetectedSummary = redactDetectedSuccessfulRunProgressSummaryForBoard(
+    const redactedDetectedSummary = redactDetectedSuccessfulRunProgressSummaryForOperator(
       `Next action noted: Authorization: Bearer ${bearerSecret} OPENAI_API_KEY=${apiKeySecret}`,
       { enabled: false },
     );
@@ -2224,7 +2224,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values([
       {
@@ -2351,7 +2351,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,

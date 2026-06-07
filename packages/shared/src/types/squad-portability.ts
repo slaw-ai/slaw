@@ -37,7 +37,7 @@ export interface SquadPortabilitySquadManifestEntry {
   brandColor: string | null;
   logoPath: string | null;
   attachmentMaxBytes: number | null;
-  requireBoardApprovalForNewAgents: boolean;
+  requireOperatorApprovalForNewAgents: boolean;
   feedbackDataSharingEnabled: boolean;
   feedbackDataSharingConsentAt: string | null;
   feedbackDataSharingConsentByUserId: string | null;

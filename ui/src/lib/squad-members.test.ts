@@ -26,11 +26,11 @@ describe("squad-members helpers", () => {
   it("builds labels from squad member profiles", () => {
     const labels = buildSquadUserLabelMap([
       activeMember({ principalId: "user-1", user: { id: "user-1", name: "Taylor", email: "taylor@example.com", image: null } }),
-      activeMember({ id: "member-2", principalId: "local-board", user: null }),
+      activeMember({ id: "member-2", principalId: "local-operator", user: null }),
     ]);
 
     expect(labels.get("user-1")).toBe("Taylor");
-    expect(labels.get("local-board")).toBe("Board");
+    expect(labels.get("local-operator")).toBe("Operator");
   });
 
   it("builds user profiles with labels and avatars", () => {
@@ -39,15 +39,15 @@ describe("squad-members helpers", () => {
         principalId: "user-1",
         user: { id: "user-1", name: "Taylor", email: "taylor@example.com", image: "https://example.com/taylor.png" },
       }),
-      activeMember({ id: "member-2", principalId: "local-board", user: null }),
+      activeMember({ id: "member-2", principalId: "local-operator", user: null }),
     ]);
 
     expect(profiles.get("user-1")).toEqual({
       label: "Taylor",
       image: "https://example.com/taylor.png",
     });
-    expect(profiles.get("local-board")).toEqual({
-      label: "Board",
+    expect(profiles.get("local-operator")).toEqual({
+      label: "Operator",
       image: null,
     });
   });

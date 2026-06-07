@@ -228,7 +228,7 @@ function NavigationLayoutStories() {
               <div className="slaw-story__label">Navigation and layout</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sidebar, command, tabs, and mobile chrome</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Fixture-backed navigation states for the board shell: squad switching, dense work navigation,
+                Fixture-backed navigation states for the operator shell: squad switching, dense work navigation,
                 breadcrumbs, command discovery, and mobile entry points.
               </p>
             </div>
@@ -277,7 +277,7 @@ function NavigationLayoutStories() {
             <BreadcrumbSnapshot
               breadcrumbs={[
                 { label: "Projects", href: "/projects" },
-                { label: "Board UI", href: "/projects/board-ui/issues" },
+                { label: "Operator UI", href: "/projects/board-ui/issues" },
                 { label: "PAP-1641" },
               ]}
             />
@@ -339,7 +339,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Navigation and layout stories cover the board shell components that orient operators across squads, work surfaces, command search, breadcrumbs, tabs, and mobile navigation.",
+          "Navigation and layout stories cover the operator shell components that orient operators across squads, work surfaces, command search, breadcrumbs, tabs, and mobile navigation.",
       },
     },
   },

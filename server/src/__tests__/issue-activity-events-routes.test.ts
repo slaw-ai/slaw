@@ -129,8 +129,8 @@ async function createApp(db: unknown = {}) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -149,7 +149,7 @@ function makeIssue() {
     status: "todo",
     assigneeAgentId: "22222222-2222-4222-8222-222222222222",
     assigneeUserId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     identifier: "PAP-580",
     title: "Activity event issue",
     executionPolicy: null,
@@ -454,7 +454,7 @@ describe("issue activity event routes", () => {
         {
           id: "22222222-2222-4222-8222-222222222222",
           type: "approval",
-          participants: [{ type: "user", userId: "local-board" }],
+          participants: [{ type: "user", userId: "local-operator" }],
         },
       ],
     })!;
@@ -492,8 +492,8 @@ describe("issue activity event routes", () => {
         expect.objectContaining({
           action: "issue.approvers_updated",
           details: expect.objectContaining({
-            participants: [{ type: "user", agentId: null, userId: "local-board" }],
-            addedParticipants: [{ type: "user", agentId: null, userId: "local-board" }],
+            participants: [{ type: "user", agentId: null, userId: "local-operator" }],
+            addedParticipants: [{ type: "user", agentId: null, userId: "local-operator" }],
             removedParticipants: [{ type: "agent", agentId: "66666666-7777-4888-8999-aaaaaaaaaaaa", userId: null }],
           }),
         }),

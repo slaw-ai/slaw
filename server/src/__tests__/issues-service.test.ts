@@ -175,7 +175,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values([
@@ -292,7 +292,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -344,7 +344,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const exactIdentifierId = randomUUID();
@@ -395,7 +395,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -435,7 +435,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -482,7 +482,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -534,7 +534,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -583,7 +583,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PC1A2",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -623,7 +623,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(projects).values({
@@ -703,7 +703,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(projects).values({
@@ -786,7 +786,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -898,7 +898,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
 
   it("excludes plugin operation issues from unread inbox counts", async () => {
     const squadId = randomUUID();
-    const userId = "board-user";
+    const userId = "operator-user";
     const otherUserId = "other-user";
     const normalIssueId = randomUUID();
     const operationIssueId = randomUUID();
@@ -907,7 +907,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(issues).values([
       {
@@ -955,7 +955,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const visibleIssueId = randomUUID();
@@ -1040,7 +1040,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const issueId = randomUUID();
@@ -1108,7 +1108,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -1196,7 +1196,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -1254,7 +1254,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -1311,7 +1311,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -1373,7 +1373,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -1439,7 +1439,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -1501,7 +1501,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -1534,7 +1534,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -1595,7 +1595,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -1671,7 +1671,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -1746,7 +1746,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -1832,7 +1832,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -1939,7 +1939,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -2018,7 +2018,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -2115,7 +2115,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -2187,7 +2187,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -2283,7 +2283,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
 
@@ -2361,7 +2361,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const blockerId = randomUUID();
@@ -2400,7 +2400,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const issueA = randomUUID();
@@ -2443,7 +2443,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const issueA = randomUUID();
@@ -2467,7 +2467,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: assigneeAgentId,
@@ -2523,7 +2523,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: assigneeAgentId,
@@ -2645,7 +2645,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: assigneeAgentId,
@@ -2691,7 +2691,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const blockerId = randomUUID();
@@ -2729,7 +2729,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     const sourceIssueId = randomUUID();
@@ -2776,7 +2776,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: assigneeAgentId,
@@ -2821,7 +2821,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: assigneeAgentId,
@@ -2923,7 +2923,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -3001,7 +3001,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -3098,7 +3098,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -3169,7 +3169,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
 
@@ -3302,7 +3302,7 @@ describeEmbeddedPostgres("issueService.findMentionedProjectIds", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(projects).values([
@@ -3384,7 +3384,7 @@ describeEmbeddedPostgres("issueService.clearExecutionRunIfTerminal", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -3520,7 +3520,7 @@ describeEmbeddedPostgres("accepted plan decomposition", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
     await db.insert(agents).values({
@@ -3566,7 +3566,7 @@ describeEmbeddedPostgres("accepted plan decomposition", () => {
         id: squadId,
         name: "Slaw",
         issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       });
       await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
       await db.insert(agents).values({
@@ -3650,8 +3650,8 @@ describeEmbeddedPostgres("accepted plan decomposition", () => {
         outcome: "accepted",
       },
       resolvedAt: new Date(),
-      createdByUserId: "local-board",
-      resolvedByUserId: "local-board",
+      createdByUserId: "local-operator",
+      resolvedByUserId: "local-operator",
     });
 
     return { squadId, sourceIssueId, acceptedPlanRevisionId, assigneeAgentId };

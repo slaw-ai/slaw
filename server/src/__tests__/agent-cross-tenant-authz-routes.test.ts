@@ -124,9 +124,9 @@ vi.mock("../routes/authz.js", async () => {
     }
   }
 
-  function assertBoard(req: Express.Request) {
-    if (req.actor.type !== "board") {
-      throw forbidden("Board access required");
+  function assertOperator(req: Express.Request) {
+    if (req.actor.type !== "operator") {
+      throw forbidden("Operator access required");
     }
   }
 
@@ -135,7 +135,7 @@ vi.mock("../routes/authz.js", async () => {
     if (req.actor.type === "agent" && req.actor.squadId !== expectedSquadId) {
       throw forbidden("Agent key cannot access another squad");
     }
-    if (req.actor.type === "board" && req.actor.source !== "local_implicit") {
+    if (req.actor.type === "operator" && req.actor.source !== "local_implicit") {
       const allowedSquads = req.actor.squadIds ?? [];
       if (!allowedSquads.includes(expectedSquadId)) {
         throw forbidden("User does not have access to this squad");
@@ -144,7 +144,7 @@ vi.mock("../routes/authz.js", async () => {
   }
 
   function assertInstanceAdmin(req: Express.Request) {
-    assertBoard(req);
+    assertOperator(req);
     if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) return;
     throw forbidden("Instance admin access required");
   }
@@ -161,7 +161,7 @@ vi.mock("../routes/authz.js", async () => {
     }
     return {
       actorType: "user" as const,
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       agentId: null,
       runId: req.actor.runId ?? null,
     };
@@ -169,7 +169,7 @@ vi.mock("../routes/authz.js", async () => {
 
   return {
     assertAuthenticated,
-    assertBoard,
+    assertOperator,
     assertSquadAccess,
     assertInstanceAdmin,
     getActorInfo,
@@ -295,7 +295,7 @@ function resetMockDefaults() {
   }));
   mockAccessService.canUser.mockImplementation(async () => currentAccessCanUser);
   mockAccessService.decide.mockImplementation(async (input: { actor?: { type?: string; source?: string }; action?: string }) => {
-    const allowed = input.actor?.type === "board" && input.actor.source === "local_implicit"
+    const allowed = input.actor?.type === "operator" && input.actor.source === "local_implicit"
       ? true
       : currentAccessCanUser;
     return {
@@ -321,7 +321,7 @@ describe.sequential("agent cross-tenant route authorization", () => {
 
   it("enforces squad boundaries before mutating or reading agent keys", async () => {
     const crossTenantActor = {
-      type: "board",
+      type: "operator",
       userId: "mallory",
       squadIds: [],
       source: "session",
@@ -372,8 +372,8 @@ describe.sequential("agent cross-tenant route authorization", () => {
     currentAccessCanUser = true;
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       squadIds: [squadId],
       source: "session",
       isInstanceAdmin: false,

@@ -31,7 +31,7 @@ import {
   acceptInviteSchema,
   createCliAuthChallengeSchema,
   claimJoinRequestApiKeySchema,
-  createBoardApiKeySchema,
+  createOperatorApiKeySchema,
   createSquadInviteSchema,
   listSquadInvitesQuerySchema,
   listJoinRequestsQuerySchema,
@@ -59,7 +59,7 @@ import { collectReachableInterfaceHosts } from "../runtime-api.js";
 import {
   accessService,
   agentService,
-  boardAuthService,
+  operatorAuthService,
   deduplicateAgentName,
   logActivity,
   notifyHireApproved
@@ -76,9 +76,9 @@ import {
 } from "../lib/join-request-dedupe.js";
 import { assertAuthenticated, assertSquadAccess } from "./authz.js";
 import {
-  claimBoardOwnership,
-  inspectBoardClaimChallenge
-} from "../board-claim.js";
+  claimInstanceOwnership,
+  inspectInstanceClaimChallenge
+} from "../instance-claim.js";
 import { claimFirstInstanceAdmin } from "../first-admin-claim.js";
 import { getStorageService } from "../storage/index.js";
 
@@ -572,7 +572,7 @@ function toInviteSummaryResponse(
 
 function actorHasActiveUserMembership(req: Request, squadId: string) {
   return (
-    req.actor.type === "board" &&
+    req.actor.type === "operator" &&
     typeof req.actor.userId === "string" &&
     Array.isArray(req.actor.memberships) &&
     req.actor.memberships.some(
@@ -601,7 +601,7 @@ async function loadSquadAccessSummary(
   access: ReturnType<typeof accessService>,
   squadId: string,
 ) {
-  if (req.actor.type !== "board") {
+  if (req.actor.type !== "operator") {
     return {
       currentUserRole: null,
       canManageMembers: false,
@@ -704,7 +704,7 @@ async function resolveActorHumanRole(
   access: ReturnType<typeof accessService>,
   squadId: string,
 ): Promise<HumanSquadMembershipRole | null> {
-  if (req.actor.type !== "board") return null;
+  if (req.actor.type !== "operator") return null;
   if (isLocalImplicit(req) || req.actor.isInstanceAdmin) return "owner";
   const userId = req.actor.userId ?? null;
   if (!userId) return null;
@@ -725,7 +725,7 @@ async function getProtectedMemberReason(
   },
 ): Promise<string | null> {
   if (member.principalType !== "user") return "Only human squad members can be removed.";
-  if (req.actor.type !== "board") return "Board access is required to remove members.";
+  if (req.actor.type !== "operator") return "Operator access is required to remove members.";
   if (member.principalId === req.actor.userId) return "You cannot remove yourself.";
   const isTargetInstanceAdmin = opts?.instanceAdminUserIds
     ? opts.instanceAdminUserIds.has(member.principalId)
@@ -738,7 +738,7 @@ async function getProtectedMemberReason(
     ? normalizeHumanRole(member.membershipRole, "operator")
     : "operator";
   if (opts?.operation === "archive") {
-    if (targetRole === "owner") return "Board owners cannot be removed from squad access.";
+    if (targetRole === "owner") return "Operator owners cannot be removed from squad access.";
     if (targetRole === "admin") return "Squad admins cannot be removed from squad access.";
   }
 
@@ -1188,7 +1188,7 @@ function buildInviteOnboardingManifest(
     ),
     onboarding: {
       instructions:
-        "Join as an external Slaw agent, save your one-time claim secret, wait for board approval, then claim your API key. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable.",
+        "Join as an external Slaw agent, save your one-time claim secret, wait for operator approval, then claim your API key. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable.",
       inviteMessage: extractInviteMessage(invite),
       recommendedAdapterType: null,
       requiredFields: {
@@ -1333,8 +1333,8 @@ export function buildInviteOnboardingTextDocument(
     - one-time claimSecret
     - claimApiKeyPath
 
-    ## Step 2: Wait for board approval
-    The board approves the join request in Slaw before key claim is allowed.
+    ## Step 2: Wait for operator approval
+    The operator approves the join request in Slaw before key claim is allowed.
 
     ## Step 3: Claim API key (one-time)
     ${
@@ -1351,7 +1351,7 @@ export function buildInviteOnboardingTextDocument(
     Important:
     - claim secrets expire
     - claim secrets are single-use
-    - claim fails before board approval
+    - claim fails before operator approval
 
     ## Step 4: Install Slaw skill
     GET ${onboarding.skill.url}
@@ -1486,7 +1486,7 @@ function extractInviteHumanRole(invite: typeof invites.$inferSelect) {
 }
 
 function isLocalImplicit(req: Request) {
-  return req.actor.type === "board" && req.actor.source === "local_implicit";
+  return req.actor.type === "operator" && req.actor.source === "local_implicit";
 }
 
 function toUserProfile(
@@ -1543,7 +1543,7 @@ async function resolveAcceptedInviteJoinRequest(
   if (!invite.squadId) return null;
 
   const actorRequestingUserId = isLocalImplicit(req)
-    ? "local-board"
+    ? "local-operator"
     : req.actor.userId ?? null;
   const actorEmail = await resolveActorEmail(db, req);
   if (!actorRequestingUserId && !actorEmail) return null;
@@ -2007,55 +2007,55 @@ export function accessRoutes(
 ) {
   const router = Router();
   const access = accessService(db);
-  const boardAuth = boardAuthService(db);
+  const operatorAuth = operatorAuthService(db);
   const agents = agentService(db);
   const routeInviteResolutionNetwork = opts.inviteResolutionNetwork
     ? { ...defaultInviteResolutionNetwork, ...opts.inviteResolutionNetwork }
     : inviteResolutionNetwork;
 
   async function assertInstanceAdmin(req: Request) {
-    if (req.actor.type !== "board") throw unauthorized();
+    if (req.actor.type !== "operator") throw unauthorized();
     if (isLocalImplicit(req)) return;
     const allowed = await access.isInstanceAdmin(req.actor.userId);
     if (!allowed) throw forbidden("Instance admin required");
   }
 
-  router.get("/board-claim/:token", async (req, res) => {
+  router.get("/instance-claim/:token", async (req, res) => {
     const token = (req.params.token as string).trim();
     const code =
       typeof req.query.code === "string" ? req.query.code.trim() : undefined;
-    if (!token) throw notFound("Board claim challenge not found");
-    const challenge = inspectBoardClaimChallenge(token, code);
+    if (!token) throw notFound("Operator claim challenge not found");
+    const challenge = inspectInstanceClaimChallenge(token, code);
     if (challenge.status === "invalid")
-      throw notFound("Board claim challenge not found");
+      throw notFound("Operator claim challenge not found");
     res.json(challenge);
   });
 
-  router.post("/board-claim/:token/claim", async (req, res) => {
+  router.post("/instance-claim/:token/claim", async (req, res) => {
     const token = (req.params.token as string).trim();
     const code =
       typeof req.body?.code === "string" ? req.body.code.trim() : undefined;
-    if (!token) throw notFound("Board claim challenge not found");
+    if (!token) throw notFound("Operator claim challenge not found");
     if (!code) throw badRequest("Claim code is required");
     if (
-      req.actor.type !== "board" ||
+      req.actor.type !== "operator" ||
       req.actor.source !== "session" ||
       !req.actor.userId
     ) {
-      throw unauthorized("Sign in before claiming board ownership");
+      throw unauthorized("Sign in before claiming operator ownership");
     }
 
-    const claimed = await claimBoardOwnership(db, {
+    const claimed = await claimInstanceOwnership(db, {
       token,
       code,
       userId: req.actor.userId
     });
 
     if (claimed.status === "invalid")
-      throw notFound("Board claim challenge not found");
+      throw notFound("Operator claim challenge not found");
     if (claimed.status === "expired")
       throw conflict(
-        "Board claim challenge expired. Restart server to generate a new one."
+        "Operator claim challenge expired. Restart server to generate a new one."
       );
     if (claimed.status === "claimed") {
       res.json({
@@ -2065,7 +2065,7 @@ export function accessRoutes(
       return;
     }
 
-    throw conflict("Board claim challenge is no longer available");
+    throw conflict("Operator claim challenge is no longer available");
   });
 
   router.post("/bootstrap/claim", async (req, res) => {
@@ -2076,7 +2076,7 @@ export function accessRoutes(
       throw notFound("Browser first-admin claim is not available");
     }
     if (
-      req.actor.type !== "board" ||
+      req.actor.type !== "operator" ||
       req.actor.source !== "session" ||
       !req.actor.userId
     ) {
@@ -2097,7 +2097,7 @@ export function accessRoutes(
     "/cli-auth/challenges",
     validate(createCliAuthChallengeSchema),
     async (req, res) => {
-      const created = await boardAuth.createCliAuthChallenge(req.body);
+      const created = await operatorAuth.createCliAuthChallenge(req.body);
       const approvalPath = buildCliAuthApprovalPath(
         created.challenge.id,
         created.challengeSecret,
@@ -2106,7 +2106,7 @@ export function accessRoutes(
       res.status(201).json({
         id: created.challenge.id,
         token: created.challengeSecret,
-        boardApiToken: created.pendingBoardToken,
+        operatorApiToken: created.pendingOperatorToken,
         approvalPath,
         approvalUrl: baseUrl ? `${baseUrl}${approvalPath}` : null,
         pollPath: `/cli-auth/challenges/${created.challenge.id}`,
@@ -2121,24 +2121,24 @@ export function accessRoutes(
     const token =
       typeof req.query.token === "string" ? req.query.token.trim() : "";
     if (!id || !token) throw notFound("CLI auth challenge not found");
-    const challenge = await boardAuth.describeCliAuthChallenge(id, token);
+    const challenge = await operatorAuth.describeCliAuthChallenge(id, token);
     if (!challenge) throw notFound("CLI auth challenge not found");
 
-    const isSignedInBoardUser =
-      req.actor.type === "board" &&
+    const isSignedInOperatorUser =
+      req.actor.type === "operator" &&
       (req.actor.source === "session" || isLocalImplicit(req)) &&
       Boolean(req.actor.userId);
     const canApprove =
-      isSignedInBoardUser &&
+      isSignedInOperatorUser &&
       (challenge.requestedAccess !== "instance_admin_required" ||
         isLocalImplicit(req) ||
         Boolean(req.actor.isInstanceAdmin));
 
     res.json({
       ...challenge,
-      requiresSignIn: !isSignedInBoardUser,
+      requiresSignIn: !isSignedInOperatorUser,
       canApprove,
-      currentUserId: req.actor.type === "board" ? req.actor.userId ?? null : null,
+      currentUserId: req.actor.type === "operator" ? req.actor.userId ?? null : null,
     });
   });
 
@@ -2148,35 +2148,35 @@ export function accessRoutes(
     async (req, res) => {
       const id = (req.params.id as string).trim();
       if (
-        req.actor.type !== "board" ||
+        req.actor.type !== "operator" ||
         (!req.actor.userId && !isLocalImplicit(req))
       ) {
         throw unauthorized("Sign in before approving CLI access");
       }
 
-      const userId = req.actor.userId ?? "local-board";
-      const approved = await boardAuth.approveCliAuthChallenge(
+      const userId = req.actor.userId ?? "local-operator";
+      const approved = await operatorAuth.approveCliAuthChallenge(
         id,
         req.body.token,
         userId,
       );
 
       if (approved.status === "approved") {
-        const squadIds = await boardAuth.resolveBoardActivitySquadIds({
+        const squadIds = await operatorAuth.resolveOperatorActivitySquadIds({
           userId,
           requestedSquadId: approved.challenge.requestedSquadId,
-          boardApiKeyId: approved.challenge.boardApiKeyId,
+          operatorApiKeyId: approved.challenge.operatorApiKeyId,
         });
         for (const squadId of squadIds) {
           await logActivity(db, {
             squadId,
             actorType: "user",
             actorId: userId,
-            action: "board_api_key.created",
+            action: "operator_api_key.created",
             entityType: "user",
             entityId: userId,
             details: {
-              boardApiKeyId: approved.challenge.boardApiKeyId,
+              operatorApiKeyId: approved.challenge.operatorApiKeyId,
               requestedAccess: approved.challenge.requestedAccess,
               requestedSquadId: approved.challenge.requestedSquadId,
               challengeId: approved.challenge.id,
@@ -2189,7 +2189,7 @@ export function accessRoutes(
         approved: approved.status === "approved",
         status: approved.status,
         userId,
-        keyId: approved.challenge.boardApiKeyId ?? null,
+        keyId: approved.challenge.operatorApiKeyId ?? null,
         expiresAt: approved.challenge.expiresAt.toISOString(),
       });
     },
@@ -2200,7 +2200,7 @@ export function accessRoutes(
     validate(resolveCliAuthChallengeSchema),
     async (req, res) => {
       const id = (req.params.id as string).trim();
-      const cancelled = await boardAuth.cancelCliAuthChallenge(id, req.body.token);
+      const cancelled = await operatorAuth.cancelCliAuthChallenge(id, req.body.token);
       res.json({
         status: cancelled.status,
         cancelled: cancelled.status === "cancelled",
@@ -2209,10 +2209,10 @@ export function accessRoutes(
   );
 
   router.get("/cli-auth/me", async (req, res) => {
-    if (req.actor.type !== "board" || !req.actor.userId) {
-      throw unauthorized("Board authentication required");
+    if (req.actor.type !== "operator" || !req.actor.userId) {
+      throw unauthorized("Operator authentication required");
     }
-    const accessSnapshot = await boardAuth.resolveBoardAccess(req.actor.userId);
+    const accessSnapshot = await operatorAuth.resolveOperatorAccess(req.actor.userId);
     res.json({
       user: accessSnapshot.user,
       userId: req.actor.userId,
@@ -2220,52 +2220,52 @@ export function accessRoutes(
       squadIds: accessSnapshot.squadIds,
       memberships: accessSnapshot.memberships,
       source: req.actor.source ?? "none",
-      keyId: req.actor.source === "board_key" ? req.actor.keyId ?? null : null,
+      keyId: req.actor.source === "operator_key" ? req.actor.keyId ?? null : null,
     });
   });
 
-  router.get("/board-api-keys", async (req, res) => {
-    if (req.actor.type !== "board" || !req.actor.userId) {
-      throw unauthorized("Board authentication required");
+  router.get("/operator-api-keys", async (req, res) => {
+    if (req.actor.type !== "operator" || !req.actor.userId) {
+      throw unauthorized("Operator authentication required");
     }
-    const keys = await boardAuth.listBoardApiKeys(req.actor.userId, {
+    const keys = await operatorAuth.listOperatorApiKeys(req.actor.userId, {
       includeInactive: req.query.includeInactive === "true",
     });
     res.json(keys);
   });
 
   router.post(
-    "/board-api-keys",
-    validate(createBoardApiKeySchema),
+    "/operator-api-keys",
+    validate(createOperatorApiKeySchema),
     async (req, res) => {
-      if (req.actor.type !== "board" || !req.actor.userId) {
-        throw unauthorized("Board authentication required");
+      if (req.actor.type !== "operator" || !req.actor.userId) {
+        throw unauthorized("Operator authentication required");
       }
 
       if (req.body.requestedSquadId) {
         assertSquadAccess(req, req.body.requestedSquadId);
       }
 
-      const key = await boardAuth.createNamedBoardApiKey({
+      const key = await operatorAuth.createNamedOperatorApiKey({
         userId: req.actor.userId,
         name: req.body.name,
         expiresAt: req.body.expiresAt === undefined ? undefined : req.body.expiresAt,
       });
-      const squadIds = await boardAuth.resolveBoardActivitySquadIds({
+      const squadIds = await operatorAuth.resolveOperatorActivitySquadIds({
         userId: req.actor.userId,
         requestedSquadId: req.body.requestedSquadId ?? null,
-        boardApiKeyId: key.id,
+        operatorApiKeyId: key.id,
       });
       for (const squadId of squadIds) {
         await logActivity(db, {
           squadId,
           actorType: "user",
           actorId: req.actor.userId,
-          action: "board_api_key.created",
+          action: "operator_api_key.created",
           entityType: "user",
           entityId: req.actor.userId,
           details: {
-            boardApiKeyId: key.id,
+            operatorApiKeyId: key.id,
             name: key.name,
             requestedSquadId: req.body.requestedSquadId ?? null,
             expiresAt: key.expiresAt?.toISOString() ?? null,
@@ -2277,35 +2277,35 @@ export function accessRoutes(
     },
   );
 
-  router.delete("/board-api-keys/:keyId", async (req, res) => {
-    if (req.actor.type !== "board" || !req.actor.userId) {
-      throw unauthorized("Board authentication required");
+  router.delete("/operator-api-keys/:keyId", async (req, res) => {
+    if (req.actor.type !== "operator" || !req.actor.userId) {
+      throw unauthorized("Operator authentication required");
     }
     const keyId = (req.params.keyId as string).trim();
     if (!isUuidLike(keyId)) {
-      throw badRequest("Invalid board API key ID");
+      throw badRequest("Invalid operator API key ID");
     }
-    const key = await boardAuth.getBoardApiKeyForUser(keyId, req.actor.userId);
-    if (!key) throw notFound("Board API key not found");
-    const revoked = await boardAuth.revokeBoardApiKey(key.id);
-    if (!revoked) throw notFound("Board API key not found");
+    const key = await operatorAuth.getOperatorApiKeyForUser(keyId, req.actor.userId);
+    if (!key) throw notFound("Operator API key not found");
+    const revoked = await operatorAuth.revokeOperatorApiKey(key.id);
+    if (!revoked) throw notFound("Operator API key not found");
 
-    const squadIds = await boardAuth.resolveBoardActivitySquadIds({
+    const squadIds = await operatorAuth.resolveOperatorActivitySquadIds({
       userId: req.actor.userId,
-      boardApiKeyId: key.id,
+      operatorApiKeyId: key.id,
     });
     for (const squadId of squadIds) {
       await logActivity(db, {
         squadId,
         actorType: "user",
         actorId: req.actor.userId,
-        action: "board_api_key.revoked",
+        action: "operator_api_key.revoked",
         entityType: "user",
         entityId: req.actor.userId,
         details: {
-          boardApiKeyId: key.id,
+          operatorApiKeyId: key.id,
           name: key.name,
-          revokedVia: "board_api_key_lifecycle",
+          revokedVia: "operator_api_key_lifecycle",
         },
       });
     }
@@ -2314,28 +2314,28 @@ export function accessRoutes(
   });
 
   router.post("/cli-auth/revoke-current", async (req, res) => {
-    if (req.actor.type !== "board" || req.actor.source !== "board_key") {
-      throw badRequest("Current board API key context is required");
+    if (req.actor.type !== "operator" || req.actor.source !== "operator_key") {
+      throw badRequest("Current operator API key context is required");
     }
-    const key = await boardAuth.assertCurrentBoardKey(
+    const key = await operatorAuth.assertCurrentOperatorKey(
       req.actor.keyId,
       req.actor.userId,
     );
-    await boardAuth.revokeBoardApiKey(key.id);
-    const squadIds = await boardAuth.resolveBoardActivitySquadIds({
+    await operatorAuth.revokeOperatorApiKey(key.id);
+    const squadIds = await operatorAuth.resolveOperatorActivitySquadIds({
       userId: key.userId,
-      boardApiKeyId: key.id,
+      operatorApiKeyId: key.id,
     });
     for (const squadId of squadIds) {
       await logActivity(db, {
         squadId,
         actorType: "user",
         actorId: key.userId,
-        action: "board_api_key.revoked",
+        action: "operator_api_key.revoked",
         entityType: "user",
         entityId: key.userId,
         details: {
-          boardApiKeyId: key.id,
+          operatorApiKeyId: key.id,
           revokedVia: "cli_auth_logout",
         },
       });
@@ -2360,7 +2360,7 @@ export function accessRoutes(
       if (!allowed) throw forbidden("Permission denied");
       return;
     }
-    if (req.actor.type !== "board") throw unauthorized();
+    if (req.actor.type !== "operator") throw unauthorized();
     if (isLocalImplicit(req)) return;
     const allowed = await access.canUser(
       squadId,
@@ -2469,7 +2469,7 @@ export function accessRoutes(
 
     const approvedAt = new Date();
     const approvedByUserId =
-      input.invite.invitedByUserId ?? (isLocalImplicit(input.req) ? "local-board" : null);
+      input.invite.invitedByUserId ?? (isLocalImplicit(input.req) ? "local-operator" : null);
     const approved = await db
       .update(joinRequests)
       .set({
@@ -2485,7 +2485,7 @@ export function accessRoutes(
     await logActivity(db, {
       squadId: input.squadId,
       actorType: "user",
-      actorId: approvedByUserId ?? "board",
+      actorId: approvedByUserId ?? "operator",
       action: "join.approved",
       entityType: "join_request",
       entityId: input.joinRequest.id,
@@ -2646,7 +2646,7 @@ export function accessRoutes(
         actorId:
           req.actor.type === "agent"
             ? req.actor.agentId ?? "unknown-agent"
-            : req.actor.userId ?? "board",
+            : req.actor.userId ?? "operator",
         action: "invite.created",
         entityType: "invite",
         entityId: created.id,
@@ -2921,14 +2921,14 @@ export function accessRoutes(
           throw badRequest("Bootstrap invite requires human request type");
         }
         if (
-          req.actor.type !== "board" ||
+          req.actor.type !== "operator" ||
           (!req.actor.userId && !isLocalImplicit(req))
         ) {
           throw unauthorized(
             "Authenticated user required for bootstrap acceptance"
           );
         }
-        const userId = req.actor.userId ?? "local-board";
+        const userId = req.actor.userId ?? "local-operator";
         const claimed = await claimFirstInstanceAdmin(db, {
           userId,
           onClaim: async (tx) => {
@@ -2973,7 +2973,7 @@ export function accessRoutes(
         throw badRequest(`Invite does not allow ${requestType} joins`);
       }
 
-      if (requestType === "human" && req.actor.type !== "board") {
+      if (requestType === "human" && req.actor.type !== "operator") {
         throw unauthorized(
           "Human invite acceptance requires authenticated user"
         );
@@ -3004,7 +3004,7 @@ export function accessRoutes(
         requestType === "human" ? await resolveActorEmail(db, req) : null;
       const actorRequestingUserId =
         requestType === "human"
-          ? req.actor.userId ?? "local-board"
+          ? req.actor.userId ?? "local-operator"
           : null;
       const canReplayHumanInviteAccept =
         inviteAlreadyAccepted &&
@@ -3128,7 +3128,7 @@ export function accessRoutes(
                   requestIp: requestIp(req),
                   requestingUserId:
                     requestType === "human"
-                      ? req.actor.userId ?? "local-board"
+                      ? req.actor.userId ?? "local-operator"
                       : null,
                   requestEmailSnapshot:
                     requestType === "human" ? actorEmail : null,
@@ -3184,7 +3184,7 @@ export function accessRoutes(
           req.actor.type === "agent"
             ? req.actor.agentId ?? "invite-agent"
             : req.actor.userId ??
-              (requestType === "agent" ? "invite-anon" : "board"),
+              (requestType === "agent" ? "invite-anon" : "operator"),
         action: inviteAlreadyAccepted
           ? "join.request_replayed"
           : "join.requested",
@@ -3269,7 +3269,7 @@ export function accessRoutes(
         actorId:
           req.actor.type === "agent"
             ? req.actor.agentId ?? "unknown-agent"
-            : req.actor.userId ?? "board",
+            : req.actor.userId ?? "operator",
         action: "invite.revoked",
         entityType: "invite",
         entityId: id
@@ -3417,7 +3417,7 @@ export function accessRoutes(
         .set({
           status: "approved",
           approvedByUserId:
-            req.actor.userId ?? (isLocalImplicit(req) ? "local-board" : null),
+            req.actor.userId ?? (isLocalImplicit(req) ? "local-operator" : null),
           approvedAt: new Date(),
           createdAgentId,
           updatedAt: new Date()
@@ -3429,7 +3429,7 @@ export function accessRoutes(
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "join.approved",
         entityType: "join_request",
         entityId: requestId,
@@ -3476,7 +3476,7 @@ export function accessRoutes(
         .set({
           status: "rejected",
           rejectedByUserId:
-            req.actor.userId ?? (isLocalImplicit(req) ? "local-board" : null),
+            req.actor.userId ?? (isLocalImplicit(req) ? "local-operator" : null),
           rejectedAt: new Date(),
           updatedAt: new Date()
         })
@@ -3487,7 +3487,7 @@ export function accessRoutes(
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "join.rejected",
         entityType: "join_request",
         entityId: requestId,
@@ -3678,7 +3678,7 @@ export function accessRoutes(
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "squad_member.updated",
         entityType: "squad_membership",
         entityId: memberId,
@@ -3804,7 +3804,7 @@ export function accessRoutes(
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "squad_member.access_updated",
         entityType: "squad_membership",
         entityId: memberId,
@@ -3842,7 +3842,7 @@ export function accessRoutes(
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "squad_member.archived",
         entityType: "squad_membership",
         entityId: memberId,
@@ -3884,7 +3884,7 @@ export function accessRoutes(
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "squad_member.permissions_updated",
         entityType: "squad_membership",
         entityId: memberId,

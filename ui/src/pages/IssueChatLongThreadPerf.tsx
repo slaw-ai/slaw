@@ -165,7 +165,7 @@ export function IssueChatLongThreadPerf() {
               liveRuns={issueChatLongThreadLiveRuns}
               issueStatus="in_progress"
               agentMap={issueChatLongThreadAgentMap}
-              currentUserId="user-board"
+              currentUserId="user-operator"
               onAdd={noop}
               showComposer={false}
               showJumpToLatest={false}

@@ -65,9 +65,9 @@ describe("sidebar preference routes", () => {
     });
   });
 
-  it("returns squad rail order for board users", async () => {
+  it("returns squad rail order for operator users", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -84,9 +84,9 @@ describe("sidebar preference routes", () => {
     expect(mockSidebarPreferenceService.getSquadOrder).toHaveBeenCalledWith("user-1");
   });
 
-  it("updates squad rail order for board users", async () => {
+  it("updates squad rail order for operator users", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
       isInstanceAdmin: true,
@@ -101,9 +101,9 @@ describe("sidebar preference routes", () => {
     expect(mockSidebarPreferenceService.upsertSquadOrder).toHaveBeenCalledWith("user-1", ORDERED_IDS);
   });
 
-  it("returns project order for squads the board user can access", async () => {
+  it("returns project order for squads the operator user can access", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -118,7 +118,7 @@ describe("sidebar preference routes", () => {
 
   it("logs project order updates for squad-scoped writes", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -145,9 +145,9 @@ describe("sidebar preference routes", () => {
     );
   });
 
-  it("rejects squad-scoped reads when the board user lacks squad access", async () => {
+  it("rejects squad-scoped reads when the operator user lacks squad access", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,

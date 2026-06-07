@@ -5,7 +5,7 @@ import { ApiError } from "../api/client";
 import { inboxDismissalsApi } from "../api/inboxDismissals";
 import { approvalsApi } from "../api/approvals";
 import { authApi } from "../api/auth";
-import { dashboardApi } from "../api/dashboard";
+import { dashoperatorApi } from "../api/dashboard";
 import { heartbeatsApi } from "../api/heartbeats";
 import { issuesApi } from "../api/issues";
 import { queryKeys } from "../lib/queryKeys";
@@ -170,7 +170,7 @@ export function useInboxBadge(squadId: string | null | undefined) {
 
   const { data: dashboard } = useQuery({
     queryKey: queryKeys.dashboard(squadId!),
-    queryFn: () => dashboardApi.summary(squadId!),
+    queryFn: () => dashoperatorApi.summary(squadId!),
     enabled: !!squadId,
   });
 

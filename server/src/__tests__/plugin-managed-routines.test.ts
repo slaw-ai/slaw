@@ -231,7 +231,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     const wakeup = vi.fn(async () => ({ id: randomUUID() }));
     const routinesSvc = routineService(db, { heartbeat: { wakeup } });
 
-    const run = await routinesSvc.runRoutine(routine.routineId!, { source: "manual" }, { userId: "board-user" });
+    const run = await routinesSvc.runRoutine(routine.routineId!, { source: "manual" }, { userId: "operator-user" });
 
     expect(run.status).toBe("issue_created");
     const [issue] = await db.select().from(issues).where(eq(issues.id, run.linkedIssueId!));

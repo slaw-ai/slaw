@@ -69,13 +69,13 @@ describeEmbeddedPostgres("dashboard service", () => {
         id: squadId,
         name: "Slaw",
         issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       },
       {
         id: otherSquadId,
         name: "Other",
         issuePrefix: `T${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       },
     ]);
 

@@ -183,7 +183,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -220,7 +220,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   it("supports creating, scheduling, and manually running a routine through the API", async () => {
     const { squadId, agentId, projectId, userId } = await seedFixture();
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId,
       source: "session",
       isInstanceAdmin: false,
@@ -330,7 +330,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   it("runs routines with variable inputs and interpolates the execution issue description", async () => {
     const { squadId, agentId, projectId, userId } = await seedFixture();
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId,
       source: "session",
       isInstanceAdmin: false,
@@ -376,7 +376,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   it("allows drafting a routine without defaults and running it with one-off overrides", async () => {
     const { squadId, agentId, projectId, userId } = await seedFixture();
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId,
       source: "session",
       isInstanceAdmin: false,
@@ -423,7 +423,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId,
       source: "session",
       isInstanceAdmin: false,

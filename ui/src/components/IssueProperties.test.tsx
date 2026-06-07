@@ -1243,7 +1243,7 @@ describe("IssueProperties", () => {
           monitor: {
             nextCheckAt: "2026-04-11T12:30:00.000Z",
             notes: "Check deployment",
-            scheduledBy: "board",
+            scheduledBy: "operator",
           },
         }),
         executionState: createExecutionState({
@@ -1260,7 +1260,7 @@ describe("IssueProperties", () => {
             lastTriggeredAt: null,
             attemptCount: 0,
             notes: "Check deployment",
-            scheduledBy: "board",
+            scheduledBy: "operator",
             clearedAt: null,
             clearReason: null,
           },

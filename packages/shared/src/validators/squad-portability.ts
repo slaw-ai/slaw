@@ -44,7 +44,7 @@ export const portabilitySquadManifestEntrySchema = z.object({
   brandColor: z.string().nullable(),
   logoPath: z.string().nullable(),
   attachmentMaxBytes: z.number().int().min(1).max(MAX_SQUAD_ATTACHMENT_MAX_BYTES).nullable().default(null),
-  requireBoardApprovalForNewAgents: z.boolean(),
+  requireOperatorApprovalForNewAgents: z.boolean(),
   feedbackDataSharingEnabled: z.boolean().default(false),
   feedbackDataSharingConsentAt: z.string().datetime().nullable().default(null),
   feedbackDataSharingConsentByUserId: z.string().nullable().default(null),

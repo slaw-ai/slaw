@@ -22,8 +22,8 @@ describe("openapi routes", () => {
     expect(res.body.paths["/api/squads/{squadId}/agents"].get.summary).toBe("List agents in a squad");
     expect(res.body.paths["/api/agents/{id}/keys"].post.summary).toBe("Create an agent API key");
     expect(res.body.components.securitySchemes).toMatchObject({
-      BoardSessionAuth: { type: "apiKey", in: "cookie" },
-      BoardApiKeyAuth: { type: "http", scheme: "bearer" },
+      OperatorSessionAuth: { type: "apiKey", in: "cookie" },
+      OperatorApiKeyAuth: { type: "http", scheme: "bearer" },
       AgentBearerAuth: { type: "http", scheme: "bearer" },
     });
     expect(res.body.paths["/api/health"].get.security).toEqual([]);

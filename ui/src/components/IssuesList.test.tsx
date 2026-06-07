@@ -954,7 +954,7 @@ describe("IssuesList", () => {
     });
   }, 10_000);
 
-  it("loads board issues with a separate result limit for each status column", async () => {
+  it("loads operator issues with a separate result limit for each status column", async () => {
     localStorage.setItem(
       "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),
@@ -1066,7 +1066,7 @@ describe("IssuesList", () => {
     });
   });
 
-  it("lets board users choose the per-column page size", async () => {
+  it("lets operator users choose the per-column page size", async () => {
     localStorage.setItem(
       "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),
@@ -1125,7 +1125,7 @@ describe("IssuesList", () => {
     });
   });
 
-  it("shows a refinement hint when a board column hits its server cap", async () => {
+  it("shows a refinement hint when a operator column hits its server cap", async () => {
     localStorage.setItem(
       "slaw:test-issues:squad-1",
       JSON.stringify({ viewMode: "board" }),

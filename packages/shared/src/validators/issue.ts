@@ -47,7 +47,7 @@ export const issueBlockedInboxReasonSchema = z.enum([
   "invalid_review_participant",
   "in_review_without_action_path",
   "missing_successful_run_disposition",
-  "pending_board_decision",
+  "pending_operator_decision",
   "pending_user_decision",
   "external_owner_action",
   "open_recovery_issue",
@@ -70,7 +70,7 @@ export const issueBlockedInboxAttentionSchema = z.object({
   severity: issueBlockedInboxSeveritySchema,
   stoppedSinceAt: z.string().datetime().nullable(),
   owner: z.object({
-    type: z.enum(["agent", "user", "board", "external", "unknown"]),
+    type: z.enum(["agent", "user", "operator", "external", "unknown"]),
     agentId: z.string().uuid().nullable(),
     userId: z.string().nullable(),
     label: z.string().nullable(),

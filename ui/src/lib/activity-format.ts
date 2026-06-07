@@ -42,7 +42,7 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.monitor_exhausted": "exhausted monitor on",
   "issue.monitor_recovery_wake_queued": "queued monitor recovery for",
   "issue.monitor_recovery_issue_created": "created monitor recovery for",
-  "issue.monitor_escalated_to_board": "escalated monitor for",
+  "issue.monitor_escalated_to_operator": "escalated monitor for",
   "issue.commented": "commented on",
   "issue.deleted": "deleted",
   "issue.successful_run_handoff_required": "flagged missing next step on",
@@ -103,7 +103,7 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.monitor_exhausted": "exhausted a monitor",
   "issue.monitor_recovery_wake_queued": "queued a monitor recovery wake",
   "issue.monitor_recovery_issue_created": "created a monitor recovery issue",
-  "issue.monitor_escalated_to_board": "escalated a monitor to the board",
+  "issue.monitor_escalated_to_operator": "escalated a monitor to the operator",
   "issue.deleted": "deleted the issue",
   "issue.successful_run_handoff_required": "Run finished without a clear next step",
   "issue.successful_run_handoff_resolved": "Next step chosen",
@@ -159,7 +159,7 @@ function readIssueReferences(details: ActivityDetails, key: string): ActivityIss
 }
 
 function formatUserLabel(userId: string | null | undefined, options: ActivityFormatOptions = {}): string {
-  if (!userId || userId === "local-board") return "Board";
+  if (!userId || userId === "local-operator") return "Operator";
   if (options.currentUserId && userId === options.currentUserId) return "You";
   const profile = options.userProfileMap?.get(userId);
   if (profile) return profile.label;

@@ -38,8 +38,8 @@ export function authRoutes(db: Db) {
   const router = Router();
 
   router.get("/get-session", async (req, res) => {
-    if (req.actor.type !== "board" || !req.actor.userId) {
-      throw unauthorized("Board authentication required");
+    if (req.actor.type !== "operator" || !req.actor.userId) {
+      throw unauthorized("Operator authentication required");
     }
 
     const user = await loadCurrentUserProfile(db, req.actor.userId);
@@ -53,16 +53,16 @@ export function authRoutes(db: Db) {
   });
 
   router.get("/profile", async (req, res) => {
-    if (req.actor.type !== "board" || !req.actor.userId) {
-      throw unauthorized("Board authentication required");
+    if (req.actor.type !== "operator" || !req.actor.userId) {
+      throw unauthorized("Operator authentication required");
     }
 
     res.json(await loadCurrentUserProfile(db, req.actor.userId));
   });
 
   router.patch("/profile", validate(updateCurrentUserProfileSchema), async (req, res) => {
-    if (req.actor.type !== "board" || !req.actor.userId) {
-      throw unauthorized("Board authentication required");
+    if (req.actor.type !== "operator" || !req.actor.userId) {
+      throw unauthorized("Operator authentication required");
     }
 
     const patch = updateCurrentUserProfileSchema.parse(req.body);

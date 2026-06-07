@@ -1009,7 +1009,7 @@ Duplicate headings receive stable suffixes.
     expect(markup).not.toContain("Plugin managed default");
   });
 
-  it("recommends approval when the wiki maintainer is pending board approval", () => {
+  it("recommends approval when the wiki maintainer is pending operator approval", () => {
     mockPathname = "/PAP/wiki/settings/maintainer";
     mockSettingsManagedAgent = {
       status: "created",
@@ -3487,7 +3487,7 @@ Duplicate headings receive stable suffixes.
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("wiki_page_revisions"))).toBe(true);
   });
 
-  it("blocks agent-tool writes to AGENTS.md but allows explicit board edits", async () => {
+  it("blocks agent-tool writes to AGENTS.md but allows explicit operator edits", async () => {
     const harness = createTestHarness({ manifest });
     const files = new Map<string, string>([
       ["AGENTS.md", "# LLM Wiki Maintainer\n\nOriginal instructions.\n"],

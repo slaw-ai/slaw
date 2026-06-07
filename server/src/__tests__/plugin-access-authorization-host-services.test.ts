@@ -213,7 +213,7 @@ describeEmbeddedPostgres("plugin access and authorization host services", () => 
         },
         protectedAgent: {
           requiresApproval: true,
-          approvalReason: "Needs board approval",
+          approvalReason: "Needs operator approval",
         },
         managedBy: "permissions-extension",
       },
@@ -246,7 +246,7 @@ describeEmbeddedPostgres("plugin access and authorization host services", () => 
     const injectedBoardPreview = await services.authorization.previewAssignment({
       squadId: squad.id,
       actor: {
-        type: "board",
+        type: "operator",
         userId: "operator",
         squadIds: [squad.id],
         source: "local_implicit",

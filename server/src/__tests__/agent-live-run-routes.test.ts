@@ -91,8 +91,8 @@ async function createApp(db: Record<string, unknown> = {}) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -577,10 +577,10 @@ describe("agent live run routes", () => {
         taskKey: "issue-1",
       },
       requestedByActorType: "user",
-      requestedByActorId: "local-board",
+      requestedByActorId: "local-operator",
       contextSnapshot: {
-        triggeredBy: "board",
-        actorId: "local-board",
+        triggeredBy: "operator",
+        actorId: "local-operator",
         forceFreshSession: true,
       },
     });
@@ -599,10 +599,10 @@ describe("agent live run routes", () => {
       source: "on_demand",
       triggerDetail: "manual",
       requestedByActorType: "user",
-      requestedByActorId: "local-board",
+      requestedByActorId: "local-operator",
       contextSnapshot: {
-        triggeredBy: "board",
-        actorId: "local-board",
+        triggeredBy: "operator",
+        actorId: "local-operator",
       },
     });
   });

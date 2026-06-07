@@ -153,7 +153,7 @@ const cloudHeaders = {
 
 function cloudTenantActor() {
   return {
-    type: "board",
+    type: "operator",
     userId: "cloud-user-1",
     userName: "Cloud User",
     userEmail: "cloud-user@example.com",
@@ -300,10 +300,10 @@ describe.sequential("squad portability routes", () => {
     expect(mockSquadPortabilityService.exportBundle).toHaveBeenNthCalledWith(2, squadId, exportRequest);
   });
 
-  it.sequential("allows board users to export through legacy and Squad Lead-safe bundle routes", async () => {
+  it.sequential("allows operator users to export through legacy and Squad Lead-safe bundle routes", async () => {
     mockSquadPortabilityService.exportBundle.mockResolvedValue(createExportResult());
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: [squadId],
       source: "session",
@@ -342,7 +342,7 @@ describe.sequential("squad portability routes", () => {
     expect(mockSquadPortabilityService.previewImport).not.toHaveBeenCalled();
   });
 
-  it.sequential("keeps global import preview routes board-only", async () => {
+  it.sequential("keeps global import preview routes operator-only", async () => {
     const app = await createApp({
       type: "agent",
       agentId: engineerAgentId,
@@ -361,12 +361,12 @@ describe.sequential("squad portability routes", () => {
       });
 
     expect(res.status).toBe(403);
-    expect(res.body.error).toContain("Board access required");
+    expect(res.body.error).toContain("Operator access required");
   });
 
   it.sequential("requires instance admin for new-squad import preview", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["11111111-1111-4111-8111-111111111111"],
       source: "session",
@@ -458,7 +458,7 @@ describe.sequential("squad portability routes", () => {
 
   it.sequential("requires instance admin for new-squad import apply", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["11111111-1111-4111-8111-111111111111"],
       source: "session",

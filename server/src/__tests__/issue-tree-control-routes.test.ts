@@ -66,7 +66,7 @@ describe("issue tree control routes", () => {
 
   it("rejects cross-squad preview requests before calling the preview service", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-1"],
       source: "session",
@@ -82,7 +82,7 @@ describe("issue tree control routes", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("requires board access for hold creation", async () => {
+  it("requires operator access for hold creation", async () => {
     const app = await createApp({
       type: "agent",
       agentId: "22222222-2222-4222-8222-222222222222",
@@ -102,7 +102,7 @@ describe("issue tree control routes", () => {
 
   it("rejects malformed tree hold IDs before querying the hold service", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",
@@ -123,7 +123,7 @@ describe("issue tree control routes", () => {
 
   it("cancels active descendant runs when creating a pause hold", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",
@@ -170,7 +170,7 @@ describe("issue tree control routes", () => {
 
   it("marks affected issues cancelled when creating a cancel hold", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",
@@ -218,7 +218,7 @@ describe("issue tree control routes", () => {
 
   it("still marks affected issues cancelled when run interruption fails", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",
@@ -273,7 +273,7 @@ describe("issue tree control routes", () => {
 
   it("restores affected issues and can request explicit wakeups", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",
@@ -335,7 +335,7 @@ describe("issue tree control routes", () => {
 
   it("releases a restore hold if the restore application fails", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",
@@ -379,7 +379,7 @@ describe("issue tree control routes", () => {
 
   it("returns resume operations as released holds and avoids cancellation side effects", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-2"],
       source: "session",

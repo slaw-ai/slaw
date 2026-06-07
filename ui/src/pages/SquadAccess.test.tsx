@@ -115,8 +115,8 @@ describe("SquadAccess", () => {
           updatedAt: "2026-04-10T00:00:00.000Z",
           user: {
             id: "user-2",
-            email: "board@slaw.local",
-            name: "Board User",
+            email: "operator@slaw.local",
+            name: "Operator User",
             image: null,
           },
           grants: [],
@@ -136,11 +136,11 @@ describe("SquadAccess", () => {
         createdAt: "2026-04-10T00:00:00.000Z",
         requesterUser: {
           id: "user-2",
-          email: "board@slaw.local",
-          name: "Board User",
+          email: "operator@slaw.local",
+          name: "Operator User",
           image: null,
         },
-        requestEmailSnapshot: "board@slaw.local",
+        requestEmailSnapshot: "operator@slaw.local",
         requestingUserId: "user-2",
         invite: {
           allowedJoinTypes: "human",

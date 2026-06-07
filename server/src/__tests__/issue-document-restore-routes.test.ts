@@ -60,9 +60,9 @@ const planDocument = {
   latestRevisionId: "revision-2",
   latestRevisionNumber: 2,
   createdByAgentId: null,
-  createdByUserId: "board-user",
+  createdByUserId: "operator-user",
   updatedByAgentId: null,
-  updatedByUserId: "board-user",
+  updatedByUserId: "operator-user",
   createdAt: new Date("2026-03-26T12:00:00.000Z"),
   updatedAt: new Date("2026-03-26T12:10:00.000Z"),
 };
@@ -168,8 +168,8 @@ function createRunContextDb(contextSnapshot: Record<string, unknown>) {
 
 async function createApp(
   actor: Express.Request["actor"] = {
-    type: "board",
-    userId: "board-user",
+    type: "operator",
+    userId: "operator-user",
     squadIds: [squadId],
     source: "local_implicit",
     isInstanceAdmin: false,
@@ -232,7 +232,7 @@ describe("issue document revision routes", () => {
         body: "# Two",
         changeSummary: null,
         createdByAgentId: null,
-        createdByUserId: "board-user",
+        createdByUserId: "operator-user",
         createdAt: new Date("2026-03-26T12:00:00.000Z"),
       },
     ]);
@@ -250,9 +250,9 @@ describe("issue document revision routes", () => {
         latestRevisionId: "revision-3",
         latestRevisionNumber: 3,
         createdByAgentId: null,
-        createdByUserId: "board-user",
+        createdByUserId: "operator-user",
         updatedByAgentId: null,
-        updatedByUserId: "board-user",
+        updatedByUserId: "operator-user",
         createdAt: new Date("2026-03-26T12:00:00.000Z"),
         updatedAt: new Date("2026-03-26T12:10:00.000Z"),
       },
@@ -317,7 +317,7 @@ describe("issue document revision routes", () => {
       key: "plan",
       revisionId: "revision-1",
       createdByAgentId: null,
-      createdByUserId: "board-user",
+      createdByUserId: "operator-user",
     });
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),

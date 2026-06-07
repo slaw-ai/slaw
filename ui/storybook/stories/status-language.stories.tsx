@@ -493,7 +493,7 @@ function StatusLanguage() {
           <div className="slaw-story__label">Language</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Status, priority, identity, and metrics</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-            These components carry the operational vocabulary of the board: who is acting, what state work is in,
+            These components carry the operational vocabulary of the operator: who is acting, what state work is in,
             how urgent it is, and whether capacity or spend needs attention.
           </p>
         </section>
@@ -621,7 +621,7 @@ function StatusLanguage() {
                 <CardTitle>Small</CardTitle>
               </CardHeader>
               <CardContent>
-                <Identity name="Board User" size="sm" initials="BU" />
+                <Identity name="Operator User" size="sm" initials="BU" />
               </CardContent>
             </Card>
             <Card className="shadow-none">
@@ -708,7 +708,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Status-language stories show the reusable operational labels, identity chips, metrics, and capacity indicators used throughout the board.",
+          "Status-language stories show the reusable operational labels, identity chips, metrics, and capacity indicators used throughout the operator.",
       },
     },
   },

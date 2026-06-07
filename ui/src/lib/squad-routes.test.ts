@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   applySquadPrefix,
   extractSquadPrefixFromPath,
-  isBoardPathWithoutPrefix,
+  isOperatorPathWithoutPrefix,
   toSquadRelativePath,
 } from "./squad-routes";
 
 describe("squad routes", () => {
-  it("treats execution workspace paths as board routes that need a squad prefix", () => {
-    expect(isBoardPathWithoutPrefix("/execution-workspaces/workspace-123")).toBe(true);
-    expect(isBoardPathWithoutPrefix("/execution-workspaces/workspace-123/routines")).toBe(true);
+  it("treats execution workspace paths as operator routes that need a squad prefix", () => {
+    expect(isOperatorPathWithoutPrefix("/execution-workspaces/workspace-123")).toBe(true);
+    expect(isOperatorPathWithoutPrefix("/execution-workspaces/workspace-123/routines")).toBe(true);
     expect(extractSquadPrefixFromPath("/execution-workspaces/workspace-123")).toBeNull();
     expect(applySquadPrefix("/execution-workspaces/workspace-123", "PAP")).toBe(
       "/PAP/execution-workspaces/workspace-123",
@@ -28,8 +28,8 @@ describe("squad routes", () => {
     );
   });
 
-  it("treats /search as a board route that needs a squad prefix", () => {
-    expect(isBoardPathWithoutPrefix("/search")).toBe(true);
+  it("treats /search as a operator route that needs a squad prefix", () => {
+    expect(isOperatorPathWithoutPrefix("/search")).toBe(true);
     expect(extractSquadPrefixFromPath("/search")).toBeNull();
     expect(applySquadPrefix("/search", "PAP")).toBe("/PAP/search");
     expect(applySquadPrefix("/search?q=hello%20world", "PAP")).toBe("/PAP/search?q=hello%20world");

@@ -2,8 +2,8 @@ import { Command } from "commander";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Agent, Squad } from "@slaw/shared";
-import { createAgentKeySchema, createBoardApiKeySchema } from "@slaw/shared";
-import { loginBoardCli } from "../../client/board-auth.js";
+import { createAgentKeySchema, createOperatorApiKeySchema } from "@slaw/shared";
+import { loginOperatorCli } from "../../client/operator-auth.js";
 import { SlawApiClient } from "../../client/http.js";
 import { resolveProfile, readContext, setCurrentProfile, upsertProfile } from "../../client/context.js";
 import {
@@ -18,7 +18,7 @@ import {
 
 interface ConnectOptions extends BaseClientOptions {
   profile?: string;
-  persona?: "board" | "agent";
+  persona?: "operator" | "agent";
   apiKeyEnvVarName?: string;
   tokenName?: string;
 }
@@ -30,7 +30,7 @@ interface CreatedAgentKey {
   createdAt: string;
 }
 
-interface CreatedBoardKey extends CreatedAgentKey {
+interface CreatedOperatorKey extends CreatedAgentKey {
   expiresAt: string | null;
 }
 
@@ -38,8 +38,8 @@ export function registerConnectCommand(program: Command): void {
   addCommonClientOptions(
     program
       .command("connect")
-      .description("Interactively connect the CLI as a board operator or agent")
-      .option("--persona <persona>", "Persona to configure: board or agent")
+      .description("Interactively connect the CLI as an operator or agent")
+      .option("--persona <persona>", "Persona to configure: operator or agent")
       .option("--api-key-env-var-name <name>", "Env var name to store in the profile", "SLAW_API_KEY")
       .option("--token-name <name>", "Token label to create")
       .action(async (opts: ConnectOptions) => {
@@ -73,33 +73,33 @@ async function connectWizard(opts: ConnectOptions) {
   console.log(pc.dim(`Checking ${apiBase}/api/health ...`));
   await verifyHealth(apiBase);
 
-  const boardLogin = await loginBoardCli({
+  const operatorLogin = await loginOperatorCli({
     apiBase,
-    requestedAccess: "board",
+    requestedAccess: "operator",
     requestedSquadId: opts.squadId ?? resolvedProfile.profile.squadId ?? null,
     command: "slaw connect",
   });
-  const boardApi = new SlawApiClient({ apiBase, apiKey: boardLogin.token });
-  const squads = (await boardApi.get<Squad[]>("/api/squads")) ?? [];
+  const operatorApi = new SlawApiClient({ apiBase, apiKey: operatorLogin.token });
+  const squads = (await operatorApi.get<Squad[]>("/api/squads")) ?? [];
 
   const persona = await choosePersona(opts.persona);
   const profileName = opts.profile?.trim() || await askProfileName(resolvedProfile.name);
   const apiKeyEnvVarName = opts.apiKeyEnvVarName?.trim() || "SLAW_API_KEY";
 
-  if (persona === "board") {
+  if (persona === "operator") {
     const squad = await chooseSquad(squads, opts.squadId ?? resolvedProfile.profile.squadId, {
       optional: true,
     });
-    const tokenName = opts.tokenName?.trim() || `cli-board-${new Date().toISOString()}`;
-    const key = await boardApi.post<CreatedBoardKey>("/api/board-api-keys", createBoardApiKeySchema.parse({
+    const tokenName = opts.tokenName?.trim() || `cli-operator-${new Date().toISOString()}`;
+    const key = await operatorApi.post<CreatedOperatorKey>("/api/operator-api-keys", createOperatorApiKeySchema.parse({
       name: tokenName,
       requestedSquadId: squad?.id ?? null,
     }));
-    if (!key) throw new Error("Failed to create board token");
+    if (!key) throw new Error("Failed to create operator token");
     upsertProfile(profileName, {
       apiBase,
       squadId: squad?.id,
-      persona: "board",
+      persona: "operator",
       agentId: "",
       agentName: "",
       apiKeyEnvVarName,
@@ -108,11 +108,11 @@ async function connectWizard(opts: ConnectOptions) {
       tokenCreatedAt: key.createdAt,
     }, opts.context);
     setCurrentProfile(profileName, opts.context);
-    p.outro(pc.green(`Connected profile '${profileName}' as board.`));
+    p.outro(pc.green(`Connected profile '${profileName}' as operator.`));
     return {
       ok: true,
       profile: profileName,
-      persona: "board",
+      persona: "operator",
       apiBase,
       squadId: squad?.id ?? null,
       key: publicKeyResult(key),
@@ -124,11 +124,11 @@ async function connectWizard(opts: ConnectOptions) {
     optional: false,
   });
   if (!squad) throw new Error("Squad is required for agent profiles");
-  const agents = (await boardApi.get<Agent[]>(apiPath`/api/squads/${squad.id}/agents`)) ?? [];
+  const agents = (await operatorApi.get<Agent[]>(apiPath`/api/squads/${squad.id}/agents`)) ?? [];
   if (agents.length === 0) throw new Error(`Squad '${squad.name}' has no agents to connect.`);
   const agent = await chooseAgent(agents, resolvedProfile.profile.agentId);
   const tokenName = opts.tokenName?.trim() || `cli-agent-${new Date().toISOString()}`;
-  const key = await boardApi.post<CreatedAgentKey>(apiPath`/api/agents/${agent.id}/keys`, createAgentKeySchema.parse({ name: tokenName }));
+  const key = await operatorApi.post<CreatedAgentKey>(apiPath`/api/agents/${agent.id}/keys`, createAgentKeySchema.parse({ name: tokenName }));
   if (!key) throw new Error("Failed to create agent token");
   upsertProfile(profileName, {
     apiBase,
@@ -161,17 +161,17 @@ async function verifyHealth(apiBase: string): Promise<void> {
   await api.get("/api/health");
 }
 
-async function choosePersona(input: string | undefined): Promise<"board" | "agent"> {
-  if (input === "board" || input === "agent") return input;
+async function choosePersona(input: string | undefined): Promise<"operator" | "agent"> {
+  if (input === "operator" || input === "agent") return input;
   const selected = await p.select({
     message: "Connect as",
     options: [
-      { value: "board", label: "Board operator" },
+      { value: "operator", label: "Operator" },
       { value: "agent", label: "Agent in a squad" },
     ],
   });
   assertNotCancelled(selected);
-  return selected as "board" | "agent";
+  return selected as "operator" | "agent";
 }
 
 async function askProfileName(defaultName: string): Promise<string> {
@@ -192,7 +192,7 @@ async function chooseSquad(
 ): Promise<Squad | null> {
   if (squads.length === 0) {
     if (opts.optional) return null;
-    throw new Error("No squads are accessible with this board credential.");
+    throw new Error("No squads are accessible with this operator credential.");
   }
   const preferred = preferredSquadId ? squads.find((squad) => squad.id === preferredSquadId) : null;
   if (squads.length === 1 && !opts.optional) return squads[0] ?? null;
@@ -247,7 +247,7 @@ function buildExports(input: {
   ].filter((line): line is string => Boolean(line)).join("\n");
 }
 
-function publicKeyResult(key: CreatedAgentKey | CreatedBoardKey) {
+function publicKeyResult(key: CreatedAgentKey | CreatedOperatorKey) {
   return {
     id: key.id,
     name: key.name,

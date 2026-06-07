@@ -12,7 +12,7 @@ export interface Squad {
   budgetMonthlyCents: number;
   spentMonthlyCents: number;
   attachmentMaxBytes: number;
-  requireBoardApprovalForNewAgents: boolean;
+  requireOperatorApprovalForNewAgents: boolean;
   feedbackDataSharingEnabled: boolean;
   feedbackDataSharingConsentAt: Date | null;
   feedbackDataSharingConsentByUserId: string | null;

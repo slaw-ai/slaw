@@ -58,7 +58,7 @@ describe("token commands", () => {
       "--api-base",
       "http://localhost:3100",
       "--api-key",
-      "board-token",
+      "operator-token",
       "--squad-id",
       SQUAD_ID,
       "--agent",
@@ -91,7 +91,7 @@ describe("token commands", () => {
     await createProgram().parseAsync([
       "token", "agent", "list",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--agent", "worker",
     ], { from: "user" });
@@ -99,7 +99,7 @@ describe("token commands", () => {
     await createProgram().parseAsync([
       "token", "agent", "revoke", "key-1",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--agent", "worker",
     ], { from: "user" });
@@ -120,7 +120,7 @@ describe("token commands", () => {
     await createProgram().parseAsync([
       "token", "agent", "list",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--agent", AGENT_ID,
       "--json",

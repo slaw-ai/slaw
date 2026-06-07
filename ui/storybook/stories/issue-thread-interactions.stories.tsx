@@ -34,7 +34,7 @@ import type {
 } from "@/lib/issue-thread-interactions";
 import { storybookAgentMap } from "../fixtures/slawData";
 
-const boardUserLabels = new Map<string, string>([
+const operatorUserLabels = new Map<string, string>([
   [issueThreadInteractionFixtureMeta.currentUserId, "Riley Board"],
   ["user-product", "Mara Product"],
 ]);
@@ -99,7 +99,7 @@ function InteractiveSuggestedTasksCard() {
       interaction={interaction}
       agentMap={storybookAgentMap}
       currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-      userLabelMap={boardUserLabels}
+      userLabelMap={operatorUserLabels}
       onAcceptInteraction={(_interaction, selectedClientKeys) =>
         setInteraction({
           ...acceptedSuggestedTasksInteraction,
@@ -159,7 +159,7 @@ function InteractiveAskUserQuestionsCard() {
       interaction={interaction}
       agentMap={storybookAgentMap}
       currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-      userLabelMap={boardUserLabels}
+      userLabelMap={operatorUserLabels}
       onSubmitInteractionAnswers={(_interaction, answers) =>
         setInteraction(buildAnsweredInteraction(answers))}
     />
@@ -176,7 +176,7 @@ function InteractiveRequestConfirmationCard() {
       interaction={interaction}
       agentMap={storybookAgentMap}
       currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-      userLabelMap={boardUserLabels}
+      userLabelMap={operatorUserLabels}
       onAcceptInteraction={() => setInteraction(acceptedRequestConfirmationInteraction)}
       onRejectInteraction={(_interaction, reason) =>
         setInteraction({
@@ -210,7 +210,7 @@ function AutoOpenDeclineRequestConfirmationCard({
         interaction={interaction}
         agentMap={storybookAgentMap}
         currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-        userLabelMap={boardUserLabels}
+        userLabelMap={operatorUserLabels}
         onAcceptInteraction={() => undefined}
         onRejectInteraction={() => undefined}
       />
@@ -258,7 +258,7 @@ export const SuggestedTasksAccepted: Story = {
           interaction={acceptedSuggestedTasksInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -276,7 +276,7 @@ export const SuggestedTasksRejected: Story = {
           interaction={rejectedSuggestedTasksInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -307,7 +307,7 @@ export const AskUserQuestionsAnswered: Story = {
           interaction={answeredAskUserQuestionsInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -325,7 +325,7 @@ export const RequestConfirmationPending: Story = {
           interaction={genericPendingRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
           onAcceptInteraction={() => undefined}
           onRejectInteraction={() => undefined}
         />
@@ -345,7 +345,7 @@ export const RequestConfirmationPendingWithTarget: Story = {
           interaction={pendingRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
           onAcceptInteraction={() => undefined}
           onRejectInteraction={() => undefined}
         />
@@ -374,7 +374,7 @@ export const RequestConfirmationPendingRequireReason: Story = {
     <StoryFrame>
       <ScenarioCard
         title="Pending required decline reason"
-        description="A plan approval waits for an explicit board decision and requires a decline reason."
+        description="A plan approval waits for an explicit operator decision and requires a decline reason."
       >
         <InteractiveRequestConfirmationCard />
       </ScenarioCard>
@@ -393,7 +393,7 @@ export const RequestConfirmationConfirmed: Story = {
           interaction={acceptedRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -411,7 +411,7 @@ export const RequestConfirmationDeclinedWithReason: Story = {
           interaction={rejectedRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -429,7 +429,7 @@ export const RequestConfirmationDeclinedNoReason: Story = {
           interaction={rejectedNoReasonRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -441,13 +441,13 @@ export const RequestConfirmationExpiredByComment: Story = {
     <StoryFrame>
       <ScenarioCard
         title="Expired by comment"
-        description="A board comment superseded the request before resolution."
+        description="An operator comment superseded the request before resolution."
       >
         <IssueThreadInteractionCard
           interaction={commentExpiredRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -465,7 +465,7 @@ export const RequestConfirmationExpiredByTargetChange: Story = {
           interaction={staleTargetRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -496,7 +496,7 @@ export const RequestConfirmationPlanApprovalConfirmed: Story = {
           interaction={planApprovalAcceptedRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -514,7 +514,7 @@ export const RequestConfirmationFailed: Story = {
           interaction={failedRequestConfirmationInteraction}
           agentMap={storybookAgentMap}
           currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-          userLabelMap={boardUserLabels}
+          userLabelMap={operatorUserLabels}
         />
       </ScenarioCard>
     </StoryFrame>
@@ -553,7 +553,7 @@ export const ReviewSurface: Story = {
               interaction={acceptedSuggestedTasksInteraction}
               agentMap={storybookAgentMap}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
             />
           </ScenarioCard>
           <ScenarioCard
@@ -564,7 +564,7 @@ export const ReviewSurface: Story = {
               interaction={rejectedSuggestedTasksInteraction}
               agentMap={storybookAgentMap}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
             />
           </ScenarioCard>
         </div>
@@ -586,7 +586,7 @@ export const ReviewSurface: Story = {
               interaction={answeredAskUserQuestionsInteraction}
               agentMap={storybookAgentMap}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
             />
           </ScenarioCard>
         </div>
@@ -608,18 +608,18 @@ export const ReviewSurface: Story = {
               interaction={acceptedRequestConfirmationInteraction}
               agentMap={storybookAgentMap}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
             />
           </ScenarioCard>
           <ScenarioCard
             title="Rejected"
-            description="Rejected confirmations keep the board's decline reason attached."
+            description="Rejected confirmations keep the operator's decline reason attached."
           >
             <IssueThreadInteractionCard
               interaction={rejectedRequestConfirmationInteraction}
               agentMap={storybookAgentMap}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
             />
           </ScenarioCard>
           <ScenarioCard
@@ -631,13 +631,13 @@ export const ReviewSurface: Story = {
                 interaction={commentExpiredRequestConfirmationInteraction}
                 agentMap={storybookAgentMap}
                 currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-                userLabelMap={boardUserLabels}
+                userLabelMap={operatorUserLabels}
               />
               <IssueThreadInteractionCard
                 interaction={staleTargetRequestConfirmationInteraction}
                 agentMap={storybookAgentMap}
                 currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-                userLabelMap={boardUserLabels}
+                userLabelMap={operatorUserLabels}
               />
             </div>
           </ScenarioCard>
@@ -660,7 +660,7 @@ export const ReviewSurface: Story = {
               squadId={issueThreadInteractionFixtureMeta.squadId}
               projectId={issueThreadInteractionFixtureMeta.projectId}
               currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
               agentMap={storybookAgentMap}
               onAdd={async () => {}}
               showComposer={false}

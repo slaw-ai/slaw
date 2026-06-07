@@ -49,7 +49,7 @@ import {
   workspaceOperationService,
 } from "../services/index.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
-import { assertBoard, assertSquadAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
+import { assertOperator, assertSquadAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
 import {
   assertNoAgentHostWorkspaceCommandMutation,
   collectAgentAdapterWorkspaceCommandPaths,
@@ -568,8 +568,8 @@ export function agentRoutes(
     return actorAgent;
   }
 
-  async function assertBoardCanManageAgentsForSquad(req: Request, squadId: string) {
-    assertBoard(req);
+  async function assertOperatorCanManageAgentsForSquad(req: Request, squadId: string) {
+    assertOperator(req);
     assertSquadAccess(req, squadId);
     const decision = await access.decide({
       actor: req.actor,
@@ -591,8 +591,8 @@ export function agentRoutes(
       return null;
     }
     assertSquadAccess(req, agent.squadId);
-    if (req.actor.type === "board") {
-      await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+    if (req.actor.type === "operator") {
+      await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     }
     return agent;
   }
@@ -687,7 +687,7 @@ export function agentRoutes(
 
   async function assertCanReadAgent(req: Request, targetAgent: { squadId: string }) {
     assertSquadAccess(req, targetAgent.squadId);
-    if (req.actor.type === "board") {
+    if (req.actor.type === "operator") {
       await assertCanReadConfigurations(req, targetAgent.squadId);
       return;
     }
@@ -1110,12 +1110,12 @@ export function agentRoutes(
 
   async function assertCanManageInstructionsPath(req: Request, targetAgent: { id: string; squadId: string }) {
     assertSquadAccess(req, targetAgent.squadId);
-    if (req.actor.type !== "board") {
+    if (req.actor.type !== "operator") {
       throw forbidden(
-        "Only board-authenticated callers can manage instructions path or bundle configuration",
+        "Only operator-authenticated callers can manage instructions path or bundle configuration",
       );
     }
-    await assertBoardCanManageAgentsForSquad(req, targetAgent.squadId);
+    await assertOperatorCanManageAgentsForSquad(req, targetAgent.squadId);
   }
 
   function assertNoAgentInstructionsConfigMutation(
@@ -1867,14 +1867,14 @@ export function agentRoutes(
   });
 
   router.get("/agents/:id/runtime-state", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const agent = await svc.getById(id);
     if (!agent) {
       res.status(404).json({ error: "Agent not found" });
       return;
     }
-    await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+    await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     assertSquadAccess(req, agent.squadId);
 
     const state = await heartbeat.getRuntimeState(id);
@@ -1882,14 +1882,14 @@ export function agentRoutes(
   });
 
   router.get("/agents/:id/task-sessions", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const agent = await svc.getById(id);
     if (!agent) {
       res.status(404).json({ error: "Agent not found" });
       return;
     }
-    await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+    await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     assertSquadAccess(req, agent.squadId);
 
     const sessions = await heartbeat.listTaskSessions(id);
@@ -1902,14 +1902,14 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/runtime-state/reset-session", validate(resetAgentSessionSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const agent = await svc.getById(id);
     if (!agent) {
       res.status(404).json({ error: "Agent not found" });
       return;
     }
-    await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+    await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     assertSquadAccess(req, agent.squadId);
 
     const taskKey =
@@ -1921,7 +1921,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.runtime_session_reset",
       entityType: "agent",
       entityId: id,
@@ -1987,7 +1987,7 @@ export function agentRoutes(
       return;
     }
 
-    const requiresApproval = squad.requireBoardApprovalForNewAgents;
+    const requiresApproval = squad.requireOperatorApprovalForNewAgents;
     const status = requiresApproval ? "pending_approval" : "idle";
     const createdAgent = await svc.create(squadId, {
       ...normalizedHireInput,
@@ -2117,9 +2117,9 @@ export function agentRoutes(
       res.status(404).json({ error: "Squad not found" });
       return;
     }
-    if (squad.requireBoardApprovalForNewAgents) {
+    if (squad.requireOperatorApprovalForNewAgents) {
       throw conflict(
-        "Direct agent creation requires board approval. Use POST /api/squads/:squadId/agent-hires to create a pending hire approval.",
+        "Direct agent creation requires operator approval. Use POST /api/squads/:squadId/agent-hires to create a pending hire approval.",
       );
     }
 
@@ -2205,7 +2205,7 @@ export function agentRoutes(
     await applyDefaultAgentTaskAssignGrant(
       squadId,
       agent.id,
-      req.actor.type === "board" ? (req.actor.userId ?? null) : null,
+      req.actor.type === "operator" ? (req.actor.userId ?? null) : null,
     );
 
     if (agent.budgetMonthlyCents > 0) {
@@ -2244,7 +2244,7 @@ export function agentRoutes(
         return;
       }
     } else {
-      await assertBoardCanManageAgentsForSquad(req, existing.squadId);
+      await assertOperatorCanManageAgentsForSquad(req, existing.squadId);
     }
 
     const agent = await svc.updatePermissions(id, req.body);
@@ -2262,7 +2262,7 @@ export function agentRoutes(
       agent.id,
       "tasks:assign",
       effectiveCanAssignTasks,
-      req.actor.type === "board" ? (req.actor.userId ?? null) : null,
+      req.actor.type === "operator" ? (req.actor.userId ?? null) : null,
     );
 
     const actor = getActorInfo(req);
@@ -2285,8 +2285,8 @@ export function agentRoutes(
   });
 
   router.patch("/agents/:id/instructions-path", validate(updateAgentInstructionsPathSchema), async (req, res) => {
-    if (req.actor.type !== "board") {
-      throw forbidden("Only board-authenticated callers can manage instructions path or bundle configuration");
+    if (req.actor.type !== "operator") {
+      throw forbidden("Only operator-authenticated callers can manage instructions path or bundle configuration");
     }
 
     const id = req.params.id as string;
@@ -2681,7 +2681,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/pause", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     if (!(await getAccessibleAgent(req, res, id))) {
       return;
@@ -2697,7 +2697,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.paused",
       entityType: "agent",
       entityId: agent.id,
@@ -2707,7 +2707,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/resume", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     if (!(await getAccessibleAgent(req, res, id))) {
       return;
@@ -2721,7 +2721,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.resumed",
       entityType: "agent",
       entityId: agent.id,
@@ -2731,7 +2731,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/approve", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await getAccessibleAgent(req, res, id);
     if (!existing) {
@@ -2755,7 +2755,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.approved",
       entityType: "agent",
       entityId: agent.id,
@@ -2766,7 +2766,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/terminate", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     if (!(await getAccessibleAgent(req, res, id))) {
       return;
@@ -2782,7 +2782,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.terminated",
       entityType: "agent",
       entityId: agent.id,
@@ -2792,7 +2792,7 @@ export function agentRoutes(
   });
 
   router.delete("/agents/:id", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     if (!(await getAccessibleAgent(req, res, id))) {
       return;
@@ -2806,7 +2806,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.deleted",
       entityType: "agent",
       entityId: agent.id,
@@ -2816,7 +2816,7 @@ export function agentRoutes(
   });
 
   router.get("/agents/:id/keys", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const agent = await getAccessibleAgent(req, res, id);
     if (!agent) {
@@ -2827,7 +2827,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/keys", validate(createAgentKeySchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const agent = await getAccessibleAgent(req, res, id);
     if (!agent) {
@@ -2838,7 +2838,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.key_created",
       entityType: "agent",
       entityId: agent.id,
@@ -2849,7 +2849,7 @@ export function agentRoutes(
   });
 
   router.delete("/agents/:id/keys/:keyId", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const keyId = req.params.keyId as string;
     const agent = await getAccessibleAgent(req, res, id);
@@ -2872,7 +2872,7 @@ export function agentRoutes(
     await logActivity(db, {
       squadId: agent.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "agent.key_revoked",
       entityType: "agent",
       entityId: agent.id,
@@ -2915,7 +2915,7 @@ export function agentRoutes(
         return;
       }
     } else {
-      await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+      await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     }
 
     const run = await heartbeat.wakeup(id, {
@@ -2983,7 +2983,7 @@ export function agentRoutes(
         return;
       }
     } else {
-      await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+      await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     }
 
     const body = (req.body ?? {}) as Partial<{
@@ -3040,14 +3040,14 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/claude-login", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const agent = await svc.getById(id);
     if (!agent) {
       res.status(404).json({ error: "Agent not found" });
       return;
     }
-    await assertBoardCanManageAgentsForSquad(req, agent.squadId);
+    await assertOperatorCanManageAgentsForSquad(req, agent.squadId);
     assertSquadAccess(req, agent.squadId);
     if (agent.adapterType !== "claude_local") {
       res.status(400).json({ error: "Login is only supported for claude_local agents" });
@@ -3184,7 +3184,7 @@ export function agentRoutes(
   });
 
   router.post("/heartbeat-runs/:runId/cancel", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const runId = req.params.runId as string;
     const existing = await heartbeat.getRun(runId);
     if (existing) {
@@ -3196,7 +3196,7 @@ export function agentRoutes(
       await logActivity(db, {
         squadId: run.squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "heartbeat.cancelled",
         entityType: "heartbeat_run",
         entityId: run.id,

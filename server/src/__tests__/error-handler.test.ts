@@ -43,7 +43,7 @@ describe("errorHandler", () => {
       method: "POST",
       originalUrl: "/api/squads/import",
       actor: {
-        type: "board",
+        type: "operator",
         userId: "cloud-user",
         source: "cloud_tenant",
       },

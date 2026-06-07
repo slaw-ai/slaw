@@ -173,7 +173,7 @@ function makeIssue(overrides: Record<string, unknown> = {}) {
     parentId: null,
     assigneeAgentId: ownerAgentId,
     assigneeUserId: null,
-    createdByUserId: "board-user",
+    createdByUserId: "operator-user",
     identifier: "PAP-1649",
     title: "Owned active issue",
     executionPolicy: null,
@@ -250,10 +250,10 @@ function ownerActor() {
   };
 }
 
-function boardActor() {
+function operatorActor() {
   return {
-    type: "board",
-    userId: "board-user",
+    type: "operator",
+    userId: "operator-user",
     squadIds: [squadId],
     source: "local_implicit",
     isInstanceAdmin: false,
@@ -620,8 +620,8 @@ describe("agent issue mutation checkout ownership", () => {
     expect(mockIssueService.update).not.toHaveBeenCalled();
   });
 
-  it("allows board users to set explicit cheap issue assignee profile overrides", async () => {
-    const app = await createApp(boardActor());
+  it("allows operator users to set explicit cheap issue assignee profile overrides", async () => {
+    const app = await createApp(operatorActor());
 
     await request(app)
       .patch(`/api/issues/${issueId}`)
@@ -677,10 +677,10 @@ describe("agent issue mutation checkout ownership", () => {
     expect(mockWorkProductService.update).toHaveBeenCalledWith("product-1", { title: "Updated product" });
   });
 
-  it("preserves board mutations on active checkouts", async () => {
-    const app = await createApp(boardActor());
+  it("preserves operator mutations on active checkouts", async () => {
+    const app = await createApp(operatorActor());
 
-    await request(app).patch(`/api/issues/${issueId}`).send({ title: "Board update" }).expect(200);
+    await request(app).patch(`/api/issues/${issueId}`).send({ title: "Operator update" }).expect(200);
     await request(app)
       .put(`/api/issues/${issueId}/documents/plan`)
       .send({ format: "markdown", body: "# board" })
@@ -742,7 +742,7 @@ describe("agent issue mutation checkout ownership", () => {
 
   it("rejects peer-agent status updates that would clear a recovery action they do not own", async () => {
     mockIssueService.getById.mockResolvedValue(
-      makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" }),
+      makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" }),
     );
     mockIssueRecoveryActionService.getActiveForIssue.mockResolvedValue({
       id: recoveryActionId,
@@ -756,9 +756,9 @@ describe("agent issue mutation checkout ownership", () => {
     expect(mockIssueService.update).not.toHaveBeenCalled();
   });
 
-  it("rejects peer-agent recovery resolution on a board-owned source issue", async () => {
+  it("rejects peer-agent recovery resolution on a operator-owned source issue", async () => {
     mockIssueService.getById.mockResolvedValue(
-      makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" }),
+      makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" }),
     );
     mockIssueRecoveryActionService.getActiveForIssue.mockResolvedValue({
       id: recoveryActionId,
@@ -778,12 +778,12 @@ describe("agent issue mutation checkout ownership", () => {
     expect(mockIssueRecoveryActionService.resolveActiveForIssue).not.toHaveBeenCalled();
   });
 
-  it("allows the named recovery owner to resolve a board-owned source issue", async () => {
+  it("allows the named recovery owner to resolve a operator-owned source issue", async () => {
     mockIssueService.getById.mockResolvedValue(
-      makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" }),
+      makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" }),
     );
     mockIssueService.update.mockImplementation(async (_id: string, patch: Record<string, unknown>) => ({
-      ...makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" }),
+      ...makeIssue({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" }),
       ...patch,
     }));
     mockIssueRecoveryActionService.getActiveForIssue.mockResolvedValue({

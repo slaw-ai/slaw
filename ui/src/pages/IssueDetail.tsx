@@ -8,7 +8,7 @@ import { approvalsApi } from "../api/approvals";
 import { activityApi, type RunForIssue } from "../api/activity";
 import { heartbeatsApi, type ActiveRunForIssue, type LiveRunForIssue } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
-import { accessApi, type CurrentBoardAccess } from "../api/access";
+import { accessApi, type CurrentOperatorAccess } from "../api/access";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { projectsApi } from "../api/projects";
@@ -210,24 +210,24 @@ function issueTreeControlHelpText(mode: IssueTreeControlMode, scope: "leaf" | "s
 
 function treeControlPreviewErrorCopy(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 403) return "Only board users can preview subtree controls.";
+    if (error.status === 403) return "Only operator users can preview subtree controls.";
     if (error.status === 409) return "Preview is stale because subtree hold state changed. Retry to refresh.";
     if (error.status === 422) return "This subtree action is currently invalid for the selected issues.";
   }
   return error instanceof Error ? error.message : "Unable to load preview.";
 }
 
-export function canBoardResolveRecoveryAction(
+export function canOperatorResolveRecoveryAction(
   squadId: string | null | undefined,
-  boardAccess: CurrentBoardAccess | undefined,
+  operatorAccess: CurrentOperatorAccess | undefined,
 ) {
-  if (!squadId || !boardAccess) return false;
-  if (boardAccess.source === "local_implicit" || boardAccess.isInstanceAdmin) return true;
-  if (!boardAccess.memberships || boardAccess.memberships.length === 0) {
-    return boardAccess.squadIds.includes(squadId);
+  if (!squadId || !operatorAccess) return false;
+  if (operatorAccess.source === "local_implicit" || operatorAccess.isInstanceAdmin) return true;
+  if (!operatorAccess.memberships || operatorAccess.memberships.length === 0) {
+    return operatorAccess.squadIds.includes(squadId);
   }
 
-  const membership = boardAccess.memberships.find(
+  const membership = operatorAccess.memberships.find(
     (item) => item.squadId === squadId && item.status === "active",
   );
   if (!membership) return false;
@@ -381,7 +381,7 @@ function ActorIdentity({ evt, agentMap, userProfileMap }: { evt: ActivityEvent; 
   if (evt.actorType === "system") return <Identity name="System" size="sm" />;
   if (evt.actorType === "user") {
     const profile = userProfileMap?.get(id);
-    return <Identity name={profile?.label ?? "Board"} avatarUrl={profile?.image} size="sm" />;
+    return <Identity name={profile?.label ?? "Operator"} avatarUrl={profile?.image} size="sm" />;
   }
   return <Identity name={id || "Unknown"} size="sm" />;
 }
@@ -1428,17 +1428,17 @@ export function IssueDetail() {
     enabled: !!selectedSquadId,
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
-  const { data: boardAccess } = useQuery({
-    queryKey: queryKeys.access.currentBoardAccess,
-    queryFn: () => accessApi.getCurrentBoardAccess(),
+  const { data: operatorAccess } = useQuery({
+    queryKey: queryKeys.access.currentOperatorAccess,
+    queryFn: () => accessApi.getCurrentOperatorAccess(),
     enabled: !!session?.user?.id,
     retry: false,
   });
   const canManageTreeControl = Boolean(
     selectedSquadId
-    && boardAccess?.squadIds?.includes(selectedSquadId),
+    && operatorAccess?.squadIds?.includes(selectedSquadId),
   );
-  const canResolveBoardRecoveryAction = canBoardResolveRecoveryAction(selectedSquadId, boardAccess);
+  const canResolveOperatorRecoveryAction = canOperatorResolveRecoveryAction(selectedSquadId, operatorAccess);
   const { data: feedbackVotes } = useQuery({
     queryKey: queryKeys.issues.feedbackVotes(issueId!),
     queryFn: () => issuesApi.listFeedbackVotes(issueId!),
@@ -3275,7 +3275,7 @@ export function IssueDetail() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">
-                  {childIssues.length === 0 ? "Paused by board." : "Subtree pause is active."}
+                  {childIssues.length === 0 ? "Paused by operator." : "Subtree pause is active."}
                 </span>
                 <span className="text-xs text-amber-900/80 dark:text-amber-100/80">
                   {childIssues.length === 0
@@ -3848,7 +3848,7 @@ export function IssueDetail() {
               scheduledRetry={issue.scheduledRetry ?? null}
               recoveryAction={issue.activeRecoveryAction ?? null}
               onResolveRecoveryAction={handleResolveRecoveryAction}
-              canFalsePositiveRecoveryAction={canResolveBoardRecoveryAction}
+              canFalsePositiveRecoveryAction={canResolveOperatorRecoveryAction}
               legacyRecoverySourceIssue={legacyRecoverySourceIssue}
               comments={threadComments}
               locallyQueuedCommentRunIds={locallyQueuedCommentRunIds}

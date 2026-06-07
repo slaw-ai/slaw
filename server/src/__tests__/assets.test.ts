@@ -96,7 +96,7 @@ async function createApp(storage: ReturnType<typeof createStorageService>) {
   const app = express();
   app.use((req, _res, next) => {
     req.actor = {
-      type: "board",
+      type: "operator",
       source: "local_implicit",
       userId: "user-1",
     };

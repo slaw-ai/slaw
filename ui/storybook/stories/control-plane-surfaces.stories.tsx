@@ -50,7 +50,7 @@ function ControlPlaneSurfaces() {
               <div className="slaw-story__label">Product surfaces</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Control-plane boards and cards</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Slaw's common board surfaces are deliberately dense: task rows, approvals, budget policy cards,
+                Slaw's common operator surfaces are deliberately dense: task rows, approvals, budget policy cards,
                 and audit rows all need to scan quickly while preserving enough state to make autonomous work governable.
               </p>
             </div>
@@ -78,7 +78,7 @@ function ControlPlaneSurfaces() {
                     {issue.assigneeAgentId ? (
                       <Identity name={storybookAgentMap.get(issue.assigneeAgentId)?.name ?? "Unassigned"} size="sm" />
                     ) : (
-                      <span className="text-xs text-muted-foreground">Board</span>
+                      <span className="text-xs text-muted-foreground">Operator</span>
                     )}
                   </span>
                 }
@@ -253,7 +253,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Product-surface stories exercise the board UI components that carry Slaw's task, approval, budget, activity, and agent governance workflows.",
+          "Product-surface stories exercise the operator UI components that carry Slaw's task, approval, budget, activity, and agent governance workflows.",
       },
     },
   },

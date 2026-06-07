@@ -9,12 +9,12 @@ import { ApprovalPayloadRenderer, approvalLabel } from "./ApprovalPayload";
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("approvalLabel", () => {
-  it("uses payload titles for generic board approvals", () => {
+  it("uses payload titles for generic operator approvals", () => {
     expect(
-      approvalLabel("request_board_approval", {
+      approvalLabel("request_operator_approval", {
         title: "Reply with an ASCII frog",
       }),
-    ).toBe("Board Approval: Reply with an ASCII frog");
+    ).toBe("Operator Approval: Reply with an ASCII frog");
   });
 });
 
@@ -30,16 +30,16 @@ describe("ApprovalPayloadRenderer", () => {
     container.remove();
   });
 
-  it("renders request_board_approval payload fields without falling back to raw JSON", () => {
+  it("renders request_operator_approval payload fields without falling back to raw JSON", () => {
     const root = createRoot(container);
 
     act(() => {
       root.render(
         <ApprovalPayloadRenderer
-          type="request_board_approval"
+          type="request_operator_approval"
           payload={{
             title: "Reply with an ASCII frog",
-            summary: "Board asked for approval before posting the frog.",
+            summary: "Operator asked for approval before posting the frog.",
             recommendedAction: "Approve the frog reply.",
             nextActionOnApproval: "Post the frog comment on the issue.",
             risks: ["The frog might be too powerful."],
@@ -50,7 +50,7 @@ describe("ApprovalPayloadRenderer", () => {
     });
 
     expect(container.textContent).toContain("Reply with an ASCII frog");
-    expect(container.textContent).toContain("Board asked for approval before posting the frog.");
+    expect(container.textContent).toContain("Operator asked for approval before posting the frog.");
     expect(container.textContent).toContain("Approve the frog reply.");
     expect(container.textContent).toContain("Post the frog comment on the issue.");
     expect(container.textContent).toContain("The frog might be too powerful.");
@@ -68,17 +68,17 @@ describe("ApprovalPayloadRenderer", () => {
     act(() => {
       root.render(
         <ApprovalPayloadRenderer
-          type="request_board_approval"
+          type="request_operator_approval"
           hidePrimaryTitle
           payload={{
             title: "Reply with an ASCII frog",
-            summary: "Board asked for approval before posting the frog.",
+            summary: "Operator asked for approval before posting the frog.",
           }}
         />,
       );
     });
 
-    expect(container.textContent).toContain("Board asked for approval before posting the frog.");
+    expect(container.textContent).toContain("Operator asked for approval before posting the frog.");
     expect(container.textContent).not.toContain("TitleReply with an ASCII frog");
 
     act(() => {

@@ -324,7 +324,7 @@ const plugin = definePlugin({
         expectedHash: stringField(params.expectedHash),
         summary: stringField(params.summary),
         sourceRefs: params.sourceRefs,
-        writer: "board_ui",
+        writer: "operator_ui",
       });
     });
 

@@ -101,10 +101,10 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
   queryClient.setQueryData(queryKeys.access.squadUserDirectory(squadId), {
     users: [
       {
-        principalId: "user-board",
+        principalId: "user-operator",
         status: "active",
         user: {
-          id: "user-board",
+          id: "user-operator",
           email: "riley@slaw.local",
           name: "Riley Board",
           image: null,
@@ -206,10 +206,10 @@ function ColumnConfigurationMatrix() {
               projectName={storybookProjects.find((project) => project.id === issue.projectId)?.name ?? null}
               projectColor={storybookProjects.find((project) => project.id === issue.projectId)?.color ?? null}
               workspaceId={issue.projectWorkspaceId ?? issue.executionWorkspaceId}
-              workspaceName={issue.currentExecutionWorkspace?.name ?? "Board UI"}
+              workspaceName={issue.currentExecutionWorkspace?.name ?? "Operator UI"}
               assigneeName={issue.assigneeAgentId ? storybookAgentMap.get(issue.assigneeAgentId)?.name ?? null : null}
               assigneeUserName={issue.assigneeUserId ? "Riley Board" : null}
-              currentUserId="user-board"
+              currentUserId="user-operator"
               parentIdentifier={storybookIssues.find((candidate) => candidate.id === issue.parentId)?.identifier ?? null}
               parentTitle={storybookIssues.find((candidate) => candidate.id === issue.parentId)?.title ?? null}
             />
@@ -316,12 +316,12 @@ function OpenFiltersPopover() {
           agents={storybookAgents.map((agent) => ({ id: agent.id, name: agent.name }))}
           projects={storybookProjects.map((project) => ({ id: project.id, name: project.name }))}
           labels={storybookIssueLabels.map((label) => ({ id: label.id, name: label.name, color: label.color }))}
-          currentUserId="user-board"
+          currentUserId="user-operator"
           enableRoutineVisibilityFilter
           buttonVariant="outline"
           workspaces={storybookExecutionWorkspaces.map((workspace) => ({ id: workspace.id, name: workspace.name }))}
           creators={[
-            { id: "user:user-board", label: "Riley Board", kind: "user", searchText: "board user human" },
+            { id: "user:user-board", label: "Riley Board", kind: "user", searchText: "operator user human" },
             ...storybookAgents.map((agent) => ({
               id: `agent:${agent.id}`,
               label: agent.name,
@@ -578,7 +578,7 @@ function IssueManagementStories() {
                 <div className="slaw-story__label">Issue management</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">List, detail, filters, runs, and workspace states</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                  Fixture-backed issue management stories cover the operational states used by the board when reviewing,
+                  Fixture-backed issue management stories cover the operational states used by the operator when reviewing,
                   filtering, handing off, and continuing agent work.
                 </p>
               </div>

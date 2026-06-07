@@ -64,7 +64,7 @@ const revision = {
   changeSummary: "Created routine",
   restoredFromRevisionId: null,
   createdByAgentId: null,
-  createdByUserId: "board-user",
+  createdByUserId: "operator-user",
   createdByRunId: null,
   createdAt: new Date("2026-03-20T00:00:00.000Z"),
 };
@@ -209,8 +209,8 @@ describe("routine routes", () => {
 
   it("passes project filters to the routine list service", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -224,10 +224,10 @@ describe("routine routes", () => {
     expect(mockRoutineService.list).toHaveBeenCalledWith(squadId, { projectId });
   });
 
-  it("lists routine revisions for a board member in newest-first service order", async () => {
+  it("lists routine revisions for a operator member in newest-first service order", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -242,8 +242,8 @@ describe("routine routes", () => {
 
   it("blocks routine revision reads across squad scope", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: ["99999999-9999-4999-8999-999999999999"],
@@ -291,10 +291,10 @@ describe("routine routes", () => {
     }));
   });
 
-  it("requires tasks:assign permission for non-admin board routine creation", async () => {
+  it("requires tasks:assign permission for non-admin operator routine creation", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -315,8 +315,8 @@ describe("routine routes", () => {
 
   it("requires tasks:assign permission to retarget a routine assignee", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -336,8 +336,8 @@ describe("routine routes", () => {
   it("requires tasks:assign permission to reactivate a routine", async () => {
     mockRoutineService.get.mockResolvedValue(pausedRoutine);
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -356,8 +356,8 @@ describe("routine routes", () => {
 
   it("requires tasks:assign permission to create a trigger", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -378,8 +378,8 @@ describe("routine routes", () => {
 
   it("requires tasks:assign permission to update a trigger", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -398,8 +398,8 @@ describe("routine routes", () => {
 
   it("requires tasks:assign permission to manually run a routine", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -414,11 +414,11 @@ describe("routine routes", () => {
     expect(mockRoutineService.runRoutine).not.toHaveBeenCalled();
   });
 
-  it("passes the board actor through when manually running a routine", async () => {
+  it("passes the operator actor through when manually running a routine", async () => {
     mockAccessService.canUser.mockResolvedValue(true);
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -433,15 +433,15 @@ describe("routine routes", () => {
       source: "manual",
     }, {
       agentId: null,
-      userId: "board-user",
+      userId: "operator-user",
     });
   });
 
-  it("allows routine creation when the board user has tasks:assign", async () => {
+  it("allows routine creation when the operator user has tasks:assign", async () => {
     mockAccessService.canUser.mockResolvedValue(true);
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],
@@ -462,7 +462,7 @@ describe("routine routes", () => {
       assigneeAgentId: agentId,
     }), {
       agentId: null,
-      userId: "board-user",
+      userId: "operator-user",
       runId: null,
     });
     expect(mockTrackRoutineCreated).toHaveBeenCalledWith(expect.anything());

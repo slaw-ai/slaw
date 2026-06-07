@@ -11,7 +11,7 @@ import {
   updateSecretSchema,
 } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
-import { assertBoard, assertSquadAccess } from "./authz.js";
+import { assertOperator, assertSquadAccess } from "./authz.js";
 import { logActivity, secretService } from "../services/index.js";
 import { getConfiguredSecretProvider } from "../secrets/configured-provider.js";
 
@@ -21,14 +21,14 @@ export function secretRoutes(db: Db) {
   const defaultProvider = getConfiguredSecretProvider();
 
   router.get("/squads/:squadId/secret-providers", (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     res.json(svc.listProviders());
   });
 
   router.get("/squads/:squadId/secret-providers/health", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     const checks = await svc.checkProviders();
@@ -36,7 +36,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.get("/squads/:squadId/secret-provider-configs", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     res.json(await svc.listProviderConfigs(squadId));
@@ -46,7 +46,7 @@ export function secretRoutes(db: Db) {
     "/squads/:squadId/secret-provider-configs/discovery/preview",
     validate(secretProviderConfigDiscoveryPreviewSchema),
     async (req, res) => {
-      assertBoard(req);
+      assertOperator(req);
       const squadId = req.params.squadId as string;
       assertSquadAccess(req, squadId);
 
@@ -61,7 +61,7 @@ export function secretRoutes(db: Db) {
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "secret_provider_config.discovery_previewed",
         entityType: "secret_provider_config_discovery",
         entityId: squadId,
@@ -78,7 +78,7 @@ export function secretRoutes(db: Db) {
   );
 
   router.post("/squads/:squadId/secret-provider-configs", validate(createSecretProviderConfigSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
 
@@ -91,13 +91,13 @@ export function secretRoutes(db: Db) {
         isDefault: req.body.isDefault,
         config: req.body.config,
       },
-      { userId: req.actor.userId ?? "board", agentId: null },
+      { userId: req.actor.userId ?? "operator", agentId: null },
     );
 
     await logActivity(db, {
       squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret_provider_config.created",
       entityType: "secret_provider_config",
       entityId: created.id,
@@ -113,7 +113,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.get("/secret-provider-configs/:id", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const existing = await svc.getProviderConfigById(req.params.id as string);
     if (!existing) {
       res.status(404).json({ error: "Provider vault not found" });
@@ -124,7 +124,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.patch("/secret-provider-configs/:id", validate(updateSecretProviderConfigSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getProviderConfigById(id);
     if (!existing) {
@@ -147,7 +147,7 @@ export function secretRoutes(db: Db) {
     await logActivity(db, {
       squadId: updated.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret_provider_config.updated",
       entityType: "secret_provider_config",
       entityId: updated.id,
@@ -163,7 +163,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.delete("/secret-provider-configs/:id", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getProviderConfigById(id);
     if (!existing) {
@@ -181,7 +181,7 @@ export function secretRoutes(db: Db) {
     await logActivity(db, {
       squadId: removed.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret_provider_config.removed",
       entityType: "secret_provider_config",
       entityId: removed.id,
@@ -196,7 +196,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.post("/secret-provider-configs/:id/default", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getProviderConfigById(id);
     if (!existing) {
@@ -214,7 +214,7 @@ export function secretRoutes(db: Db) {
     await logActivity(db, {
       squadId: updated.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret_provider_config.default_set",
       entityType: "secret_provider_config",
       entityId: updated.id,
@@ -229,7 +229,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.post("/secret-provider-configs/:id/health", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getProviderConfigById(id);
     if (!existing) {
@@ -247,7 +247,7 @@ export function secretRoutes(db: Db) {
     await logActivity(db, {
       squadId: existing.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret_provider_config.health_checked",
       entityType: "secret_provider_config",
       entityId: existing.id,
@@ -262,7 +262,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.get("/squads/:squadId/secrets", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     const secrets = await svc.list(squadId);
@@ -270,7 +270,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.post("/squads/:squadId/secrets", validate(createSecretSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
 
@@ -288,13 +288,13 @@ export function secretRoutes(db: Db) {
         providerVersionRef: req.body.providerVersionRef,
         providerMetadata: req.body.providerMetadata,
       },
-      { userId: req.actor.userId ?? "board", agentId: null },
+      { userId: req.actor.userId ?? "operator", agentId: null },
     );
 
     await logActivity(db, {
       squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret.created",
       entityType: "secret",
       entityId: created.id,
@@ -308,7 +308,7 @@ export function secretRoutes(db: Db) {
     "/squads/:squadId/secrets/remote-import/preview",
     validate(remoteSecretImportPreviewSchema),
     async (req, res) => {
-      assertBoard(req);
+      assertOperator(req);
       const squadId = req.params.squadId as string;
       assertSquadAccess(req, squadId);
 
@@ -322,7 +322,7 @@ export function secretRoutes(db: Db) {
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "secret.remote_import.previewed",
         entityType: "secret_provider_config",
         entityId: preview.providerConfigId,
@@ -343,7 +343,7 @@ export function secretRoutes(db: Db) {
     "/squads/:squadId/secrets/remote-import",
     validate(remoteSecretImportSchema),
     async (req, res) => {
-      assertBoard(req);
+      assertOperator(req);
       const squadId = req.params.squadId as string;
       assertSquadAccess(req, squadId);
 
@@ -353,13 +353,13 @@ export function secretRoutes(db: Db) {
           providerConfigId: req.body.providerConfigId,
           secrets: req.body.secrets,
         },
-        { userId: req.actor.userId ?? "board", agentId: null },
+        { userId: req.actor.userId ?? "operator", agentId: null },
       );
 
       await logActivity(db, {
         squadId,
         actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorId: req.actor.userId ?? "operator",
         action: "secret.remote_import.completed",
         entityType: "secret_provider_config",
         entityId: result.providerConfigId,
@@ -376,7 +376,7 @@ export function secretRoutes(db: Db) {
   );
 
   router.post("/secrets/:id/rotate", validate(rotateSecretSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getById(id);
     if (!existing) {
@@ -397,13 +397,13 @@ export function secretRoutes(db: Db) {
         providerVersionRef: req.body.providerVersionRef,
         providerConfigId: req.body.providerConfigId,
       },
-      { userId: req.actor.userId ?? "board", agentId: null },
+      { userId: req.actor.userId ?? "operator", agentId: null },
     );
 
     await logActivity(db, {
       squadId: rotated.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret.rotated",
       entityType: "secret",
       entityId: rotated.id,
@@ -414,7 +414,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.patch("/secrets/:id", validate(updateSecretSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getById(id);
     if (!existing) {
@@ -445,7 +445,7 @@ export function secretRoutes(db: Db) {
     await logActivity(db, {
       squadId: updated.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret.updated",
       entityType: "secret",
       entityId: updated.id,
@@ -456,7 +456,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.get("/secrets/:id/usage", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getById(id);
     if (!existing) {
@@ -469,7 +469,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.get("/secrets/:id/access-events", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getById(id);
     if (!existing) {
@@ -482,7 +482,7 @@ export function secretRoutes(db: Db) {
   });
 
   router.delete("/secrets/:id", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const existing = await svc.getById(id);
     if (!existing) {
@@ -500,7 +500,7 @@ export function secretRoutes(db: Db) {
     await logActivity(db, {
       squadId: removed.squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "secret.deleted",
       entityType: "secret",
       entityId: removed.id,

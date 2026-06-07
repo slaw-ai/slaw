@@ -338,7 +338,7 @@ export function InviteLandingPage() {
       const asBootstrap = isBootstrapAcceptancePayload(payload);
       setResult({ kind: asBootstrap ? "bootstrap" : "join", payload });
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentOperatorAccess });
       await queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
       if (invite?.squadId && isApprovedHumanJoinPayload(payload, showsAgentForm)) {
         setSelectedSquadId(invite.squadId, { source: "manual" });
@@ -373,7 +373,7 @@ export function InviteLandingPage() {
       setAuthFeedback(null);
       rememberPendingInviteToken(token);
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentOperatorAccess });
       const { squads: freshSquads } = await queryClient.fetchQuery(squadsListQueryOptions);
 
       if (invite?.squadId && freshSquads.some((squad) => squad.id === invite.squadId)) {
@@ -480,7 +480,7 @@ export function InviteLandingPage() {
           <h1 className="text-lg font-semibold">Bootstrap complete</h1>
           <div className="mt-4">
             <Button asChild className="rounded-none">
-              <Link to="/">Open board</Link>
+              <Link to="/">Open console</Link>
             </Button>
           </div>
         </div>
@@ -514,7 +514,7 @@ export function InviteLandingPage() {
             </div>
             <div className="mt-4">
               <Button asChild className="w-full rounded-none">
-                <Link to="/">Open board</Link>
+                <Link to="/">Open console</Link>
               </Button>
             </div>
           </div>
@@ -569,7 +569,7 @@ export function InviteLandingPage() {
               </div>
               <div className="border border-zinc-800 p-3">
                 <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Invited by</div>
-                <div className="mt-1 text-sm text-zinc-100">{invitedByUserName ?? "Slaw board"}</div>
+                <div className="mt-1 text-sm text-zinc-100">{invitedByUserName ?? "Slaw operator"}</div>
               </div>
               <div className="border border-zinc-800 p-3">
                 <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Requested access</div>

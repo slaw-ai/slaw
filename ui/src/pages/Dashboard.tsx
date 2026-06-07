@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import { dashboardApi } from "../api/dashboard";
+import { dashoperatorApi } from "../api/dashboard";
 import { activityApi } from "../api/activity";
 import { accessApi } from "../api/access";
 import { issuesApi } from "../api/issues";
@@ -55,7 +55,7 @@ export function Dashboard() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.dashboard(selectedSquadId!),
-    queryFn: () => dashboardApi.summary(selectedSquadId!),
+    queryFn: () => dashoperatorApi.summary(selectedSquadId!),
     enabled: !!selectedSquadId,
   });
 
@@ -284,8 +284,8 @@ export function Dashboard() {
               description={
                 <span>
                   {data.budgets.pendingApprovals > 0
-                    ? `${data.budgets.pendingApprovals} budget overrides awaiting board review`
-                    : "Awaiting board review"}
+                    ? `${data.budgets.pendingApprovals} budget overrides awaiting operator review`
+                    : "Awaiting operator review"}
                 </span>
               }
             />

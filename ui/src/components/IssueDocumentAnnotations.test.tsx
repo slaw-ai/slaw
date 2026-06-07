@@ -431,7 +431,7 @@ describe("IssueDocumentAnnotations", () => {
             threadId: "open-1",
             issueId: "issue-1",
             documentId: "doc-1",
-            body: "From the board.",
+            body: "From the operator.",
             authorType: "user",
             authorAgentId: null,
             authorUserId: "user-1",
@@ -501,7 +501,7 @@ describe("IssueDocumentAnnotations", () => {
 
     const expandedText = container.querySelector('[data-thread-id="open-1"]')?.textContent ?? "";
     expect(expandedText).toContain("Dotta");
-    expect(expandedText).not.toContain("· board");
+    expect(expandedText).not.toContain("· operator");
     expect(expandedText).toContain("UXDesigner");
     expect(expandedText).toContain("· agent");
   });

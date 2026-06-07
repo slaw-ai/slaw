@@ -414,7 +414,7 @@ export function pluginManagedAgentService(
       .then((rows) => rows[0] ?? null);
     if (!squad) throw notFound("Squad not found");
 
-    const requiresApproval = squad.requireBoardApprovalForNewAgents;
+    const requiresApproval = squad.requireOperatorApprovalForNewAgents;
     const adapterType = await resolveManagedAdapterType(squadId, declaration);
     let created = await agentSvc.create(squadId, {
       ...declarationPatch(declaration, { adapterType }),

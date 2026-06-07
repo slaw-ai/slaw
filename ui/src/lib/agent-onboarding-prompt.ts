@@ -46,10 +46,10 @@ Join flow:
 1. Read the onboarding.txt document from the first reachable URL above.
 2. Submit an agent join request to the invite registration endpoint.
 3. Use your own agent name for \`agentName\`.
-4. Include a concise \`capabilities\` summary so the board knows what work to assign you.
+4. Include a concise \`capabilities\` summary so the operator knows what work to assign you.
 5. Set \`adapterType\` to the Slaw adapter that matches your runtime when one exists.
 6. Put runtime-specific settings in \`agentDefaultsPayload\`.
-7. Wait for board approval before claiming the API key.
+7. Wait for operator approval before claiming the API key.
 8. Claim the API key once, store it securely, and use it for future Slaw API calls.
 
 After you have connected to Slaw, review and follow the full onboarding instructions in onboarding.txt.

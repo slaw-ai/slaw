@@ -46,7 +46,7 @@ export function squadService(db: Db) {
     budgetMonthlyCents: squads.budgetMonthlyCents,
     spentMonthlyCents: squads.spentMonthlyCents,
     attachmentMaxBytes: squads.attachmentMaxBytes,
-    requireBoardApprovalForNewAgents: squads.requireBoardApprovalForNewAgents,
+    requireOperatorApprovalForNewAgents: squads.requireOperatorApprovalForNewAgents,
     feedbackDataSharingEnabled: squads.feedbackDataSharingEnabled,
     feedbackDataSharingConsentAt: squads.feedbackDataSharingConsentAt,
     feedbackDataSharingConsentByUserId: squads.feedbackDataSharingConsentByUserId,

@@ -14,7 +14,7 @@ import type {
 } from "@slaw/shared";
 import { getTelemetryClient, trackSquadImported } from "../../telemetry.js";
 import { ApiRequestError } from "../../client/http.js";
-import { openUrl } from "../../client/board-auth.js";
+import { openUrl } from "../../client/operator-auth.js";
 import { binaryContentTypeByExtension, readZipArchive } from "./zip.js";
 import {
   addCommonClientOptions,
@@ -1112,7 +1112,7 @@ export function registerSquadCommands(program: Command): void {
             status: row.status,
             budgetMonthlyCents: row.budgetMonthlyCents,
             spentMonthlyCents: row.spentMonthlyCents,
-            requireBoardApprovalForNewAgents: row.requireBoardApprovalForNewAgents,
+            requireOperatorApprovalForNewAgents: row.requireOperatorApprovalForNewAgents,
           }));
           for (const row of formatted) {
             console.log(formatInlineRecord(row));
@@ -1630,7 +1630,7 @@ export function registerSquadCommands(program: Command): void {
               try {
                 target = resolveSquadForDeletion([scoped], normalizedSelector, by);
               } catch {
-                // Fallback to board-wide lookup below.
+                // Fallback to operator-wide lookup below.
               }
             }
           }
@@ -1640,9 +1640,9 @@ export function registerSquadCommands(program: Command): void {
               const squads = (await ctx.api.get<Squad[]>("/api/squads")) ?? [];
               target = resolveSquadForDeletion(squads, normalizedSelector, by);
             } catch (error) {
-              if (error instanceof ApiRequestError && error.status === 403 && error.message.includes("Board access required")) {
+              if (error instanceof ApiRequestError && error.status === 403 && error.message.includes("Operator access required")) {
                 throw new Error(
-                  "Board access is required to resolve squads across the instance. Use a squad ID/prefix for your current squad, or run with board authentication.",
+                  "Operator access is required to resolve squads across the instance. Use a squad ID/prefix for your current squad, or run with operator authentication.",
                 );
               }
               throw error;

@@ -173,7 +173,7 @@ export interface PluginManagedAgentDeclaration {
   runtimeConfig?: Record<string, unknown>;
   /** Suggested permissions object. Normalized by the host on create/reset. */
   permissions?: Record<string, unknown>;
-  /** Suggested starting status when no board approval is required. */
+  /** Suggested starting status when no operator approval is required. */
   status?: Extract<AgentStatus, "idle" | "paused">;
   /** Suggested monthly budget in cents. */
   budgetMonthlyCents?: number;

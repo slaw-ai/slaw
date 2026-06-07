@@ -10,11 +10,11 @@ import { instanceSettingsService } from "../services/instance-settings.js";
 import { serverVersion } from "../version.js";
 
 function shouldExposeFullHealthDetails(
-  actorType: "none" | "board" | "agent" | null | undefined,
+  actorType: "none" | "operator" | "agent" | null | undefined,
   deploymentMode: DeploymentMode,
 ) {
   if (deploymentMode !== "authenticated") return true;
-  return actorType === "board" || actorType === "agent";
+  return actorType === "operator" || actorType === "agent";
 }
 
 function hasDevServerStatusToken(providedToken: string | undefined) {
@@ -46,8 +46,8 @@ export function healthRoutes(
 
   router.post("/dev-server/restart", async (req, res) => {
     const actorType = "actor" in req ? req.actor?.type : null;
-    if (opts.deploymentMode === "authenticated" && actorType !== "board") {
-      res.status(403).json({ error: "board_access_required" });
+    if (opts.deploymentMode === "authenticated" && actorType !== "operator") {
+      res.status(403).json({ error: "operator_access_required" });
       return;
     }
 

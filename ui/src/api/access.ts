@@ -66,7 +66,7 @@ type InviteOnboardingManifest = {
   };
 };
 
-type BoardClaimStatus = {
+type InstanceClaimStatus = {
   status: "available" | "claimed" | "expired";
   requiresSignIn: boolean;
   expiresAt: string | null;
@@ -78,7 +78,7 @@ type CliAuthChallengeStatus = {
   status: "pending" | "approved" | "cancelled" | "expired";
   command: string;
   clientName: string | null;
-  requestedAccess: "board" | "instance_admin_required";
+  requestedAccess: "operator" | "instance_admin_required";
   requestedSquadId: string | null;
   requestedSquadName: string | null;
   approvedAt: string | null;
@@ -233,7 +233,7 @@ export type UserSquadAccessResponse = {
   squadAccess: UserSquadAccessEntry[];
 };
 
-export type CurrentBoardAccess = {
+export type CurrentOperatorAccess = {
   user: { id: string; email: string | null; name: string | null; image: string | null } | null;
   userId: string;
   isInstanceAdmin: boolean;
@@ -367,11 +367,11 @@ export const accessApi = {
       { claimSecret },
     ),
 
-  getBoardClaimStatus: (token: string, code: string) =>
-    api.get<BoardClaimStatus>(`/board-claim/${token}?code=${encodeURIComponent(code)}`),
+  getInstanceClaimStatus: (token: string, code: string) =>
+    api.get<InstanceClaimStatus>(`/instance-claim/${token}?code=${encodeURIComponent(code)}`),
 
-  claimBoard: (token: string, code: string) =>
-    api.post<{ claimed: true; userId: string }>(`/board-claim/${token}/claim`, { code }),
+  claimInstance: (token: string, code: string) =>
+    api.post<{ claimed: true; userId: string }>(`/instance-claim/${token}/claim`, { code }),
 
   claimBootstrapAdmin: () =>
     api.post<{ claimed: true; userId: string }>("/bootstrap/claim", {}),
@@ -403,6 +403,6 @@ export const accessApi = {
   setUserSquadAccess: (userId: string, squadIds: string[]) =>
     api.put<UserSquadAccessResponse>(`/admin/users/${userId}/squad-access`, { squadIds }),
 
-  getCurrentBoardAccess: () =>
-    api.get<CurrentBoardAccess>("/cli-auth/me"),
+  getCurrentOperatorAccess: () =>
+    api.get<CurrentOperatorAccess>("/cli-auth/me"),
 };

@@ -1,6 +1,6 @@
 # @slaw/ui
 
-Published static assets for the Slaw board UI.
+Published static assets for the Slaw operator UI.
 
 ## What gets published
 

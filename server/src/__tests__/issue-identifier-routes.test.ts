@@ -38,7 +38,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
     app.use(express.json());
     app.use((req, _res, next) => {
       (req as any).actor = {
-        type: "board",
+        type: "operator",
         userId: "cloud-user-1",
         squadIds: [squadId],
         memberships: [{ squadId, membershipRole: "owner", status: "active" }],
@@ -60,7 +60,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
       id: squadId,
       name: "Cloud tenant",
       issuePrefix: "PC1A2",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(issues).values({
       id: issueId,

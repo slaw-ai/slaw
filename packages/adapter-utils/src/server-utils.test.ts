@@ -668,7 +668,7 @@ describe("renderSlawWakePrompt", () => {
         {
           id: "comment-1",
           body: commentBody,
-          author: { type: "user", id: "board-user-1" },
+          author: { type: "user", id: "operator-user-1" },
           createdAt: "2026-05-15T16:30:00.000Z",
         },
       ],

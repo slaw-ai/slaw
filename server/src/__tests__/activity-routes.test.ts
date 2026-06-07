@@ -34,7 +34,7 @@ vi.mock("../services/index.js", () => ({
 
 async function createApp(
   actor: Record<string, unknown> = {
-    type: "board",
+    type: "operator",
     userId: "user-1",
     squadIds: ["squad-1"],
     source: "session",

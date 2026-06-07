@@ -20,7 +20,7 @@ import { storybookAgentMap, storybookAgents } from "../fixtures/slawData";
 const squadId = "squad-storybook";
 const projectId = "project-board-ui";
 const issueId = "issue-chat-comments";
-const currentUserId = "user-board";
+const currentUserId = "user-operator";
 
 type StoryComment = IssueComment & {
   runId?: string | null;
@@ -35,8 +35,8 @@ const codexAgent = storybookAgents.find((agent) => agent.id === "agent-codex") ?
 const qaAgent = storybookAgents.find((agent) => agent.id === "agent-qa") ?? storybookAgents[1]!;
 const ctoAgent = storybookAgents.find((agent) => agent.id === "agent-cto") ?? storybookAgents[2]!;
 
-const boardUserLabels = new Map<string, string>([
-  ["user-board", "Riley Board"],
+const operatorUserLabels = new Map<string, string>([
+  ["user-operator", "Riley Board"],
   ["user-product", "Mara Product"],
 ]);
 
@@ -132,7 +132,7 @@ const mentionOptions: MentionOption[] = [
   },
   {
     id: `project:${projectId}`,
-    name: "Board UI",
+    name: "Operator UI",
     kind: "project",
     projectId,
     projectColor: "#0f766e",
@@ -158,13 +158,13 @@ const reassignOptions: InlineEntityOption[] = [
   {
     id: `user:${currentUserId}`,
     label: "Riley Board",
-    searchText: "board operator",
+    searchText: "operator",
   },
 ];
 
 const singleComment = [
   createComment({
-    id: "comment-single-board",
+    id: "comment-single-operator",
     body: "Please make the issue chat states reviewable in Storybook before the next UI pass.",
     createdAt: new Date("2026-04-20T13:12:00.000Z"),
   }),
@@ -172,7 +172,7 @@ const singleComment = [
 
 const longThreadComments = [
   createComment({
-    id: "comment-long-board",
+    id: "comment-long-operator",
     body: "The chat surface should show the operator request first, then agent progress, then review follow-up. Keep the density close to the issue page.",
     createdAt: new Date("2026-04-20T13:02:00.000Z"),
   }),
@@ -204,7 +204,7 @@ const longThreadComments = [
 
 const markdownComments = [
   createComment({
-    id: "comment-markdown-board",
+    id: "comment-markdown-operator",
     body: [
       "Acceptance criteria:",
       "",
@@ -230,7 +230,7 @@ const markdownComments = [
 ];
 
 const queuedComment = createComment({
-  id: "comment-queued-board",
+  id: "comment-queued-operator",
   body: "@CodexCoder after this run finishes, add a compact embedded variant too.",
   createdAt: new Date("2026-04-20T13:39:00.000Z"),
   clientId: "client-queued-storybook",
@@ -251,7 +251,7 @@ const commentTimelineEvents: IssueTimelineEvent[] = [
     },
   }),
   createSystemEvent({
-    id: "event-board-reassign",
+    id: "event-operator-reassign",
     createdAt: new Date("2026-04-20T13:18:00.000Z"),
     actorType: "user",
     actorId: currentUserId,
@@ -375,7 +375,7 @@ const liveRunTranscript: TranscriptEntry[] = [
 
 const issueChatComments: IssueChatComment[] = [
   createComment({
-    id: "comment-issue-board",
+    id: "comment-issue-operator",
     body: "Please turn the comment thread into a reviewable chat surface. I need to see operator messages, agent output, system events, and live run progress together.",
     createdAt: new Date("2026-04-20T13:44:00.000Z"),
   }),
@@ -462,7 +462,7 @@ const issueTimelineEvents: IssueTimelineEvent[] = [
 
 const issueThreadNoticeReviewComments: IssueChatComment[] = [
   createComment({
-    id: "comment-notice-board",
+    id: "comment-notice-operator",
     body: "The issue thread needs to show workspace routing changes and make old missing-disposition warnings feel resolved.",
     createdAt: new Date("2026-04-20T13:44:00.000Z"),
   }),
@@ -626,10 +626,10 @@ function CommentThreadMatrix() {
         <ScenarioCard title="Empty thread" description="No timeline entries yet, with the composer ready for the first comment.">
           <ThreadProps comments={[]} />
         </ScenarioCard>
-        <ScenarioCard title="Single board comment" description="A minimal operator request with timestamp and composer controls.">
+        <ScenarioCard title="Single operator comment" description="A minimal operator request with timestamp and composer controls.">
           <ThreadProps comments={singleComment} />
         </ScenarioCard>
-        <ScenarioCard title="Long mixed-author thread" description="Board, product, agent, linked run, and system timeline entries in one stack.">
+        <ScenarioCard title="Long mixed-author thread" description="Operator, product, agent, linked run, and system timeline entries in one stack.">
           <ThreadProps comments={longThreadComments} timelineEvents={commentTimelineEvents} />
         </ScenarioCard>
         <ScenarioCard title="Markdown, code, mentions, and links" description="Markdown rendering with code fences, @mentions, links, and a queued reply.">
@@ -694,7 +694,7 @@ function IssueChatMatrix() {
             issueStatus="in_progress"
             agentMap={storybookAgentMap}
             currentUserId={currentUserId}
-            userLabelMap={boardUserLabels}
+            userLabelMap={operatorUserLabels}
             onAdd={async () => {}}
             onVote={async () => {}}
             onStopRun={async () => {}}
@@ -794,7 +794,7 @@ function IssueThreadNoticeReview() {
               }}
               agentMap={storybookAgentMap}
               currentUserId={currentUserId}
-              userLabelMap={boardUserLabels}
+              userLabelMap={operatorUserLabels}
               onAdd={async () => {}}
               enableLiveTranscriptPolling={false}
               showJumpToLatest={false}

@@ -11,7 +11,7 @@
  * - Retrieving UI slot contributions for frontend rendering
  * - Discovering and executing plugin-contributed agent tools
  *
- * All routes require board-level authentication, and sensitive instance-wide
+ * All routes require operator-level authentication, and sensitive instance-wide
  * mutations such as install/upgrade require instance-admin privileges.
  *
  * @module server/routes/plugins
@@ -59,8 +59,8 @@ import type { PluginPerformActionActorContext, ToolRunContext } from "@slaw/plug
 import { JsonRpcCallError, PLUGIN_RPC_ERROR_CODES } from "@slaw/plugin-sdk";
 import {
   assertAuthenticated,
-  assertBoard,
-  assertBoardOrgAccess,
+  assertOperator,
+  assertOperatorOrgAccess,
   assertSquadAccess,
   assertInstanceAdmin,
   getActorInfo,
@@ -579,8 +579,8 @@ export function pluginRoutes(
   }
 
   function assertScopedApiAuth(req: Request, route: PluginApiRouteDeclaration) {
-    if (route.auth === "board") {
-      assertBoard(req);
+    if (route.auth === "operator") {
+      assertOperator(req);
       return;
     }
     if (route.auth === "agent") {
@@ -592,8 +592,8 @@ export function pluginRoutes(
       throw unprocessable("Webhook-scoped plugin API routes require a signature verifier and are not enabled");
     }
     assertAuthenticated(req);
-    if (req.actor.type !== "board" && req.actor.type !== "agent") {
-      throw forbidden("Board or agent access required");
+    if (req.actor.type !== "operator" && req.actor.type !== "agent") {
+      throw forbidden("Operator or agent access required");
     }
   }
 
@@ -638,7 +638,7 @@ export function pluginRoutes(
       return [req.actor.squadId];
     }
 
-    if (req.actor.type === "board") {
+    if (req.actor.type === "operator") {
       return req.actor.squadIds ?? [];
     }
 
@@ -692,7 +692,7 @@ export function pluginRoutes(
         squadId: scopedSquadId,
       };
     }
-    if (req.actor.type === "board") {
+    if (req.actor.type === "operator") {
       return {
         type: "user",
         userId: req.actor.userId ?? null,
@@ -766,7 +766,7 @@ export function pluginRoutes(
    * Response: `PluginRecord[]`
    */
   router.get("/plugins", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const rawStatus = req.query.status;
     if (rawStatus !== undefined) {
       if (typeof rawStatus !== "string" || !(PLUGIN_STATUSES as readonly string[]).includes(rawStatus)) {
@@ -790,7 +790,7 @@ export function pluginRoutes(
    * These can be installed through the normal local-path install flow.
    */
   router.get("/plugins/examples", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     res.json(await listBundledPlugins());
   });
 
@@ -835,7 +835,7 @@ export function pluginRoutes(
    * Response: PluginUiContribution[]
    */
   router.get("/plugins/ui-contributions", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const plugins = await registry.listByStatus("ready");
 
     const contributions: PluginUiContribution[] = plugins
@@ -878,7 +878,7 @@ export function pluginRoutes(
    * Errors: 501 if tool dispatcher is not configured
    */
   router.get("/plugins/tools", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
 
     if (!toolDeps) {
       res.status(501).json({ error: "Plugin tool dispatch is not enabled" });
@@ -912,7 +912,7 @@ export function pluginRoutes(
    * - 502 if the plugin worker is unavailable or the RPC call fails
    */
   router.post("/plugins/tools/execute", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
 
     if (!toolDeps) {
       res.status(501).json({ error: "Plugin tool dispatch is not enabled" });
@@ -1230,7 +1230,7 @@ export function pluginRoutes(
    * @see PLUGIN_SPEC.md §19.7 — Error Propagation Through The Bridge
    */
   router.post("/plugins/:pluginId/bridge/data", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
 
     if (!bridgeDeps) {
       res.status(501).json({ error: "Plugin bridge is not enabled" });
@@ -1417,7 +1417,7 @@ export function pluginRoutes(
    * @see PLUGIN_SPEC.md §19.7 — Error Propagation Through The Bridge
    */
   router.post("/plugins/:pluginId/data/:key", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
 
     if (!bridgeDeps) {
       res.status(501).json({ error: "Plugin bridge is not enabled" });
@@ -1599,7 +1599,7 @@ export function pluginRoutes(
    * - 501 if bridge deps or stream bus are not configured
    */
   router.get("/plugins/:pluginId/bridge/stream/:channel", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
 
     if (!bridgeDeps?.streamBus) {
       res.status(501).json({ error: "Plugin stream bridge is not enabled" });
@@ -1787,7 +1787,7 @@ export function pluginRoutes(
    * Errors: 404 if plugin not found
    */
   router.get("/plugins/:pluginId", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId } = req.params;
     const plugin = await resolvePlugin(registry, pluginId);
     if (!plugin) {
@@ -1932,7 +1932,7 @@ export function pluginRoutes(
    * Errors: 404 if plugin not found
    */
   router.get("/plugins/:pluginId/health", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId } = req.params;
 
     const plugin = await resolvePlugin(registry, pluginId);
@@ -2000,7 +2000,7 @@ export function pluginRoutes(
    * Response: Array of log entries, newest first.
    */
   router.get("/plugins/:pluginId/logs", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId } = req.params;
 
     const plugin = await resolvePlugin(registry, pluginId);
@@ -2046,7 +2046,7 @@ export function pluginRoutes(
    * - version: Target version (defaults to latest)
    *
    * If the upgrade adds new capabilities, the plugin transitions to
-   * 'upgrade_pending' state for board approval. Otherwise, it goes
+   * 'upgrade_pending' state for operator approval. Otherwise, it goes
    * directly to 'ready'.
    *
    * Response: PluginRecord
@@ -2102,7 +2102,7 @@ export function pluginRoutes(
    * Errors: 404 if plugin not found
    */
   router.get("/plugins/:pluginId/config", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId } = req.params;
 
     const plugin = await resolvePlugin(registry, pluginId);
@@ -2149,10 +2149,10 @@ export function pluginRoutes(
 
     // Strip devUiUrl unless the caller is an instance admin. devUiUrl activates
     // a dev-proxy in the static file route that could be abused for SSRF if any
-    // board-level user were allowed to set it.
+    // operator-level user were allowed to set it.
     if (
       "devUiUrl" in body.configJson &&
-      !(req.actor.type === "board" && req.actor.isInstanceAdmin)
+      !(req.actor.type === "operator" && req.actor.isInstanceAdmin)
     ) {
       delete body.configJson.devUiUrl;
     }
@@ -2243,7 +2243,7 @@ export function pluginRoutes(
    * - 502 if the worker is unavailable
    */
   router.post("/plugins/:pluginId/config/test", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
 
     if (!bridgeDeps) {
       res.status(501).json({ error: "Plugin bridge is not enabled" });
@@ -2340,7 +2340,7 @@ export function pluginRoutes(
    * Errors: 404 if plugin not found
    */
   router.get("/plugins/:pluginId/jobs", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     if (!jobDeps) {
       res.status(501).json({ error: "Job scheduling is not enabled" });
       return;
@@ -2386,7 +2386,7 @@ export function pluginRoutes(
    * Errors: 404 if plugin not found
    */
   router.get("/plugins/:pluginId/jobs/:jobId/runs", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     if (!jobDeps) {
       res.status(501).json({ error: "Job scheduling is not enabled" });
       return;
@@ -2480,7 +2480,7 @@ export function pluginRoutes(
    * The delivery is recorded in the `plugin_webhook_deliveries` table and
    * dispatched to the worker via the `handleWebhook` RPC method.
    *
-   * **Note:** This route does NOT require board authentication — webhook
+   * **Note:** This route does NOT require operator authentication — webhook
    * endpoints must be publicly accessible for external callers. Signature
    * verification is the plugin's responsibility.
    *
@@ -2628,7 +2628,7 @@ export function pluginRoutes(
   // ===========================================================================
 
   router.get("/plugins/:pluginId/squads/:squadId/local-folders", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId, squadId } = req.params;
     assertSquadAccess(req, squadId);
 
@@ -2659,7 +2659,7 @@ export function pluginRoutes(
   });
 
   router.get("/plugins/:pluginId/squads/:squadId/local-folders/:folderKey/status", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId, squadId, folderKey } = req.params;
     assertSquadAccess(req, squadId);
 
@@ -2682,7 +2682,7 @@ export function pluginRoutes(
   });
 
   router.post("/plugins/:pluginId/squads/:squadId/local-folders/:folderKey/validate", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId, squadId, folderKey } = req.params;
     assertSquadAccess(req, squadId);
 
@@ -2715,7 +2715,7 @@ export function pluginRoutes(
   });
 
   router.put("/plugins/:pluginId/squads/:squadId/local-folders/:folderKey", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId, squadId, folderKey } = req.params;
     assertSquadAccess(req, squadId);
 
@@ -2786,7 +2786,7 @@ export function pluginRoutes(
    * Errors: 404 if plugin not found
    */
   router.get("/plugins/:pluginId/dashboard", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     const { pluginId } = req.params;
 
     const plugin = await resolvePlugin(registry, pluginId);

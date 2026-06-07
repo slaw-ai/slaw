@@ -152,7 +152,7 @@ describe("GET /health", () => {
     } as unknown as Db;
     const app = express();
     app.use((req, _res, next) => {
-      (req as any).actor = { type: "board", userId: "user-1", source: "session" };
+      (req as any).actor = { type: "operator", userId: "user-1", source: "session" };
       next();
     });
     app.use(

@@ -12,7 +12,7 @@ import type { PermissionKey, PrincipalType } from "@slaw/shared";
 
 export type AuthorizationActor =
   {
-    type: "board" | "agent" | "none";
+    type: "operator" | "agent" | "none";
     userId?: string | null;
     squadIds?: string[];
     memberships?: Array<{ squadId: string; membershipRole?: string | null; status?: string }>;
@@ -22,7 +22,7 @@ export type AuthorizationActor =
     source?:
       | "local_implicit"
       | "session"
-      | "board_key"
+      | "operator_key"
       | "agent_key"
       | "agent_jwt"
       | "cloud_tenant"
@@ -54,7 +54,7 @@ export type AuthorizationDecision = {
   action: AuthorizationAction;
   explanation: string;
   reason:
-    | "allow_local_board"
+    | "allow_local_operator"
     | "allow_instance_admin"
     | "allow_explicit_grant"
     | "allow_legacy_agent_creator"
@@ -616,13 +616,13 @@ export function authorizationService(db: Db) {
       });
     }
 
-    if (input.actor.type === "board") {
+    if (input.actor.type === "operator") {
       let taskAssignmentPolicyEffect: AssignmentPolicyEffect | null = null;
       if (input.actor.source === "local_implicit") {
         return allow({
           action: input.action,
-          reason: "allow_local_board",
-          explanation: "Allowed because the actor is the local implicit board.",
+          reason: "allow_local_operator",
+          explanation: "Allowed because the actor is the local implicit operator.",
         });
       }
       if (input.actor.isInstanceAdmin || await isInstanceAdmin(input.actor.userId)) {
@@ -636,7 +636,7 @@ export function authorizationService(db: Db) {
         return deny({
           action: input.action,
           reason: "deny_unauthenticated",
-          explanation: "Board user id is required.",
+          explanation: "Operator user id is required.",
         });
       }
       if (input.action === "tasks:assign") {
@@ -664,7 +664,7 @@ export function authorizationService(db: Db) {
         return deny({
           action: input.action,
           reason: "deny_unsupported_action",
-          explanation: `No board permission mapping exists for ${input.action}.`,
+          explanation: `No operator permission mapping exists for ${input.action}.`,
         });
       }
       if (input.action === "tasks:assign") {

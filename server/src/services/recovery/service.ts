@@ -113,7 +113,7 @@ type SuccessfulRunHandoffRecoveryEvidence = {
 };
 
 type WatchdogDecisionActor =
-  | { type: "board"; userId?: string | null; runId?: string | null }
+  | { type: "operator"; userId?: string | null; runId?: string | null }
   | { type: "agent"; agentId?: string | null; runId?: string | null }
   | { type: "none" };
 
@@ -1702,7 +1702,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       if (!evaluationIssue) throw notFound("Evaluation issue not found");
     }
 
-    const boardActor = input.actor.type === "board";
+    const operatorActor = input.actor.type === "operator";
     const assignedRecoveryOwner =
       input.actor.type === "agent" &&
       Boolean(input.actor.agentId) &&
@@ -1712,8 +1712,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       evaluationIssue.hiddenAt === null &&
       !["done", "cancelled"].includes(evaluationIssue.status) &&
       evaluationIssue?.assigneeAgentId === input.actor.agentId;
-    if (!boardActor && !assignedRecoveryOwner) {
-      throw forbidden("Only the board or the assigned recovery owner can record watchdog decisions");
+    if (!operatorActor && !assignedRecoveryOwner) {
+      throw forbidden("Only the operator or the assigned recovery owner can record watchdog decisions");
     }
 
     if (evaluationIssue && (
@@ -1729,7 +1729,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
 
     const createdByRunId = input.actor.type === "agent"
       ? input.actor.runId ?? input.createdByRunId ?? null
-      : input.actor.type === "board"
+      : input.actor.type === "operator"
         ? input.actor.runId ?? input.createdByRunId ?? null
         : null;
     if (createdByRunId) {
@@ -1764,7 +1764,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
         snoozedUntil: effectiveSnoozedUntil,
         reason: input.reason ?? null,
         createdByAgentId: input.actor.type === "agent" ? input.actor.agentId ?? null : null,
-        createdByUserId: input.actor.type === "board" ? input.actor.userId ?? null : null,
+        createdByUserId: input.actor.type === "operator" ? input.actor.userId ?? null : null,
         createdByRunId,
       })
       .returning();
@@ -1774,8 +1774,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       actorType: input.actor.type === "agent" ? "agent" : "user",
       actorId: input.actor.type === "agent"
         ? input.actor.agentId ?? "agent"
-        : input.actor.type === "board"
-          ? input.actor.userId ?? "board"
+        : input.actor.type === "operator"
+          ? input.actor.userId ?? "operator"
           : "unknown",
       agentId: input.actor.type === "agent" ? input.actor.agentId ?? null : null,
       runId: run.id,
@@ -1835,7 +1835,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       "",
       "- Nested recovery: suppressed because this issue is already a `stranded_issue_recovery` issue.",
       sourceLine,
-      "- Next action: the assigned recovery owner or board operator should fix the runtime/adapter problem, resolve or reassign the original source issue, then mark this recovery issue done or cancelled.",
+      "- Next action: the assigned recovery owner or operator should fix the runtime/adapter problem, resolve or reassign the original source issue, then mark this recovery issue done or cancelled.",
     ].join("\n");
   }
 
@@ -2091,7 +2091,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       squadId: input.issue.squadId,
       sourceIssueId: input.issue.id,
       kind: strandedRecoveryActionKind(recoveryCause),
-      ownerType: ownerAgentId ? "agent" : "board",
+      ownerType: ownerAgentId ? "agent" : "operator",
       ownerAgentId,
       previousOwnerAgentId: input.issue.assigneeAgentId,
       returnOwnerAgentId: input.issue.assigneeAgentId,
@@ -2117,7 +2117,7 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
           ownerAgentId,
         }
         : {
-          type: "board_escalation",
+          type: "operator_escalation",
           reason: "no_invokable_recovery_owner",
         },
       monitorPolicy: null,
@@ -2333,8 +2333,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
       : [
         "",
         `- Recovery action: \`${recoveryAction.id}\``,
-        "- Recovery owner: board escalation, because Slaw could not find an invokable manager, creator, or executive owner with budget available.",
-        "- Next action: a board operator should assign an invokable recovery owner, fix the agent/runtime state, or record an intentional manual resolution.",
+        "- Recovery owner: operator escalation, because Slaw could not find an invokable manager, creator, or executive owner with budget available.",
+        "- Next action: a operator should assign an invokable recovery owner, fix the agent/runtime state, or record an intentional manual resolution.",
       ].join("\n");
 
     if (recoveryAction.attemptCount === 1) {

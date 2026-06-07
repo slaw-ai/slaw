@@ -74,7 +74,7 @@ export function SquadSettingsPluginPage() {
   }
 
   if (!pageSlot) {
-    return <NotFoundPage scope="board" />;
+    return <NotFoundPage scope="operator" />;
   }
 
   return (

@@ -486,7 +486,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "overview",
       method: "GET",
       path: "/overview",
-      auth: "board-or-agent",
+      auth: "operator-or-agent",
       capability: "api.routes.register",
       squadResolution: { from: "query", key: "squadId" }
     },
@@ -494,7 +494,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "bootstrap",
       method: "POST",
       path: "/bootstrap",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -502,7 +502,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "capture-source",
       method: "POST",
       path: "/sources",
-      auth: "board-or-agent",
+      auth: "operator-or-agent",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -510,7 +510,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "spaces",
       method: "GET",
       path: "/spaces",
-      auth: "board-or-agent",
+      auth: "operator-or-agent",
       capability: "api.routes.register",
       squadResolution: { from: "query", key: "squadId" }
     },
@@ -518,7 +518,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "create-space",
       method: "POST",
       path: "/spaces",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -526,7 +526,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "update-space",
       method: "PATCH",
       path: "/spaces/:spaceSlug",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -534,7 +534,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "bootstrap-space",
       method: "POST",
       path: "/spaces/:spaceSlug/bootstrap",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -542,7 +542,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "archive-space",
       method: "POST",
       path: "/spaces/:spaceSlug/archive",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -550,7 +550,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "operations",
       method: "GET",
       path: "/operations",
-      auth: "board-or-agent",
+      auth: "operator-or-agent",
       capability: "api.routes.register",
       squadResolution: { from: "query", key: "squadId" }
     },
@@ -558,7 +558,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "start-query",
       method: "POST",
       path: "/query-sessions",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     },
@@ -566,7 +566,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "file-as-page",
       method: "POST",
       path: "/file-as-page",
-      auth: "board",
+      auth: "operator",
       capability: "api.routes.register",
       squadResolution: { from: "body", key: "squadId" }
     }

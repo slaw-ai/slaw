@@ -67,13 +67,13 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
         id: squadId,
         name: "Slaw",
         issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       },
       {
         id: otherSquadId,
         name: "OtherCo",
         issuePrefix: `T${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       },
     ]);
 
@@ -180,7 +180,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(issues).values({
       id: rootIssueId,
@@ -194,7 +194,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
     const created = await svc.createHold(squadId, rootIssueId, {
       mode: "pause",
       reason: "operator requested pause",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
 
     expect(created.hold.status).toBe("active");
@@ -207,7 +207,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
 
     const released = await svc.releaseHold(squadId, rootIssueId, created.hold.id, {
       reason: "operator resumed",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
 
     expect(released.status).toBe("released");
@@ -226,7 +226,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(issues).values([
       {
@@ -270,7 +270,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
     const cancel = await svc.createHold(squadId, rootIssueId, {
       mode: "cancel",
       reason: "bad plan",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
     expect(cancel.preview.issues.map((issue) => [issue.id, issue.skipped, issue.skipReason])).toEqual([
       [rootIssueId, true, "terminal_status"],
@@ -309,11 +309,11 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
     const restore = await svc.createHold(squadId, rootIssueId, {
       mode: "restore",
       reason: "resume useful work",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
     const restored = await svc.restoreIssueStatusesForHold(squadId, rootIssueId, restore.hold.id, {
       reason: "resume useful work",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
     expect(restored.updatedIssueIds).toEqual([runningChildId]);
 
@@ -356,7 +356,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -385,14 +385,14 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
         id: rootCommentId,
         squadId,
         issueId: rootIssueId,
-        authorUserId: "board-user",
+        authorUserId: "operator-user",
         body: "Please answer this root issue question.",
       },
       {
         id: deepDescendantCommentId,
         squadId,
         issueId: deepDescendantIssueId,
-        authorUserId: "board-user",
+        authorUserId: "operator-user",
         body: "Please answer this deep descendant issue question.",
       },
     ]);
@@ -407,7 +407,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
         payload: { issueId: rootIssueId, commentId: rootCommentId },
         status: "queued",
         requestedByActorType: "user",
-        requestedByActorId: "board-user",
+        requestedByActorId: "operator-user",
         runId: rootRunId,
       },
       {
@@ -433,7 +433,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
         payload: { issueId: deepDescendantIssueId, commentId: deepDescendantCommentId },
         status: "queued",
         requestedByActorType: "user",
-        requestedByActorId: "board-user",
+        requestedByActorId: "operator-user",
         runId: deepDescendantRunId,
       },
     ]);
@@ -491,7 +491,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
     await treeSvc.createHold(squadId, rootIssueId, {
       mode: "pause",
       reason: "operator requested pause",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
     const deepDescendantGate = await treeSvc.getActivePauseHoldGate(squadId, deepDescendantIssueId);
     expect(deepDescendantGate).toMatchObject({
@@ -542,7 +542,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
       status: "released",
       releasedAt: new Date(),
       releasedByActorType: "user",
-      releasedByUserId: "board-user",
+      releasedByUserId: "operator-user",
       releaseReason: "switch to full pause",
       updatedAt: new Date(),
     }).where(eq(issueTreeHolds.rootIssueId, rootIssueId));
@@ -550,7 +550,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
       mode: "pause",
       reason: "full pause",
       releasePolicy: { strategy: "manual", note: "full_pause" },
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
 
     const checkedOutLegacyFullPauseRoot = await issueSvc.checkout(rootIssueId, agentId, ["todo"], rootRunId);
@@ -568,7 +568,7 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(issues).values([
       {
@@ -599,18 +599,18 @@ describeEmbeddedPostgres("issueTreeControlService", () => {
     const subtreePause = await treeSvc.createHold(squadId, childIssueId, {
       mode: "pause",
       reason: "pause child only",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
     const nonSubtreePause = await treeSvc.createHold(squadId, nonSubtreeIssueId, {
       mode: "pause",
       reason: "pause unrelated issue",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
 
     const resumed = await treeSvc.createHold(squadId, rootIssueId, {
       mode: "resume",
       reason: "resume subtree",
-      actor: { actorType: "user", actorId: "board-user", userId: "board-user" },
+      actor: { actorType: "user", actorId: "operator-user", userId: "operator-user" },
     });
 
     expect(resumed.hold.mode).toBe("resume");

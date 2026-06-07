@@ -16,12 +16,12 @@ export function inboxDismissalRoutes(db: Db) {
   router.get("/squads/:squadId/inbox-dismissals", async (req, res) => {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     if (!req.actor.userId) {
-      res.status(403).json({ error: "Board user context required" });
+      res.status(403).json({ error: "Operator user context required" });
       return;
     }
     const dismissals = await svc.list(squadId, req.actor.userId);
@@ -34,12 +34,12 @@ export function inboxDismissalRoutes(db: Db) {
     async (req, res) => {
       const squadId = req.params.squadId as string;
       assertSquadAccess(req, squadId);
-      if (req.actor.type !== "board") {
-        res.status(403).json({ error: "Board authentication required" });
+      if (req.actor.type !== "operator") {
+        res.status(403).json({ error: "Operator authentication required" });
         return;
       }
       if (!req.actor.userId) {
-        res.status(403).json({ error: "Board user context required" });
+        res.status(403).json({ error: "Operator user context required" });
         return;
       }
 

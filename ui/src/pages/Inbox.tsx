@@ -6,7 +6,7 @@ import { approvalsApi } from "../api/approvals";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
 import { ApiError } from "../api/client";
-import { dashboardApi } from "../api/dashboard";
+import { dashoperatorApi } from "../api/dashboard";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
@@ -790,7 +790,7 @@ export function Inbox() {
 
   const { data: dashboard, isLoading: isDashboardLoading } = useQuery({
     queryKey: queryKeys.dashboard(selectedSquadId!),
-    queryFn: () => dashboardApi.summary(selectedSquadId!),
+    queryFn: () => dashoperatorApi.summary(selectedSquadId!),
     enabled: !!selectedSquadId,
   });
 
@@ -882,9 +882,9 @@ export function Inbox() {
     if (currentUserId) {
       options.set(`user:${currentUserId}`, {
         id: `user:${currentUserId}`,
-        label: currentUserId === "local-board" ? "Board" : "Me",
+        label: currentUserId === "local-operator" ? "Operator" : "Me",
         kind: "user",
-        searchText: currentUserId === "local-board" ? "board me human local-board" : `me board human ${currentUserId}`,
+        searchText: currentUserId === "local-operator" ? "operator me human local-operator" : `me operator human ${currentUserId}`,
       });
     }
 
@@ -896,7 +896,7 @@ export function Inbox() {
             id,
             label: formatAssigneeUserLabel(issue.createdByUserId, currentUserId) ?? issue.createdByUserId.slice(0, 5),
             kind: "user",
-            searchText: `${issue.createdByUserId} board user human`,
+            searchText: `${issue.createdByUserId} operator user human`,
           });
         }
       }

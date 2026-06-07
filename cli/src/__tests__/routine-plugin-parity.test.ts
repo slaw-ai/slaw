@@ -18,7 +18,7 @@ function createProgram(): Command {
 }
 
 async function run(args: string[]): Promise<void> {
-  await createProgram().parseAsync([...args, "--api-base", "http://localhost:3100", "--api-key", "board-token"], { from: "user" });
+  await createProgram().parseAsync([...args, "--api-base", "http://localhost:3100", "--api-key", "operator-token"], { from: "user" });
 }
 
 describe("routine and plugin parity commands", () => {

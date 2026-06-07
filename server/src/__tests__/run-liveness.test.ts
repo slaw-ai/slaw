@@ -173,13 +173,13 @@ describe("run liveness classifier", () => {
     const classification = classifyRunLiveness({
       ...baseInput,
       resultJson: {
-        summary: "Next action: wait for board approval before continuing.",
+        summary: "Next action: wait for operator approval before continuing.",
       },
     });
 
     expect(classification.livenessState).toBe("blocked");
     expect(classification.actionability).toBe("approval_required");
-    expect(classification.nextAction).toBe("wait for board approval before continuing.");
+    expect(classification.nextAction).toBe("wait for operator approval before continuing.");
   });
 
   it("routes production-sensitive next actions to manager review", () => {

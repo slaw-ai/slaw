@@ -185,10 +185,10 @@ describe("squad skill mutation permissions", () => {
     mockAccessService.hasPermission.mockResolvedValue(false);
   });
 
-  it("allows local board operators to mutate squad skills", async () => {
+  it("allows local operator operators to mutate squad skills", async () => {
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -227,8 +227,8 @@ describe("squad skill mutation permissions", () => {
     ]);
 
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -259,8 +259,8 @@ describe("squad skill mutation permissions", () => {
 
   it("serves catalog detail and files by catalog reference", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -280,8 +280,8 @@ describe("squad skill mutation permissions", () => {
 
   it("installs catalog skills with mutation permissions and logs provenance", async () => {
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -340,8 +340,8 @@ describe("squad skill mutation permissions", () => {
     });
 
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -386,8 +386,8 @@ describe("squad skill mutation permissions", () => {
     });
 
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -428,8 +428,8 @@ describe("squad skill mutation permissions", () => {
     });
 
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -516,8 +516,8 @@ describe("squad skill mutation permissions", () => {
     });
 
     const res = await request(await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,

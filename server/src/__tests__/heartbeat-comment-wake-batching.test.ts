@@ -44,7 +44,7 @@ describe("heartbeat comment wake batching", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -104,7 +104,7 @@ describe("heartbeat comment wake batching", () => {
         wakeReason: "approval_approved",
       },
       requestedByActorType: "user",
-      requestedByActorId: "local-board",
+      requestedByActorId: "local-operator",
     });
 
     expect(followupRun).toBeNull();

@@ -10,11 +10,11 @@ import {
   principalPermissionGrants,
 } from "@slaw/db";
 import {
-  claimBoardOwnership,
-  getBoardClaimWarningUrl,
-  initializeBoardClaimChallenge,
-  inspectBoardClaimChallenge,
-} from "../board-claim.js";
+  claimInstanceOwnership,
+  getInstanceClaimWarningUrl,
+  initializeInstanceClaimChallenge,
+  inspectInstanceClaimChallenge,
+} from "../instance-claim.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -23,17 +23,17 @@ import {
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
-describeEmbeddedPostgres("board claim", () => {
+describeEmbeddedPostgres("operator claim", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("slaw-board-claim-");
+    tempDb = await startEmbeddedPostgresTestDatabase("slaw-instance-claim-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
   afterEach(async () => {
-    await initializeBoardClaimChallenge(db, { deploymentMode: "local_trusted" });
+    await initializeInstanceClaimChallenge(db, { deploymentMode: "local_trusted" });
     await db.delete(principalPermissionGrants);
     await db.delete(squadMemberships);
     await db.delete(squads);
@@ -45,7 +45,7 @@ describeEmbeddedPostgres("board claim", () => {
     await tempDb?.cleanup();
   });
 
-  it("lets a signed-in user claim a local-board-only authenticated instance", async () => {
+  it("lets a signed-in user claim a local-operator-only authenticated instance", async () => {
     const now = new Date();
     const userId = `claim-user-${randomUUID()}`;
     const squad = await db
@@ -60,32 +60,32 @@ describeEmbeddedPostgres("board claim", () => {
     await db.insert(authUsers).values({
       id: userId,
       name: "Board Claim User",
-      email: "board-claim@example.test",
+      email: "instance-claim@example.test",
       emailVerified: true,
       createdAt: now,
       updatedAt: now,
     });
     await db.insert(instanceUserRoles).values({
-      userId: "local-board",
+      userId: "local-operator",
       role: "instance_admin",
     });
 
-    await initializeBoardClaimChallenge(db, { deploymentMode: "authenticated" });
-    const warningUrl = getBoardClaimWarningUrl("127.0.0.1", 3197);
+    await initializeInstanceClaimChallenge(db, { deploymentMode: "authenticated" });
+    const warningUrl = getInstanceClaimWarningUrl("127.0.0.1", 3197);
     expect(warningUrl).toBeTruthy();
 
     const parsed = new URL(warningUrl!);
     const token = parsed.pathname.split("/").pop()!;
     const code = parsed.searchParams.get("code")!;
 
-    expect(inspectBoardClaimChallenge(token, code)).toMatchObject({
+    expect(inspectInstanceClaimChallenge(token, code)).toMatchObject({
       status: "available",
       requiresSignIn: true,
       claimedByUserId: null,
     });
 
     await expect(
-      claimBoardOwnership(db, { token, code, userId }),
+      claimInstanceOwnership(db, { token, code, userId }),
     ).resolves.toEqual({
       status: "claimed",
       claimedByUserId: userId,
@@ -95,7 +95,7 @@ describeEmbeddedPostgres("board claim", () => {
       db
         .select()
         .from(instanceUserRoles)
-        .where(and(eq(instanceUserRoles.userId, "local-board"), eq(instanceUserRoles.role, "instance_admin"))),
+        .where(and(eq(instanceUserRoles.userId, "local-operator"), eq(instanceUserRoles.role, "instance_admin"))),
     ).resolves.toHaveLength(0);
     await expect(
       db
@@ -120,7 +120,7 @@ describeEmbeddedPostgres("board claim", () => {
         membershipRole: "owner",
       },
     ]);
-    expect(inspectBoardClaimChallenge(token, code)).toMatchObject({
+    expect(inspectInstanceClaimChallenge(token, code)).toMatchObject({
       status: "claimed",
       claimedByUserId: userId,
     });

@@ -85,7 +85,7 @@ export const issueChatUxMentions: MentionOption[] = [
   },
   {
     id: "mention-project-1",
-    name: "Slaw Board UI",
+    name: "Slaw Operator UI",
     kind: "project",
     projectId: "project-1",
     projectColor: "#0f766e",
@@ -105,8 +105,8 @@ export const issueChatUxReassignOptions: InlineEntityOption[] = [
   },
   {
     id: "user:user-1",
-    label: "Board",
-    searchText: "board user",
+    label: "Operator",
+    searchText: "operator user",
   },
 ];
 

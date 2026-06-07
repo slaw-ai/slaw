@@ -8,7 +8,7 @@ import type {
   SquadPortabilityFileEntry,
   InstanceExperimentalSettings,
 } from "@slaw/shared";
-import { openUrl } from "../../client/board-auth.js";
+import { openUrl } from "../../client/operator-auth.js";
 import { resolveSlawInstanceId } from "../../config/home.js";
 import {
   addCommonClientOptions,

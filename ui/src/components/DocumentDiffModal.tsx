@@ -21,7 +21,7 @@ import {
 
 function getRevisionLabel(revision: DocumentRevision) {
   const actor = revision.createdByUserId
-    ? "board"
+    ? "operator"
     : revision.createdByAgentId
       ? "agent"
       : "system";

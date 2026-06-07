@@ -981,7 +981,7 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
 }
 
 function getActorLabel(revision: RoutineRevision): string {
-  if (revision.createdByUserId) return "board";
+  if (revision.createdByUserId) return "operator";
   if (revision.createdByAgentId) return "agent";
   return "system";
 }

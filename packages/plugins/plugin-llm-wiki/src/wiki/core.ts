@@ -56,7 +56,7 @@ export type SlawIngestionSourceScope =
   | { kind: "active_projects"; limit: number; statuses?: Array<"in_progress" | "todo" | "done"> }
   | { kind: "selected_projects"; projectIds: string[] }
   | { kind: "root_issues"; issueIds: string[] }
-  | { kind: "squad_all"; requiresBoardConfirmation: true };
+  | { kind: "squad_all"; requiresOperatorConfirmation: true };
 
 export type SlawIngestionProfileV1 = {
   version: 1;
@@ -378,7 +378,7 @@ type WritePageInput = {
   summary?: string | null;
   sourceRefs?: unknown;
   operationId?: string | null;
-  writer?: "agent_tool" | "board_ui" | "plugin_internal";
+  writer?: "agent_tool" | "operator_ui" | "plugin_internal";
 };
 
 type FileQueryAnswerInput = {
@@ -726,7 +726,7 @@ function defaultSlawIngestionProfile(input: {
   return {
     version: 1,
     enabled: legacy?.enabled ?? false,
-    sourceScopes: legacy?.enabled ? [{ kind: "squad_all", requiresBoardConfirmation: true }] : [],
+    sourceScopes: legacy?.enabled ? [{ kind: "squad_all", requiresOperatorConfirmation: true }] : [],
     sourceKinds: {
       issues: legacy?.sources.issues ?? true,
       comments: legacy?.sources.comments ?? true,
@@ -776,7 +776,7 @@ function normalizeSlawIngestionSourceScope(value: unknown): SlawIngestionSourceS
     return { kind, issueIds: stringArray(record.issueIds).slice(0, MAX_SLAW_PROFILE_ROOT_ISSUES) };
   }
   if (kind === "squad_all") {
-    return { kind, requiresBoardConfirmation: true };
+    return { kind, requiresOperatorConfirmation: true };
   }
   return null;
 }
@@ -1191,8 +1191,8 @@ function assertPagePath(path: string): string {
 }
 
 function assertPageWriteAllowed(path: string, writer: WritePageInput["writer"] = "agent_tool"): void {
-  if (writer !== "board_ui" && PROTECTED_WIKI_CONTROL_FILES.has(path)) {
-    throw new Error(`Refusing to overwrite protected wiki control file ${path}; board-managed edits must use the wiki UI.`);
+  if (writer !== "operator_ui" && PROTECTED_WIKI_CONTROL_FILES.has(path)) {
+    throw new Error(`Refusing to overwrite protected wiki control file ${path}; operator-managed edits must use the wiki UI.`);
   }
 }
 

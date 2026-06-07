@@ -72,7 +72,7 @@ describeEmbeddedPostgres("cleanup removal services", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -239,7 +239,7 @@ describeEmbeddedPostgres("cleanup removal services", () => {
       id: otherSquadId,
       name: "Other Squad",
       issuePrefix: `O${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(heartbeatRunEvents).values({

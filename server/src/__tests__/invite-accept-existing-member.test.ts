@@ -18,11 +18,11 @@ vi.mock("../services/index.js", () => ({
   agentService: () => ({
     getById: vi.fn(),
   }),
-  boardAuthService: () => ({
+  operatorAuthService: () => ({
     createChallenge: vi.fn(),
-    resolveBoardAccess: vi.fn(),
-    assertCurrentBoardKey: vi.fn(),
-    revokeBoardApiKey: vi.fn(),
+    resolveOperatorAccess: vi.fn(),
+    assertCurrentOperatorKey: vi.fn(),
+    revokeOperatorApiKey: vi.fn(),
   }),
   deduplicateAgentName: vi.fn(),
   logActivity: logActivityMock,
@@ -107,7 +107,7 @@ function createDbStub() {
 
 function createApp(db: Record<string, unknown>) {
   return createAppWithActor(db, {
-    type: "board",
+    type: "operator",
     source: "session",
     userId: "user-1",
     squadIds: ["squad-1"],
@@ -318,7 +318,7 @@ describe("POST /invites/:token/accept", () => {
   it("grants squad access immediately for a human invite", async () => {
     const { db, insertedValues, updateValues } = createDirectHumanInviteDbStub();
     const app = createAppWithActor(db, {
-      type: "board",
+      type: "operator",
       source: "session",
       userId: "invitee-user",
       squadIds: [],
@@ -383,7 +383,7 @@ describe("POST /invites/:token/accept", () => {
   it("replays a consumed human invite for the same user and repairs squad access", async () => {
     const { db, updateValues } = createAcceptedHumanInviteReplayDbStub();
     const app = createAppWithActor(db, {
-      type: "board",
+      type: "operator",
       source: "session",
       userId: "invitee-user",
       squadIds: [],

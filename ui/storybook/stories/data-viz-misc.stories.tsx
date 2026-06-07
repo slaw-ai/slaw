@@ -261,7 +261,7 @@ function FilterBarDemo({ empty = false }: { empty?: boolean }) {
           { key: "status", label: "Status", value: "In progress" },
           { key: "assignee", label: "Assignee", value: "CodexCoder" },
           { key: "priority", label: "Priority", value: "High" },
-          { key: "project", label: "Project", value: "Board UI" },
+          { key: "project", label: "Project", value: "Operator UI" },
         ],
   );
 
@@ -471,7 +471,7 @@ function EntityRowsDemo({ empty = false }: { empty?: boolean }) {
           leading: <FolderKanban className="h-4 w-4 text-emerald-600" />,
           identifier: "PAP-1677",
           title: "Storybook: Data Visualization & Misc stories",
-          subtitle: "Medium priority · Board UI project",
+          subtitle: "Medium priority · Operator UI project",
           trailing: <Badge variant="secondary">UI</Badge>,
         },
         {

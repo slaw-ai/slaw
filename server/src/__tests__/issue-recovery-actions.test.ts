@@ -158,7 +158,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
       id: squadId,
       name: "Recovery Co",
       issuePrefix: prefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values([
       {
@@ -217,7 +217,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     });
   }
 
-  function createApp(actor: any = { type: "board", source: "local_implicit" }) {
+  function createApp(actor: any = { type: "operator", source: "local_implicit" }) {
     const app = express();
     app.use(express.json());
     app.use((req, _res, next) => {
@@ -575,7 +575,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     const { squadId, managerId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({
@@ -620,7 +620,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     const { squadId, managerId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({
@@ -727,7 +727,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     const { squadId, managerId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({
@@ -761,7 +761,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     const { squadId, managerId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({
@@ -811,7 +811,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     const { squadId, managerId, coderId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({
@@ -852,11 +852,11 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     });
   });
 
-  it("rejects peer-agent recovery action resolution on a board-owned source issue", async () => {
+  it("rejects peer-agent recovery action resolution on a operator-owned source issue", async () => {
     const { squadId, managerId, coderId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({
@@ -902,11 +902,11 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     });
   });
 
-  it("allows the named recovery owner to resolve a board-owned source recovery action", async () => {
+  it("allows the named recovery owner to resolve a operator-owned source recovery action", async () => {
     const { squadId, managerId, sourceIssueId } = await seedSquad();
     await db
       .update(issues)
-      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "board-user" })
+      .set({ status: "blocked", assigneeAgentId: null, assigneeUserId: "operator-user" })
       .where(eq(issues.id, sourceIssueId));
     const recoveryActionSvc = issueRecoveryActionService(db);
     const action = await recoveryActionSvc.upsertSourceScoped({

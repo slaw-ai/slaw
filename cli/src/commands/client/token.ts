@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { createAgentKeySchema, createBoardApiKeySchema, type Agent } from "@slaw/shared";
+import { createAgentKeySchema, createOperatorApiKeySchema, type Agent } from "@slaw/shared";
 import {
   addCommonClientOptions,
   apiPath,
@@ -16,7 +16,7 @@ interface AgentTokenOptions extends BaseClientOptions {
   name?: string;
 }
 
-interface BoardTokenOptions extends BaseClientOptions {
+interface OperatorTokenOptions extends BaseClientOptions {
   squadId?: string;
   name?: string;
   expiresAt?: string;
@@ -39,7 +39,7 @@ interface AgentKeyRow {
   revokedAt?: string | null;
 }
 
-interface CreatedBoardKey {
+interface CreatedOperatorKey {
   id: string;
   name: string;
   token: string;
@@ -49,7 +49,7 @@ interface CreatedBoardKey {
   expiresAt: string | null;
 }
 
-interface BoardKeyRow {
+interface OperatorKeyRow {
   id: string;
   name: string;
   createdAt: string;
@@ -138,28 +138,28 @@ export function registerTokenCommands(program: Command): void {
     { includeSquad: false },
   );
 
-  const board = token.command("board").description("Manage board API keys");
+  const operator = token.command("operator").description("Manage operator API keys");
 
   addCommonClientOptions(
-    board
+    operator
       .command("create")
-      .description("Create a named board API key")
+      .description("Create a named operator API key")
       .option("-C, --squad-id <id>", "Squad ID used for audit context")
-      .option("--name <name>", "API key label", "cli-board")
+      .option("--name <name>", "API key label", "cli-operator")
       .option("--expires-at <iso8601>", "Expiration timestamp")
       .option("--ttl-days <days>", "Expiration in days from now")
       .option("--never-expires", "Create a non-expiring key")
-      .action(async (opts: BoardTokenOptions) => {
+      .action(async (opts: OperatorTokenOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          const expiresAt = resolveBoardKeyExpiresAt(opts);
-          const payload = createBoardApiKeySchema.parse({
+          const expiresAt = resolveOperatorKeyExpiresAt(opts);
+          const payload = createOperatorApiKeySchema.parse({
             name: opts.name,
             requestedSquadId: opts.squadId ?? ctx.squadId ?? null,
             expiresAt,
           });
-          const key = await ctx.api.post<CreatedBoardKey>("/api/board-api-keys", payload);
-          if (!key) throw new Error("Failed to create board API key");
+          const key = await ctx.api.post<CreatedOperatorKey>("/api/operator-api-keys", payload);
+          if (!key) throw new Error("Failed to create operator API key");
           printOutput({ key }, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
@@ -169,13 +169,13 @@ export function registerTokenCommands(program: Command): void {
   );
 
   addCommonClientOptions(
-    board
+    operator
       .command("list")
-      .description("List board API keys for the current board user")
+      .description("List operator API keys for the current operator user")
       .action(async (opts: BaseClientOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          const keys = (await ctx.api.get<BoardKeyRow[]>("/api/board-api-keys")) ?? [];
+          const keys = (await ctx.api.get<OperatorKeyRow[]>("/api/operator-api-keys")) ?? [];
           if (ctx.json) {
             printOutput(keys, { json: true });
             return;
@@ -198,14 +198,14 @@ export function registerTokenCommands(program: Command): void {
   );
 
   addCommonClientOptions(
-    board
+    operator
       .command("revoke")
-      .description("Revoke a board API key")
-      .argument("<keyId>", "Board API key ID")
+      .description("Revoke a operator API key")
+      .argument("<keyId>", "Operator API key ID")
       .action(async (keyId: string, opts: BaseClientOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          const result = await ctx.api.delete<{ ok: true; keyId: string }>(apiPath`/api/board-api-keys/${keyId}`);
+          const result = await ctx.api.delete<{ ok: true; keyId: string }>(apiPath`/api/operator-api-keys/${keyId}`);
           printOutput(result ?? { ok: true, keyId }, { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
@@ -228,7 +228,7 @@ async function resolveAgent(api: { get<T>(path: string): Promise<T | null> }, sq
   return agent;
 }
 
-function resolveBoardKeyExpiresAt(opts: BoardTokenOptions): Date | null | undefined {
+function resolveOperatorKeyExpiresAt(opts: OperatorTokenOptions): Date | null | undefined {
   if (opts.neverExpires) return null;
   if (opts.expiresAt?.trim()) {
     const date = new Date(opts.expiresAt.trim());

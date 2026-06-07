@@ -28,9 +28,9 @@ if (!embeddedPostgresSupport.supported) {
   );
 }
 
-function boardActor(squadId: string, role: "admin" | "operator" | "viewer" = "viewer") {
+function operatorActor(squadId: string, role: "admin" | "operator" | "viewer" = "viewer") {
   return {
-    type: "board" as const,
+    type: "operator" as const,
     userId: "user-1",
     source: "session" as const,
     isInstanceAdmin: false,
@@ -85,13 +85,13 @@ describeEmbeddedPostgres("resource membership routes", () => {
         id: squadId,
         name: "Slaw",
         issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       },
       {
         id: otherSquadId,
         name: "Other",
         issuePrefix: `T${otherSquadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       },
     ]);
     await db.insert(projects).values([
@@ -127,7 +127,7 @@ describeEmbeddedPostgres("resource membership routes", () => {
 
   it("defaults missing membership rows to joined", async () => {
     const { squadId } = await seed();
-    const app = createApp(db, boardActor(squadId));
+    const app = createApp(db, operatorActor(squadId));
 
     const res = await request(app).get(`/api/squads/${squadId}/resource-memberships/me`);
 
@@ -141,7 +141,7 @@ describeEmbeddedPostgres("resource membership routes", () => {
 
   it("allows viewer self-service mutations, logs changes, and keeps repeats idempotent", async () => {
     const { squadId, projectId } = await seed();
-    const app = createApp(db, boardActor(squadId, "viewer"));
+    const app = createApp(db, operatorActor(squadId, "viewer"));
 
     const first = await request(app)
       .put(`/api/squads/${squadId}/resource-memberships/me/projects/${projectId}`)
@@ -186,7 +186,7 @@ describeEmbeddedPostgres("resource membership routes", () => {
 
   it("rejects cross-squad target resources", async () => {
     const { squadId, otherAgentId, otherProjectId } = await seed();
-    const app = createApp(db, boardActor(squadId));
+    const app = createApp(db, operatorActor(squadId));
 
     const projectRes = await request(app)
       .put(`/api/squads/${squadId}/resource-memberships/me/projects/${otherProjectId}`)
@@ -211,7 +211,7 @@ describeEmbeddedPostgres("resource membership routes", () => {
         projectId,
         userId: "other-user",
         state: "left",
-        actor: boardActor(squadId),
+        actor: operatorActor(squadId),
       }),
     ).rejects.toMatchObject({ status: 403 });
   });

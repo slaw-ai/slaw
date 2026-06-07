@@ -181,7 +181,7 @@ function formatTimelineAssigneeLabel(
     return agentMap?.get(assignee.agentId)?.name ?? assignee.agentId.slice(0, 8);
   }
   if (assignee.userId) {
-    return formatAssigneeUserLabel(assignee.userId, currentUserId) ?? "Board";
+    return formatAssigneeUserLabel(assignee.userId, currentUserId) ?? "Operator";
   }
   return "Unassigned";
 }
@@ -198,7 +198,7 @@ function formatTimelineActorName(
   if (actorType === "system") {
     return "System";
   }
-  return formatAssigneeUserLabel(actorId, currentUserId) ?? "Board";
+  return formatAssigneeUserLabel(actorId, currentUserId) ?? "Operator";
 }
 
 function initialsForName(name: string) {

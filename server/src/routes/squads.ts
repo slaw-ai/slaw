@@ -25,7 +25,7 @@ import {
   logActivity,
 } from "../services/index.js";
 import type { StorageService } from "../storage/types.js";
-import { assertBoard, assertSquadAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
+import { assertOperator, assertSquadAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
 import { SQUAD_IMPORT_ROUTE_PATH } from "./squad-import-paths.js";
 
 export function squadRoutes(db: Db, storage?: StorageService) {
@@ -65,7 +65,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
 
   async function assertCanUpdateBranding(req: Request, squadId: string) {
     assertSquadAccess(req, squadId);
-    if (req.actor.type === "board") return;
+    if (req.actor.type === "operator") return;
     if (!req.actor.agentId) throw forbidden("Agent authentication required");
 
     const actorAgent = await agents.getById(req.actor.agentId);
@@ -79,7 +79,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
 
   async function assertCanManagePortability(req: Request, squadId: string, capability: "imports" | "exports") {
     assertSquadAccess(req, squadId);
-    if (req.actor.type === "board") return;
+    if (req.actor.type === "operator") return;
     if (!req.actor.agentId) throw forbidden("Agent authentication required");
 
     const actorAgent = await agents.getById(req.actor.agentId);
@@ -92,7 +92,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   }
 
   router.get("/", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const result = await svc.list();
     if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) {
       res.json(result);
@@ -103,7 +103,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   });
 
   router.get("/stats", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const allowed = req.actor.source === "local_implicit" || req.actor.isInstanceAdmin
       ? null
       : new Set(req.actor.squadIds ?? []);
@@ -126,9 +126,9 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   router.get("/:squadId", async (req, res) => {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
-    // Allow agents (Squad Lead) to read their own squad; board always allowed
+    // Allow agents (Squad Lead) to read their own squad; operator always allowed
     if (req.actor.type !== "agent") {
-      assertBoard(req);
+      assertOperator(req);
     }
     const squad = await svc.getById(squadId);
     if (!squad) {
@@ -141,7 +141,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   router.get("/:squadId/feedback-traces", async (req, res) => {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
-    assertBoard(req);
+    assertOperator(req);
 
     const targetTypeRaw = typeof req.query.targetType === "string" ? req.query.targetType : undefined;
     const voteRaw = typeof req.query.vote === "string" ? req.query.vote : undefined;
@@ -174,7 +174,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   });
 
   router.post("/import/preview", validate(squadPortabilityPreviewSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     assertImportTargetAccess(req, req.body.target);
     const preview = await portability.previewImport(req.body);
     res.json(preview);
@@ -192,10 +192,10 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   });
 
   router.post(SQUAD_IMPORT_ROUTE_PATH, async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const rawImportBody: unknown = req.body;
     const actor = getActorInfo(req);
-    const boardUserId = req.actor.type === "board" ? req.actor.userId : null;
+    const operatorUserId = req.actor.type === "operator" ? req.actor.userId : null;
     if (req.header("x-slaw-cloud-async-import") === "1") {
       assertCloudTenantCaller(req);
       cleanupTerminalImportJobs(importJobs, importJobTerminalRetentionMs);
@@ -205,7 +205,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
         const importBody = squadPortabilityImportSchema.parse(rawImportBody);
         assertImportTargetAccess(req, importBody.target);
         const activity = importedSquadActivityContext(actor, importBody.include ?? null);
-        const result = await portability.importBundle(importBody, boardUserId);
+        const result = await portability.importBundle(importBody, operatorUserId);
         await logImportedSquadActivity(db, activity, result);
         return result;
       };
@@ -219,7 +219,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
     const importBody = squadPortabilityImportSchema.parse(rawImportBody);
     assertImportTargetAccess(req, importBody.target);
     const activity = importedSquadActivityContext(actor, importBody.include ?? null);
-    const result = await portability.importBundle(importBody, boardUserId);
+    const result = await portability.importBundle(importBody, operatorUserId);
     await logImportedSquadActivity(db, activity, result);
     res.json(result);
   });
@@ -264,7 +264,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
       throw forbidden("Safe import route does not allow replace collision strategy");
     }
     const actor = getActorInfo(req);
-    const result = await portability.importBundle(req.body, req.actor.type === "board" ? req.actor.userId : null, {
+    const result = await portability.importBundle(req.body, req.actor.type === "operator" ? req.actor.userId : null, {
       mode: "agent_safe",
       sourceSquadId: squadId,
     });
@@ -289,12 +289,12 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   });
 
   router.post("/", validate(createSquadSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     if (!(req.actor.source === "local_implicit" || req.actor.isInstanceAdmin)) {
       throw forbidden("Instance admin required");
     }
     const squad = await svc.create(req.body);
-    const ownerPrincipalId = req.actor.userId ?? "local-board";
+    const ownerPrincipalId = req.actor.userId ?? "local-operator";
     await access.ensureMembership(squad.id, "user", ownerPrincipalId, "owner", "active");
     await access.ensureRoleDefaultGrants(
       squad.id,
@@ -305,7 +305,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
     await logActivity(db, {
       squadId: squad.id,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "squad.created",
       entityType: "squad",
       entityId: squad.id,
@@ -320,7 +320,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
           amount: squad.budgetMonthlyCents,
           windowKind: "calendar_month_utc",
         },
-        req.actor.userId ?? "board",
+        req.actor.userId ?? "operator",
       );
     }
     res.status(201).json(squad);
@@ -343,21 +343,21 @@ export function squadRoutes(db: Db, storage?: StorageService) {
       const agentSvc = agentService(db);
       const actorAgent = req.actor.agentId ? await agentSvc.getById(req.actor.agentId) : null;
       if (!actorAgent || actorAgent.role !== "squad_lead") {
-        throw forbidden("Only Squad Lead agents or board users may update squad settings");
+        throw forbidden("Only Squad Lead agents or operator users may update squad settings");
       }
       if (actorAgent.squadId !== squadId) {
         throw forbidden("Agent key cannot access another squad");
       }
       body = updateSquadBrandingSchema.parse(req.body);
     } else {
-      assertBoard(req);
+      assertOperator(req);
       body = updateSquadSchema.parse(req.body);
 
       if (body.feedbackDataSharingEnabled === true && !existingSquad.feedbackDataSharingEnabled) {
         body = {
           ...body,
           feedbackDataSharingConsentAt: new Date(),
-          feedbackDataSharingConsentByUserId: req.actor.userId ?? "local-board",
+          feedbackDataSharingConsentByUserId: req.actor.userId ?? "local-operator",
           feedbackDataSharingTermsVersion:
             typeof body.feedbackDataSharingTermsVersion === "string" && body.feedbackDataSharingTermsVersion.length > 0
               ? body.feedbackDataSharingTermsVersion
@@ -409,7 +409,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   });
 
   router.post("/:squadId/archive", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     const squad = await svc.archive(squadId);
@@ -420,7 +420,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
     await logActivity(db, {
       squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "squad.archived",
       entityType: "squad",
       entityId: squadId,
@@ -429,7 +429,7 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   });
 
   router.delete("/:squadId", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     const squad = await svc.remove(squadId);

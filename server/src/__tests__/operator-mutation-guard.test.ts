@@ -1,21 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
 import express from "express";
 import request from "supertest";
-import { boardMutationGuard } from "../middleware/board-mutation-guard.js";
+import { operatorMutationGuard } from "../middleware/operator-mutation-guard.js";
 
 function createApp(
-  actorType: "board" | "agent",
-  boardSource: "session" | "local_implicit" | "board_key" | "cloud_tenant" = "session",
+  actorType: "operator" | "agent",
+  operatorSource: "session" | "local_implicit" | "operator_key" | "cloud_tenant" = "session",
 ) {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    req.actor = actorType === "board"
-      ? { type: "board", userId: "board", source: boardSource }
+    req.actor = actorType === "operator"
+      ? { type: "operator", userId: "operator", source: operatorSource }
       : { type: "agent", agentId: "agent-1" };
     next();
   });
-  app.use(boardMutationGuard());
+  app.use(operatorMutationGuard());
   app.post("/mutate", (_req, res) => {
     res.status(204).end();
   });
@@ -25,18 +25,18 @@ function createApp(
   return app;
 }
 
-describe("boardMutationGuard", () => {
-  it("allows safe methods for board actor", async () => {
-    const app = createApp("board");
+describe("operatorMutationGuard", () => {
+  it("allows safe methods for operator actor", async () => {
+    const app = createApp("operator");
     const res = await request(app).get("/read");
     expect([200, 204]).toContain(res.status);
   });
 
-  it("blocks board mutations without trusted origin", () => {
-    const middleware = boardMutationGuard();
+  it("blocks operator mutations without trusted origin", () => {
+    const middleware = operatorMutationGuard();
     const req = {
       method: "POST",
-      actor: { type: "board", userId: "board", source: "session" },
+      actor: { type: "operator", userId: "operator", source: "session" },
       header: () => undefined,
     } as any;
     const res = {
@@ -50,30 +50,30 @@ describe("boardMutationGuard", () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith({
-      error: "Board mutation requires trusted browser origin",
+      error: "Operator mutation requires trusted browser origin",
     });
   });
 
-  it("allows local implicit board mutations without origin", async () => {
-    const app = createApp("board", "local_implicit");
+  it("allows local implicit operator mutations without origin", async () => {
+    const app = createApp("operator", "local_implicit");
     const res = await request(app).post("/mutate").send({ ok: true });
     expect([200, 204]).toContain(res.status);
   });
 
-  it("allows board bearer-key mutations without origin", async () => {
-    const app = createApp("board", "board_key");
+  it("allows operator bearer-key mutations without origin", async () => {
+    const app = createApp("operator", "operator_key");
     const res = await request(app).post("/mutate").send({ ok: true });
     expect([200, 204]).toContain(res.status);
   });
 
   it("allows trusted Cloud tenant mutations without origin", async () => {
-    const app = createApp("board", "cloud_tenant");
+    const app = createApp("operator", "cloud_tenant");
     const res = await request(app).post("/mutate").send({ ok: true });
     expect([200, 204]).toContain(res.status);
   });
 
-  it("allows board mutations from trusted origin", async () => {
-    const app = createApp("board");
+  it("allows operator mutations from trusted origin", async () => {
+    const app = createApp("operator");
     const res = await request(app)
       .post("/mutate")
       .set("Origin", "http://localhost:3100")
@@ -81,8 +81,8 @@ describe("boardMutationGuard", () => {
     expect([200, 204]).toContain(res.status);
   });
 
-  it("allows board mutations from trusted referer origin", async () => {
-    const app = createApp("board");
+  it("allows operator mutations from trusted referer origin", async () => {
+    const app = createApp("operator");
     const res = await request(app)
       .post("/mutate")
       .set("Referer", "http://localhost:3100/issues/abc")
@@ -90,8 +90,8 @@ describe("boardMutationGuard", () => {
     expect([200, 204]).toContain(res.status);
   });
 
-  it("allows board mutations when x-forwarded-host matches origin", async () => {
-    const app = createApp("board");
+  it("allows operator mutations when x-forwarded-host matches origin", async () => {
+    const app = createApp("operator");
     const res = await request(app)
       .post("/mutate")
       .set("Host", "127.0.0.1")
@@ -101,11 +101,11 @@ describe("boardMutationGuard", () => {
     expect([200, 204]).toContain(res.status);
   });
 
-  it("blocks board mutations when x-forwarded-host does not match origin", async () => {
-    const middleware = boardMutationGuard();
+  it("blocks operator mutations when x-forwarded-host does not match origin", async () => {
+    const middleware = operatorMutationGuard();
     const req = {
       method: "POST",
-      actor: { type: "board", userId: "board", source: "session" },
+      actor: { type: "operator", userId: "operator", source: "session" },
       header: (name: string) => {
         if (name === "host") return "127.0.0.1";
         if (name === "x-forwarded-host") return "10.90.10.20:3443";
@@ -124,12 +124,12 @@ describe("boardMutationGuard", () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith({
-      error: "Board mutation requires trusted browser origin",
+      error: "Operator mutation requires trusted browser origin",
     });
   });
 
   it("does not block authenticated agent mutations", async () => {
-    const middleware = boardMutationGuard();
+    const middleware = operatorMutationGuard();
     const req = {
       method: "POST",
       actor: { type: "agent", agentId: "agent-1" },

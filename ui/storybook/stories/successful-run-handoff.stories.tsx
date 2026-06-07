@@ -51,7 +51,7 @@ function handoffIssue() {
     id: "issue-handoff",
     identifier: "PAP-3053",
     issueNumber: 3053,
-    title: "Add board-visible handoff affordances and activity copy",
+    title: "Add operator-visible handoff affordances and activity copy",
     status: "in_progress",
     priority: "medium",
     assigneeAgentId: "agent-codex",
@@ -67,7 +67,7 @@ function handoffIssue() {
   });
 }
 
-function StoryFrame({ children, title = "Board-visible handoff states" }: { children: ReactNode; title?: string }) {
+function StoryFrame({ children, title = "Operator-visible handoff states" }: { children: ReactNode; title?: string }) {
   return (
     <main className="min-h-screen bg-background p-4 text-foreground sm:p-8">
       <div className="mx-auto max-w-6xl space-y-5">

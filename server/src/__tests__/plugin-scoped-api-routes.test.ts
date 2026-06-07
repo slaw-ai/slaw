@@ -114,20 +114,20 @@ describe.sequential("plugin scoped API routes", () => {
     });
   });
 
-  it("dispatches a board GET route with params, query, actor, and squad context", async () => {
+  it("dispatches a operator GET route with params, query, actor, and squad context", async () => {
     const apiRoutes = manifest([
       {
         routeKey: "summary.get",
         method: "GET",
         path: "/squads/:squadSlug/summary",
-        auth: "board",
+        auth: "operator",
         capability: "api.routes.register",
         squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app, workerManager } = await createApp({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "local_implicit",
         isInstanceAdmin: true,
@@ -164,14 +164,14 @@ describe.sequential("plugin scoped API routes", () => {
         routeKey: "summary.get",
         method: "GET",
         path: "/squads/:squadSlug/summary",
-        auth: "board",
+        auth: "operator",
         capability: "api.routes.register",
         squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app } = await createApp({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "local_implicit",
         isInstanceAdmin: true,
@@ -394,14 +394,14 @@ describe.sequential("plugin scoped API routes", () => {
         routeKey: "summary.get",
         method: "GET",
         path: "/summary",
-        auth: "board",
+        auth: "operator",
         capability: "api.routes.register",
         squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app, workerManager } = await createApp({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "local_implicit",
         isInstanceAdmin: true,
@@ -428,14 +428,14 @@ describe.sequential("plugin scoped API routes", () => {
         routeKey: "summary.get",
         method: "GET",
         path: "/summary",
-        auth: "board",
+        auth: "operator",
         capability: "api.routes.register",
         squadResolution: { from: "query", key: "squadId" },
       },
     ]);
     const { app, workerManager } = await createApp({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "local_implicit",
         isInstanceAdmin: true,
@@ -463,7 +463,7 @@ describe.sequential("plugin scoped API routes", () => {
         routeKey: "bad.shadow",
         method: "POST",
         path: "/api/issues/:issueId",
-        auth: "board",
+        auth: "operator",
         capability: "api.routes.register",
       },
     ]));

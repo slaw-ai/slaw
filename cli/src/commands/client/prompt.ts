@@ -22,7 +22,7 @@ interface PromptOptions extends BaseClientOptions {
 interface PromptResult {
   ok: true;
   mode: "issue" | "comment";
-  actor: "agent" | "board";
+  actor: "agent" | "operator";
   apiBase: string;
   squadId: string;
   agent: {
@@ -86,11 +86,11 @@ export function registerPromptCommands(program: Command): void {
       }),
   );
 
-  const board = program.command("board").description("Board operator operations");
+  const operator = program.command("operator").description("Operator operations");
   addCommonClientOptions(
-    board
+    operator
       .command("prompt")
-      .description("Create/update Slaw work for an agent using board auth")
+      .description("Create/update Slaw work for an agent using operator auth")
       .requiredOption("--agent <agent>", "Target agent ID, shortname, or name")
       .option("-C, --squad-id <id>", "Squad ID")
       .option("--issue <issueId>", "Append as a comment to an existing issue")
@@ -99,7 +99,7 @@ export function registerPromptCommands(program: Command): void {
       .argument("<prompt...>", "Prompt text")
       .action(async (promptParts: string[], opts: PromptOptions) => {
         try {
-          const result = await runBoardPrompt(opts.agent ?? "", promptParts.join(" "), opts);
+          const result = await runOperatorPrompt(opts.agent ?? "", promptParts.join(" "), opts);
           printOutput(result, { json: opts.json });
         } catch (err) {
           handleCommandError(err);
@@ -116,7 +116,7 @@ export async function runAgentPrompt(
 ): Promise<PromptResult> {
   const ctx = resolveCommandContext(opts);
   if (ctx.profile.persona && ctx.profile.persona !== "agent") {
-    throw new Error(`Profile '${ctx.profileName}' is persona=${ctx.profile.persona}; use an agent profile or board prompt.`);
+    throw new Error(`Profile '${ctx.profileName}' is persona=${ctx.profile.persona}; use an agent profile or operator prompt.`);
   }
   const body = normalizePrompt(prompt);
   const me = await ctx.api.get<Agent>("/api/agents/me");
@@ -137,14 +137,14 @@ export async function runAgentPrompt(
   return result;
 }
 
-export async function runBoardPrompt(
+export async function runOperatorPrompt(
   agentRef: string,
   prompt: string,
   opts: PromptOptions,
 ): Promise<PromptResult> {
   const ctx = resolveCommandContext(opts, { requireSquad: true });
-  if (ctx.profile.persona && ctx.profile.persona !== "board") {
-    throw new Error(`Profile '${ctx.profileName}' is persona=${ctx.profile.persona}; use an agent prompt command or a board profile.`);
+  if (ctx.profile.persona && ctx.profile.persona !== "operator") {
+    throw new Error(`Profile '${ctx.profileName}' is persona=${ctx.profile.persona}; use an agent prompt command or an operator profile.`);
   }
   const body = normalizePrompt(prompt);
   const query = new URLSearchParams({ squadId: ctx.squadId ?? "" });
@@ -153,7 +153,7 @@ export async function runBoardPrompt(
 
   return createOrCommentForAgent({
     api: ctx.api,
-    actor: "board",
+    actor: "operator",
     agent,
     squadId: ctx.squadId ?? agent.squadId,
     prompt: body,
@@ -168,7 +168,7 @@ async function createOrCommentForAgent(input: {
     apiBase: string;
     post<T>(path: string, body?: unknown): Promise<T | null>;
   };
-  actor: "agent" | "board";
+  actor: "agent" | "operator";
   agent: Agent;
   squadId: string;
   prompt: string;
@@ -255,7 +255,7 @@ function assertAgentMatchesReference(agent: Agent, reference: string): void {
   ].some((value) => value?.toLowerCase() === normalized);
   if (!matches) {
     throw new Error(
-      `Agent key belongs to ${agent.name} (${agent.id}), not '${reference}'. Use the matching agent or a board prompt.`,
+      `Agent key belongs to ${agent.name} (${agent.id}), not '${reference}'. Use the matching agent or an operator prompt.`,
     );
   }
 }

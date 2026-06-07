@@ -9,7 +9,7 @@ export { instanceUserRoles } from "./instance_user_roles.js";
 export { userSidebarPreferences } from "./user_sidebar_preferences.js";
 export { agents } from "./agents.js";
 export { agentMemberships } from "./agent_memberships.js";
-export { boardApiKeys } from "./board_api_keys.js";
+export { operatorApiKeys } from "./operator_api_keys.js";
 export { cliAuthChallenges } from "./cli_auth_challenges.js";
 export { squadMemberships } from "./squad_memberships.js";
 export { squadUserSidebarPreferences } from "./squad_user_sidebar_preferences.js";

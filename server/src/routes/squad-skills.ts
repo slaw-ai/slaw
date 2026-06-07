@@ -83,7 +83,7 @@ export function squadSkillRoutes(db: Db) {
   async function assertCanMutateSquadSkills(req: Request, squadId: string) {
     assertSquadAccess(req, squadId);
 
-    if (req.actor.type === "board") {
+    if (req.actor.type === "operator") {
       if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) return;
       const allowed = await access.canUser(squadId, req.actor.userId, "agents:create");
       if (!allowed) {

@@ -85,7 +85,7 @@ function makeIssue(status: "todo" | "done") {
     status,
     assigneeAgentId: "agent-1",
     assigneeUserId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     identifier: "PAP-1018",
     title: "Telemetry test",
   };
@@ -158,10 +158,10 @@ describe("issue telemetry routes", () => {
     });
   }, 10_000);
 
-  it("does not emit agent task-completed telemetry for board-driven completions", async () => {
+  it("does not emit agent task-completed telemetry for operator-driven completions", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,

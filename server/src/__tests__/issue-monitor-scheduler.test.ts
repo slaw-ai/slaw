@@ -159,7 +159,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -269,7 +269,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
     expect(activity).toContain("issue.monitor_triggered");
   });
 
-  it("lets the board trigger a scheduled issue monitor immediately", async () => {
+  it("lets the operator trigger a scheduled issue monitor immediately", async () => {
     const { issueId, agentId, nextCheckAt } = await seedFixture();
     const heartbeat = heartbeatService(db);
     const triggeredAt = new Date("2026-04-11T12:00:00.000Z");
@@ -277,7 +277,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
     const result = await heartbeat.triggerIssueMonitor(issueId, {
       now: triggeredAt,
       actorType: "user",
-      actorId: "local-board",
+      actorId: "local-operator",
     });
 
     expect(result.outcome).toBe("triggered");
@@ -308,7 +308,7 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
     expect(activity.map((row) => row.action)).toContain("issue.monitor_triggered");
     const triggerEvent = activity.find((row) => row.action === "issue.monitor_triggered");
     expect(triggerEvent?.actorType).toBe("user");
-    expect(triggerEvent?.actorId).toBe("local-board");
+    expect(triggerEvent?.actorId).toBe("local-operator");
     expect(triggerEvent?.details).toMatchObject({
       nextCheckAt: nextCheckAt.toISOString(),
       source: "manual",

@@ -84,7 +84,7 @@ import {
 } from "../services/index.js";
 import { logger } from "../middleware/logger.js";
 import { conflict, forbidden, HttpError, notFound, unauthorized, unprocessable } from "../errors.js";
-import { assertBoard, assertSquadAccess, getActorInfo } from "./authz.js";
+import { assertOperator, assertSquadAccess, getActorInfo } from "./authz.js";
 import {
   assertNoAgentHostWorkspaceCommandMutation,
   collectIssueWorkspaceCommandPaths,
@@ -574,8 +574,8 @@ function squadSearchRateLimitActor(req: Request, squadId: string) {
   }
   return {
     squadId,
-    actorType: "board" as const,
-    actorId: req.actor.userId ?? req.actor.source ?? "board",
+    actorType: "operator" as const,
+    actorId: req.actor.userId ?? req.actor.source ?? "operator",
   };
 }
 
@@ -604,14 +604,14 @@ function applyActorMonitorScheduledBy(
   policy: NormalizedExecutionPolicy | null,
   actorType: "agent" | "user",
 ) {
-  return setIssueExecutionPolicyMonitorScheduledBy(policy, actorType === "user" ? "board" : "assignee");
+  return setIssueExecutionPolicyMonitorScheduledBy(policy, actorType === "user" ? "operator" : "assignee");
 }
 
 function assertCanManageIssueMonitor(req: Request, assigneeAgentId: string | null, monitorChanged: boolean) {
   if (!monitorChanged) return;
-  if (req.actor.type === "board") return;
+  if (req.actor.type === "operator") return;
   if (req.actor.type === "agent" && req.actor.agentId && req.actor.agentId === assigneeAgentId) return;
-  throw forbidden("Only the assignee agent or a board user can manage issue monitors");
+  throw forbidden("Only the assignee agent or a operator user can manage issue monitors");
 }
 
 function summarizeIssueMonitor(
@@ -1406,7 +1406,7 @@ export function issueRoutes(
 
   async function assertCanManageIssueApprovalLinks(req: Request, res: Response, squadId: string) {
     assertSquadAccess(req, squadId);
-    if (req.actor.type === "board") return true;
+    if (req.actor.type === "operator") return true;
     if (!req.actor.agentId) {
       res.status(403).json({ error: "Agent authentication required" });
       return false;
@@ -1649,9 +1649,9 @@ export function issueRoutes(
   ) {
     const hasStructuredFields = input.presentation !== undefined || input.metadata !== undefined;
     if (!hasStructuredFields) return true;
-    if (req.actor.type === "board") return true;
+    if (req.actor.type === "operator") return true;
     res.status(403).json({
-      error: "Only board users may set structured comment presentation or metadata",
+      error: "Only operator users may set structured comment presentation or metadata",
       details: {
         securityPrinciples: ["Least Privilege", "Secure Defaults", "Complete Mediation"],
       },
@@ -1966,19 +1966,19 @@ export function issueRoutes(
     const inboxArchivedByUserFilterRaw = req.query.inboxArchivedByUserId as string | undefined;
     const unreadForUserFilterRaw = req.query.unreadForUserId as string | undefined;
     const assigneeUserId =
-      assigneeUserFilterRaw === "me" && req.actor.type === "board"
+      assigneeUserFilterRaw === "me" && req.actor.type === "operator"
         ? req.actor.userId
         : assigneeUserFilterRaw;
     const touchedByUserId =
-      touchedByUserFilterRaw === "me" && req.actor.type === "board"
+      touchedByUserFilterRaw === "me" && req.actor.type === "operator"
         ? req.actor.userId
         : touchedByUserFilterRaw;
     const inboxArchivedByUserId =
-      inboxArchivedByUserFilterRaw === "me" && req.actor.type === "board"
+      inboxArchivedByUserFilterRaw === "me" && req.actor.type === "operator"
         ? req.actor.userId
         : inboxArchivedByUserFilterRaw;
     const unreadForUserId =
-      unreadForUserFilterRaw === "me" && req.actor.type === "board"
+      unreadForUserFilterRaw === "me" && req.actor.type === "operator"
         ? req.actor.userId
         : unreadForUserFilterRaw;
     const rawLimit = req.query.limit as string | undefined;
@@ -1994,20 +1994,20 @@ export function issueRoutes(
     const sortField = req.query.sortField as string | undefined;
     const sortDir = req.query.sortDir as string | undefined;
 
-    if (assigneeUserFilterRaw === "me" && (!assigneeUserId || req.actor.type !== "board")) {
-      res.status(403).json({ error: "assigneeUserId=me requires board authentication" });
+    if (assigneeUserFilterRaw === "me" && (!assigneeUserId || req.actor.type !== "operator")) {
+      res.status(403).json({ error: "assigneeUserId=me requires operator authentication" });
       return;
     }
-    if (touchedByUserFilterRaw === "me" && (!touchedByUserId || req.actor.type !== "board")) {
-      res.status(403).json({ error: "touchedByUserId=me requires board authentication" });
+    if (touchedByUserFilterRaw === "me" && (!touchedByUserId || req.actor.type !== "operator")) {
+      res.status(403).json({ error: "touchedByUserId=me requires operator authentication" });
       return;
     }
-    if (inboxArchivedByUserFilterRaw === "me" && (!inboxArchivedByUserId || req.actor.type !== "board")) {
-      res.status(403).json({ error: "inboxArchivedByUserId=me requires board authentication" });
+    if (inboxArchivedByUserFilterRaw === "me" && (!inboxArchivedByUserId || req.actor.type !== "operator")) {
+      res.status(403).json({ error: "inboxArchivedByUserId=me requires operator authentication" });
       return;
     }
-    if (unreadForUserFilterRaw === "me" && (!unreadForUserId || req.actor.type !== "board")) {
-      res.status(403).json({ error: "unreadForUserId=me requires board authentication" });
+    if (unreadForUserFilterRaw === "me" && (!unreadForUserId || req.actor.type !== "operator")) {
+      res.status(403).json({ error: "unreadForUserId=me requires operator authentication" });
       return;
     }
     if (attention !== undefined && attention !== "blocked") {
@@ -2441,7 +2441,7 @@ export function issueRoutes(
 
     const { actionId, outcome, sourceIssueStatus, resolutionNote } = req.body;
     if (outcome === "false_positive" || outcome === "cancelled") {
-      assertBoard(req);
+      assertOperator(req);
     }
 
     const actor = getActorInfo(req);
@@ -2997,8 +2997,8 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     const keyParsed = issueDocumentKeySchema.safeParse(String(req.params.key ?? "").trim().toLowerCase());
@@ -3045,8 +3045,8 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     const keyParsed = issueDocumentKeySchema.safeParse(String(req.params.key ?? "").trim().toLowerCase());
@@ -3223,8 +3223,8 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     const keyParsed = issueDocumentKeySchema.safeParse(String(req.params.key ?? "").trim().toLowerCase());
@@ -3438,12 +3438,12 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     if (!req.actor.userId) {
-      res.status(403).json({ error: "Board user context required" });
+      res.status(403).json({ error: "Operator user context required" });
       return;
     }
     const readState = await svc.markRead(issue.squadId, issue.id, req.actor.userId, new Date());
@@ -3470,12 +3470,12 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     if (!req.actor.userId) {
-      res.status(403).json({ error: "Board user context required" });
+      res.status(403).json({ error: "Operator user context required" });
       return;
     }
     const removed = await svc.markUnread(issue.squadId, issue.id, req.actor.userId);
@@ -3502,12 +3502,12 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     if (!req.actor.userId) {
-      res.status(403).json({ error: "Board user context required" });
+      res.status(403).json({ error: "Operator user context required" });
       return;
     }
     const archiveState = await svc.archiveInbox(issue.squadId, issue.id, req.actor.userId, new Date());
@@ -3534,12 +3534,12 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board authentication required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator authentication required" });
       return;
     }
     if (!req.actor.userId) {
-      res.status(403).json({ error: "Board user context required" });
+      res.status(403).json({ error: "Operator user context required" });
       return;
     }
     const removed = await svc.unarchiveInbox(issue.squadId, issue.id, req.actor.userId);
@@ -3992,7 +3992,7 @@ export function issueRoutes(
   });
 
   router.post("/issues/:id/scheduled-retry/retry-now", async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const id = req.params.id as string;
     const issue = await svc.getById(id);
     if (!issue) {
@@ -4146,8 +4146,8 @@ export function issueRoutes(
         res.status(400).json({ error: "Interrupt is only supported when posting a comment" });
         return;
       }
-      if (req.actor.type !== "board") {
-        res.status(403).json({ error: "Only board users can interrupt active runs from issue comments" });
+      if (req.actor.type !== "operator") {
+        res.status(403).json({ error: "Only operator users can interrupt active runs from issue comments" });
         return;
       }
 
@@ -5164,12 +5164,12 @@ export function issueRoutes(
   });
 
   router.post("/issues/:id/admin/force-release", async (req, res) => {
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Board access required" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Operator access required" });
       return;
     }
     if (!req.actor.userId) {
-      throw forbidden("Board user context required");
+      throw forbidden("Operator user context required");
     }
 
     const id = req.params.id as string;
@@ -5276,7 +5276,7 @@ export function issueRoutes(
     if (req.actor.type === "agent") {
       if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
     } else {
-      assertBoard(req);
+      assertOperator(req);
     }
 
     const actor = getActorInfo(req);
@@ -5323,7 +5323,7 @@ export function issueRoutes(
         return;
       }
       assertSquadAccess(req, issue.squadId);
-      assertBoard(req);
+      assertOperator(req);
 
       const actor = getActorInfo(req);
       const { interaction, createdIssues, continuationIssue } = await issueThreadInteractionService(db).acceptInteraction(issue, interactionId, req.body, {
@@ -5428,7 +5428,7 @@ export function issueRoutes(
         return;
       }
       assertSquadAccess(req, issue.squadId);
-      assertBoard(req);
+      assertOperator(req);
 
       const actor = getActorInfo(req);
       const interaction = await issueThreadInteractionService(db).rejectInteraction(issue, interactionId, req.body, {
@@ -5484,7 +5484,7 @@ export function issueRoutes(
         return;
       }
       assertSquadAccess(req, issue.squadId);
-      assertBoard(req);
+      assertOperator(req);
 
       const actor = getActorInfo(req);
       const interaction = await issueThreadInteractionService(db).answerQuestions(issue, interactionId, req.body, {
@@ -5536,7 +5536,7 @@ export function issueRoutes(
         return;
       }
       assertSquadAccess(req, issue.squadId);
-      assertBoard(req);
+      assertOperator(req);
 
       const actor = getActorInfo(req);
       const interaction = await issueThreadInteractionService(db).cancelQuestions(issue, interactionId, req.body, {
@@ -5667,12 +5667,12 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Only board users can view feedback votes" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Only operator users can view feedback votes" });
       return;
     }
 
-    const votes = await feedback.listIssueVotesForUser(id, req.actor.userId ?? "local-board");
+    const votes = await feedback.listIssueVotesForUser(id, req.actor.userId ?? "local-operator");
     res.json(votes);
   });
 
@@ -5684,8 +5684,8 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Only board users can view feedback traces" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Only operator users can view feedback traces" });
       return;
     }
 
@@ -5712,8 +5712,8 @@ export function issueRoutes(
 
   router.get("/feedback-traces/:traceId", async (req, res) => {
     const traceId = req.params.traceId as string;
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Only board users can view feedback traces" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Only operator users can view feedback traces" });
       return;
     }
     const includePayload = parseBooleanQuery(req.query.includePayload) || req.query.includePayload === undefined;
@@ -5727,8 +5727,8 @@ export function issueRoutes(
 
   router.get("/feedback-traces/:traceId/bundle", async (req, res) => {
     const traceId = req.params.traceId as string;
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Only board users can view feedback trace bundles" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Only operator users can view feedback trace bundles" });
       return;
     }
     const bundle = await feedback.getFeedbackTraceBundle(traceId);
@@ -5854,8 +5854,8 @@ export function issueRoutes(
     }
 
     if (interruptRequested) {
-      if (req.actor.type !== "board") {
-        res.status(403).json({ error: "Only board users can interrupt active runs from issue comments" });
+      if (req.actor.type !== "operator") {
+        res.status(403).json({ error: "Only operator users can interrupt active runs from issue comments" });
         return;
       }
 
@@ -6066,8 +6066,8 @@ export function issueRoutes(
       return;
     }
     assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "board") {
-      res.status(403).json({ error: "Only board users can vote on AI feedback" });
+    if (req.actor.type !== "operator") {
+      res.status(403).json({ error: "Only operator users can vote on AI feedback" });
       return;
     }
 
@@ -6078,7 +6078,7 @@ export function issueRoutes(
       targetId: req.body.targetId,
       vote: req.body.vote,
       reason: req.body.reason,
-      authorUserId: req.actor.userId ?? "local-board",
+      authorUserId: req.actor.userId ?? "local-operator",
       allowSharing: req.body.allowSharing === true,
     });
 

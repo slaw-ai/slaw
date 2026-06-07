@@ -60,7 +60,7 @@ describe("run inspection commands", () => {
     await createProgram().parseAsync([
       "run", "list",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--agent-id", AGENT_ID,
       "--limit", "25",
@@ -69,13 +69,13 @@ describe("run inspection commands", () => {
     await createProgram().parseAsync([
       "run", "get", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
 
     await createProgram().parseAsync([
       "run", "log", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--offset", "4",
       "--limit-bytes", "100",
       "--text",
@@ -84,7 +84,7 @@ describe("run inspection commands", () => {
     await createProgram().parseAsync([
       "run", "cancel", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
@@ -118,29 +118,29 @@ describe("run inspection commands", () => {
     await createProgram().parseAsync([
       "run", "events", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--after-seq", "7",
       "--limit", "50",
     ], { from: "user" });
     await createProgram().parseAsync([
       "run", "issues", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
     await createProgram().parseAsync([
       "run", "workspace-operations", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
     await createProgram().parseAsync([
       "run", "workspace-log", "55555555-5555-4555-8555-555555555555",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
     await createProgram().parseAsync([
       "run", "watchdog-decision", RUN_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--decision", "continue",
       "--reason", "operator reviewed",
     ], { from: "user" });
@@ -184,7 +184,7 @@ describe("run inspection commands", () => {
     await createProgram().parseAsync([
       "agent", "wake", "builder",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--reason", "manual check",
       "--payload", "{\"issueId\":\"PC-1\"}",
@@ -192,17 +192,17 @@ describe("run inspection commands", () => {
     await createProgram().parseAsync([
       "issue", "runs", "PC-1",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
     await createProgram().parseAsync([
       "issue", "live-runs", "PC-1",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
     await createProgram().parseAsync([
       "issue", "active-run", "PC-1",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
     ], { from: "user" });
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe(`http://localhost:3100/api/agents/builder?squadId=${SQUAD_ID}`);

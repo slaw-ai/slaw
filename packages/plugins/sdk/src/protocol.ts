@@ -388,7 +388,7 @@ export type PluginPerformActionActorType = "user" | "agent" | "system";
 export interface PluginPerformActionActorContext {
   /** Authenticated principal type resolved by the Slaw host. */
   type: PluginPerformActionActorType;
-  /** Authenticated board user id when `type === "user"`, otherwise null. */
+  /** Authenticated operator user id when `type === "user"`, otherwise null. */
   userId: string | null;
   /** Authenticated agent id when `type === "agent"`, otherwise null. */
   agentId: string | null;

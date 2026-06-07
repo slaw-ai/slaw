@@ -29,7 +29,7 @@ const storyGroups = [
     title: "Control Plane Surfaces",
     icon: ShieldCheck,
     stories: "Issue rows, approvals, budget cards, activity rows, metrics",
-    why: "The V1 board UI depends on these dense operational patterns staying legible.",
+    why: "The V1 operator UI depends on these dense operational patterns staying legible.",
   },
   {
     title: "UX Labs",
@@ -41,7 +41,7 @@ const storyGroups = [
     title: "Navigation & Layout",
     icon: PanelLeft,
     stories: "Sidebar, breadcrumbs, command palette, squad rail, mobile nav",
-    why: "Navigation chrome frames every board interaction and needs mobile parity.",
+    why: "Navigation chrome frames every operator interaction and needs mobile parity.",
   },
   {
     title: "Agent Management",
@@ -119,7 +119,7 @@ function StorybookGuide() {
                 Slaw Storybook
               </div>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Board UI stories for real control-plane states
+                Operator UI stories for real control-plane states
               </h1>
               <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
                 This Storybook is organized as a review workspace for Slaw's operator UI: primitives first,

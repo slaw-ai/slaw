@@ -2700,12 +2700,12 @@ async function listIssueBlockedInboxAttentionMap(
       const isUserQuestion = interaction.kind === "ask_user_questions" && Boolean(row.assigneeUserId);
       result.set(row.id, attentionBase({
         state: "awaiting_decision",
-        reason: isUserQuestion ? "pending_user_decision" : "pending_board_decision",
+        reason: isUserQuestion ? "pending_user_decision" : "pending_operator_decision",
         severity: "medium",
         stoppedSinceAt: interaction.createdAt,
         owner: isUserQuestion
           ? { type: "user", agentId: null, userId: row.assigneeUserId, label: null }
-          : { type: "board", agentId: null, userId: null, label: "Board" },
+          : { type: "operator", agentId: null, userId: null, label: "Operator" },
         action: {
           label: isUserQuestion ? "Answer question" : "Answer confirmation",
           detail: "Respond to the pending issue-thread interaction so the assignee has a live next action.",
@@ -2720,10 +2720,10 @@ async function listIssueBlockedInboxAttentionMap(
     if (approval) {
       result.set(row.id, attentionBase({
         state: "awaiting_decision",
-        reason: "pending_board_decision",
+        reason: "pending_operator_decision",
         severity: "medium",
         stoppedSinceAt: approval.createdAt,
-        owner: { type: "board", agentId: null, userId: null, label: "Board" },
+        owner: { type: "operator", agentId: null, userId: null, label: "Operator" },
         action: {
           label: "Decide approval",
           detail: "Approve, reject, or request revision on the linked approval.",

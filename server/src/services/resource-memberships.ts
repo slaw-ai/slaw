@@ -15,8 +15,8 @@ import type {
 import { forbidden, notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 
-type BoardActor = {
-  type: "board" | "agent" | "none";
+type OperatorActor = {
+  type: "operator" | "agent" | "none";
   userId?: string;
   squadIds?: string[];
   memberships?: Array<{
@@ -35,7 +35,7 @@ type PolicyDecision = {
 };
 
 export type ResourceMembershipPolicyHook = (input: {
-  actor: BoardActor;
+  actor: OperatorActor;
   squadId: string;
   userId: string;
   resourceType: ResourceMembershipResourceType;
@@ -69,9 +69,9 @@ function latestDate(...dates: Array<Date | null | undefined>): Date | null {
   return latest;
 }
 
-function assertBoardSelfMembershipAccess(actor: BoardActor, squadId: string, userId: string) {
-  if (actor.type !== "board" || !actor.userId) {
-    throw forbidden("Board user access required");
+function assertOperatorSelfMembershipAccess(actor: OperatorActor, squadId: string, userId: string) {
+  if (actor.type !== "operator" || !actor.userId) {
+    throw forbidden("Operator user access required");
   }
   if (actor.userId !== userId) {
     throw forbidden("Users may only update their own resource memberships");
@@ -110,14 +110,14 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
   const policyHook = options.policyHook ?? null;
 
   async function assertMutationAllowed(input: {
-    actor: BoardActor;
+    actor: OperatorActor;
     squadId: string;
     userId: string;
     resourceType: ResourceMembershipResourceType;
     resourceId: string;
     state: ResourceMembershipState;
   }): Promise<PolicyDecision> {
-    assertBoardSelfMembershipAccess(input.actor, input.squadId, input.userId);
+    assertOperatorSelfMembershipAccess(input.actor, input.squadId, input.userId);
     const decision = await evaluatePolicy(policyHook, input);
     if (!decision.allowed) {
       logger.warn(
@@ -137,8 +137,8 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
   }
 
   return {
-    async listForUser(squadId: string, userId: string, actor: BoardActor): Promise<ResourceMemberships> {
-      assertBoardSelfMembershipAccess(actor, squadId, userId);
+    async listForUser(squadId: string, userId: string, actor: OperatorActor): Promise<ResourceMemberships> {
+      assertOperatorSelfMembershipAccess(actor, squadId, userId);
       const [projectRows, agentRows] = await Promise.all([
         db
           .select({
@@ -178,7 +178,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
       userId: string;
       projectId: string;
       state: ResourceMembershipState;
-      actor: BoardActor;
+      actor: OperatorActor;
     }): Promise<ResourceMembershipUpdateResult & { changed: boolean; policySource: string }> {
       const project = await db.query.projects.findFirst({
         where: and(
@@ -249,7 +249,7 @@ export function resourceMembershipService(db: Db, options: ResourceMembershipSer
       userId: string;
       agentId: string;
       state: ResourceMembershipState;
-      actor: BoardActor;
+      actor: OperatorActor;
     }): Promise<ResourceMembershipUpdateResult & { changed: boolean; policySource: string }> {
       const agent = await db.query.agents.findFirst({
         where: and(

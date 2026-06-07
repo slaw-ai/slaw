@@ -370,7 +370,7 @@ export interface AssigneePickerProps {
   searchPlaceholder?: string;
   /** Empty search result message. */
   emptyMessage?: string;
-  /** Include active board users alongside agents. Defaults to true. */
+  /** Include active operator users alongside agents. Defaults to true. */
   includeUsers?: boolean;
   /** Include terminated agents. Defaults to false. */
   includeTerminatedAgents?: boolean;
@@ -576,7 +576,7 @@ export const FileTree = createSdkUiComponent<FileTreeProps>("FileTree");
 
 /**
  * Renders Slaw's native issue list component for squad-scoped plugin
- * pages that need a standard board issue view.
+ * pages that need a standard operator issue view.
  */
 export const IssuesList = createSdkUiComponent<IssuesListProps>("IssuesList");
 

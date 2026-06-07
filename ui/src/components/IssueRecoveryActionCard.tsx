@@ -38,7 +38,7 @@ export interface IssueRecoveryActionCardProps {
   forcedState?: RecoveryCardCardState;
   /** Optional click handler for resolve menu actions. If omitted, the buttons are not rendered. */
   onResolve?: (outcome: RecoveryResolveOutcome) => void;
-  /** Whether the viewer can run destructive board-only actions (e.g. false-positive dismissal). */
+  /** Whether the viewer can run destructive operator-only actions (e.g. false-positive dismissal). */
   canFalsePositive?: boolean;
   className?: string;
 }
@@ -167,7 +167,7 @@ function readWakePolicySummary(action: IssueRecoveryAction): string | null {
   const type = readEvidenceString(policy.type);
   if (!type) return null;
   if (type === "wake_owner") return "Corrective wake queued";
-  if (type === "board_escalation") return "Escalated to board";
+  if (type === "operator_escalation") return "Escalated to operator";
   if (type === "manual") return "Manual";
   if (type === "monitor") {
     const interval = readEvidenceString(policy.intervalLabel);
@@ -291,7 +291,7 @@ const RESOLVE_OPTIONS: Array<{
   label: string;
   description: string;
   destructive?: boolean;
-  boardOnly?: boolean;
+  operatorOnly?: boolean;
 }> = [
   {
     outcome: "todo",
@@ -313,14 +313,14 @@ const RESOLVE_OPTIONS: Array<{
     label: "False positive, done",
     description: "Dismiss recovery and mark the source issue complete.",
     destructive: true,
-    boardOnly: true,
+    operatorOnly: true,
   },
   {
     outcome: "false_positive_in_review",
     label: "False positive, review",
     description: "Dismiss recovery and send the source issue for review.",
     destructive: true,
-    boardOnly: true,
+    operatorOnly: true,
   },
 ];
 
@@ -370,7 +370,7 @@ export function IssueRecoveryActionCard({
 
   const showResolveActions = onResolve !== undefined && cardState !== "resolved";
   const visibleResolveOptions = RESOLVE_OPTIONS.filter((option) => {
-    if (option.boardOnly && !canFalsePositive) return false;
+    if (option.operatorOnly && !canFalsePositive) return false;
     return true;
   });
 
@@ -423,8 +423,8 @@ export function IssueRecoveryActionCard({
                 <span className="text-muted-foreground">Recovery:</span>
                 <AgentLink agentId={action.ownerAgentId} agentMap={agentMap} />
               </>
-            ) : action.ownerType === "board" ? (
-              <span className="font-medium">Board</span>
+            ) : action.ownerType === "operator" ? (
+              <span className="font-medium">Operator</span>
             ) : action.ownerType === "user" && action.ownerUserId ? (
               <span className="font-medium">user {action.ownerUserId.slice(0, 6)}</span>
             ) : action.ownerType === "system" ? (

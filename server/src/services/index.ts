@@ -59,7 +59,7 @@ export type {
   AuthorizationDecision,
   AuthorizationResource,
 } from "./authorization.js";
-export { boardAuthService } from "./board-auth.js";
+export { operatorAuthService } from "./operator-auth.js";
 export { instanceSettingsService } from "./instance-settings.js";
 export { cloudUpstreamService, reconcileCloudUpstreamRunsOnStartup } from "./cloud-upstreams.js";
 export { squadPortabilityService } from "./squad-portability.js";

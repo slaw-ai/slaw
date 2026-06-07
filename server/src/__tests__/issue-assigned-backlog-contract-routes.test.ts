@@ -111,8 +111,8 @@ async function createApp() {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -143,7 +143,7 @@ function makeIssue(input: {
     assigneeAgentId: input.assigneeAgentId ?? null,
     assigneeUserId: null,
     createdByAgentId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     executionWorkspaceId: null,
     labels: [],
     labelIds: [],

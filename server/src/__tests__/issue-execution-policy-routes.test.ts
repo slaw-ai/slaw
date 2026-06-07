@@ -101,7 +101,7 @@ function registerModuleMocks() {
 
 type TestActor =
   | {
-      type: "board";
+      type: "operator";
       userId: string;
       squadIds: string[];
       source: "local_implicit";
@@ -123,8 +123,8 @@ async function createApp(actor?: TestActor) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = actor ?? {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -163,7 +163,7 @@ describe("issue execution policy routes", () => {
     });
     mockAccessService.canUser.mockResolvedValue(false);
     mockAccessService.decide.mockImplementation(async (input: { actor?: { type?: string; source?: string }; action?: string }) => {
-      const allowed = input.actor?.type === "board" && input.actor.source === "local_implicit"
+      const allowed = input.actor?.type === "operator" && input.actor.source === "local_implicit"
         ? true
         : Boolean(await mockAccessService.canUser() || await mockAccessService.hasPermission());
       return {
@@ -183,7 +183,7 @@ describe("issue execution policy routes", () => {
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1003",
       title: "Missing review path",
       executionPolicy: null,
@@ -217,7 +217,7 @@ describe("issue execution policy routes", () => {
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1004",
       title: "Pending confirmation",
       executionPolicy: null,
@@ -256,7 +256,7 @@ describe("issue execution policy routes", () => {
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1005",
       title: "Execution participant",
       executionPolicy: null,
@@ -310,7 +310,7 @@ describe("issue execution policy routes", () => {
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1006",
       title: "External review monitor",
       executionPolicy: null,
@@ -356,16 +356,16 @@ describe("issue execution policy routes", () => {
     );
   });
 
-  it("allows board-authored in_review repair updates without a review path", async () => {
+  it("allows operator-authored in_review repair updates without a review path", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       squadId: "squad-1",
       status: "todo",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1007",
-      title: "Board repair",
+      title: "Operator repair",
       executionPolicy: null,
       executionState: null,
     };
@@ -400,8 +400,8 @@ describe("issue execution policy routes", () => {
       squadId: "squad-1",
       status: "in_review",
       assigneeAgentId: null,
-      assigneeUserId: "local-board",
-      createdByUserId: "local-board",
+      assigneeUserId: "local-operator",
+      createdByUserId: "local-operator",
       identifier: "PAP-999",
       title: "Execution policy edit",
       executionPolicy: null,
@@ -424,7 +424,7 @@ describe("issue execution policy routes", () => {
       expect.objectContaining({
         executionPolicy: policy,
         actorAgentId: null,
-        actorUserId: "local-board",
+        actorUserId: "local-operator",
       }),
     );
     const updatePatch = mockIssueService.update.mock.calls[0]?.[1] as Record<string, unknown>;
@@ -442,14 +442,14 @@ describe("issue execution policy routes", () => {
       status: "in_progress",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1001",
       title: "Manual monitor trigger",
       executionPolicy: normalizeIssueExecutionPolicy({
         monitor: {
           nextCheckAt: "2026-04-11T12:30:00.000Z",
           notes: "Check deployment",
-          scheduledBy: "board",
+          scheduledBy: "operator",
         },
       }),
       executionState: null,
@@ -466,20 +466,20 @@ describe("issue execution policy routes", () => {
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       expect.objectContaining({
         actorType: "user",
-        actorId: "local-board",
+        actorId: "local-operator",
         agentId: null,
       }),
     );
   });
 
-  it("lets a board user create a child issue with a scheduled monitor", async () => {
+  it("lets a operator user create a child issue with a scheduled monitor", async () => {
     mockIssueService.getById.mockResolvedValue({
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       squadId: "squad-1",
       status: "in_progress",
       assigneeAgentId: "11111111-1111-4111-8111-111111111111",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1001",
       title: "Parent issue",
       executionPolicy: null,
@@ -504,13 +504,13 @@ describe("issue execution policy routes", () => {
     const createPayload = mockIssueService.createChild.mock.calls[0]?.[1] as {
       executionPolicy: { monitor: { scheduledBy: string } };
     };
-    expect(createPayload.executionPolicy.monitor.scheduledBy).toBe("board");
+    expect(createPayload.executionPolicy.monitor.scheduledBy).toBe("operator");
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         action: "issue.monitor_scheduled",
         details: expect.objectContaining({
-          scheduledBy: "board",
+          scheduledBy: "operator",
         }),
       }),
     );
@@ -524,7 +524,7 @@ describe("issue execution policy routes", () => {
       status: "in_progress",
       assigneeAgentId: "11111111-1111-4111-8111-111111111111",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1001",
       title: "Parent issue",
       executionPolicy: null,
@@ -545,13 +545,13 @@ describe("issue execution policy routes", () => {
         executionPolicy: {
           monitor: {
             nextCheckAt: "2026-04-11T12:30:00.000Z",
-            scheduledBy: "board",
+            scheduledBy: "operator",
           },
         },
       });
 
     expect(res.status).toBe(403);
-    expect(res.body.error).toBe("Only the assignee agent or a board user can manage issue monitors");
+    expect(res.body.error).toBe("Only the assignee agent or a operator user can manage issue monitors");
     expect(mockIssueService.createChild).not.toHaveBeenCalled();
   });
 
@@ -563,7 +563,7 @@ describe("issue execution policy routes", () => {
       status: "in_progress",
       assigneeAgentId: "33333333-3333-4333-8333-333333333333",
       assigneeUserId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       identifier: "PAP-1001",
       title: "Parent issue",
       executionPolicy: null,
@@ -584,7 +584,7 @@ describe("issue execution policy routes", () => {
         executionPolicy: {
           monitor: {
             nextCheckAt: "2026-04-11T12:30:00.000Z",
-            scheduledBy: "board",
+            scheduledBy: "operator",
             externalRef: "https://example.test/deploy?token=secret",
           },
         },

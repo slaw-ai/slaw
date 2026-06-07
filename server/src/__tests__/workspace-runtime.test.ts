@@ -2953,7 +2953,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -3058,7 +3058,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,
@@ -3148,7 +3148,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -3268,7 +3268,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,

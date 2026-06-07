@@ -130,7 +130,7 @@ async function createApp() {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    req.actor = { type: "board", userId: "board-user", source: "local_implicit" };
+    req.actor = { type: "operator", userId: "operator-user", source: "local_implicit" };
     next();
   });
   app.use("/api", costRoutes(makeDb() as any));
@@ -269,10 +269,10 @@ describe("cost routes", () => {
     expect(parseCostLimit({ limit: "25" })).toBe(25);
   });
 
-  it("rejects squad budget updates for board users outside the squad", async () => {
+  it("rejects squad budget updates for operator users outside the squad", async () => {
     const app = await createAppWithActor({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: ["squad-2"],
@@ -286,10 +286,10 @@ describe("cost routes", () => {
     expect(mockSquadService.update).not.toHaveBeenCalled();
   });
 
-  it("rejects agent budget updates for board users outside the agent squad", async () => {
+  it("rejects agent budget updates for operator users outside the agent squad", async () => {
     const app = await createAppWithActor({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: ["squad-2"],
@@ -316,7 +316,7 @@ describe("cost routes", () => {
       .send({ budgetMonthlyCents: 2500 });
 
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ error: "Board access required" });
+    expect(res.body).toEqual({ error: "Operator access required" });
     expect(mockAgentService.update).not.toHaveBeenCalled();
     expect(mockBudgetService.upsertPolicy).not.toHaveBeenCalled();
     expect(mockLogActivity).not.toHaveBeenCalled();
@@ -335,13 +335,13 @@ describe("cost routes", () => {
       .send({ budgetMonthlyCents: 2500 });
 
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ error: "Board access required" });
+    expect(res.body).toEqual({ error: "Operator access required" });
     expect(mockAgentService.update).not.toHaveBeenCalled();
     expect(mockBudgetService.upsertPolicy).not.toHaveBeenCalled();
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("allows authorized board users to update an agent budget and budget policy", async () => {
+  it("allows authorized operator users to update an agent budget and budget policy", async () => {
     mockAgentService.update.mockResolvedValueOnce({
       id: "agent-1",
       squadId: "squad-1",
@@ -350,8 +350,8 @@ describe("cost routes", () => {
       spentMonthlyCents: 0,
     });
     const app = await createAppWithActor({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: ["squad-1"],
@@ -372,14 +372,14 @@ describe("cost routes", () => {
         amount: 2500,
         windowKind: "calendar_month_utc",
       },
-      "board-user",
+      "operator-user",
     );
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         squadId: "squad-1",
         actorType: "user",
-        actorId: "board-user",
+        actorId: "operator-user",
         agentId: null,
         action: "agent.budget_updated",
         entityType: "agent",
@@ -430,7 +430,7 @@ describeEmbeddedPostgres("cost and finance aggregate overflow handling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -508,7 +508,7 @@ describeEmbeddedPostgres("cost and finance aggregate overflow handling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -647,7 +647,7 @@ describeEmbeddedPostgres("cost and finance aggregate overflow handling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -804,7 +804,7 @@ describeEmbeddedPostgres("cost and finance aggregate overflow handling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(financeEvents).values([

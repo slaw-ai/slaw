@@ -4,7 +4,7 @@ import type { Db } from "@slaw/db";
 import { normalizeIssueIdentifier } from "@slaw/shared";
 import { validate } from "../middleware/validate.js";
 import { activityService, normalizeActivityLimit } from "../services/activity.js";
-import { assertAuthenticated, assertBoard, assertSquadAccess } from "./authz.js";
+import { assertAuthenticated, assertOperator, assertSquadAccess } from "./authz.js";
 import { heartbeatService, issueService } from "../services/index.js";
 import { sanitizeRecord } from "../redaction.js";
 
@@ -48,7 +48,7 @@ export function activityRoutes(db: Db) {
   });
 
   router.post("/squads/:squadId/activity", validate(createActivitySchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     const event = await svc.create({

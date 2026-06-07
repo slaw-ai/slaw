@@ -77,7 +77,7 @@ describe("feedbackService.saveIssueVote", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `F${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -137,7 +137,7 @@ describe("feedbackService.saveIssueVote", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `R${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(squadSkills).values([
@@ -281,7 +281,7 @@ describe("feedbackService.saveIssueVote", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `D${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -350,7 +350,7 @@ describe("feedbackService.saveIssueVote", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -920,7 +920,7 @@ describe("feedbackService.saveIssueVote", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `H${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -937,7 +937,7 @@ describe("feedbackService.saveIssueVote", () => {
       squadId,
       issueId,
       authorUserId: "user-2",
-      body: "Board comment",
+      body: "Operator comment",
     });
 
     await expect(

@@ -103,9 +103,9 @@ const runA = "55555555-5555-4555-8555-555555555555";
 const projectA = "66666666-6666-4666-8666-666666666666";
 const pluginId = "11111111-1111-4111-8111-111111111111";
 
-function boardActor(overrides: Record<string, unknown> = {}) {
+function operatorActor(overrides: Record<string, unknown> = {}) {
   return {
-    type: "board",
+    type: "operator",
     userId: "user-1",
     source: "session",
     isInstanceAdmin: false,
@@ -140,7 +140,7 @@ describe.sequential("plugin install and upgrade authz", () => {
   });
 
   it("lists bundled monorepo plugin packages", async () => {
-    const { app } = await createApp(boardActor());
+    const { app } = await createApp(operatorActor());
 
     const res = await request(app).get("/api/plugins/examples");
 
@@ -160,9 +160,9 @@ describe.sequential("plugin install and upgrade authz", () => {
     expect(byPackageName.get("@slaw/plugin-authoring-smoke-example")?.experimental).toBe(false);
   }, 20_000);
 
-  it("rejects plugin installation for non-admin board users", async () => {
+  it("rejects plugin installation for non-admin operator users", async () => {
     const { app, loader } = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -202,7 +202,7 @@ describe.sequential("plugin install and upgrade authz", () => {
 
     const { app, loader } = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: true,
@@ -223,10 +223,10 @@ describe.sequential("plugin install and upgrade authz", () => {
     expect(mockLifecycle.load).toHaveBeenCalledWith(pluginId);
   }, 20_000);
 
-  it("rejects plugin upgrades for non-admin board users", async () => {
+  it("rejects plugin upgrades for non-admin operator users", async () => {
     const pluginId = "11111111-1111-4111-8111-111111111111";
     const { app } = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -247,9 +247,9 @@ describe.sequential("plugin install and upgrade authz", () => {
     ["enable", "post", "/api/plugins/11111111-1111-4111-8111-111111111111/enable", {}],
     ["disable", "post", "/api/plugins/11111111-1111-4111-8111-111111111111/disable", {}],
     ["config", "post", "/api/plugins/11111111-1111-4111-8111-111111111111/config", { configJson: {} }],
-  ] as const)("rejects plugin %s for non-admin board users", async (_name, method, path, body) => {
+  ] as const)("rejects plugin %s for non-admin operator users", async (_name, method, path, body) => {
     const { app } = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -284,7 +284,7 @@ describe.sequential("plugin install and upgrade authz", () => {
     mockLifecycle.disable.mockResolvedValue(plugin);
 
     const { app } = await createApp({
-      type: "board",
+      type: "operator",
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
@@ -311,7 +311,7 @@ describe.sequential("plugin install and upgrade authz", () => {
     readyPlugin();
 
     const { app } = await createApp({
-      type: "board",
+      type: "operator",
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
@@ -344,7 +344,7 @@ describe.sequential("plugin install and upgrade authz", () => {
     });
 
     const { app } = await createApp({
-      type: "board",
+      type: "operator",
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
@@ -387,7 +387,7 @@ describe.sequential("scoped plugin API routes", () => {
             routeKey: "smoke",
             method: "GET",
             path: "/smoke",
-            auth: "board-or-agent",
+            auth: "operator-or-agent",
             capability: "api.routes.register",
             squadResolution: { from: "query", key: "squadId" },
           },
@@ -397,7 +397,7 @@ describe.sequential("scoped plugin API routes", () => {
 
     const { app } = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: false,
@@ -456,7 +456,7 @@ describe.sequential("plugin local folder routes", () => {
 
   it("rejects validation for undeclared local folder keys", async () => {
     readyLocalFolderPlugin();
-    const { app } = await createApp(boardActor());
+    const { app } = await createApp(operatorActor());
 
     const res = await request(app)
       .post(`/api/plugins/${pluginId}/squads/${squadA}/local-folders/ssh/validate`)
@@ -469,7 +469,7 @@ describe.sequential("plugin local folder routes", () => {
 
   it("rejects saving undeclared local folder keys", async () => {
     readyLocalFolderPlugin();
-    const { app } = await createApp(boardActor());
+    const { app } = await createApp(operatorActor());
 
     const res = await request(app)
       .put(`/api/plugins/${pluginId}/squads/${squadA}/local-folders/ssh`)
@@ -486,10 +486,10 @@ describe.sequential("plugin tool and bridge authz", () => {
     vi.clearAllMocks();
   });
 
-  it("rejects tool execution when the board user cannot access runContext.squadId", async () => {
+  it("rejects tool execution when the operator user cannot access runContext.squadId", async () => {
     const executeTool = vi.fn();
     const getTool = vi.fn();
-    const { app } = await createApp(boardActor(), {}, {
+    const { app } = await createApp(operatorActor(), {}, {
       toolDeps: {
         toolDispatcher: {
           listToolsForAgent: vi.fn(),
@@ -551,7 +551,7 @@ describe.sequential("plugin tool and bridge authz", () => {
 
     for (const [label, rows] of cases) {
       const executeTool = vi.fn();
-      const { app } = await createApp(boardActor(), {}, {
+      const { app } = await createApp(operatorActor(), {}, {
         db: createSelectQueueDb(rows),
         toolDeps: {
           toolDispatcher: {
@@ -582,7 +582,7 @@ describe.sequential("plugin tool and bridge authz", () => {
 
   it("allows tool execution when agent, run, and project all belong to runContext.squadId", async () => {
     const executeTool = vi.fn().mockResolvedValue({ content: "ok" });
-    const { app } = await createApp(boardActor(), {}, {
+    const { app } = await createApp(operatorActor(), {}, {
       db: createSelectQueueDb([
         [{ squadId: squadA }],
         [{ squadId: squadA, agentId: agentA }],
@@ -631,7 +631,7 @@ describe.sequential("plugin tool and bridge authz", () => {
   ] as const)("rejects %s bridge calls without squadId for non-admin users", async (_name, _method, path, body) => {
     readyPlugin();
     const call = vi.fn();
-    const { app } = await createApp(boardActor(), {}, {
+    const { app } = await createApp(operatorActor(), {}, {
       bridgeDeps: {
         workerManager: { call },
       },
@@ -648,7 +648,7 @@ describe.sequential("plugin tool and bridge authz", () => {
   it("forwards authorized bridge squad scope to the plugin worker", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
-    const { app } = await createApp(boardActor(), {}, {
+    const { app } = await createApp(operatorActor(), {}, {
       bridgeDeps: {
         workerManager: { call },
       },
@@ -670,7 +670,7 @@ describe.sequential("plugin tool and bridge authz", () => {
   it("allows omitted-squad bridge calls for instance admins as global plugin actions", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
-    const { app } = await createApp(boardActor({
+    const { app } = await createApp(operatorActor({
       userId: "admin-1",
       isInstanceAdmin: true,
       squadIds: [],
@@ -702,7 +702,7 @@ describe.sequential("plugin tool and bridge authz", () => {
   it("passes authenticated actor context and overrides spoofed squad scope for plugin actions", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
-    const { app } = await createApp(boardActor({ runId: runA }), {}, {
+    const { app } = await createApp(operatorActor({ runId: runA }), {}, {
       bridgeDeps: {
         workerManager: { call },
       },
@@ -736,10 +736,10 @@ describe.sequential("plugin tool and bridge authz", () => {
     });
   });
 
-  it("uses null for board actor userId when no authenticated user id is present", async () => {
+  it("uses null for operator actor userId when no authenticated user id is present", async () => {
     readyPlugin();
     const call = vi.fn().mockResolvedValue({ ok: true });
-    const { app } = await createApp(boardActor({ userId: undefined }), {}, {
+    const { app } = await createApp(operatorActor({ userId: undefined }), {}, {
       bridgeDeps: {
         workerManager: { call },
       },
@@ -846,7 +846,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     readyPlugin();
     const call = vi.fn().mockRejectedValue(new Error("missing source_objects column"));
     const captured: Array<{ context: any; body: unknown }> = [];
-    const { app } = await createApp(boardActor(), {}, {
+    const { app } = await createApp(operatorActor(), {}, {
       bridgeDeps: {
         workerManager: { call },
       },
@@ -876,10 +876,10 @@ describe.sequential("plugin tool and bridge authz", () => {
     });
   });
 
-  it("rejects manual job triggers for non-admin board users", async () => {
+  it("rejects manual job triggers for non-admin operator users", async () => {
     const scheduler = { triggerJob: vi.fn() };
     const jobStore = { getJobByIdForPlugin: vi.fn() };
-    const { app } = await createApp(boardActor(), {}, {
+    const { app } = await createApp(operatorActor(), {}, {
       jobDeps: { scheduler, jobStore },
     });
 
@@ -896,7 +896,7 @@ describe.sequential("plugin tool and bridge authz", () => {
     readyPlugin();
     const scheduler = { triggerJob: vi.fn().mockResolvedValue({ runId: "run-1", jobId: "job-1" }) };
     const jobStore = { getJobByIdForPlugin: vi.fn().mockResolvedValue({ id: "job-1" }) };
-    const { app } = await createApp(boardActor({
+    const { app } = await createApp(operatorActor({
       userId: "admin-1",
       isInstanceAdmin: true,
       squadIds: [],

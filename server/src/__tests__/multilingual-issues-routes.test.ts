@@ -60,7 +60,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
       id: squadId,
       name: "Multilingual tenant",
       issuePrefix: "LNG",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
   }, 20_000);
 
@@ -87,7 +87,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
     app.use(express.json());
     app.use((req, _res, next) => {
       (req as any).actor = {
-        type: "board",
+        type: "operator",
         userId: "cloud-user-1",
         squadIds: [squadId],
         memberships: [{ squadId, membershipRole: "owner", status: "active" }],

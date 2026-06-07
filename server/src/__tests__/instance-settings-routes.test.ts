@@ -114,10 +114,10 @@ describe("instance settings routes", () => {
     });
   });
 
-  it("allows local board users to read and update experimental settings", async () => {
+  it("allows local operator users to read and update experimental settings", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -145,10 +145,10 @@ describe("instance settings routes", () => {
     expect(mockLogActivity).toHaveBeenCalledTimes(2);
   }, 10_000);
 
-  it("allows local board users to update guarded dev-server auto-restart", async () => {
+  it("allows local operator users to update guarded dev-server auto-restart", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -165,10 +165,10 @@ describe("instance settings routes", () => {
     ).toBe(true);
   });
 
-  it("allows local board users to update issue graph liveness auto-recovery", async () => {
+  it("allows local operator users to update issue graph liveness auto-recovery", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -189,8 +189,8 @@ describe("instance settings routes", () => {
 
   it("previews issue graph liveness recovery candidates before enabling", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -208,8 +208,8 @@ describe("instance settings routes", () => {
 
   it("kicks off issue graph liveness recovery on demand", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -227,10 +227,10 @@ describe("instance settings routes", () => {
     expect(mockLogActivity).toHaveBeenCalledTimes(2);
   });
 
-  it("allows local board users to update environment controls", async () => {
+  it("allows local operator users to update environment controls", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -245,10 +245,10 @@ describe("instance settings routes", () => {
     });
   });
 
-  it("allows local board users to read and update general settings", async () => {
+  it("allows local operator users to read and update general settings", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       source: "local_implicit",
       isInstanceAdmin: true,
     });
@@ -278,9 +278,9 @@ describe("instance settings routes", () => {
     expect(mockLogActivity).toHaveBeenCalledTimes(2);
   });
 
-  it("allows non-admin board users to read general settings", async () => {
+  it("allows non-admin operator users to read general settings", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -299,7 +299,7 @@ describe("instance settings routes", () => {
 
   it("rejects signed-in users without squad access from reading general settings", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-2",
       source: "session",
       isInstanceAdmin: false,
@@ -313,9 +313,9 @@ describe("instance settings routes", () => {
     expect(mockInstanceSettingsService.getGeneral).not.toHaveBeenCalled();
   });
 
-  it("rejects non-admin board users from updating general settings", async () => {
+  it("rejects non-admin operator users from updating general settings", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,

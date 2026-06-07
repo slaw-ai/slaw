@@ -680,6 +680,13 @@
       "when": 1780040470889,
       "tag": "0096_squad_skills_tower_managed",
       "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1780040470890,
+      "tag": "0097_board_to_operator",
+      "breakpoints": true
     }
   ]
 }

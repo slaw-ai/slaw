@@ -409,7 +409,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "TST",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(issues).values({
       id: issueId,

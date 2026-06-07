@@ -13,7 +13,7 @@ const blockedViewDefaults = {
   groupBy: "none" as const,
   sortBy: "most_recent" as const,
   issueFilters: defaultIssueFilterState,
-  currentUserId: "local-board",
+  currentUserId: "local-operator",
   liveIssueIds: new Set<string>(),
   workspaceFilterContext: {},
   showStatusColumn: true,
@@ -53,11 +53,11 @@ const fixtureIssues: Issue[] = [
     title: "Approve plan: rewrite onboarding flow",
     status: "in_review",
     blockedInboxAttention: attention({
-      reason: "pending_board_decision",
+      reason: "pending_operator_decision",
       state: "awaiting_decision",
       severity: "medium",
       stoppedSinceAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      owner: { type: "board", agentId: null, userId: null, label: "Board" },
+      owner: { type: "operator", agentId: null, userId: null, label: "Operator" },
       action: { label: "Accept or reject", detail: null },
     }),
   },
@@ -214,7 +214,7 @@ function BlockedReasonChipsCatalog() {
         <div className="text-xs uppercase tracking-wide text-muted-foreground">
           Needs decision · medium
         </div>
-        <BlockedReasonChip reason="pending_board_decision" severity="medium" />
+        <BlockedReasonChip reason="pending_operator_decision" severity="medium" />
       </div>
       <div className="space-y-2">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">

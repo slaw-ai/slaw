@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import type { ActivityEvent, Issue, Agent } from "@slaw/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
-import { accessApi, type CurrentBoardAccess } from "../api/access";
+import { accessApi, type CurrentOperatorAccess } from "../api/access";
 import { activityApi, type RunForIssue, type RunLivenessState } from "../api/activity";
 import { ApiError } from "../api/client";
 import {
@@ -316,7 +316,7 @@ function stopReasonLabel(run: RunForIssue) {
   if (stopReason === "max_turns_exhausted" || stopReason === "turn_limit_exhausted") return "max turns exhausted";
   if (stopReason === "budget_paused") return "budget paused";
   if (stopReason === "cancelled") return "cancelled";
-  if (stopReason === "paused") return "paused by board";
+  if (stopReason === "paused") return "paused by operator";
   if (stopReason === "process_lost") return "process lost";
   if (stopReason === "adapter_failed") return "adapter failed";
   if (stopReason === "completed") return timeoutText ? `completed (${timeoutText})` : "completed";
@@ -375,23 +375,23 @@ function formatSilenceAge(ms: number | null | undefined) {
   return `${hours}h ${minutes}m`;
 }
 
-function canBoardRecordWatchdogDecision(
+function canOperatorRecordWatchdogDecision(
   squadId: string,
-  boardAccess: CurrentBoardAccess | undefined,
+  operatorAccess: CurrentOperatorAccess | undefined,
 ) {
-  if (!boardAccess) return false;
-  if (boardAccess.source === "local_implicit" || boardAccess.isInstanceAdmin) return true;
+  if (!operatorAccess) return false;
+  if (operatorAccess.source === "local_implicit" || operatorAccess.isInstanceAdmin) return true;
 
-  const membership = boardAccess.memberships?.find(
+  const membership = operatorAccess.memberships?.find(
     (item) => item.squadId === squadId && item.status === "active",
   );
-  if (!membership) return boardAccess.squadIds.includes(squadId) && !boardAccess.memberships;
+  if (!membership) return operatorAccess.squadIds.includes(squadId) && !operatorAccess.memberships;
   return membership.membershipRole !== "viewer" && membership.membershipRole !== null;
 }
 
 function watchdogDecisionErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 403) {
-    return "Only the board or the assigned recovery owner can record watchdog decisions";
+    return "Only the operator or the assigned recovery owner can record watchdog decisions";
   }
   return error instanceof Error && error.message.trim().length > 0
     ? error.message
@@ -411,9 +411,9 @@ export function IssueRunLedger({
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [watchdogDecisionError, setWatchdogDecisionError] = useState<string | null>(null);
-  const { data: boardAccess } = useQuery({
-    queryKey: queryKeys.access.currentBoardAccess,
-    queryFn: () => accessApi.getCurrentBoardAccess(),
+  const { data: operatorAccess } = useQuery({
+    queryKey: queryKeys.access.currentOperatorAccess,
+    queryFn: () => accessApi.getCurrentOperatorAccess(),
     retry: false,
   });
   const { data: runs } = useQuery({
@@ -470,7 +470,7 @@ export function IssueRunLedger({
       activityEvents={activityEvents}
       renderActivityEvent={renderActivityEvent}
       pendingWatchdogDecision={watchdogDecision.variables?.decision ?? null}
-      canRecordWatchdogDecisions={canBoardRecordWatchdogDecision(squadId, boardAccess)}
+      canRecordWatchdogDecisions={canOperatorRecordWatchdogDecision(squadId, operatorAccess)}
       watchdogDecisionError={watchdogDecisionError}
       onWatchdogDecision={(input) => watchdogDecision.mutate(input)}
     />

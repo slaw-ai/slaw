@@ -55,7 +55,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `PAP-${squadId.slice(0, 8)}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     return squadId;
   }
@@ -113,14 +113,14 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
     return agentId;
   }
 
-  it("allows board actors to manage project workspace runtime services", async () => {
+  it("allows operator actors to manage project workspace runtime services", async () => {
     const squadId = await seedSquad();
     const { projectWorkspaceId } = await seedProjectWorkspace(squadId);
 
     await expect(assertCanManageProjectWorkspaceRuntimeServices(db, {
       actor: {
-        type: "board",
-        userId: "board-1",
+        type: "operator",
+        userId: "operator-1",
         squadIds: [squadId],
         source: "session",
         isInstanceAdmin: false,

@@ -30,13 +30,13 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       body: "Working on it",
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
     });
 
     expect(comment.id).toMatch(/^optimistic-/);
     expect(comment.clientId).toBe(comment.id);
     expect(comment.clientStatus).toBe("pending");
-    expect(comment.authorUserId).toBe("board-1");
+    expect(comment.authorUserId).toBe("operator-1");
     expect(comment.authorAgentId).toBeNull();
   });
 
@@ -49,7 +49,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       body: "Working on it",
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
     });
 
     expect(comment.id).toBe("optimistic-1746000000000-4fzzzxjy");
@@ -64,7 +64,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       body: "Queue this",
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
       clientStatus: "queued",
       queueTargetRunId: "run-1",
     });
@@ -81,7 +81,7 @@ describe("optimistic issue comments", () => {
           squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
-          authorUserId: "board-1",
+          authorUserId: "operator-1",
           body: "Second",
           authorType: "user",
           presentation: null,
@@ -98,7 +98,7 @@ describe("optimistic issue comments", () => {
           squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
-          authorUserId: "board-1",
+          authorUserId: "operator-1",
           body: "First",
           authorType: "user",
           presentation: null,
@@ -117,7 +117,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       body: "First",
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
       clientStatus: "queued",
       queueTargetRunId: "run-1",
     });
@@ -125,7 +125,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       body: "Second",
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
       clientStatus: "queued",
       queueTargetRunId: "run-1",
     });
@@ -144,7 +144,7 @@ describe("optimistic issue comments", () => {
           squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
-          authorUserId: "board-1",
+          authorUserId: "operator-1",
           body: "Original",
           authorType: "user",
           presentation: null,
@@ -158,7 +158,7 @@ describe("optimistic issue comments", () => {
         squadId: "squad-1",
         issueId: "issue-1",
         authorAgentId: null,
-        authorUserId: "board-1",
+        authorUserId: "operator-1",
         body: "Updated",
         authorType: "user",
         presentation: null,
@@ -180,7 +180,7 @@ describe("optimistic issue comments", () => {
           squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
-          authorUserId: "board-1",
+          authorUserId: "operator-1",
           body: "Newest",
           authorType: "user",
           presentation: null,
@@ -195,7 +195,7 @@ describe("optimistic issue comments", () => {
           squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
-          authorUserId: "board-1",
+          authorUserId: "operator-1",
           body: "Oldest",
           authorType: "user",
           presentation: null,
@@ -208,7 +208,7 @@ describe("optimistic issue comments", () => {
           squadId: "squad-1",
           issueId: "issue-1",
           authorAgentId: null,
-          authorUserId: "board-1",
+          authorUserId: "operator-1",
           body: "Middle",
           authorType: "user",
           presentation: null,
@@ -235,7 +235,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "Second",
             authorType: "user",
             presentation: null,
@@ -248,7 +248,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "First",
             authorType: "user",
             presentation: null,
@@ -335,7 +335,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "Newest",
             authorType: "user",
             presentation: null,
@@ -350,7 +350,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "Oldest",
             authorType: "user",
             presentation: null,
@@ -365,7 +365,7 @@ describe("optimistic issue comments", () => {
         squadId: "squad-1",
         issueId: "issue-1",
         authorAgentId: null,
-        authorUserId: "board-1",
+        authorUserId: "operator-1",
         body: "Brand new",
         authorType: "user",
         presentation: null,
@@ -388,7 +388,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "Newest",
             authorType: "user",
             presentation: null,
@@ -403,7 +403,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "Middle",
             authorType: "user",
             presentation: null,
@@ -416,7 +416,7 @@ describe("optimistic issue comments", () => {
             squadId: "squad-1",
             issueId: "issue-1",
             authorAgentId: null,
-            authorUserId: "board-1",
+            authorUserId: "operator-1",
             body: "Oldest",
             authorType: "user",
             presentation: null,
@@ -455,7 +455,7 @@ describe("optimistic issue comments", () => {
         executionAgentNameKey: null,
         executionLockedAt: null,
         createdByAgentId: null,
-        createdByUserId: "board-1",
+        createdByUserId: "operator-1",
         issueNumber: 1,
         identifier: "PAP-1",
         originKind: "manual",
@@ -478,14 +478,14 @@ describe("optimistic issue comments", () => {
         reopen: true,
         reassignment: {
           assigneeAgentId: null,
-          assigneeUserId: "board-2",
+          assigneeUserId: "operator-2",
         },
       },
     );
 
     expect(next?.status).toBe("todo");
     expect(next?.assigneeAgentId).toBeNull();
-    expect(next?.assigneeUserId).toBe("board-2");
+    expect(next?.assigneeUserId).toBe("operator-2");
   });
 
   it("applies optimistic field updates for issue property edits", () => {
@@ -525,7 +525,7 @@ describe("optimistic issue comments", () => {
         executionAgentNameKey: null,
         executionLockedAt: null,
         createdByAgentId: null,
-        createdByUserId: "board-1",
+        createdByUserId: "operator-1",
         issueNumber: 1,
         identifier: "PAP-1",
         originKind: "manual",
@@ -648,7 +648,7 @@ describe("optimistic issue comments", () => {
       {
         status: "in_review",
         assigneeAgentId: null,
-        assigneeUserId: "board-2",
+        assigneeUserId: "operator-2",
         labelIds: ["label-2"],
         blockedByIssueIds: ["issue-3"],
         parentId: "issue-4",
@@ -659,7 +659,7 @@ describe("optimistic issue comments", () => {
 
     expect(next?.status).toBe("in_review");
     expect(next?.assigneeAgentId).toBeNull();
-    expect(next?.assigneeUserId).toBe("board-2");
+    expect(next?.assigneeUserId).toBe("operator-2");
     expect(next?.labelIds).toEqual(["label-2"]);
     expect(next?.labels?.map((label) => label.id)).toEqual(["label-2"]);
     expect(next?.blockedBy?.map((relation) => relation.id)).toEqual(["issue-3"]);
@@ -698,7 +698,7 @@ describe("optimistic issue comments", () => {
         executionAgentNameKey: null,
         executionLockedAt: null,
         createdByAgentId: null,
-        createdByUserId: "board-1",
+        createdByUserId: "operator-1",
         issueNumber: 1,
         identifier: "PAP-1",
         originKind: "manual",
@@ -740,7 +740,7 @@ describe("optimistic issue comments", () => {
         executionAgentNameKey: null,
         executionLockedAt: null,
         createdByAgentId: null,
-        createdByUserId: "board-1",
+        createdByUserId: "operator-1",
         issueNumber: 2,
         identifier: "PAP-2",
         originKind: "manual",
@@ -874,7 +874,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       authorAgentId: null,
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
       body: "Follow up after the active run",
       authorType: "user" as const,
       presentation: null,
@@ -903,7 +903,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       authorAgentId: null,
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
       body: "Follow up after the active run",
       authorType: "user" as const,
       presentation: null,
@@ -927,7 +927,7 @@ describe("optimistic issue comments", () => {
       squadId: "squad-1",
       issueId: "issue-1",
       authorAgentId: null,
-      authorUserId: "board-1",
+      authorUserId: "operator-1",
       body: "Follow up after the active run",
       authorType: "user" as const,
       presentation: null,

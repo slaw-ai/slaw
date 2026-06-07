@@ -1,6 +1,6 @@
 import pc from "picocolors";
 import type { Command } from "commander";
-import { getStoredBoardCredential, loginBoardCli } from "../../client/board-auth.js";
+import { getStoredOperatorCredential, loginOperatorCli } from "../../client/operator-auth.js";
 import { buildCliCommandLabel } from "../../client/command-label.js";
 import { readConfig } from "../../config/store.js";
 import { readContext, resolveProfile, type ClientContextProfile } from "../../client/context.js";
@@ -23,7 +23,7 @@ export interface ResolvedClientContext {
   profileName: string;
   profile: ClientContextProfile;
   json: boolean;
-  authSource: "explicit" | "env" | "profile_env" | "stored_board" | "none";
+  authSource: "explicit" | "env" | "profile_env" | "stored_operator" | "none";
 }
 
 export function addCommonClientOptions(command: Command, opts?: { includeSquad?: boolean }): Command {
@@ -54,8 +54,8 @@ export function resolveCommandContext(
 
   const resolvedApiKey = resolveApiKey(options, profile);
   const explicitApiKey = resolvedApiKey.value;
-  const storedBoardCredential = explicitApiKey ? null : getStoredBoardCredential(apiBase);
-  const apiKey = explicitApiKey || storedBoardCredential?.token;
+  const storedOperatorCredential = explicitApiKey ? null : getStoredOperatorCredential(apiBase);
+  const apiKey = explicitApiKey || storedOperatorCredential?.token;
 
   const squadId =
     options.squadId?.trim() ||
@@ -71,16 +71,16 @@ export function resolveCommandContext(
   const api = new SlawApiClient({
     apiBase,
     apiKey,
-    recoverAuth: explicitApiKey || !canAttemptInteractiveBoardAuth()
+    recoverAuth: explicitApiKey || !canAttemptInteractiveOperatorAuth()
       ? undefined
       : async ({ error }) => {
           const requestedAccess = error.message.includes("Instance admin required")
             ? "instance_admin_required"
-            : "board";
-          if (!shouldRecoverBoardAuth(error)) {
+            : "operator";
+          if (!shouldRecoverOperatorAuth(error)) {
             return null;
           }
-          const login = await loginBoardCli({
+          const login = await loginOperatorCli({
             apiBase,
             requestedAccess,
             requestedSquadId: squadId ?? null,
@@ -95,7 +95,7 @@ export function resolveCommandContext(
     profileName,
     profile,
     json: Boolean(options.json),
-    authSource: explicitApiKey ? resolvedApiKey.source : storedBoardCredential ? "stored_board" : "none",
+    authSource: explicitApiKey ? resolvedApiKey.source : storedOperatorCredential ? "stored_operator" : "none",
   };
 }
 
@@ -157,13 +157,13 @@ function resolveApiKey(
   return { value: undefined, source: "none" };
 }
 
-function shouldRecoverBoardAuth(error: ApiRequestError): boolean {
+function shouldRecoverOperatorAuth(error: ApiRequestError): boolean {
   if (error.status === 401) return true;
   if (error.status !== 403) return false;
-  return error.message.includes("Board access required") || error.message.includes("Instance admin required");
+  return error.message.includes("Operator access required") || error.message.includes("Instance admin required");
 }
 
-function canAttemptInteractiveBoardAuth(): boolean {
+function canAttemptInteractiveOperatorAuth(): boolean {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY);
 }
 

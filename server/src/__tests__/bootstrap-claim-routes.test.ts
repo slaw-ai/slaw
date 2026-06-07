@@ -3,7 +3,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
 import { accessRoutes } from "../routes/access.js";
-import { boardMutationGuard } from "../middleware/board-mutation-guard.js";
+import { operatorMutationGuard } from "../middleware/operator-mutation-guard.js";
 import { errorHandler } from "../middleware/index.js";
 
 const claimFirstInstanceAdminMock = vi.hoisted(() => vi.fn());
@@ -24,11 +24,11 @@ vi.mock("../services/index.js", () => ({
   agentService: () => ({
     getById: vi.fn(),
   }),
-  boardAuthService: () => ({
+  operatorAuthService: () => ({
     createCliAuthChallenge: vi.fn(),
-    resolveBoardAccess: vi.fn(),
-    assertCurrentBoardKey: vi.fn(),
-    revokeBoardApiKey: vi.fn(),
+    resolveOperatorAccess: vi.fn(),
+    assertCurrentOperatorKey: vi.fn(),
+    revokeOperatorApiKey: vi.fn(),
   }),
   deduplicateAgentName: vi.fn(),
   logActivity: vi.fn(),
@@ -60,14 +60,14 @@ function createApp(input: {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = input.actor ?? {
-      type: "board",
+      type: "operator",
       source: "session",
       userId: "user-1",
     };
     next();
   });
   if (input.guardMutations) {
-    app.use(boardMutationGuard());
+    app.use(operatorMutationGuard());
   }
   app.use(
     "/api",
@@ -123,8 +123,8 @@ describe("POST /bootstrap/claim", () => {
   it.each([
     [{ type: "none", source: "none" }, "anonymous caller"],
     [{ type: "agent", source: "agent_key", agentId: "agent-1" }, "agent key"],
-    [{ type: "board", source: "board_key", userId: "user-1" }, "board API key"],
-    [{ type: "board", source: "local_implicit", userId: "local-board" }, "local implicit board"],
+    [{ type: "operator", source: "operator_key", userId: "user-1" }, "operator API key"],
+    [{ type: "operator", source: "local_implicit", userId: "local-operator" }, "local implicit operator"],
   ])("rejects %s before opening the first-admin transaction", async (actor) => {
     const app = createApp({ actor });
 
@@ -148,7 +148,7 @@ describe("POST /bootstrap/claim", () => {
     expect(res.body.error).toContain("already claimed");
   });
 
-  it("stays behind the board mutation origin guard", async () => {
+  it("stays behind the operator mutation origin guard", async () => {
     const app = createApp({ guardMutations: true });
 
     const blocked = await request(app).post("/api/bootstrap/claim").send({});

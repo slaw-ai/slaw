@@ -26,7 +26,7 @@ export function sidebarBadgeRoutes(db: Db) {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     let canApproveJoins = false;
-    if (req.actor.type === "board") {
+    if (req.actor.type === "operator") {
       canApproveJoins =
         req.actor.source === "local_implicit" ||
         Boolean(req.actor.isInstanceAdmin) ||
@@ -57,7 +57,7 @@ export function sidebarBadgeRoutes(db: Db) {
       : [];
 
     const dismissedAtByKey =
-      req.actor.type === "board" && req.actor.userId
+      req.actor.type === "operator" && req.actor.userId
         ? await db
           .select({ itemKey: inboxDismissals.itemKey, dismissedAt: inboxDismissals.dismissedAt })
           .from(inboxDismissals)

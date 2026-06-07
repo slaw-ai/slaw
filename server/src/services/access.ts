@@ -77,7 +77,7 @@ export function accessService(db: Db) {
     permissionKey: PermissionKey,
   ): Promise<boolean> {
     return authorization.decide({
-      actor: { type: "board", userId },
+      actor: { type: "operator", userId },
       action: permissionKey,
       resource: { type: "squad", squadId },
     }).then((decision) => decision.allowed);

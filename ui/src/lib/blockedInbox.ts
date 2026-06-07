@@ -14,7 +14,7 @@ export type BlockedReasonVariant =
   | "owner_paused";
 
 const VARIANT_BY_REASON: Record<IssueBlockedInboxReason, BlockedReasonVariant> = {
-  pending_board_decision: "needs_decision",
+  pending_operator_decision: "needs_decision",
   pending_user_decision: "needs_decision",
   missing_successful_run_disposition: "needs_decision",
   blocked_chain_stalled: "stalled",
@@ -47,7 +47,7 @@ export const BLOCKED_VARIANT_LABELS: Record<BlockedReasonVariant, string> = {
 };
 
 const REASON_LABELS: Record<IssueBlockedInboxReason, string> = {
-  pending_board_decision: "Pending board decision",
+  pending_operator_decision: "Pending operator decision",
   pending_user_decision: "Pending user decision",
   missing_successful_run_disposition: "Pick disposition",
   blocked_chain_stalled: "Blocked chain stalled",

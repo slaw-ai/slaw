@@ -12,7 +12,7 @@ type SquadUserRecord = Pick<SquadMember, "principalId" | "status" | "user">
   | SquadUserDirectoryEntry;
 
 function fallbackUserLabel(userId: string): string {
-  if (userId === "local-board") return "Board";
+  if (userId === "local-operator") return "Operator";
   return userId.slice(0, 5);
 }
 

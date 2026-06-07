@@ -136,11 +136,11 @@ const execFileAsync = promisify(execFile);
 let bundledSkillsCommitPromise: Promise<string | null> | null = null;
 
 function resolveImportMode(options?: ImportBehaviorOptions): ImportMode {
-  return options?.mode ?? "board_full";
+  return options?.mode ?? "operator_full";
 }
 
 function resolveSkillConflictStrategy(mode: ImportMode, collisionStrategy: SquadPortabilityCollisionStrategy) {
-  if (mode === "board_full") return "replace" as const;
+  if (mode === "operator_full") return "replace" as const;
   return collisionStrategy === "skip" ? "skip" as const : "rename" as const;
 }
 
@@ -585,7 +585,7 @@ type ImportPlanInternal = {
   selectedAgents: SquadPortabilityAgentManifestEntry[];
 };
 
-type ImportMode = "board_full" | "agent_safe";
+type ImportMode = "operator_full" | "agent_safe";
 
 type ImportBehaviorOptions = {
   mode?: ImportMode;
@@ -2534,9 +2534,9 @@ function buildManifestFromPackageFiles(
         typeof slawSquad.attachmentMaxBytes === "number" && Number.isFinite(slawSquad.attachmentMaxBytes)
           ? Math.max(1, Math.floor(slawSquad.attachmentMaxBytes))
           : null,
-      requireBoardApprovalForNewAgents:
-        typeof slawSquad.requireBoardApprovalForNewAgents === "boolean"
-          ? slawSquad.requireBoardApprovalForNewAgents
+      requireOperatorApprovalForNewAgents:
+        typeof slawSquad.requireOperatorApprovalForNewAgents === "boolean"
+          ? slawSquad.requireOperatorApprovalForNewAgents
           : readSquadApprovalDefault(squadFrontmatter),
       feedbackDataSharingEnabled:
         typeof slawSquad.feedbackDataSharingEnabled === "boolean"
@@ -3516,7 +3516,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
               body: comment.body,
               authorType: comment.authorType,
               authorAgentSlug: comment.authorAgentId ? (idToSlug.get(comment.authorAgentId) ?? null) : null,
-              // Portable bundles preserve author kind, but not raw board user ids.
+              // Portable bundles preserve author kind, but not raw operator user ids.
               authorUserId: null,
               presentation: comment.presentation,
               metadata: comment.metadata,
@@ -3590,7 +3590,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
           brandColor: squad.brandColor ?? null,
           logoPath: squadLogoPath,
           attachmentMaxBytes: squad.attachmentMaxBytes,
-          requireBoardApprovalForNewAgents: squad.requireBoardApprovalForNewAgents ? true : undefined,
+          requireOperatorApprovalForNewAgents: squad.requireOperatorApprovalForNewAgents ? true : undefined,
           feedbackDataSharingEnabled: squad.feedbackDataSharingEnabled ? true : undefined,
           feedbackDataSharingConsentAt: squad.feedbackDataSharingConsentAt?.toISOString() ?? null,
           feedbackDataSharingConsentByUserId: squad.feedbackDataSharingConsentByUserId ?? null,
@@ -3894,7 +3894,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
         continue;
       }
 
-      if (mode === "board_full" && collisionStrategy === "replace") {
+      if (mode === "operator_full" && collisionStrategy === "replace") {
         agentPlans.push({
           slug: manifestAgent.slug,
           action: "update",
@@ -3940,7 +3940,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
           });
           continue;
         }
-        if (mode === "board_full" && collisionStrategy === "replace") {
+        if (mode === "operator_full" && collisionStrategy === "replace") {
           projectPlans.push({
             slug: manifestProject.slug,
             action: "update",
@@ -4028,7 +4028,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
       plan: {
         squadAction: input.target.mode === "new_squad"
           ? "create"
-          : include.squad && mode === "board_full"
+          : include.squad && mode === "operator_full"
             ? "update"
             : "none",
         agentPlans,
@@ -4087,7 +4087,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
     let targetSquad: {
       id: string;
       name: string;
-      requireBoardApprovalForNewAgents?: boolean | null;
+      requireOperatorApprovalForNewAgents?: boolean | null;
       attachmentMaxBytes?: number | null;
     } | null = null;
     let squadAction: "created" | "updated" | "unchanged" = "unchanged";
@@ -4114,8 +4114,8 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
         attachmentMaxBytes: include.squad
           ? (sourceManifest.squad?.attachmentMaxBytes ?? undefined)
           : undefined,
-        requireBoardApprovalForNewAgents: include.squad
-          ? (sourceManifest.squad?.requireBoardApprovalForNewAgents ?? false)
+        requireOperatorApprovalForNewAgents: include.squad
+          ? (sourceManifest.squad?.requireOperatorApprovalForNewAgents ?? false)
           : false,
         feedbackDataSharingEnabled: include.squad
           ? (sourceManifest.squad?.feedbackDataSharingEnabled ?? false)
@@ -4133,7 +4133,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
       if (mode === "agent_safe" && options?.sourceSquadId) {
         await access.copyActiveUserMemberships(options.sourceSquadId, created.id);
       } else {
-        const ownerPrincipalId = actorUserId ?? "board";
+        const ownerPrincipalId = actorUserId ?? "operator";
         await access.ensureMembership(created.id, "user", ownerPrincipalId, "owner", "active");
         await access.ensureRoleDefaultGrants(
           created.id,
@@ -4147,13 +4147,13 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
     } else {
       targetSquad = await squads.getById(input.target.squadId);
       if (!targetSquad) throw notFound("Target squad not found");
-      if (include.squad && sourceManifest.squad && mode === "board_full") {
+      if (include.squad && sourceManifest.squad && mode === "operator_full") {
         const updated = await squads.update(targetSquad.id, {
           name: sourceManifest.squad.name,
           description: sourceManifest.squad.description,
           brandColor: sourceManifest.squad.brandColor,
           attachmentMaxBytes: sourceManifest.squad.attachmentMaxBytes ?? undefined,
-          requireBoardApprovalForNewAgents: sourceManifest.squad.requireBoardApprovalForNewAgents,
+          requireOperatorApprovalForNewAgents: sourceManifest.squad.requireOperatorApprovalForNewAgents,
           feedbackDataSharingEnabled: sourceManifest.squad.feedbackDataSharingEnabled,
           feedbackDataSharingConsentAt: sourceManifest.squad.feedbackDataSharingConsentAt
             ? new Date(sourceManifest.squad.feedbackDataSharingConsentAt)

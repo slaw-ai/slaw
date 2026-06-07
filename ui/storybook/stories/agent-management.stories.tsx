@@ -267,7 +267,7 @@ const storybookSecrets: SquadSecret[] = [
 	    lastRotatedAt: recent(21_000),
 	    deletedAt: null,
 	    createdByAgentId: null,
-	    createdByUserId: "user-board",
+	    createdByUserId: "user-operator",
 	    createdAt: recent(21_000),
     updatedAt: recent(400),
   },

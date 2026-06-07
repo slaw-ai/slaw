@@ -215,7 +215,7 @@ function portabilityExport(): SquadPortabilityExportResult {
         brandColor: null,
         logoPath: null,
         attachmentMaxBytes: null,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
         feedbackDataSharingEnabled: false,
         feedbackDataSharingConsentAt: null,
         feedbackDataSharingConsentByUserId: null,

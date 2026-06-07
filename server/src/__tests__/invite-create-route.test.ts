@@ -14,11 +14,11 @@ function registerModuleMocks() {
     agentService: () => ({
       getById: vi.fn(),
     }),
-    boardAuthService: () => ({
+    operatorAuthService: () => ({
       createChallenge: vi.fn(),
-      resolveBoardAccess: vi.fn(),
-      assertCurrentBoardKey: vi.fn(),
-      revokeBoardApiKey: vi.fn(),
+      resolveOperatorAccess: vi.fn(),
+      assertCurrentOperatorKey: vi.fn(),
+      revokeOperatorApiKey: vi.fn(),
     }),
     deduplicateAgentName: vi.fn(),
     logActivity: (...args: unknown[]) => logActivityMock(...args),
@@ -85,7 +85,7 @@ async function createApp() {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
+      type: "operator",
       source: "local_implicit",
       userId: null,
       squadIds: ["squad-1"],

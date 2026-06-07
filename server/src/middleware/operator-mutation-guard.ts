@@ -33,7 +33,7 @@ function trustedOriginsForRequest(req: Request) {
   return origins;
 }
 
-function isTrustedBoardMutationRequest(req: Request) {
+function isTrustedOperatorMutationRequest(req: Request) {
   const allowedOrigins = trustedOriginsForRequest(req);
   const origin = parseOrigin(req.header("origin"));
   if (origin && allowedOrigins.has(origin)) return true;
@@ -44,32 +44,32 @@ function isTrustedBoardMutationRequest(req: Request) {
   return false;
 }
 
-export function boardMutationGuard(): RequestHandler {
+export function operatorMutationGuard(): RequestHandler {
   return (req, res, next) => {
     if (SAFE_METHODS.has(req.method.toUpperCase())) {
       next();
       return;
     }
 
-    if (req.actor.type !== "board") {
+    if (req.actor.type !== "operator") {
       next();
       return;
     }
 
-    // Local-trusted mode, board bearer keys, and trusted Cloud tenant calls are
+    // Local-trusted mode, operator bearer keys, and trusted Cloud tenant calls are
     // not browser-session requests.
     // In these modes, origin/referer headers can be absent; do not block those mutations.
     if (
       req.actor.source === "local_implicit"
-      || req.actor.source === "board_key"
+      || req.actor.source === "operator_key"
       || req.actor.source === "cloud_tenant"
     ) {
       next();
       return;
     }
 
-    if (!isTrustedBoardMutationRequest(req)) {
-      res.status(403).json({ error: "Board mutation requires trusted browser origin" });
+    if (!isTrustedOperatorMutationRequest(req)) {
+      res.status(403).json({ error: "Operator mutation requires trusted browser origin" });
       return;
     }
 

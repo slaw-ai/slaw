@@ -3,7 +3,7 @@ export const SQUAD_SEARCH_RATE_LIMIT_MAX_REQUESTS = 60;
 
 export type SquadSearchRateLimitActor = {
   squadId: string;
-  actorType: "agent" | "board";
+  actorType: "agent" | "operator";
   actorId: string;
 };
 

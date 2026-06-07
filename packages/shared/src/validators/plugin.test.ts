@@ -15,7 +15,7 @@ describe("plugin manifest validators", () => {
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Compat Dashboard",
-      description: "Dashboard-only plugin without access or authorization host APIs.",
+      description: "Dashoperator-only plugin without access or authorization host APIs.",
       author: "Slaw",
       categories: ["ui"],
       capabilities: ["ui.dashboardWidget.register"],

@@ -121,7 +121,7 @@ function createIssue(overrides: Record<string, unknown> = {}) {
     parentId: null,
     assigneeAgentId: ASSIGNEE_AGENT_ID,
     assigneeUserId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     identifier: "PAP-1714",
     title: "Persist interactions",
     executionPolicy: null,
@@ -132,8 +132,8 @@ function createIssue(overrides: Record<string, unknown> = {}) {
 }
 
 async function createApp(actor: Record<string, unknown> = {
-  type: "board",
-  userId: "local-board",
+  type: "operator",
+  userId: "local-operator",
   squadIds: ["squad-1"],
   source: "local_implicit",
   isInstanceAdmin: false,
@@ -296,7 +296,7 @@ describe.sequential("issue thread interaction routes", () => {
     });
   });
 
-  it("lists and creates board-authored interactions", async () => {
+  it("lists and creates operator-authored interactions", async () => {
     mockInteractionService.expireRequestConfirmationsSupersededByHistoricalComments.mockResolvedValueOnce([
       {
         id: "interaction-expired",
@@ -374,7 +374,7 @@ describe.sequential("issue thread interaction routes", () => {
       expect.objectContaining({ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
       "interaction-1",
       { selectedClientKeys: ["task-1"] },
-      expect.objectContaining({ userId: "local-board" }),
+      expect.objectContaining({ userId: "local-operator" }),
     );
     expect(mockHeartbeatService.wakeup).toHaveBeenCalledTimes(2);
     expect(mockHeartbeatService.wakeup).toHaveBeenNthCalledWith(
@@ -451,7 +451,7 @@ describe.sequential("issue thread interaction routes", () => {
       expect.objectContaining({ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
       "interaction-2",
       {},
-      expect.objectContaining({ userId: "local-board" }),
+      expect.objectContaining({ userId: "local-operator" }),
     );
     expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
       ASSIGNEE_AGENT_ID,
@@ -639,11 +639,11 @@ describe.sequential("issue thread interaction routes", () => {
     );
   });
 
-  it("wakes the returned agent when accepting an agent-authored confirmation from a board review assignee", async () => {
+  it("wakes the returned agent when accepting an agent-authored confirmation from a operator review assignee", async () => {
     mockIssueService.getById.mockResolvedValueOnce(createIssue({
       status: "in_review",
       assigneeAgentId: null,
-      assigneeUserId: "local-board",
+      assigneeUserId: "local-operator",
     }));
     mockInteractionService.acceptInteraction.mockResolvedValueOnce({
       interaction: {
@@ -706,7 +706,7 @@ describe.sequential("issue thread interaction routes", () => {
           assigneeAgentId: CREATED_AGENT_ID,
           assigneeUserId: null,
           _previous: expect.objectContaining({
-            assigneeUserId: "local-board",
+            assigneeUserId: "local-operator",
           }),
         }),
       }),

@@ -177,7 +177,7 @@ export function issueRecoveryActionService(db: Db) {
   ): Promise<IssueRecoveryAction> {
     const existing = await getActiveForIssue(input.squadId, input.sourceIssueId);
     const now = new Date();
-    const ownerType = input.ownerType ?? (input.ownerAgentId ? "agent" : "board");
+    const ownerType = input.ownerType ?? (input.ownerAgentId ? "agent" : "operator");
     if (existing) {
       const [updated] = await db
         .update(issueRecoveryActions)

@@ -127,8 +127,8 @@ async function installActor(app: express.Express, actor?: Record<string, unknown
 
   app.use((req, _res, next) => {
     (req as any).actor = actor ?? {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -159,7 +159,7 @@ function makeComment(overrides: Record<string, unknown> = {}) {
     squadId: "squad-1",
     issueId: "11111111-1111-4111-8111-111111111111",
     authorAgentId: null,
-    authorUserId: "local-board",
+    authorUserId: "local-operator",
     body: "Queued follow-up",
     createdAt: new Date("2026-04-11T15:01:00.000Z"),
     updatedAt: new Date("2026-04-11T15:01:00.000Z"),

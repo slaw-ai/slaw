@@ -32,7 +32,7 @@ describe("actorMiddleware authenticated session profile", () => {
     else process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN = originalCloudTenantToken;
   });
 
-  it("preserves the signed-in user name and email on the board actor", async () => {
+  it("preserves the signed-in user name and email on the operator actor", async () => {
     const app = express();
     app.use(
       actorMiddleware(createDb(), {
@@ -55,7 +55,7 @@ describe("actorMiddleware authenticated session profile", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       userName: "User One",
       userEmail: "user@example.com",
@@ -66,7 +66,7 @@ describe("actorMiddleware authenticated session profile", () => {
     });
   });
 
-  it("trusts Cloud tenant identity headers and seeds board access", async () => {
+  it("trusts Cloud tenant identity headers and seeds operator access", async () => {
     process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN = "tenant-token";
     const inserts: Array<{ values: Record<string, unknown> }> = [];
     const db = {
@@ -117,7 +117,7 @@ describe("actorMiddleware authenticated session profile", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
-      type: "board",
+      type: "operator",
       userId: "global-user-1",
       userName: "Stack Owner",
       userEmail: "owner@example.com",

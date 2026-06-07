@@ -76,7 +76,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
     await db.insert(goals).values({
@@ -108,7 +108,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
 
@@ -163,7 +163,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         ],
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(created.status).toBe("pending");
@@ -174,7 +174,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       goalId,
       projectId: null,
     }, created.id, {}, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(accepted.interaction.kind).toBe("suggest_tasks");
@@ -229,7 +229,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       goalId,
       projectId: null,
     }, created.id, {}, {
-      userId: "local-board",
+      userId: "local-operator",
     })).rejects.toThrow("Interaction has already been resolved");
 
     const childrenAfterDuplicateAccept = await issuesSvc.list(squadId, { parentId: issueId });
@@ -245,7 +245,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
 
@@ -291,7 +291,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         ],
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     const accepted = await interactionsSvc.acceptSuggestedTasks({
@@ -302,7 +302,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, created.id, {
       selectedClientKeys: ["root"],
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(accepted.interaction.result).toMatchObject({
@@ -327,7 +327,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
 
@@ -368,7 +368,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         ],
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     await expect(
@@ -380,7 +380,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       }, created.id, {
         selectedClientKeys: ["child"],
       }, {
-        userId: "local-board",
+        userId: "local-operator",
       }),
     ).rejects.toThrow("requires its parent");
   });
@@ -394,7 +394,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
 
@@ -445,7 +445,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         ],
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     const answered = await interactionsSvc.answerQuestions({
@@ -458,7 +458,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       ],
       summaryMarkdown: "Ship Phase 1 with tests and docs.",
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(answered.status).toBe("answered");
@@ -479,7 +479,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         { questionId: "scope", optionIds: ["phase-2"] },
       ],
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     })).rejects.toThrow("Interaction has already been resolved");
   });
 
@@ -492,7 +492,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
     await db.insert(goals).values({
@@ -531,7 +531,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         }],
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     const cancelled = await interactionsSvc.cancelQuestions({
@@ -540,7 +540,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, created.id, {
       reason: "Not needed anymore",
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(cancelled.status).toBe("cancelled");
@@ -558,7 +558,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, created.id, {
       answers: [{ questionId: "scope", optionIds: ["phase-1"] }],
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     })).rejects.toThrow("Interaction has already been resolved");
   });
 
@@ -573,7 +573,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
 
@@ -661,7 +661,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
     await db.insert(goals).values({
@@ -694,7 +694,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         detailsMarkdown: "Creates follow-up work after acceptance.",
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(created.kind).toBe("request_confirmation");
@@ -706,7 +706,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       goalId,
       projectId: null,
     }, created.id, {}, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(accepted.createdIssues).toEqual([]);
@@ -717,7 +717,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         version: 1,
         outcome: "accepted",
       },
-      resolvedByUserId: "local-board",
+      resolvedByUserId: "local-operator",
     });
 
     const requiresReason = await interactionsSvc.create({
@@ -731,18 +731,18 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         rejectRequiresReason: true,
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     await expect(interactionsSvc.rejectInteraction({
       id: issueId,
       squadId,
     }, requiresReason.id, {}, {
-      userId: "local-board",
+      userId: "local-operator",
     })).rejects.toThrow("A decline reason is required for this confirmation");
   });
 
-  it("returns agent-authored request confirmations to the creating agent when a board user accepts", async () => {
+  it("returns agent-authored request confirmations to the creating agent when a operator user accepts", async () => {
     const squadId = randomUUID();
     const goalId = randomUUID();
     const issueId = randomUUID();
@@ -752,7 +752,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
     await db.insert(goals).values({
@@ -780,7 +780,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       title: "Review the plan",
       status: "in_review",
       priority: "medium",
-      assigneeUserId: "local-board",
+      assigneeUserId: "local-operator",
     });
 
     const created = await interactionsSvc.create({
@@ -805,7 +805,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       goalId,
       projectId: null,
     }, created.id, {}, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(accepted.continuationIssue).toEqual({
@@ -839,7 +839,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         supersedeOnUserComment: true,
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     const expired = await interactionsSvc.expireRequestConfirmationsSupersededByComment({
@@ -848,9 +848,9 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, {
       id: commentId,
       createdAt: new Date(new Date(created.createdAt).getTime() + 1_000),
-      authorUserId: "local-board",
+      authorUserId: "local-operator",
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(expired).toHaveLength(1);
@@ -862,7 +862,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         outcome: "superseded_by_comment",
         commentId,
       },
-      resolvedByUserId: "local-board",
+      resolvedByUserId: "local-operator",
     });
   });
 
@@ -879,7 +879,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         prompt: "Proceed with the current draft?",
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     const expired = await interactionsSvc.expireRequestConfirmationsSupersededByComment({
@@ -888,9 +888,9 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, {
       id: randomUUID(),
       createdAt: new Date(Date.now() + 1_000),
-      authorUserId: "local-board",
+      authorUserId: "local-operator",
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(expired).toHaveLength(0);
@@ -913,7 +913,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         supersedeOnUserComment: true,
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
     const createdAtMs = new Date(created.createdAt).getTime();
 
@@ -943,9 +943,9 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, {
       id: randomUUID(),
       createdAt: new Date(createdAtMs - 1_000),
-      authorUserId: "local-board",
+      authorUserId: "local-operator",
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     })).resolves.toHaveLength(0);
 
     const rows = await db.select().from(issueThreadInteractions);
@@ -969,7 +969,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         supersedeOnUserComment: true,
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
     await db
       .update(issueThreadInteractions)
@@ -989,7 +989,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: commentId,
       squadId,
       issueId,
-      authorUserId: "local-board",
+      authorUserId: "local-operator",
       authorType: "user",
       body: "Please revise this first.",
       createdAt: new Date("2026-05-18T12:01:00.000Z"),
@@ -1011,7 +1011,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         commentId,
       },
       resolvedByAgentId: null,
-      resolvedByUserId: "local-board",
+      resolvedByUserId: "local-operator",
     });
 
     await expect(interactionsSvc.expireRequestConfirmationsSupersededByHistoricalComments({
@@ -1032,7 +1032,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
     await db.insert(goals).values({
@@ -1094,7 +1094,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         },
       },
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     await db.insert(documentRevisions).values({
@@ -1118,7 +1118,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       goalId,
       projectId: null,
     }, created.id, {}, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(accepted.interaction).toMatchObject({
@@ -1157,7 +1157,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         id: squadId,
         name: "Slaw",
         issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-        requireBoardApprovalForNewAgents: false,
+        requireOperatorApprovalForNewAgents: false,
       });
       await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
       await db.insert(projects).values({
@@ -1215,7 +1215,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
           prompt: "Mark this issue done?",
         },
       }, {
-        userId: "local-board",
+        userId: "local-operator",
       });
 
       return { squadId, projectId, executionWorkspaceId, issueId, goalId, interactionId: created.id };
@@ -1238,7 +1238,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
           { id: issueId, squadId, goalId, projectId: null },
           interactionId,
           {},
-          { userId: "local-board" },
+          { userId: "local-operator" },
         ),
       ).rejects.toMatchObject({
         status: 409,
@@ -1276,7 +1276,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
           { id: issueId, squadId, goalId, projectId: null },
           interactionId,
           {},
-          { userId: "local-board" },
+          { userId: "local-operator" },
         ),
       ).rejects.toMatchObject({
         status: 409,
@@ -1313,7 +1313,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         { id: issueId, squadId, goalId, projectId: null },
         interactionId,
         {},
-        { userId: "local-board" },
+        { userId: "local-operator" },
       );
 
       expect(accepted.interaction).toMatchObject({
@@ -1326,7 +1326,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       // suggest_tasks acceptance only creates follow-up issues; it does not
       // approve code state or move the source workspace forward, so the
       // workspace_finalize gate (PAPA-440) must not apply here. Without this
-      // carve-out the board cannot triage suggested tasks on an issue whose
+      // carve-out the operator cannot triage suggested tasks on an issue whose
       // latest workspace op is still worktree_prepare.
       const { squadId, executionWorkspaceId, issueId, goalId } = await seedAcceptGateFixture();
 
@@ -1354,14 +1354,14 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
           ],
         },
       }, {
-        userId: "local-board",
+        userId: "local-operator",
       });
 
       const accepted = await interactionsSvc.acceptInteraction(
         { id: issueId, squadId, goalId, projectId: null },
         created.id,
         {},
-        { userId: "local-board" },
+        { userId: "local-operator" },
       );
 
       expect(accepted.interaction).toMatchObject({
@@ -1385,14 +1385,14 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
           prompt: "Mark this issue done?",
         },
       }, {
-        userId: "local-board",
+        userId: "local-operator",
       });
 
       const accepted = await interactionsSvc.acceptInteraction(
         { id: issueId, squadId, goalId: null, projectId: null },
         created.id,
         {},
-        { userId: "local-board" },
+        { userId: "local-operator" },
       );
 
       expect(accepted.interaction).toMatchObject({

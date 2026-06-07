@@ -63,7 +63,7 @@ function Section({
 
 function FoundationsMatrix() {
   const [autoMode, setAutoMode] = useState(true);
-  const [boardApproval, setBoardApproval] = useState(true);
+  const [operatorApproval, setOperatorApproval] = useState(true);
 
   return (
     <div className="slaw-story">
@@ -131,7 +131,7 @@ function FoundationsMatrix() {
             <div className="space-y-4">
               <div className="grid gap-2">
                 <Label htmlFor="story-title">Issue title</Label>
-                <Input id="story-title" defaultValue="Create Storybook coverage for the board UI" />
+                <Input id="story-title" defaultValue="Create Storybook coverage for the operator UI" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="story-summary">Comment</Label>
@@ -165,7 +165,7 @@ function FoundationsMatrix() {
                     <SelectContent>
                       <SelectItem value="codexcoder">CodexCoder</SelectItem>
                       <SelectItem value="qachecker">QAChecker</SelectItem>
-                      <SelectItem value="board">Board</SelectItem>
+                      <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -186,9 +186,9 @@ function FoundationsMatrix() {
                   <ToggleSwitch checked={autoMode} onCheckedChange={setAutoMode} />
                 </div>
                 <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
-                  <Checkbox checked={boardApproval} onCheckedChange={(value) => setBoardApproval(value === true)} />
+                  <Checkbox checked={operatorApproval} onCheckedChange={(value) => setOperatorApproval(value === true)} />
                   <span>
-                    <span className="font-medium">Require board approval for new agents</span>
+                    <span className="font-medium">Require operator approval for new agents</span>
                     <span className="mt-1 block text-xs text-muted-foreground">
                       Mirrors the squad-level governance control.
                     </span>
@@ -255,7 +255,7 @@ function FoundationsMatrix() {
                   <DialogHeader>
                     <DialogTitle>Create issue</DialogTitle>
                     <DialogDescription>
-                      Dialogs should keep the primary decision and risk clear without leaving the current board context.
+                      Dialogs should keep the primary decision and risk clear without leaving the current operator context.
                     </DialogDescription>
                   </DialogHeader>
                   <Separator />

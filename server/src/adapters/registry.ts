@@ -439,7 +439,7 @@ const hermesLocalAdapter: ServerAdapterModule = {
       "Slaw API safety rule:",
       "Use Authorization: Bearer $SLAW_API_KEY on every Slaw API request.",
       "Use X-Slaw-Run-Id: $SLAW_RUN_ID on every Slaw API request that writes or mutates data, including comments and issue updates.",
-      "Never use a board, browser, or local-board session for Slaw API writes.",
+      "Never use a operator, browser, or local-operator session for Slaw API writes.",
     ].join("\n");
 
     const patchedConfig: Record<string, unknown> = {

@@ -70,12 +70,12 @@ function installStorybookApiFixtures() {
       return Response.json({
         users: [
           {
-            principalId: "user-board",
+            principalId: "user-operator",
             status: "active",
             user: {
-              id: "user-board",
-              email: "board@slaw.local",
-              name: "Board Operator",
+              id: "user-operator",
+              email: "operator@slaw.local",
+              name: "Operator",
               image: null,
             },
           },

@@ -967,7 +967,7 @@ export function buildHostServices(
   };
 
   const pluginAssignmentActor = (actor: {
-    type: "agent" | "board";
+    type: "agent" | "operator";
     agentId?: string | null;
     squadId?: string | null;
     userId?: string | null;
@@ -982,7 +982,7 @@ export function buildHostServices(
       };
     }
     return {
-      type: "board",
+      type: "operator",
       userId: actor.userId ?? null,
       squadIds: Array.isArray(actor.squadIds) ? actor.squadIds : [],
       source: "session",

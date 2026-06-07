@@ -122,7 +122,7 @@ describeEmbeddedPostgres("active-run output watchdog", () => {
       id: squadId,
       name: "Watchdog Co",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values([
       {
@@ -405,7 +405,7 @@ describeEmbeddedPostgres("active-run output watchdog", () => {
     await db.insert(activityLog).values({
       squadId,
       actorType: "user",
-      actorId: "board-user",
+      actorId: "operator-user",
       agentId: null,
       runId: null,
       action: "issue.updated",

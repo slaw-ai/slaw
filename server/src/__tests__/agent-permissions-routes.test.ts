@@ -203,7 +203,7 @@ function registerModuleMocks() {
   }));
 }
 
-function createDbStub(options: { requireBoardApprovalForNewAgents?: boolean } = {}) {
+function createDbStub(options: { requireOperatorApprovalForNewAgents?: boolean } = {}) {
   return {
     select: vi.fn().mockReturnValue({
       from: vi.fn().mockReturnValue({
@@ -212,7 +212,7 @@ function createDbStub(options: { requireBoardApprovalForNewAgents?: boolean } = 
             Promise.resolve(resolve([{
               id: squadId,
               name: "Slaw",
-              requireBoardApprovalForNewAgents: options.requireBoardApprovalForNewAgents ?? false,
+              requireOperatorApprovalForNewAgents: options.requireOperatorApprovalForNewAgents ?? false,
             }])),
           ),
         }),
@@ -221,7 +221,7 @@ function createDbStub(options: { requireBoardApprovalForNewAgents?: boolean } = 
   };
 }
 
-async function createApp(actor: Record<string, unknown>, dbOptions: { requireBoardApprovalForNewAgents?: boolean } = {}) {
+async function createApp(actor: Record<string, unknown>, dbOptions: { requireOperatorApprovalForNewAgents?: boolean } = {}) {
   const [{ errorHandler }, { agentRoutes }] = await Promise.all([
     import("../middleware/index.js") as Promise<typeof import("../middleware/index.js")>,
     import("../routes/agents.js") as Promise<typeof import("../routes/agents.js")>,
@@ -398,7 +398,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
@@ -416,7 +416,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
@@ -439,7 +439,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
@@ -457,7 +457,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
@@ -475,7 +475,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
@@ -553,15 +553,15 @@ describe.sequential("agent permission routes", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("allows board updates that set cheap-profile workspace commands", async () => {
+  it("allows operator updates that set cheap-profile workspace commands", async () => {
     mockAgentService.getById.mockResolvedValue({
       ...baseAgent,
       adapterType: "codex_local",
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -612,8 +612,8 @@ describe.sequential("agent permission routes", () => {
     }));
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -747,7 +747,7 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.canUser.mockResolvedValue(false);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "member-user",
       source: "session",
       isInstanceAdmin: false,
@@ -769,11 +769,11 @@ describe.sequential("agent permission routes", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("allows direct agent creation for authenticated board users with agent create permission when approval is not required", async () => {
+  it("allows direct agent creation for authenticated operator users with agent create permission when approval is not required", async () => {
     mockAccessService.canUser.mockResolvedValue(true);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "agent-admin-user",
       source: "session",
       isInstanceAdmin: false,
@@ -806,16 +806,16 @@ describe.sequential("agent permission routes", () => {
     );
   });
 
-  it("rejects direct agent creation when new agents require board approval", async () => {
+  it("rejects direct agent creation when new agents require operator approval", async () => {
     const app = await createApp(
       {
-        type: "board",
-        userId: "board-user",
+        type: "operator",
+        userId: "operator-user",
         source: "local_implicit",
         isInstanceAdmin: true,
         squadIds: [squadId],
       },
-      { requireBoardApprovalForNewAgents: true },
+      { requireOperatorApprovalForNewAgents: true },
     );
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -834,10 +834,10 @@ describe.sequential("agent permission routes", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("grants tasks:assign by default when board creates a new agent", async () => {
+  it("grants tasks:assign by default when operator creates a new agent", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -866,14 +866,14 @@ describe.sequential("agent permission routes", () => {
       agentId,
       "tasks:assign",
       true,
-      "board-user",
+      "operator-user",
     );
   }, 15_000);
 
   it("rejects unsupported query parameters on the agent list route", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -890,8 +890,8 @@ describe.sequential("agent permission routes", () => {
 
   it("normalizes direct agent creation to disable timer heartbeats by default", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -932,8 +932,8 @@ describe.sequential("agent permission routes", () => {
     );
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -967,8 +967,8 @@ describe.sequential("agent permission routes", () => {
     );
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1000,8 +1000,8 @@ describe.sequential("agent permission routes", () => {
 
   it("normalizes hire requests to disable timer heartbeats by default", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1036,7 +1036,7 @@ describe.sequential("agent permission routes", () => {
     );
   });
 
-  it("allows board users to directly approve pending agents", async () => {
+  it("allows operator users to directly approve pending agents", async () => {
     const pendingAgent = {
       ...baseAgent,
       status: "pending_approval",
@@ -1052,8 +1052,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1068,7 +1068,7 @@ describe.sequential("agent permission routes", () => {
     expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
       squadId,
       actorType: "user",
-      actorId: "board-user",
+      actorId: "operator-user",
       action: "agent.approved",
       entityType: "agent",
       entityId: agentId,
@@ -1078,8 +1078,8 @@ describe.sequential("agent permission routes", () => {
 
   it("rejects direct approval for agents that are not pending approval", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1106,8 +1106,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1138,8 +1138,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1186,8 +1186,8 @@ describe.sequential("agent permission routes", () => {
       });
 
       const app = await createApp({
-        type: "board",
-        userId: "board-user",
+        type: "operator",
+        userId: "operator-user",
         source: "local_implicit",
         isInstanceAdmin: true,
         squadIds: [squadId],
@@ -1224,8 +1224,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1265,8 +1265,8 @@ describe.sequential("agent permission routes", () => {
       });
 
       const app = await createApp({
-        type: "board",
-        userId: "board-user",
+        type: "operator",
+        userId: "operator-user",
         source: "local_implicit",
         isInstanceAdmin: true,
         squadIds: [squadId],
@@ -1304,8 +1304,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1331,15 +1331,15 @@ describe.sequential("agent permission routes", () => {
         principalId: agentId,
         permissionKey: "tasks:assign",
         scope: null,
-        grantedByUserId: "board-user",
+        grantedByUserId: "operator-user",
         createdAt: new Date("2026-03-19T00:00:00.000Z"),
         updatedAt: new Date("2026-03-19T00:00:00.000Z"),
       },
     ]);
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1356,8 +1356,8 @@ describe.sequential("agent permission routes", () => {
     mockAccessService.listPrincipalGrants.mockResolvedValue([]);
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1377,8 +1377,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "local_implicit",
       isInstanceAdmin: true,
       squadIds: [squadId],
@@ -1395,7 +1395,7 @@ describe.sequential("agent permission routes", () => {
       agentId,
       "tasks:assign",
       true,
-      "board-user",
+      "operator-user",
     );
     expect(res.body.access.canAssignTasks).toBe(true);
     expect(res.body.access.taskAssignSource).toBe("agent_creator");
@@ -1421,7 +1421,7 @@ describe.sequential("agent permission routes", () => {
 
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
       .get("/api/agents/me/inbox/mine")
-      .query({ userId: "board-user" }));
+      .query({ userId: "operator-user" }));
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -1433,8 +1433,8 @@ describe.sequential("agent permission routes", () => {
       },
     ]);
     expect(mockIssueService.list).toHaveBeenCalledWith(squadId, {
-      touchedByUserId: "board-user",
-      inboxArchivedByUserId: "board-user",
+      touchedByUserId: "operator-user",
+      inboxArchivedByUserId: "operator-user",
       status: "backlog,todo,in_progress,in_review,blocked,done",
       limit: 500,
     });
@@ -1449,8 +1449,8 @@ describe.sequential("agent permission routes", () => {
     });
 
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       source: "session",
       isInstanceAdmin: false,
       squadIds: [squadId],

@@ -86,7 +86,7 @@ function StoryShell({ children }: { children: ReactNode }) {
 
 const reviewMarkdown = `# Release review
 
-Ship criteria for the board UI refresh:
+Ship criteria for the operator UI refresh:
 
 - [x] Preserve squad-scoped routes
 - [x] Keep comments and task updates auditable
@@ -108,8 +108,8 @@ See [the implementation notes](https://github.com/slaw/slaw).`;
 const editorMentions: MentionOption[] = [
   { id: "agent-codex", name: "CodexCoder", kind: "agent", agentId: "agent-codex", agentIcon: "code" },
   { id: "agent-qa", name: "QAChecker", kind: "agent", agentId: "agent-qa", agentIcon: "shield" },
-  { id: "project-board-ui", name: "Board UI", kind: "project", projectId: "project-board-ui", projectColor: "#0f766e" },
-  { id: "user-board", name: "Board Operator", kind: "user", userId: "user-board" },
+  { id: "project-board-ui", name: "Operator UI", kind: "project", projectId: "project-board-ui", projectColor: "#0f766e" },
+  { id: "user-operator", name: "Operator", kind: "user", userId: "user-operator" },
 ];
 
 const adapterSchema: JsonSchemaNode = {
@@ -167,7 +167,7 @@ const adapterSchema: JsonSchemaNode = {
       title: "Advanced guardrails",
       properties: {
         timeoutSeconds: { type: "integer", title: "Timeout seconds", minimum: 60, default: 900 },
-        requireApproval: { type: "boolean", title: "Require board approval", default: false },
+        requireApproval: { type: "boolean", title: "Require operator approval", default: false },
       },
     },
   },
@@ -216,7 +216,7 @@ const storybookSecrets: SquadSecret[] = [
 	    lastRotatedAt: new Date("2026-04-18T10:00:00.000Z"),
 	    deletedAt: null,
 	    createdByAgentId: null,
-    createdByUserId: "user-board",
+    createdByUserId: "user-operator",
     createdAt: new Date("2026-04-18T10:00:00.000Z"),
     updatedAt: new Date("2026-04-20T10:00:00.000Z"),
   },
@@ -237,7 +237,7 @@ const storybookSecrets: SquadSecret[] = [
 	    lastRotatedAt: new Date("2026-04-19T10:00:00.000Z"),
 	    deletedAt: null,
 	    createdByAgentId: null,
-    createdByUserId: "user-board",
+    createdByUserId: "user-operator",
     createdAt: new Date("2026-04-19T10:00:00.000Z"),
     updatedAt: new Date("2026-04-19T10:00:00.000Z"),
   },
@@ -290,7 +290,7 @@ const storybookProject: Project = {
   goalId: "goal-squad",
   goalIds: ["goal-squad"],
   goals: [{ id: "goal-squad", title: "We're building Slaw" }],
-  name: "Board UI",
+  name: "Operator UI",
   description: "Control-plane interface, Storybook review surfaces, and operator workflows.",
   status: "in_progress",
   leadAgentId: "agent-codex",
@@ -320,7 +320,7 @@ const storybookProject: Project = {
 
 const entityOptions: InlineEntityOption[] = [
   { id: "issue-1672", label: "Storybook forms and editors", searchText: "PAP-1672 ui story coverage" },
-  { id: "project-board-ui", label: "Board UI", searchText: "project frontend Storybook" },
+  { id: "project-board-ui", label: "Operator UI", searchText: "project frontend Storybook" },
   { id: "agent-codex", label: "CodexCoder", searchText: "engineer implementation" },
 ];
 
@@ -436,7 +436,7 @@ function JsonSchemaFormGallery() {
 function InlineEditorGallery() {
   const [title, setTitle] = useState("Storybook: Forms & Editors stories");
   const [description, setDescription] = useState(
-    "Create fixture-backed editor stories for the board UI, then verify Storybook builds.",
+    "Create fixture-backed editor stories for the operator UI, then verify Storybook builds.",
   );
   const [emptyTitle, setEmptyTitle] = useState("");
 
@@ -547,7 +547,7 @@ function PickerGallery() {
     createIssue({
       executionPolicy: buildExecutionPolicy({
         reviewerValues: ["agent:agent-qa"],
-        approverValues: ["user:user-board"],
+        approverValues: ["user:user-operator"],
       }),
     }),
   );
@@ -580,14 +580,14 @@ function PickerGallery() {
               issue={issue}
               stageType="review"
               agents={storybookAgents}
-              currentUserId="user-board"
+              currentUserId="user-operator"
               onUpdate={(patch) => setIssue((current) => ({ ...current, ...patch }))}
             />
             <ExecutionParticipantPicker
               issue={issue}
               stageType="approval"
               agents={storybookAgents}
-              currentUserId="user-board"
+              currentUserId="user-operator"
               onUpdate={(patch) => setIssue((current) => ({ ...current, ...patch }))}
             />
           </div>

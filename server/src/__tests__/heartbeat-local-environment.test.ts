@@ -96,7 +96,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({

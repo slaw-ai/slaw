@@ -87,7 +87,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: issuePrefix(squadId),
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -118,7 +118,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       id: otherSquadId,
       name: "Other",
       issuePrefix: issuePrefix(otherSquadId),
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,

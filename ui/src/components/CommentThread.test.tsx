@@ -190,7 +190,7 @@ describe("CommentThread", () => {
               squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
-              authorUserId: "local-board",
+              authorUserId: "local-operator",
               body: "Please continue validation.",
               authorType: "user",
               presentation: null,
@@ -296,7 +296,7 @@ describe("CommentThread", () => {
     const approval: Approval = {
       id: "approval-1",
       squadId: "squad-1",
-      type: "request_board_approval",
+      type: "request_operator_approval",
       requestedByAgentId: "agent-1",
       requestedByUserId: null,
       status: "pending",
@@ -328,7 +328,7 @@ describe("CommentThread", () => {
 
     const approvalRow = container.querySelector("#approval-approval-1") as HTMLDivElement | null;
     expect(approvalRow).not.toBeNull();
-    expect(container.textContent).toContain("request_board_approval");
+    expect(container.textContent).toContain("request_operator_approval");
     expect(container.textContent).toContain("Approve hosting spend");
     expect(container.textContent).toContain("Approve");
     expect(container.textContent).toContain("Reject");

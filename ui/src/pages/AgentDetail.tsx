@@ -865,7 +865,7 @@ export function AgentDetail() {
       try {
         return await agentsApi.create(resolvedSquadId, payload);
       } catch (error) {
-        if (error instanceof ApiError && error.status === 409 && error.message.includes("requires board approval")) {
+        if (error instanceof ApiError && error.status === 409 && error.message.includes("requires operator approval")) {
           const hire = await agentsApi.hire(resolvedSquadId, payload);
           return hire.agent;
         }
@@ -1195,7 +1195,7 @@ export function AgentDetail() {
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}
       {isPendingApproval && (
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/30 dark:text-amber-200">
-          <span>This agent is pending board approval and cannot be invoked yet.</span>
+          <span>This agent is pending operator approval and cannot be invoked yet.</span>
           <Button
             variant="outline"
             size="sm"

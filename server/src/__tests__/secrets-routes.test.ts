@@ -32,7 +32,7 @@ vi.mock("../services/index.js", () => ({
 }));
 
 function createApp(actor: Record<string, unknown> = {
-  type: "board",
+  type: "operator",
   userId: "user-1",
   source: "session",
   squadIds: ["squad-1"],
@@ -57,7 +57,7 @@ describe("secret routes", () => {
     mockLogActivity.mockReset();
   });
 
-  it("returns provider health checks for board callers with squad access", async () => {
+  it("returns provider health checks for operator callers with squad access", async () => {
     mockSecretService.checkProviders.mockResolvedValue([
       {
         provider: "local_encrypted",
@@ -95,7 +95,7 @@ describe("secret routes", () => {
     expect(mockSecretService.create).not.toHaveBeenCalled();
   });
 
-  it("rejects provider vault routes for non-board actors", async () => {
+  it("rejects provider vault routes for non-operator actors", async () => {
     const res = await request(createApp({
       type: "agent",
       agentId: "agent-1",
@@ -108,7 +108,7 @@ describe("secret routes", () => {
 
   it("rejects provider vault cross-squad access before calling the service", async () => {
     const res = await request(createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       squadIds: ["squad-2"],
@@ -119,7 +119,7 @@ describe("secret routes", () => {
     expect(mockSecretService.listProviderConfigs).not.toHaveBeenCalled();
   });
 
-  it("rejects provider vault discovery preview for non-board actors", async () => {
+  it("rejects provider vault discovery preview for non-operator actors", async () => {
     const res = await request(createApp({
       type: "agent",
       agentId: "agent-1",
@@ -387,7 +387,7 @@ describe("secret routes", () => {
     }));
   });
 
-  it("rejects remote import preview for non-board actors", async () => {
+  it("rejects remote import preview for non-operator actors", async () => {
     const res = await request(createApp({
       type: "agent",
       agentId: "agent-1",

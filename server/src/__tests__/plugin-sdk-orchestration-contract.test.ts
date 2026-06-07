@@ -71,7 +71,7 @@ describe("plugin SDK orchestration contract", () => {
       squadId,
       title: "Generated issue",
       status: "todo",
-      assigneeUserId: "board-user",
+      assigneeUserId: "operator-user",
       billingCode: "mission:alpha",
       originId: "mission-alpha",
       blockedByIssueIds: [blockerIssueId],
@@ -80,7 +80,7 @@ describe("plugin SDK orchestration contract", () => {
     expect(created.originKind).toBe("plugin:slaw.test-orchestration");
     expect(created.originId).toBe("mission-alpha");
     expect(created.billingCode).toBe("mission:alpha");
-    expect(created.assigneeUserId).toBe("board-user");
+    expect(created.assigneeUserId).toBe("operator-user");
 
     await expect(harness.ctx.issues.relations.get(created.id, squadId)).resolves.toEqual({
       blockedBy: [

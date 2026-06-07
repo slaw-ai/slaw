@@ -185,9 +185,9 @@ vi.mock("../startup-banner.js", () => ({
   printStartupBanner: vi.fn(),
 }));
 
-vi.mock("../board-claim.js", () => ({
-  getBoardClaimWarningUrl: vi.fn(() => null),
-  initializeBoardClaimChallenge: vi.fn(async () => undefined),
+vi.mock("../instance-claim.js", () => ({
+  getInstanceClaimWarningUrl: vi.fn(() => null),
+  initializeInstanceClaimChallenge: vi.fn(async () => undefined),
 }));
 
 vi.mock("../auth/better-auth.js", () => ({

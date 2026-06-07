@@ -46,7 +46,7 @@ describe("instance database backup routes", () => {
     const service = createBackupService();
     const app = createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: true,
@@ -75,12 +75,12 @@ describe("instance database backup routes", () => {
     });
   });
 
-  it("allows local implicit board access", async () => {
+  it("allows local implicit operator access", async () => {
     const service = createBackupService();
     const app = createApp(
       {
-        type: "board",
-        userId: "local-board",
+        type: "operator",
+        userId: "local-operator",
         source: "local_implicit",
         isInstanceAdmin: false,
       },
@@ -92,11 +92,11 @@ describe("instance database backup routes", () => {
     expect(service.runManualBackup).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects non-admin board users", async () => {
+  it("rejects non-admin operator users", async () => {
     const service = createBackupService();
     const app = createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
         isInstanceAdmin: false,
@@ -133,7 +133,7 @@ describe("instance database backup routes", () => {
     });
     const app = createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: true,

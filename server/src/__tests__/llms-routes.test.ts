@@ -56,8 +56,8 @@ describe("llm routes", () => {
 
   it("documents timer heartbeats as opt-in for new hires", async () => {
     const app = await createApp({
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: true,

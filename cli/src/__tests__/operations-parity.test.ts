@@ -25,7 +25,7 @@ async function run(args: string[]): Promise<void> {
   await createProgram().parseAsync([
     ...args,
     "--api-base", "http://localhost:3100",
-    "--api-key", "board-token",
+    "--api-key", "operator-token",
   ], { from: "user" });
 }
 

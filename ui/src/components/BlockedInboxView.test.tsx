@@ -119,7 +119,7 @@ const blockedViewProps = {
   groupBy: "none" as const,
   sortBy: "most_recent" as const,
   issueFilters: defaultIssueFilterState,
-  currentUserId: "local-board",
+  currentUserId: "local-operator",
   liveIssueIds: new Set<string>(),
   workspaceFilterContext: {},
   showStatusColumn: true,
@@ -196,11 +196,11 @@ describe("BlockedInboxView", () => {
       makeIssue(
         "issue-decision",
         "PAP-4",
-        "Pending board decision",
+        "Pending operator decision",
         attention({
-          reason: "pending_board_decision",
+          reason: "pending_operator_decision",
           severity: "medium",
-          owner: { type: "board", agentId: null, userId: null, label: "Board" },
+          owner: { type: "operator", agentId: null, userId: null, label: "Operator" },
           action: { label: "Accept or reject", detail: null },
         }),
       ),
@@ -236,11 +236,11 @@ describe("BlockedInboxView", () => {
       makeIssue(
         "issue-decision",
         "PAP-4",
-        "Pending board decision",
+        "Pending operator decision",
         attention({
-          reason: "pending_board_decision",
+          reason: "pending_operator_decision",
           severity: "medium",
-          owner: { type: "board", agentId: null, userId: null, label: "Board" },
+          owner: { type: "operator", agentId: null, userId: null, label: "Operator" },
           action: { label: "Accept or reject", detail: null },
         }),
       ),
@@ -255,9 +255,9 @@ describe("BlockedInboxView", () => {
     await waitFor(() => container.querySelector("a") !== null);
 
     const rowText = container.querySelector("a")?.textContent ?? "";
-    expect(rowText.indexOf("Pending board decision")).toBeGreaterThanOrEqual(0);
-    expect(rowText.indexOf("Needs decision")).toBeGreaterThan(rowText.indexOf("Pending board decision"));
-    expect(rowText.indexOf("Board")).toBeGreaterThan(rowText.indexOf("Needs decision"));
+    expect(rowText.indexOf("Pending operator decision")).toBeGreaterThanOrEqual(0);
+    expect(rowText.indexOf("Needs decision")).toBeGreaterThan(rowText.indexOf("Pending operator decision"));
+    expect(rowText.indexOf("Operator")).toBeGreaterThan(rowText.indexOf("Needs decision"));
     expect(rowText).not.toContain("Accept or reject");
     expect(container.querySelector('[data-testid="blocked-row-reason-column"]')?.textContent).toContain("Needs decision");
 

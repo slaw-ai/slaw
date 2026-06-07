@@ -23,7 +23,7 @@ describe("BlockedReasonChip", () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <BlockedReasonChip reason="pending_board_decision" severity="high" />,
+        <BlockedReasonChip reason="pending_operator_decision" severity="high" />,
       );
     });
     const chip = container.querySelector('[data-testid="blocked-reason-chip"]');

@@ -67,7 +67,7 @@ describeEmbeddedPostgres("productivity review service", () => {
       id: squadId,
       name: "Productivity Review Co",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values([
       {

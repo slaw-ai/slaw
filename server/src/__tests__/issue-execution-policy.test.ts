@@ -6,7 +6,7 @@ const coderAgentId = "11111111-1111-4111-8111-111111111111";
 const qaAgentId = "22222222-2222-4222-8222-222222222222";
 const ctoAgentId = "33333333-3333-4333-8333-333333333333";
 const ctoUserId = "cto-user";
-const boardUserId = "board-user";
+const operatorUserId = "operator-user";
 
 function makePolicy(
   stages: Array<{ type: "review" | "approval"; participants: Array<{ type: "agent" | "user"; agentId?: string; userId?: string }> }>,
@@ -562,7 +562,7 @@ describe("issue execution policy transitions", () => {
           },
           policy,
           requestedStatus: "done",
-          requestedAssigneePatch: { assigneeUserId: boardUserId },
+          requestedAssigneePatch: { assigneeUserId: operatorUserId },
           actor: { agentId: coderAgentId },
           commentBody: "Trying to bypass review",
         }),
@@ -781,7 +781,7 @@ describe("issue execution policy transitions", () => {
         policy,
         requestedStatus: "todo",
         requestedAssigneePatch: {},
-        actor: { userId: boardUserId },
+        actor: { userId: operatorUserId },
       });
 
       expect(result.patch.executionState).toBeNull();
@@ -821,7 +821,7 @@ describe("issue execution policy transitions", () => {
         },
         policy,
         requestedStatus: "in_review",
-        requestedAssigneePatch: { assigneeUserId: boardUserId },
+        requestedAssigneePatch: { assigneeUserId: operatorUserId },
         actor: { agentId: coderAgentId },
       });
 
@@ -900,14 +900,14 @@ describe("issue execution policy transitions", () => {
         issue: {
           status: "in_review",
           assigneeAgentId: null,
-          assigneeUserId: boardUserId,
+          assigneeUserId: operatorUserId,
           executionPolicy: null,
           executionState: null,
         },
         policy: reviewOnly,
         requestedStatus: undefined,
         requestedAssigneePatch: {},
-        actor: { userId: boardUserId },
+        actor: { userId: operatorUserId },
       });
 
       expect(result.patch).toEqual({});
@@ -1162,7 +1162,7 @@ describe("issue execution policy transitions", () => {
   describe("user participants", () => {
     it("handles user-type reviewer participant correctly", () => {
       const policy = makePolicy([
-        { type: "review", participants: [{ type: "user", userId: boardUserId }] },
+        { type: "review", participants: [{ type: "user", userId: operatorUserId }] },
       ]);
 
       const result = applyIssueExecutionPolicyTransition({
@@ -1182,7 +1182,7 @@ describe("issue execution policy transitions", () => {
 
       expect(result.patch.status).toBe("in_review");
       expect(result.patch.assigneeAgentId).toBeNull();
-      expect(result.patch.assigneeUserId).toBe(boardUserId);
+      expect(result.patch.assigneeUserId).toBe(operatorUserId);
     });
   });
 
@@ -1212,7 +1212,7 @@ describe("issue execution policy transitions", () => {
         policy: approvalOnly,
         requestedStatus: undefined,
         requestedAssigneePatch: {},
-        actor: { userId: boardUserId },
+        actor: { userId: operatorUserId },
       });
 
       expect(result.patch).toMatchObject({
@@ -1264,7 +1264,7 @@ describe("issue execution policy transitions", () => {
         },
         requestedStatus: undefined,
         requestedAssigneePatch: {},
-        actor: { userId: boardUserId },
+        actor: { userId: operatorUserId },
       });
 
       expect(result.patch).toMatchObject({
@@ -1289,7 +1289,7 @@ describe("issue execution policy transitions", () => {
         monitor: {
           nextCheckAt: "2026-04-11T12:30:00.000Z",
           notes: "Check deployment",
-          scheduledBy: "board",
+          scheduledBy: "operator",
         },
       })!;
 
@@ -1309,19 +1309,19 @@ describe("issue execution policy transitions", () => {
         policy,
         previousPolicy: null,
         requestedAssigneePatch: {},
-        actor: { userId: boardUserId },
+        actor: { userId: operatorUserId },
         monitorExplicitlyUpdated: true,
       });
 
       expect(result.patch.monitorNextCheckAt).toEqual(new Date("2026-04-11T12:30:00.000Z"));
-      expect(result.patch.monitorScheduledBy).toBe("board");
+      expect(result.patch.monitorScheduledBy).toBe("operator");
       expect(result.patch.executionState).toMatchObject({
         status: "idle",
         monitor: {
           status: "scheduled",
           nextCheckAt: "2026-04-11T12:30:00.000Z",
           notes: "Check deployment",
-          scheduledBy: "board",
+          scheduledBy: "operator",
         },
       });
     });

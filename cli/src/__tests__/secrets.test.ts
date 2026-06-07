@@ -324,7 +324,7 @@ async function runSecretCommand(args: string[]): Promise<void> {
   program.exitOverride();
   program.configureOutput({ writeOut: () => {}, writeErr: () => {} });
   registerSecretCommands(program);
-  await program.parseAsync([...args, "--api-base", "http://localhost:3100", "--api-key", "board-token"], { from: "user" });
+  await program.parseAsync([...args, "--api-base", "http://localhost:3100", "--api-key", "operator-token"], { from: "user" });
 }
 
 function jsonResponse(body: unknown = { ok: true }, init: ResponseInit = { status: 200 }): Response {

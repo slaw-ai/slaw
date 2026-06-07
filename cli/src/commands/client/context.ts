@@ -20,7 +20,7 @@ interface ContextOptions {
 interface ContextSetOptions extends ContextOptions {
   apiBase?: string;
   squadId?: string;
-  persona?: "board" | "agent";
+  persona?: "operator" | "agent";
   agentId?: string;
   agentName?: string;
   apiKeyEnvVarName?: string;
@@ -91,7 +91,7 @@ export function registerContextCommands(program: Command): void {
     .option("--profile <name>", "Profile name (default: current profile)")
     .option("--api-base <url>", "Default API base URL")
     .option("--squad-id <id>", "Default squad ID")
-    .option("--persona <persona>", "Profile persona: board or agent")
+    .option("--persona <persona>", "Profile persona: operator or agent")
     .option("--agent-id <id>", "Default agent ID for agent persona")
     .option("--agent-name <name>", "Default agent display name")
     .option("--api-key-env-var-name <name>", "Env var containing API key (recommended)")
@@ -151,8 +151,8 @@ function buildContextPatch(opts: ContextSetOptions): Partial<ClientContextProfil
   return patch;
 }
 
-function parsePersona(value: string | undefined): "board" | "agent" | undefined {
+function parsePersona(value: string | undefined): "operator" | "agent" | undefined {
   if (value === undefined) return undefined;
-  if (value === "board" || value === "agent") return value;
-  throw new Error("Invalid --persona value. Use board or agent.");
+  if (value === "operator" || value === "agent") return value;
+  throw new Error("Invalid --persona value. Use operator or agent.");
 }

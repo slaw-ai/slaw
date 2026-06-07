@@ -66,7 +66,7 @@ describeEmbeddedPostgres("issue blocker attention", () => {
       id: squadId,
       name: `Squad ${prefix}`,
       issuePrefix: prefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values([
       {
@@ -205,7 +205,7 @@ describeEmbeddedPostgres("issue blocker attention", () => {
       identifier: "PBU-2",
       title: "Human-owned parked blocker",
       status: "backlog",
-      assigneeUserId: "board-user-1",
+      assigneeUserId: "operator-user-1",
     });
     await block({ squadId, blockerIssueId: blockerId, blockedIssueId: parentId });
 

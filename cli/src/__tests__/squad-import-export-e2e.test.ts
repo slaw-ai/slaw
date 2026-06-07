@@ -363,7 +363,7 @@ describeEmbeddedPostgres("slaw squad import/export e2e", () => {
     await api(apiBase, `/api/squads/${sourceSquad.id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ requireBoardApprovalForNewAgents: false }),
+      body: JSON.stringify({ requireOperatorApprovalForNewAgents: false }),
     });
 
     const sourceAgent = await api<{ id: string; name: string }>(

@@ -111,7 +111,7 @@ function downloadDocumentFile(key: string, body: string) {
 }
 
 function getRevisionActorLabel(revision: DocumentRevision) {
-  if (revision.createdByUserId) return "board";
+  if (revision.createdByUserId) return "operator";
   if (revision.createdByAgentId) return "agent";
   return "system";
 }

@@ -76,7 +76,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -121,10 +121,10 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     };
   }
 
-  function boardActor(squadId: string): Express.Request["actor"] {
+  function operatorActor(squadId: string): Express.Request["actor"] {
     return {
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       squadIds: [squadId],
       memberships: [{ squadId, membershipRole: "admin", status: "active" }],
       isInstanceAdmin: false,
@@ -213,7 +213,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     });
   });
 
-  it("restricts admin force-release to board users with squad access and writes an audit event", async () => {
+  it("restricts admin force-release to operator users with squad access and writes an audit event", async () => {
     const { squadId, agentId, failedRunId, currentRunId } = await seedSquadAgentAndRuns();
     const issueId = randomUUID();
     await db.insert(issues).values({
@@ -233,7 +233,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       .post(`/api/issues/${issueId}/admin/force-release`)
       .expect(403);
     await request(createApp({
-      type: "board",
+      type: "operator",
       userId: "outside-user",
       squadIds: [],
       memberships: [],
@@ -243,7 +243,7 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
       .post(`/api/issues/${issueId}/admin/force-release`)
       .expect(403);
 
-    const res = await request(createApp(boardActor(squadId)))
+    const res = await request(createApp(operatorActor(squadId)))
       .post(`/api/issues/${issueId}/admin/force-release?clearAssignee=true`)
       .send();
 
@@ -273,10 +273,10 @@ describeEmbeddedPostgres("stale issue execution lock routes", () => {
     expect(audit).toMatchObject({
       action: "issue.admin_force_release",
       actorType: "user",
-      actorId: "board-user",
+      actorId: "operator-user",
       details: {
         issueId,
-        actorUserId: "board-user",
+        actorUserId: "operator-user",
         prevCheckoutRunId: currentRunId,
         prevExecutionRunId: failedRunId,
         clearAssignee: true,

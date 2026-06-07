@@ -305,7 +305,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
   });
 
-  it("allows simple-mode task assignment for active same-squad board operators without explicit grants", async () => {
+  it("allows simple-mode task assignment for active same-squad operator operators without explicit grants", async () => {
     const squad = await createSquad(db, "BoardAssignmentDefault");
     const userId = `user-${randomUUID()}`;
     const targetAgent = await createAgent(db, squad.id, { role: "engineer" });
@@ -318,7 +318,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "board", userId, source: "session" },
+      actor: { type: "operator", userId, source: "session" },
       action: "tasks:assign",
       resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },
@@ -330,7 +330,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
   });
 
-  it("denies legacy board assignment context for viewers", async () => {
+  it("denies legacy operator assignment context for viewers", async () => {
     const squad = await createSquad(db, "BoardViewerAssignment");
     const userId = `user-${randomUUID()}`;
     const targetAgent = await createAgent(db, squad.id, { role: "engineer" });
@@ -343,7 +343,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
 
     const decision = await authorizationService(db).decide({
-      actor: { type: "board", userId, squadIds: [squad.id], source: "session" },
+      actor: { type: "operator", userId, squadIds: [squad.id], source: "session" },
       action: "tasks:assign",
       resource: { type: "issue", squadId: squad.id, assigneeAgentId: targetAgent.id },
       scope: { assigneeAgentId: targetAgent.id },

@@ -30,7 +30,7 @@ describe("getRememberedPathOwnerSquadId", () => {
     ).toBeNull();
   });
 
-  it("falls back to the previous squad for unprefixed board routes", () => {
+  it("falls back to the previous squad for unprefixed operator routes", () => {
     expect(
       getRememberedPathOwnerSquadId({
         squads,
@@ -40,7 +40,7 @@ describe("getRememberedPathOwnerSquadId", () => {
     ).toBe("pap");
   });
 
-  it("treats unprefixed skills routes as board routes instead of squad prefixes", () => {
+  it("treats unprefixed skills routes as operator routes instead of squad prefixes", () => {
     expect(
       getRememberedPathOwnerSquadId({
         squads,

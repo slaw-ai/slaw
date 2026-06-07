@@ -81,7 +81,7 @@ export function SquadSettings() {
   const settingsMutation = useMutation({
     mutationFn: (requireApproval: boolean) =>
       squadsApi.update(selectedSquadId!, {
-        requireBoardApprovalForNewAgents: requireApproval
+        requireOperatorApprovalForNewAgents: requireApproval
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
@@ -356,9 +356,9 @@ export function SquadSettings() {
         </div>
         <div className="rounded-md border border-border px-4 py-3">
           <ToggleField
-            label="Require board approval for new hires"
-            hint="New agent hires stay pending until approved by board."
-            checked={!!selectedSquad.requireBoardApprovalForNewAgents}
+            label="Require operator approval for new hires"
+            hint="New agent hires stay pending until approved by an operator."
+            checked={!!selectedSquad.requireOperatorApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="squad-settings-team-approval-toggle"
           />

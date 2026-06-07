@@ -3,7 +3,7 @@ import { and, eq, gt, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@slaw/db";
 import {
   authUsers,
-  boardApiKeys,
+  operatorApiKeys,
   cliAuthChallenges,
   squads,
   squadMemberships,
@@ -11,7 +11,7 @@ import {
 } from "@slaw/db";
 import { conflict, forbidden, notFound } from "../errors.js";
 
-export const BOARD_API_KEY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+export const OPERATOR_API_KEY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const CLI_AUTH_CHALLENGE_TTL_MS = 10 * 60 * 1000;
 
 export type CliAuthChallengeStatus = "pending" | "approved" | "cancelled" | "expired";
@@ -26,16 +26,16 @@ export function tokenHashesMatch(left: string, right: string) {
   return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
 }
 
-export function createBoardApiToken() {
-  return `pcp_board_${randomBytes(24).toString("hex")}`;
+export function createOperatorApiToken() {
+  return `slaw_op_${randomBytes(24).toString("hex")}`;
 }
 
 export function createCliAuthSecret() {
   return `pcp_cli_auth_${randomBytes(24).toString("hex")}`;
 }
 
-export function boardApiKeyExpiresAt(nowMs: number = Date.now()) {
-  return new Date(nowMs + BOARD_API_KEY_TTL_MS);
+export function operatorApiKeyExpiresAt(nowMs: number = Date.now()) {
+  return new Date(nowMs + OPERATOR_API_KEY_TTL_MS);
 }
 
 export function cliAuthChallengeExpiresAt(nowMs: number = Date.now()) {
@@ -45,12 +45,12 @@ export function cliAuthChallengeExpiresAt(nowMs: number = Date.now()) {
 function challengeStatusForRow(row: typeof cliAuthChallenges.$inferSelect): CliAuthChallengeStatus {
   if (row.cancelledAt) return "cancelled";
   if (row.expiresAt.getTime() <= Date.now()) return "expired";
-  if (row.approvedAt && row.boardApiKeyId) return "approved";
+  if (row.approvedAt && row.operatorApiKeyId) return "approved";
   return "pending";
 }
 
-export function boardAuthService(db: Db) {
-  async function resolveBoardAccess(userId: string) {
+export function operatorAuthService(db: Db) {
+  async function resolveOperatorAccess(userId: string) {
     const [user, memberships, adminRole] = await Promise.all([
       db
         .select({
@@ -91,23 +91,23 @@ export function boardAuthService(db: Db) {
     };
   }
 
-  async function resolveBoardActivitySquadIds(input: {
+  async function resolveOperatorActivitySquadIds(input: {
     userId: string;
     requestedSquadId?: string | null;
-    boardApiKeyId?: string | null;
+    operatorApiKeyId?: string | null;
   }) {
-    const access = await resolveBoardAccess(input.userId);
+    const access = await resolveOperatorAccess(input.userId);
     const squadIds = new Set(access.squadIds);
 
     if (squadIds.size === 0 && input.requestedSquadId?.trim()) {
       squadIds.add(input.requestedSquadId.trim());
     }
 
-    if (squadIds.size === 0 && input.boardApiKeyId?.trim()) {
+    if (squadIds.size === 0 && input.operatorApiKeyId?.trim()) {
       const challengeSquadIds = await db
         .select({ requestedSquadId: cliAuthChallenges.requestedSquadId })
         .from(cliAuthChallenges)
-        .where(eq(cliAuthChallenges.boardApiKeyId, input.boardApiKeyId.trim()))
+        .where(eq(cliAuthChallenges.operatorApiKeyId, input.operatorApiKeyId.trim()))
         .then((rows) =>
           rows
             .map((row) => row.requestedSquadId?.trim() ?? null)
@@ -131,48 +131,48 @@ export function boardAuthService(db: Db) {
     return Array.from(squadIds);
   }
 
-  async function findBoardApiKeyByToken(token: string) {
+  async function findOperatorApiKeyByToken(token: string) {
     const tokenHash = hashBearerToken(token);
     const now = new Date();
     return db
       .select()
-      .from(boardApiKeys)
+      .from(operatorApiKeys)
       .where(
         and(
-          eq(boardApiKeys.keyHash, tokenHash),
-          isNull(boardApiKeys.revokedAt),
+          eq(operatorApiKeys.keyHash, tokenHash),
+          isNull(operatorApiKeys.revokedAt),
         ),
       )
       .then((rows) => rows.find((row) => !row.expiresAt || row.expiresAt.getTime() > now.getTime()) ?? null);
   }
 
-  async function touchBoardApiKey(id: string) {
-    await db.update(boardApiKeys).set({ lastUsedAt: new Date() }).where(eq(boardApiKeys.id, id));
+  async function touchOperatorApiKey(id: string) {
+    await db.update(operatorApiKeys).set({ lastUsedAt: new Date() }).where(eq(operatorApiKeys.id, id));
   }
 
-  async function revokeBoardApiKey(id: string) {
+  async function revokeOperatorApiKey(id: string) {
     const now = new Date();
     return db
-      .update(boardApiKeys)
+      .update(operatorApiKeys)
       .set({ revokedAt: now, lastUsedAt: now })
-      .where(and(eq(boardApiKeys.id, id), isNull(boardApiKeys.revokedAt)))
+      .where(and(eq(operatorApiKeys.id, id), isNull(operatorApiKeys.revokedAt)))
       .returning()
       .then((rows) => rows[0] ?? null);
   }
 
-  async function createNamedBoardApiKey(input: {
+  async function createNamedOperatorApiKey(input: {
     userId: string;
     name: string;
     expiresAt?: Date | null;
   }) {
-    const token = createBoardApiToken();
+    const token = createOperatorApiToken();
     const created = await db
-      .insert(boardApiKeys)
+      .insert(operatorApiKeys)
       .values({
         userId: input.userId,
         name: input.name.trim(),
         keyHash: hashBearerToken(token),
-        expiresAt: input.expiresAt === undefined ? boardApiKeyExpiresAt() : input.expiresAt,
+        expiresAt: input.expiresAt === undefined ? operatorApiKeyExpiresAt() : input.expiresAt,
       })
       .returning()
       .then((rows) => rows[0]);
@@ -188,65 +188,65 @@ export function boardAuthService(db: Db) {
     };
   }
 
-  async function listBoardApiKeys(
+  async function listOperatorApiKeys(
     userId: string,
     opts: { includeInactive?: boolean } = {},
   ) {
-    const conditions = [eq(boardApiKeys.userId, userId)];
+    const conditions = [eq(operatorApiKeys.userId, userId)];
     if (!opts.includeInactive) {
       const activeExpirationCondition = or(
-        isNull(boardApiKeys.expiresAt),
-        gt(boardApiKeys.expiresAt, new Date()),
+        isNull(operatorApiKeys.expiresAt),
+        gt(operatorApiKeys.expiresAt, new Date()),
       );
       conditions.push(
-        isNull(boardApiKeys.revokedAt),
+        isNull(operatorApiKeys.revokedAt),
       );
       if (activeExpirationCondition) conditions.push(activeExpirationCondition);
     }
     return db
       .select({
-        id: boardApiKeys.id,
-        name: boardApiKeys.name,
-        createdAt: boardApiKeys.createdAt,
-        lastUsedAt: boardApiKeys.lastUsedAt,
-        revokedAt: boardApiKeys.revokedAt,
-        expiresAt: boardApiKeys.expiresAt,
+        id: operatorApiKeys.id,
+        name: operatorApiKeys.name,
+        createdAt: operatorApiKeys.createdAt,
+        lastUsedAt: operatorApiKeys.lastUsedAt,
+        revokedAt: operatorApiKeys.revokedAt,
+        expiresAt: operatorApiKeys.expiresAt,
       })
-      .from(boardApiKeys)
+      .from(operatorApiKeys)
       .where(and(...conditions))
-      .orderBy(sql`${boardApiKeys.createdAt} desc`);
+      .orderBy(sql`${operatorApiKeys.createdAt} desc`);
   }
 
-  async function getBoardApiKeyForUser(keyId: string, userId: string) {
+  async function getOperatorApiKeyForUser(keyId: string, userId: string) {
     return db
       .select({
-        id: boardApiKeys.id,
-        userId: boardApiKeys.userId,
-        name: boardApiKeys.name,
-        createdAt: boardApiKeys.createdAt,
-        lastUsedAt: boardApiKeys.lastUsedAt,
-        revokedAt: boardApiKeys.revokedAt,
-        expiresAt: boardApiKeys.expiresAt,
+        id: operatorApiKeys.id,
+        userId: operatorApiKeys.userId,
+        name: operatorApiKeys.name,
+        createdAt: operatorApiKeys.createdAt,
+        lastUsedAt: operatorApiKeys.lastUsedAt,
+        revokedAt: operatorApiKeys.revokedAt,
+        expiresAt: operatorApiKeys.expiresAt,
       })
-      .from(boardApiKeys)
-      .where(and(eq(boardApiKeys.id, keyId), eq(boardApiKeys.userId, userId)))
+      .from(operatorApiKeys)
+      .where(and(eq(operatorApiKeys.id, keyId), eq(operatorApiKeys.userId, userId)))
       .then((rows) => rows[0] ?? null);
   }
 
   async function createCliAuthChallenge(input: {
     command: string;
     clientName?: string | null;
-    requestedAccess: "board" | "instance_admin_required";
+    requestedAccess: "operator" | "instance_admin_required";
     requestedSquadId?: string | null;
   }) {
     const challengeSecret = createCliAuthSecret();
-    const pendingBoardToken = createBoardApiToken();
+    const pendingOperatorToken = createOperatorApiToken();
     const expiresAt = cliAuthChallengeExpiresAt();
     const labelBase = input.clientName?.trim() || "slaw cli";
     const pendingKeyName =
       input.requestedAccess === "instance_admin_required"
         ? `${labelBase} (instance admin)`
-        : `${labelBase} (board)`;
+        : `${labelBase} (operator)`;
 
     const created = await db
       .insert(cliAuthChallenges)
@@ -256,7 +256,7 @@ export function boardAuthService(db: Db) {
         clientName: input.clientName?.trim() || null,
         requestedAccess: input.requestedAccess,
         requestedSquadId: input.requestedSquadId?.trim() || null,
-        pendingKeyHash: hashBearerToken(pendingBoardToken),
+        pendingKeyHash: hashBearerToken(pendingOperatorToken),
         pendingKeyName,
         expiresAt,
       })
@@ -266,7 +266,7 @@ export function boardAuthService(db: Db) {
     return {
       challenge: created,
       challengeSecret,
-      pendingBoardToken,
+      pendingOperatorToken,
     };
   }
 
@@ -311,7 +311,7 @@ export function boardAuthService(db: Db) {
       status: challengeStatusForRow(challenge),
       command: challenge.command,
       clientName: challenge.clientName ?? null,
-      requestedAccess: challenge.requestedAccess as "board" | "instance_admin_required",
+      requestedAccess: challenge.requestedAccess as "operator" | "instance_admin_required",
       requestedSquadId: challenge.requestedSquadId ?? null,
       requestedSquadName: squad?.name ?? null,
       approvedAt: challenge.approvedAt?.toISOString() ?? null,
@@ -328,7 +328,7 @@ export function boardAuthService(db: Db) {
   }
 
   async function approveCliAuthChallenge(id: string, token: string, userId: string) {
-    const access = await resolveBoardAccess(userId);
+    const access = await resolveOperatorAccess(userId);
     return db.transaction(async (tx) => {
       await tx.execute(
         sql`select ${cliAuthChallenges.id} from ${cliAuthChallenges} where ${cliAuthChallenges.id} = ${id} for update`,
@@ -351,19 +351,19 @@ export function boardAuthService(db: Db) {
         throw forbidden("Instance admin required");
       }
 
-      let boardKeyId = challenge.boardApiKeyId;
-      if (!boardKeyId) {
+      let operatorKeyId = challenge.operatorApiKeyId;
+      if (!operatorKeyId) {
         const createdKey = await tx
-          .insert(boardApiKeys)
+          .insert(operatorApiKeys)
           .values({
             userId,
             name: challenge.pendingKeyName,
             keyHash: challenge.pendingKeyHash,
-            expiresAt: boardApiKeyExpiresAt(),
+            expiresAt: operatorApiKeyExpiresAt(),
           })
           .returning()
           .then((rows) => rows[0]);
-        boardKeyId = createdKey.id;
+        operatorKeyId = createdKey.id;
       }
 
       const approvedAt = challenge.approvedAt ?? new Date();
@@ -371,7 +371,7 @@ export function boardAuthService(db: Db) {
         .update(cliAuthChallenges)
         .set({
           approvedByUserId: userId,
-          boardApiKeyId: boardKeyId,
+          operatorApiKeyId: operatorKeyId,
           approvedAt,
           updatedAt: new Date(),
         })
@@ -405,31 +405,31 @@ export function boardAuthService(db: Db) {
     return { status: "cancelled" as const, challenge: updated };
   }
 
-  async function assertCurrentBoardKey(keyId: string | undefined, userId: string | undefined) {
-    if (!keyId || !userId) throw conflict("Board API key context is required");
+  async function assertCurrentOperatorKey(keyId: string | undefined, userId: string | undefined) {
+    if (!keyId || !userId) throw conflict("Operator API key context is required");
     const key = await db
       .select()
-      .from(boardApiKeys)
-      .where(and(eq(boardApiKeys.id, keyId), eq(boardApiKeys.userId, userId)))
+      .from(operatorApiKeys)
+      .where(and(eq(operatorApiKeys.id, keyId), eq(operatorApiKeys.userId, userId)))
       .then((rows) => rows[0] ?? null);
-    if (!key || key.revokedAt) throw notFound("Board API key not found");
+    if (!key || key.revokedAt) throw notFound("Operator API key not found");
     return key;
   }
 
   return {
-    resolveBoardAccess,
-    findBoardApiKeyByToken,
-    touchBoardApiKey,
-    revokeBoardApiKey,
-    createNamedBoardApiKey,
-    listBoardApiKeys,
-    getBoardApiKeyForUser,
+    resolveOperatorAccess,
+    findOperatorApiKeyByToken,
+    touchOperatorApiKey,
+    revokeOperatorApiKey,
+    createNamedOperatorApiKey,
+    listOperatorApiKeys,
+    getOperatorApiKeyForUser,
     createCliAuthChallenge,
     getCliAuthChallengeBySecret,
     describeCliAuthChallenge,
     approveCliAuthChallenge,
     cancelCliAuthChallenge,
-    assertCurrentBoardKey,
-    resolveBoardActivitySquadIds,
+    assertCurrentOperatorKey,
+    resolveOperatorActivitySquadIds,
   };
 }

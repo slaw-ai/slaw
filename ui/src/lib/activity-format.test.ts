@@ -36,12 +36,12 @@ describe("activity formatting", () => {
     const details = {
       addedParticipants: [],
       removedParticipants: [
-        { type: "user", agentId: null, userId: "local-board" },
+        { type: "user", agentId: null, userId: "local-operator" },
       ],
     };
 
-    expect(formatActivityVerb("issue.approvers_updated", details)).toBe("removed approver Board from");
-    expect(formatIssueActivityAction("issue.approvers_updated", details)).toBe("removed approver Board");
+    expect(formatActivityVerb("issue.approvers_updated", details)).toBe("removed approver Operator from");
+    expect(formatIssueActivityAction("issue.approvers_updated", details)).toBe("removed approver Operator");
   });
 
   it("falls back to updated wording when reviewers are both added and removed", () => {

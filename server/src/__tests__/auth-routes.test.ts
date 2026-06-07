@@ -62,7 +62,7 @@ describe.sequential("auth routes", () => {
   it("returns the persisted user profile in the session payload", async () => {
     const app = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
       },
@@ -84,7 +84,7 @@ describe.sequential("auth routes", () => {
   it("updates the signed-in profile", async () => {
     const app = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "local_implicit",
       },
@@ -93,12 +93,12 @@ describe.sequential("auth routes", () => {
 
     const res = await request(app)
       .patch("/api/auth/profile")
-      .send({ name: "Board Operator", image: "" });
+      .send({ name: "Operator", image: "" });
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       id: "user-1",
-      name: "Board Operator",
+      name: "Operator",
       email: "jane@example.com",
       image: null,
     });
@@ -107,7 +107,7 @@ describe.sequential("auth routes", () => {
   it("preserves the existing avatar when updating only the profile name", async () => {
     const app = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "local_implicit",
       },
@@ -116,12 +116,12 @@ describe.sequential("auth routes", () => {
 
     const res = await request(app)
       .patch("/api/auth/profile")
-      .send({ name: "Board Operator" });
+      .send({ name: "Operator" });
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       id: "user-1",
-      name: "Board Operator",
+      name: "Operator",
       email: "jane@example.com",
       image: "https://example.com/jane.png",
     });
@@ -130,7 +130,7 @@ describe.sequential("auth routes", () => {
   it("accepts Slaw asset paths for avatars", async () => {
     const app = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
       },
@@ -148,7 +148,7 @@ describe.sequential("auth routes", () => {
   it("rejects invalid avatar image references", async () => {
     const app = await createApp(
       {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
       },

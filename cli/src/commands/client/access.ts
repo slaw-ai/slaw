@@ -289,35 +289,35 @@ export function registerAccessCommands(program: Command): void {
   addSquadPut(sidebar, "project-preferences:update", "Update current project sidebar preferences", "sidebar-preferences/me");
   addSquadList(sidebar, "badges", "Get sidebar badges", "sidebar-badges");
 
-  const inbox = program.command("inbox").description("Board inbox operations");
+  const inbox = program.command("inbox").description("Operator inbox operations");
   addSquadList(inbox, "dismissals", "List dismissed inbox items", "inbox-dismissals");
   addSquadPost(inbox, "dismiss", "Dismiss an inbox item", "inbox-dismissals");
 
-  const boardClaim = program.command("board-claim").description("Board claim token operations");
+  const instanceClaim = program.command("instance-claim").description("Operator claim token operations");
   addCommonClientOptions(
-    boardClaim
+    instanceClaim
       .command("show")
-      .description("Inspect a board claim token")
+      .description("Inspect a operator claim token")
       .argument("<token>", "Claim token")
       .action(async (token: string, opts: BaseClientOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          printOutput(await ctx.api.get(apiPath`/api/board-claim/${token}`), { json: ctx.json });
+          printOutput(await ctx.api.get(apiPath`/api/instance-claim/${token}`), { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }
       }),
   );
   addCommonClientOptions(
-    boardClaim
+    instanceClaim
       .command("claim")
-      .description("Claim a board claim token")
+      .description("Claim a operator claim token")
       .argument("<token>", "Claim token")
       .option("--payload-json <json>", "Claim JSON payload", "{}")
       .action(async (token: string, opts: JsonPayloadOptions) => {
         try {
           const ctx = resolveCommandContext(opts);
-          printOutput(await ctx.api.post(apiPath`/api/board-claim/${token}/claim`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
+          printOutput(await ctx.api.post(apiPath`/api/instance-claim/${token}/claim`, parseJson(opts.payloadJson ?? "{}")), { json: ctx.json });
         } catch (err) {
           handleCommandError(err);
         }

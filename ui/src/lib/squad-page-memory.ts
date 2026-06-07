@@ -4,7 +4,7 @@ import {
   toSquadRelativePath,
 } from "./squad-routes";
 
-const GLOBAL_SEGMENTS = new Set(["auth", "invite", "board-claim", "cli-auth", "docs"]);
+const GLOBAL_SEGMENTS = new Set(["auth", "invite", "instance-claim", "cli-auth", "docs"]);
 
 export function isRememberableSquadPath(path: string): boolean {
   const pathname = path.split("?")[0] ?? "";

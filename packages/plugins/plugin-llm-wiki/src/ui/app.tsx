@@ -209,7 +209,7 @@ type SlawIngestionSourceScope =
   | { kind: "active_projects"; limit: number; statuses?: Array<"in_progress" | "todo" | "done"> }
   | { kind: "selected_projects"; projectIds: string[] }
   | { kind: "root_issues"; issueIds: string[] }
-  | { kind: "squad_all"; requiresBoardConfirmation: true };
+  | { kind: "squad_all"; requiresOperatorConfirmation: true };
 
 type SlawIngestionProfile = {
   version: 1;

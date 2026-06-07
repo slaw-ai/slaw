@@ -56,7 +56,7 @@ describeEmbeddedPostgres("heartbeat runtime state deduplication", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({

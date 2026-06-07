@@ -48,7 +48,7 @@ async function createApp(actorOverrides: Record<string, unknown> = {}) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
+      type: "operator",
       userId: "user-1",
       squadIds: ["squad-1"],
       source: "session",
@@ -288,11 +288,11 @@ describe("approval routes idempotent retries", () => {
     );
   });
 
-  it("lets agents create generic issue-linked board approval requests", async () => {
+  it("lets agents create generic issue-linked operator approval requests", async () => {
     mockApprovalService.create.mockResolvedValue({
       id: "approval-1",
       squadId: "squad-1",
-      type: "request_board_approval",
+      type: "request_operator_approval",
       requestedByAgentId: "agent-1",
       requestedByUserId: null,
       status: "pending",
@@ -307,7 +307,7 @@ describe("approval routes idempotent retries", () => {
     const res = await request(await createAgentApp())
       .post("/api/squads/squad-1/approvals")
       .send({
-        type: "request_board_approval",
+        type: "request_operator_approval",
         issueIds: ["00000000-0000-0000-0000-000000000001"],
         payload: { title: "Approve hosting spend" },
       });
@@ -315,7 +315,7 @@ describe("approval routes idempotent retries", () => {
     expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
     expect(res.body).toMatchObject({
       squadId: "squad-1",
-      type: "request_board_approval",
+      type: "request_operator_approval",
       requestedByAgentId: "agent-1",
       requestedByUserId: null,
       status: "pending",

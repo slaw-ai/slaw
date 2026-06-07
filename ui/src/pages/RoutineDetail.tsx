@@ -467,7 +467,7 @@ export function RoutineDetail() {
     } catch (error) {
       pushToast({
         title: `Failed to copy ${label.toLowerCase()}`,
-        body: error instanceof Error ? error.message : "Clipboard access was denied.",
+        body: error instanceof Error ? error.message : "Clipoperator access was denied.",
         tone: "error",
       });
     }

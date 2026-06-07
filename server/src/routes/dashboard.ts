@@ -3,7 +3,7 @@ import type { Db } from "@slaw/db";
 import { dashboardService } from "../services/dashboard.js";
 import { assertSquadAccess } from "./authz.js";
 
-export function dashboardRoutes(db: Db) {
+export function dashoperatorRoutes(db: Db) {
   const router = Router();
   const svc = dashboardService(db);
 

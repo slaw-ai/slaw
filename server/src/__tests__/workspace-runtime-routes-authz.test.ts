@@ -417,11 +417,11 @@ describe.sequential("workspace runtime service route authorization", () => {
     expect(mockProjectService.updateWorkspace).not.toHaveBeenCalled();
   });
 
-  it("allows board callers through the project workspace runtime auth gate", async () => {
+  it("allows operator callers through the project workspace runtime auth gate", async () => {
     mockProjectService.getById.mockResolvedValue(null);
     const app = await createProjectApp({
-      type: "board",
-      userId: "board-1",
+      type: "operator",
+      userId: "operator-1",
       squadIds: ["squad-1"],
       source: "session",
       isInstanceAdmin: false,
@@ -508,11 +508,11 @@ describe.sequential("workspace runtime service route authorization", () => {
     expect(mockExecutionWorkspaceService.update).not.toHaveBeenCalled();
   });
 
-  it("allows board callers through the execution workspace runtime auth gate", async () => {
+  it("allows operator callers through the execution workspace runtime auth gate", async () => {
     mockExecutionWorkspaceService.getById.mockResolvedValue(null);
     const app = await createExecutionWorkspaceApp({
-      type: "board",
-      userId: "board-1",
+      type: "operator",
+      userId: "operator-1",
       squadIds: ["squad-1"],
       source: "session",
       isInstanceAdmin: false,

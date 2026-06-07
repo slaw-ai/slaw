@@ -40,7 +40,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "initialize",
       method: "POST",
       path: "/issues/:issueId/smoke",
-      auth: "board-or-agent",
+      auth: "operator-or-agent",
       capability: "api.routes.register",
       checkoutPolicy: "required-for-agent-in-progress",
       squadResolution: { from: "issue", param: "issueId" }
@@ -49,7 +49,7 @@ const manifest: SlawPluginManifestV1 = {
       routeKey: "summary",
       method: "GET",
       path: "/issues/:issueId/smoke",
-      auth: "board-or-agent",
+      auth: "operator-or-agent",
       capability: "api.routes.register",
       squadResolution: { from: "issue", param: "issueId" }
     }

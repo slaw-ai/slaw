@@ -51,7 +51,7 @@ const inviteHistory = [
     id: "invite-active",
     state: "Active",
     humanRole: "operator",
-    invitedBy: "Board User 25",
+    invitedBy: "Operator User 25",
     email: "board25@slaw.local",
     createdAt: "Apr 25, 2026, 9:00 AM",
     action: "Revoke",
@@ -61,7 +61,7 @@ const inviteHistory = [
     id: "invite-accepted",
     state: "Accepted",
     humanRole: "viewer",
-    invitedBy: "Board User 24",
+    invitedBy: "Operator User 24",
     email: "board24@slaw.local",
     createdAt: "Apr 24, 2026, 8:15 AM",
     action: "Inactive",
@@ -71,7 +71,7 @@ const inviteHistory = [
     id: "invite-revoked",
     state: "Revoked",
     humanRole: "admin",
-    invitedBy: "Board User 20",
+    invitedBy: "Operator User 20",
     email: "board20@slaw.local",
     createdAt: "Apr 20, 2026, 2:45 PM",
     action: "Inactive",
@@ -81,7 +81,7 @@ const inviteHistory = [
     id: "invite-expired",
     state: "Expired",
     humanRole: "owner",
-    invitedBy: "Board User 19",
+    invitedBy: "Operator User 19",
     email: "board19@slaw.local",
     createdAt: "Apr 19, 2026, 7:10 PM",
     action: "Inactive",
@@ -208,7 +208,7 @@ function InviteSummaryPanel({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <MetaCard label="Squad" value="Acme Robotics" />
-        <MetaCard label="Invited by" value="Board User" />
+        <MetaCard label="Invited by" value="Operator User" />
         <MetaCard label="Requested access" value={requestedAccess} />
         <MetaCard label="Invite expires" value="Mar 7, 2027" />
       </div>
@@ -345,7 +345,7 @@ function AgentRequestPreview() {
         <textarea
           className={fieldClassName}
           rows={4}
-          defaultValue="Reviews invites, triages requests, and keeps the board queue moving."
+          defaultValue="Reviews invites, triages requests, and keeps the operator queue moving."
           readOnly
         />
       </label>
@@ -417,7 +417,7 @@ function InviteResultPreview({
         <p className="text-sm text-zinc-400">{description}</p>
         {joinedNow ? (
           <Button type="button" className="w-full rounded-none">
-            Open board
+            Open console
           </Button>
         ) : (
           <>
@@ -886,13 +886,13 @@ export function InviteUxLab() {
         <div className="grid gap-5 xl:grid-cols-3">
           <InviteResultPreview
             title="Request to join Acme Robotics"
-            description="Board User must approve your request to join."
+            description="Operator User must approve your request to join."
             claimSecret="pcp_claim_secret_demo"
             onboardingTextUrl="/api/invites/pcp_invite_test/onboarding.txt"
           />
           <InviteResultPreview
             title="You joined the squad"
-            description="Your account already matched the approved invite, so the board can be opened immediately."
+            description="Your account already matched the approved invite, so the operator can be opened immediately."
             joinedNow
           />
           <InviteResultPreview
@@ -917,7 +917,7 @@ export function InviteUxLab() {
       <LabSection
         eyebrow="Squad settings"
         title="Squad invite management"
-        description="This section captures the board-side invite creation flow, copied-link state, audit table, and the edge states that are otherwise tedious to stage."
+        description="This section captures the operator-side invite creation flow, copied-link state, audit table, and the edge states that are otherwise tedious to stage."
         accentClassName="bg-[linear-gradient(180deg,rgba(244,114,182,0.06),transparent_28%),var(--background)]"
       >
         <SquadInvitesPreview />

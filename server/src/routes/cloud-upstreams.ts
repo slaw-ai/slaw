@@ -1,7 +1,7 @@
 import { Router } from "express";
 import type { Db } from "@slaw/db";
 import { badRequest, notFound } from "../errors.js";
-import { assertBoardOrgAccess } from "./authz.js";
+import { assertOperatorOrgAccess } from "./authz.js";
 import { cloudUpstreamService, instanceSettingsService } from "../services/index.js";
 
 export function cloudUpstreamRoutes(db: Db, options: { instanceId?: string } = {}) {
@@ -17,14 +17,14 @@ export function cloudUpstreamRoutes(db: Db, options: { instanceId?: string } = {
   }
 
   router.get("/cloud-upstreams", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     const squadId = stringQuery(req.query.squadId, "squadId");
     res.json(await service.list(squadId));
   });
 
   router.post("/cloud-upstreams/connect/start", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     const squadId = stringBody(req.body, "squadId");
     const remoteUrl = stringBody(req.body, "remoteUrl");
@@ -33,7 +33,7 @@ export function cloudUpstreamRoutes(db: Db, options: { instanceId?: string } = {
   });
 
   router.post("/cloud-upstreams/connect/finish", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     res.json(await service.finishConnect({
       pendingConnectionId: stringBody(req.body, "pendingConnectionId"),
@@ -43,13 +43,13 @@ export function cloudUpstreamRoutes(db: Db, options: { instanceId?: string } = {
   });
 
   router.post("/cloud-upstreams/:connectionId/push-runs/preview", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     res.json(await service.preview(req.params.connectionId, stringBody(req.body, "squadId")));
   });
 
   router.post("/cloud-upstreams/:connectionId/push-runs", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     res.json(await service.createRun({
       connectionId: req.params.connectionId,
@@ -59,19 +59,19 @@ export function cloudUpstreamRoutes(db: Db, options: { instanceId?: string } = {
   });
 
   router.get("/cloud-upstreams/:connectionId/push-runs/:runId", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     res.json(await service.readRun(req.params.connectionId, req.params.runId, stringQuery(req.query.squadId, "squadId")));
   });
 
   router.post("/cloud-upstreams/:connectionId/push-runs/:runId/cancel", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     res.json(await service.cancelRun(req.params.connectionId, req.params.runId, stringBody(req.body, "squadId")));
   });
 
   router.post("/cloud-upstreams/:connectionId/push-runs/:runId/activation", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertOperatorOrgAccess(req);
     await assertEnabled();
     res.json(await service.activateRunEntities({
       connectionId: req.params.connectionId,

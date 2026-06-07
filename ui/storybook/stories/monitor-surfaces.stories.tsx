@@ -110,7 +110,7 @@ const clearedIssue: Issue = {
       lastTriggeredAt: null,
       attemptCount: 0,
       notes: null,
-      scheduledBy: "board",
+      scheduledBy: "operator",
       kind: null,
       serviceName: null,
       externalRef: null,

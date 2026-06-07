@@ -15,7 +15,7 @@ function makeSquad(overrides: Partial<Squad>): Squad {
     budgetMonthlyCents: 0,
     spentMonthlyCents: 0,
     attachmentMaxBytes: 10 * 1024 * 1024,
-    requireBoardApprovalForNewAgents: false,
+    requireOperatorApprovalForNewAgents: false,
     feedbackDataSharingEnabled: false,
     feedbackDataSharingConsentAt: null,
     feedbackDataSharingConsentByUserId: null,

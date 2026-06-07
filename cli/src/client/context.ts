@@ -8,7 +8,7 @@ const DEFAULT_PROFILE = "default";
 export interface ClientContextProfile {
   apiBase?: string;
   squadId?: string;
-  persona?: "board" | "agent";
+  persona?: "operator" | "agent";
   agentId?: string;
   agentName?: string;
   apiKeyEnvVarName?: string;
@@ -72,7 +72,7 @@ function toStringOrUndefined(value: unknown): string | undefined {
 function normalizeProfile(value: unknown): ClientContextProfile {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
   const profile = value as Record<string, unknown>;
-  const persona = profile.persona === "board" || profile.persona === "agent"
+  const persona = profile.persona === "operator" || profile.persona === "agent"
     ? profile.persona
     : undefined;
 

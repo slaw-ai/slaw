@@ -46,7 +46,7 @@ describe("createTestHarness action context", () => {
         squadId: "host-squad",
         actor: {
           type: "user",
-          userId: "board-user-1",
+          userId: "operator-user-1",
           runId: "run-1",
         },
       },
@@ -56,7 +56,7 @@ describe("createTestHarness action context", () => {
     expect(result.squadId).toBe("host-squad");
     expect(result.actor).toEqual({
       type: "user",
-      userId: "board-user-1",
+      userId: "operator-user-1",
       agentId: null,
       runId: "run-1",
       squadId: "host-squad",

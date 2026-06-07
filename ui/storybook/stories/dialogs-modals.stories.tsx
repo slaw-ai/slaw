@@ -52,7 +52,7 @@ const storybookGoals: Goal[] = [
     id: "goal-storybook",
     squadId: SQUAD_ID,
     title: "Complete Storybook coverage",
-    description: "Expose dense board UI states for review before release.",
+    description: "Expose dense operator UI states for review before release.",
     level: "team",
     status: "active",
     parentId: "goal-squad",
@@ -355,10 +355,10 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.setQueryData(queryKeys.access.squadUserDirectory(SQUAD_ID), {
     users: [
       {
-        principalId: "user-board",
+        principalId: "user-operator",
         status: "active",
         user: {
-          id: "user-board",
+          id: "user-operator",
           email: "riley@slaw.local",
           name: "Riley Board",
           image: null,

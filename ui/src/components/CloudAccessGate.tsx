@@ -7,7 +7,7 @@ import { healthApi } from "@/api/health";
 import { queryKeys } from "@/lib/queryKeys";
 import { BootstrapPendingPage } from "@/components/BootstrapPendingPage";
 
-function NoBoardAccessPage() {
+function NoOperatorAccessPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
@@ -51,9 +51,9 @@ export function CloudAccessGate() {
     retry: false,
   });
 
-  const boardAccessQuery = useQuery({
-    queryKey: queryKeys.access.currentBoardAccess,
-    queryFn: () => accessApi.getCurrentBoardAccess(),
+  const operatorAccessQuery = useQuery({
+    queryKey: queryKeys.access.currentOperatorAccess,
+    queryFn: () => accessApi.getCurrentOperatorAccess(),
     enabled: isAuthenticatedMode && !isBootstrapPending && !!sessionQuery.data,
     retry: false,
   });
@@ -64,25 +64,25 @@ export function CloudAccessGate() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
       await queryClient.invalidateQueries({ queryKey: queryKeys.squads.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.squads.stats });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentOperatorAccess });
     },
   });
 
   if (
     healthQuery.isLoading ||
     (isAuthenticatedMode && sessionQuery.isLoading) ||
-    (isAuthenticatedMode && !isBootstrapPending && !!sessionQuery.data && boardAccessQuery.isLoading)
+    (isAuthenticatedMode && !isBootstrapPending && !!sessionQuery.data && operatorAccessQuery.isLoading)
   ) {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading...</div>;
   }
 
-  if (healthQuery.error || boardAccessQuery.error) {
+  if (healthQuery.error || operatorAccessQuery.error) {
     return (
       <div className="mx-auto max-w-xl py-10 text-sm text-destructive">
         {healthQuery.error instanceof Error
           ? healthQuery.error.message
-          : boardAccessQuery.error instanceof Error
-            ? boardAccessQuery.error.message
+          : operatorAccessQuery.error instanceof Error
+            ? operatorAccessQuery.error.message
             : "Failed to load app state"}
       </div>
     );
@@ -118,10 +118,10 @@ export function CloudAccessGate() {
   if (
     isAuthenticatedMode &&
     sessionQuery.data &&
-    !boardAccessQuery.data?.isInstanceAdmin &&
-    (boardAccessQuery.data?.squadIds.length ?? 0) === 0
+    !operatorAccessQuery.data?.isInstanceAdmin &&
+    (operatorAccessQuery.data?.squadIds.length ?? 0) === 0
   ) {
-    return <NoBoardAccessPage />;
+    return <NoOperatorAccessPage />;
   }
 
   return <Outlet />;

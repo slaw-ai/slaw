@@ -112,7 +112,7 @@ function buildApp(routerFactory: (app: express.Express) => void) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     };

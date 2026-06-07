@@ -266,7 +266,7 @@ describe("GET /invites/:token", () => {
         [logoAsset],
         [logoAsset],
       ),
-      { type: "board", userId: "user-1", source: "session" },
+      { type: "operator", userId: "user-1", source: "session" },
     );
 
     const res = await request(app).get("/api/invites/pcp_invite_test");

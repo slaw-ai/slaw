@@ -539,7 +539,7 @@ function resolveAuthor(
     agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name">>;
     userProfileMap?: ReadonlyMap<string, SquadUserProfile>;
   },
-): { name: string; role: "board" | "agent" } {
+): { name: string; role: "operator" | "agent" } {
   if (comment.authorAgentId) {
     const agent = maps.agentMap?.get(comment.authorAgentId);
     return {
@@ -551,10 +551,10 @@ function resolveAuthor(
     const profile = maps.userProfileMap?.get(comment.authorUserId);
     return {
       name: profile?.label ?? comment.authorUserId.slice(0, 8),
-      role: "board",
+      role: "operator",
     };
   }
-  return { name: comment.authorType === "agent" ? "Agent" : "Board", role: comment.authorType === "agent" ? "agent" : "board" };
+  return { name: comment.authorType === "agent" ? "Agent" : "Operator", role: comment.authorType === "agent" ? "agent" : "operator" };
 }
 
 function truncate(value: string, limit: number) {

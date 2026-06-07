@@ -4,7 +4,7 @@ import type { BotfatherService } from "../services/botfather/service.js";
 /**
  * Instance-side botfather routes that back the startup gate + Settings panel.
  * Read-only status plus two control actions. Local-trusted by default; under
- * authenticated deployments these would gate to board access (future).
+ * authenticated deployments these would gate to operator access (future).
  */
 export function botfatherRoutes(service: BotfatherService | undefined): Router {
   const router = Router();

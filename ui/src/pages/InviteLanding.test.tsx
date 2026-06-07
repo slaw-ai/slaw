@@ -217,7 +217,7 @@ describe("InviteLandingPage", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    queryClient.setQueryData(queryKeys.access.currentBoardAccess, {
+    queryClient.setQueryData(queryKeys.access.currentOperatorAccess, {
       userId: "user-1",
       isInstanceAdmin: false,
       squadIds: [],
@@ -308,7 +308,7 @@ describe("InviteLandingPage", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    queryClient.setQueryData(queryKeys.access.currentBoardAccess, {
+    queryClient.setQueryData(queryKeys.access.currentOperatorAccess, {
       userId: "user-1",
       isInstanceAdmin: false,
       squadIds: [],
@@ -365,7 +365,7 @@ describe("InviteLandingPage", () => {
     });
     expect(acceptInviteMock).toHaveBeenCalledWith("pcp_invite_test", { requestType: "human" });
     expect(setSelectedSquadIdMock).toHaveBeenCalledWith("squad-1", { source: "manual" });
-    expect(queryClient.getQueryState(queryKeys.access.currentBoardAccess)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(queryKeys.access.currentOperatorAccess)?.isInvalidated).toBe(true);
     expect(queryClient.getQueryData(queryKeys.squads.all)).toMatchObject({
       squads: [],
       unauthorized: false,
@@ -473,7 +473,7 @@ describe("InviteLandingPage", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    queryClient.setQueryData(queryKeys.access.currentBoardAccess, {
+    queryClient.setQueryData(queryKeys.access.currentOperatorAccess, {
       userId: "user-1",
       isInstanceAdmin: false,
       squadIds: [],
@@ -497,7 +497,7 @@ describe("InviteLandingPage", () => {
 
     expect(acceptInviteMock).toHaveBeenCalledWith("pcp_invite_test", { requestType: "human" });
     expect(setSelectedSquadIdMock).toHaveBeenCalledWith("squad-1", { source: "manual" });
-    expect(queryClient.getQueryState(queryKeys.access.currentBoardAccess)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(queryKeys.access.currentOperatorAccess)?.isInvalidated).toBe(true);
     expect(localStorage.getItem("slaw:pending-invite-token")).toBeNull();
 
     await act(async () => {

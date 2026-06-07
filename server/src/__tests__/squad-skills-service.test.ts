@@ -64,7 +64,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(squadSkills).values({
@@ -115,7 +115,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(squadSkills).values({
       id: skillId,
@@ -154,7 +154,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(squadSkills).values({
       id: skillId,
@@ -220,7 +220,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(squadSkills).values({
       id: skillId,
@@ -255,7 +255,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(squadSkills).values({
       id: skillId,
@@ -299,7 +299,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(squadSkills).values({
       id: skillId,
@@ -352,7 +352,7 @@ describeEmbeddedPostgres("squadSkillService.list", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(squadSkills).values({
       id: skillId,

@@ -179,7 +179,7 @@ const MAX_PERSISTED_LOG_CHUNK_CHARS = 64 * 1024;
 const MAX_RUN_EVENT_PAYLOAD_STRING_CHARS = 16 * 1024;
 const MAX_RUN_EVENT_PAYLOAD_ARRAY_ITEMS = 50;
 
-export function redactDetectedSuccessfulRunProgressSummaryForBoard(
+export function redactDetectedSuccessfulRunProgressSummaryForOperator(
   summary: string,
   currentUserRedactionOptions?: CurrentUserRedactionOptions,
 ) {
@@ -2965,7 +2965,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       return;
     }
 
-    if (input.recoveryPolicy === "escalate_to_board") {
+    if (input.recoveryPolicy === "escalate_to_operator") {
       await db.insert(issueComments).values({
         squadId: input.claimed.squadId,
         issueId: input.claimed.id,
@@ -2983,7 +2983,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         actorId: input.actorId,
         agentId: input.agentId,
         runId: input.runId,
-        action: "issue.monitor_escalated_to_board",
+        action: "issue.monitor_escalated_to_operator",
         entityType: "issue",
         entityId: input.claimed.id,
         details,
@@ -4220,7 +4220,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     ].filter((value): value is string => Boolean(value));
     const summary = candidates[0];
     if (!summary) return null;
-    return redactDetectedSuccessfulRunProgressSummaryForBoard(
+    return redactDetectedSuccessfulRunProgressSummaryForOperator(
       summary,
       await getCurrentUserRedactionOptions(),
     );

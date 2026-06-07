@@ -12,18 +12,18 @@ const mockAgentService = vi.hoisted(() => ({
   getById: vi.fn(),
 }));
 
-const mockBoardAuthService = vi.hoisted(() => ({
+const mockOperatorAuthService = vi.hoisted(() => ({
   createCliAuthChallenge: vi.fn(),
   describeCliAuthChallenge: vi.fn(),
   approveCliAuthChallenge: vi.fn(),
   cancelCliAuthChallenge: vi.fn(),
-  resolveBoardAccess: vi.fn(),
-  resolveBoardActivitySquadIds: vi.fn(),
-  assertCurrentBoardKey: vi.fn(),
-  revokeBoardApiKey: vi.fn(),
-  listBoardApiKeys: vi.fn(),
-  createNamedBoardApiKey: vi.fn(),
-  getBoardApiKeyForUser: vi.fn(),
+  resolveOperatorAccess: vi.fn(),
+  resolveOperatorActivitySquadIds: vi.fn(),
+  assertCurrentOperatorKey: vi.fn(),
+  revokeOperatorApiKey: vi.fn(),
+  listOperatorApiKeys: vi.fn(),
+  createNamedOperatorApiKey: vi.fn(),
+  getOperatorApiKeyForUser: vi.fn(),
 }));
 
 const mockLogActivity = vi.hoisted(() => vi.fn());
@@ -31,7 +31,7 @@ const mockLogActivity = vi.hoisted(() => vi.fn());
 vi.mock("../services/index.js", () => ({
   accessService: () => mockAccessService,
   agentService: () => mockAgentService,
-  boardAuthService: () => mockBoardAuthService,
+  operatorAuthService: () => mockOperatorAuthService,
   logActivity: mockLogActivity,
   notifyHireApproved: vi.fn(),
   deduplicateAgentName: vi.fn((name: string) => name),
@@ -43,7 +43,7 @@ function registerModuleMocks() {
   vi.doMock("../services/index.js", () => ({
     accessService: () => mockAccessService,
     agentService: () => mockAgentService,
-    boardAuthService: () => mockBoardAuthService,
+    operatorAuthService: () => mockOperatorAuthService,
     logActivity: mockLogActivity,
     notifyHireApproved: vi.fn(),
     deduplicateAgentName: vi.fn((name: string) => name),
@@ -102,13 +102,13 @@ describe.sequential("cli auth routes", () => {
   });
 
   it.sequential("creates a CLI auth challenge with approval metadata", async () => {
-    mockBoardAuthService.createCliAuthChallenge.mockResolvedValue({
+    mockOperatorAuthService.createCliAuthChallenge.mockResolvedValue({
       challenge: {
         id: "challenge-1",
         expiresAt: new Date("2026-03-23T13:00:00.000Z"),
       },
       challengeSecret: "pcp_cli_auth_secret",
-      pendingBoardToken: "pcp_board_token",
+      pendingOperatorToken: "slaw_op_token",
     });
 
     const app = await createApp({ type: "none", source: "none" });
@@ -117,7 +117,7 @@ describe.sequential("cli auth routes", () => {
       .send({
         command: "slaw squad import",
         clientName: "slaw cli",
-        requestedAccess: "board",
+        requestedAccess: "operator",
       });
 
     expect(res.status, res.text || JSON.stringify(res.body)).toBe(201);
@@ -128,7 +128,7 @@ describe.sequential("cli auth routes", () => {
       pollPath: "/cli-auth/challenges/challenge-1",
       expiresAt: "2026-03-23T13:00:00.000Z",
     });
-    expect(res.body.boardApiToken).toBe("pcp_board_token");
+    expect(res.body.operatorApiToken).toBe("slaw_op_token");
     expect(res.body.approvalUrl).toContain("/cli-auth/challenge-1?token=pcp_cli_auth_secret");
   });
 
@@ -175,12 +175,12 @@ describe.sequential("cli auth routes", () => {
   });
 
   it.sequential("marks challenge status as requiring sign-in for anonymous viewers", async () => {
-    mockBoardAuthService.describeCliAuthChallenge.mockResolvedValue({
+    mockOperatorAuthService.describeCliAuthChallenge.mockResolvedValue({
       id: "challenge-1",
       status: "pending",
       command: "slaw squad import",
       clientName: "slaw cli",
-      requestedAccess: "board",
+      requestedAccess: "operator",
       requestedSquadId: null,
       requestedSquadName: null,
       approvedAt: null,
@@ -197,26 +197,26 @@ describe.sequential("cli auth routes", () => {
     expect(res.body.canApprove).toBe(false);
   });
 
-  it.sequential("approves a CLI auth challenge for a signed-in board user", async () => {
-    mockBoardAuthService.approveCliAuthChallenge.mockResolvedValue({
+  it.sequential("approves a CLI auth challenge for a signed-in operator user", async () => {
+    mockOperatorAuthService.approveCliAuthChallenge.mockResolvedValue({
       status: "approved",
       challenge: {
         id: "challenge-1",
-        boardApiKeyId: "board-key-1",
-        requestedAccess: "board",
+        operatorApiKeyId: "operator-key-1",
+        requestedAccess: "operator",
         requestedSquadId: "squad-1",
         expiresAt: new Date("2026-03-23T13:00:00.000Z"),
       },
     });
-    mockBoardAuthService.resolveBoardAccess.mockResolvedValue({
+    mockOperatorAuthService.resolveOperatorAccess.mockResolvedValue({
       user: { id: "user-1", name: "User One", email: "user@example.com" },
       squadIds: ["squad-1"],
       isInstanceAdmin: false,
     });
-    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-1"]);
+    mockOperatorAuthService.resolveOperatorActivitySquadIds.mockResolvedValue(["squad-1"]);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -227,7 +227,7 @@ describe.sequential("cli auth routes", () => {
       .send({ token: "pcp_cli_auth_secret" });
 
     expect(res.status).toBe(200);
-    expect(mockBoardAuthService.approveCliAuthChallenge).toHaveBeenCalledWith(
+    expect(mockOperatorAuthService.approveCliAuthChallenge).toHaveBeenCalledWith(
       "challenge-1",
       "pcp_cli_auth_secret",
       "user-1",
@@ -237,26 +237,26 @@ describe.sequential("cli auth routes", () => {
       expect.anything(),
       expect.objectContaining({
         squadId: "squad-1",
-        action: "board_api_key.created",
+        action: "operator_api_key.created",
       }),
     );
   });
 
   it.sequential("logs approve activity for instance admins without squad memberships", async () => {
-    mockBoardAuthService.approveCliAuthChallenge.mockResolvedValue({
+    mockOperatorAuthService.approveCliAuthChallenge.mockResolvedValue({
       status: "approved",
       challenge: {
         id: "challenge-2",
-        boardApiKeyId: "board-key-2",
+        operatorApiKeyId: "operator-key-2",
         requestedAccess: "instance_admin_required",
         requestedSquadId: null,
         expiresAt: new Date("2026-03-23T13:00:00.000Z"),
       },
     });
-    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-a", "squad-b"]);
+    mockOperatorAuthService.resolveOperatorActivitySquadIds.mockResolvedValue(["squad-a", "squad-b"]);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "admin-1",
       source: "session",
       isInstanceAdmin: true,
@@ -267,66 +267,66 @@ describe.sequential("cli auth routes", () => {
       .send({ token: "pcp_cli_auth_secret" });
 
     expect(res.status).toBe(200);
-    expect(mockBoardAuthService.resolveBoardActivitySquadIds).toHaveBeenCalledWith({
+    expect(mockOperatorAuthService.resolveOperatorActivitySquadIds).toHaveBeenCalledWith({
       userId: "admin-1",
       requestedSquadId: null,
-      boardApiKeyId: "board-key-2",
+      operatorApiKeyId: "operator-key-2",
     });
     expect(mockLogActivity).toHaveBeenCalledTimes(2);
   });
 
   it.sequential("logs revoke activity with resolved audit squad ids", async () => {
-    mockBoardAuthService.assertCurrentBoardKey.mockResolvedValue({
-      id: "board-key-3",
+    mockOperatorAuthService.assertCurrentOperatorKey.mockResolvedValue({
+      id: "operator-key-3",
       userId: "admin-2",
     });
-    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-z"]);
+    mockOperatorAuthService.resolveOperatorActivitySquadIds.mockResolvedValue(["squad-z"]);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "admin-2",
-      keyId: "board-key-3",
-      source: "board_key",
+      keyId: "operator-key-3",
+      source: "operator_key",
       isInstanceAdmin: true,
       squadIds: [],
     });
     const res = await request(app).post("/api/cli-auth/revoke-current").send({});
 
     expect(res.status).toBe(200);
-    expect(mockBoardAuthService.resolveBoardActivitySquadIds).toHaveBeenCalledWith({
+    expect(mockOperatorAuthService.resolveOperatorActivitySquadIds).toHaveBeenCalledWith({
       userId: "admin-2",
-      boardApiKeyId: "board-key-3",
+      operatorApiKeyId: "operator-key-3",
     });
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         squadId: "squad-z",
-        action: "board_api_key.revoked",
+        action: "operator_api_key.revoked",
       }),
     );
   });
 
-  it.sequential("creates a named board API key and logs audit activity", async () => {
-    mockBoardAuthService.createNamedBoardApiKey.mockResolvedValue({
-      id: "board-key-4",
+  it.sequential("creates a named operator API key and logs audit activity", async () => {
+    mockOperatorAuthService.createNamedOperatorApiKey.mockResolvedValue({
+      id: "operator-key-4",
       name: "external-admin",
-      token: "pcp_board_plaintext",
+      token: "slaw_op_plaintext",
       createdAt: new Date("2026-05-23T12:00:00.000Z"),
       lastUsedAt: null,
       revokedAt: null,
       expiresAt: new Date("2026-06-23T12:00:00.000Z"),
     });
-    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["11111111-1111-4111-8111-111111111111"]);
+    mockOperatorAuthService.resolveOperatorActivitySquadIds.mockResolvedValue(["11111111-1111-4111-8111-111111111111"]);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
-      source: "board_key",
+      source: "operator_key",
       isInstanceAdmin: false,
       squadIds: ["11111111-1111-4111-8111-111111111111"],
     });
     const res = await request(app)
-      .post("/api/board-api-keys")
+      .post("/api/operator-api-keys")
       .send({
         name: "external-admin",
         requestedSquadId: "11111111-1111-4111-8111-111111111111",
@@ -335,12 +335,12 @@ describe.sequential("cli auth routes", () => {
 
     expect(res.status, res.text || JSON.stringify(res.body)).toBe(201);
     expect(res.body).toMatchObject({
-      id: "board-key-4",
+      id: "operator-key-4",
       name: "external-admin",
-      token: "pcp_board_plaintext",
+      token: "slaw_op_plaintext",
       expiresAt: "2026-06-23T12:00:00.000Z",
     });
-    expect(mockBoardAuthService.createNamedBoardApiKey).toHaveBeenCalledWith({
+    expect(mockOperatorAuthService.createNamedOperatorApiKey).toHaveBeenCalledWith({
       userId: "user-1",
       name: "external-admin",
       expiresAt: new Date("2026-06-23T12:00:00.000Z"),
@@ -349,15 +349,15 @@ describe.sequential("cli auth routes", () => {
       expect.anything(),
       expect.objectContaining({
         squadId: "11111111-1111-4111-8111-111111111111",
-        action: "board_api_key.created",
+        action: "operator_api_key.created",
         details: expect.objectContaining({ name: "external-admin" }),
       }),
     );
   });
 
-  it.sequential("lists and revokes named board API keys for the current board user", async () => {
+  it.sequential("lists and revokes named operator API keys for the current operator user", async () => {
     const keyId = "55555555-5555-4555-8555-555555555555";
-    mockBoardAuthService.listBoardApiKeys.mockResolvedValue([
+    mockOperatorAuthService.listOperatorApiKeys.mockResolvedValue([
       {
         id: keyId,
         name: "external-admin",
@@ -367,59 +367,59 @@ describe.sequential("cli auth routes", () => {
         expiresAt: null,
       },
     ]);
-    mockBoardAuthService.getBoardApiKeyForUser.mockResolvedValue({
+    mockOperatorAuthService.getOperatorApiKeyForUser.mockResolvedValue({
       id: keyId,
       userId: "user-1",
       name: "external-admin",
     });
-    mockBoardAuthService.revokeBoardApiKey.mockResolvedValue({
+    mockOperatorAuthService.revokeOperatorApiKey.mockResolvedValue({
       id: keyId,
       userId: "user-1",
       name: "external-admin",
     });
-    mockBoardAuthService.resolveBoardActivitySquadIds.mockResolvedValue(["squad-1"]);
+    mockOperatorAuthService.resolveOperatorActivitySquadIds.mockResolvedValue(["squad-1"]);
 
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
-      source: "board_key",
+      source: "operator_key",
       isInstanceAdmin: false,
       squadIds: ["squad-1"],
     });
 
-    const listRes = await request(app).get("/api/board-api-keys");
+    const listRes = await request(app).get("/api/operator-api-keys");
     expect(listRes.status).toBe(200);
     expect(listRes.body[0]).toMatchObject({ id: keyId, name: "external-admin" });
-    expect(mockBoardAuthService.listBoardApiKeys).toHaveBeenCalledWith(
+    expect(mockOperatorAuthService.listOperatorApiKeys).toHaveBeenCalledWith(
       "user-1",
       { includeInactive: false },
     );
 
-    const revokeRes = await request(app).delete(`/api/board-api-keys/${keyId}`);
+    const revokeRes = await request(app).delete(`/api/operator-api-keys/${keyId}`);
     expect(revokeRes.status).toBe(200);
     expect(revokeRes.body).toEqual({ ok: true, keyId });
     expect(mockLogActivity).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         squadId: "squad-1",
-        action: "board_api_key.revoked",
+        action: "operator_api_key.revoked",
       }),
     );
   });
 
-  it.sequential("rejects malformed board API key IDs before database lookup", async () => {
+  it.sequential("rejects malformed operator API key IDs before database lookup", async () => {
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
-      source: "board_key",
+      source: "operator_key",
       isInstanceAdmin: false,
       squadIds: ["squad-1"],
     });
 
-    const res = await request(app).delete("/api/board-api-keys/not-a-uuid");
+    const res = await request(app).delete("/api/operator-api-keys/not-a-uuid");
 
     expect(res.status).toBe(400);
-    expect(mockBoardAuthService.getBoardApiKeyForUser).not.toHaveBeenCalled();
-    expect(mockBoardAuthService.revokeBoardApiKey).not.toHaveBeenCalled();
+    expect(mockOperatorAuthService.getOperatorApiKeyForUser).not.toHaveBeenCalled();
+    expect(mockOperatorAuthService.revokeOperatorApiKey).not.toHaveBeenCalled();
   });
 });

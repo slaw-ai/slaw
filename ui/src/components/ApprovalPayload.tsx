@@ -5,7 +5,7 @@ export const typeLabel: Record<string, string> = {
   hire_agent: "Hire Agent",
   approve_squad_lead_strategy: "Squad Lead Strategy",
   budget_override_required: "Budget Override",
-  request_board_approval: "Board Approval",
+  request_operator_approval: "Operator Approval",
 };
 
 function firstNonEmptyString(...values: unknown[]): string | null {
@@ -40,7 +40,7 @@ export const typeIcon: Record<string, typeof UserPlus> = {
   hire_agent: UserPlus,
   approve_squad_lead_strategy: Lightbulb,
   budget_override_required: ShieldAlert,
-  request_board_approval: ShieldCheck,
+  request_operator_approval: ShieldCheck,
 };
 
 export const defaultTypeIcon = ShieldCheck;
@@ -148,7 +148,7 @@ export function BudgetOverridePayload({ payload }: { payload: Record<string, unk
   );
 }
 
-export function BoardApprovalPayload({
+export function OperatorApprovalPayload({
   payload,
   hideTitle = false,
 }: {
@@ -157,11 +157,11 @@ export function BoardApprovalPayload({
 }) {
   const nextPayload = hideTitle ? { ...payload, title: undefined } : payload;
   return (
-    <BoardApprovalPayloadContent payload={nextPayload} />
+    <OperatorApprovalPayloadContent payload={nextPayload} />
   );
 }
 
-function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unknown> }) {
+function OperatorApprovalPayloadContent({ payload }: { payload: Record<string, unknown> }) {
   const risks = Array.isArray(payload.risks)
     ? payload.risks
         .filter((value): value is string => typeof value === "string")
@@ -240,8 +240,8 @@ export function ApprovalPayloadRenderer({
 }) {
   if (type === "hire_agent") return <HireAgentPayload payload={payload} />;
   if (type === "budget_override_required") return <BudgetOverridePayload payload={payload} />;
-  if (type === "request_board_approval") {
-    return <BoardApprovalPayload payload={payload} hideTitle={hidePrimaryTitle} />;
+  if (type === "request_operator_approval") {
+    return <OperatorApprovalPayload payload={payload} hideTitle={hidePrimaryTitle} />;
   }
   return <CeoStrategyPayload payload={payload} />;
 }

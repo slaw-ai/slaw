@@ -160,7 +160,7 @@ function makeIssue(overrides: Record<string, unknown> = {}) {
     parentId: null,
     assigneeAgentId: null,
     assigneeUserId: null,
-    createdByUserId: "board-user",
+    createdByUserId: "operator-user",
     identifier: "PAP-1000",
     title: "Workspace authz",
     executionPolicy: null,

@@ -89,7 +89,7 @@ describeEmbeddedPostgres("issueReferenceService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `R${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([
@@ -187,7 +187,7 @@ describeEmbeddedPostgres("issueReferenceService", () => {
       id: squadId,
       name: "Slaw Backfill",
       issuePrefix: `B${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values([

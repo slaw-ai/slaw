@@ -33,7 +33,7 @@ export const squadsApi = {
         | "status"
         | "budgetMonthlyCents"
         | "attachmentMaxBytes"
-        | "requireBoardApprovalForNewAgents"
+        | "requireOperatorApprovalForNewAgents"
         | "feedbackDataSharingEnabled"
         | "brandColor"
         | "logoAssetId"

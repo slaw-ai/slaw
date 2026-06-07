@@ -162,9 +162,9 @@ async function requestApp(
   }
 }
 
-function boardMember(membershipRole: "admin" | "operator" | "viewer"): Express.Request["actor"] {
+function operatorMember(membershipRole: "admin" | "operator" | "viewer"): Express.Request["actor"] {
   return {
-    type: "board",
+    type: "operator",
     userId: `${membershipRole}-user`,
     userName: null,
     userEmail: null,
@@ -182,7 +182,7 @@ function boardMember(membershipRole: "admin" | "operator" | "viewer"): Express.R
 }
 
 const instanceAdmin: Express.Request["actor"] = {
-  type: "board",
+  type: "operator",
   userId: "instance-admin",
   userName: null,
   userEmail: null,
@@ -277,7 +277,7 @@ describe.sequential("adapter management route authorization", () => {
     setOverridePaused("claude_local", false);
   });
 
-  it("rejects mutating adapter routes for a non-instance-admin board user with squad membership", async () => {
+  it("rejects mutating adapter routes for a non-instance-admin operator user with squad membership", async () => {
     for (const routeName of [
       "install",
       "disable",
@@ -288,7 +288,7 @@ describe.sequential("adapter management route authorization", () => {
     ]) {
       resetInstalledExternalAdapterState();
       seedInstalledExternalAdapter();
-      const app = createApp(boardMember("admin"));
+      const app = createApp(operatorMember("admin"));
 
       const res = await sendMutatingRequest(app, routeName);
 
@@ -321,8 +321,8 @@ describe.sequential("adapter management route authorization", () => {
     "does not let a squad %s trigger adapter npm install or reload",
     async (membershipRole) => {
       seedInstalledExternalAdapter();
-      const installApp = createApp(boardMember(membershipRole));
-      const reloadApp = createApp(boardMember(membershipRole));
+      const installApp = createApp(operatorMember(membershipRole));
+      const reloadApp = createApp(operatorMember(membershipRole));
 
       const install = await requestApp(installApp, (baseUrl) =>
         request(baseUrl)

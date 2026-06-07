@@ -16,11 +16,11 @@ vi.mock("../services/index.js", () => ({
   agentService: () => ({
     getById: vi.fn(),
   }),
-  boardAuthService: () => ({
+  operatorAuthService: () => ({
     createChallenge: vi.fn(),
-    resolveBoardAccess: vi.fn(),
-    assertCurrentBoardKey: vi.fn(),
-    revokeBoardApiKey: vi.fn(),
+    resolveOperatorAccess: vi.fn(),
+    assertCurrentOperatorKey: vi.fn(),
+    revokeOperatorApiKey: vi.fn(),
   }),
   deduplicateAgentName: vi.fn(),
   logActivity: vi.fn(),
@@ -52,7 +52,7 @@ describeEmbeddedPostgres("GET /squads/:squadId/invites", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
   });
 
@@ -71,7 +71,7 @@ describeEmbeddedPostgres("GET /squads/:squadId/invites", () => {
     app.use(express.json());
     app.use((req, _res, next) => {
       (req as any).actor = {
-        type: "board",
+        type: "operator",
         source: "local_implicit",
         userId: null,
         squadIds: [currentSquadId],

@@ -207,7 +207,7 @@ describe("issue graph liveness classifier", () => {
 
     expect(classifyIssueGraphLiveness({
       ...baseInput,
-      issues: [issue(), { ...backlogBlocker, assigneeAgentId: null, assigneeUserId: "board-user-1" }],
+      issues: [issue(), { ...backlogBlocker, assigneeAgentId: null, assigneeUserId: "operator-user-1" }],
     })).toEqual([]);
     expect(classifyIssueGraphLiveness({
       ...baseInput,
@@ -411,13 +411,13 @@ describe("issue graph liveness classifier", () => {
         issue: {
           ...baseReviewIssue,
           executionState: {
-            currentParticipant: { type: "user", userId: "board-user-1" },
+            currentParticipant: { type: "user", userId: "operator-user-1" },
           },
         },
       },
       {
         name: "user owner",
-        issue: { ...baseReviewIssue, assigneeAgentId: null, assigneeUserId: "board-user-1" },
+        issue: { ...baseReviewIssue, assigneeAgentId: null, assigneeUserId: "operator-user-1" },
       },
       {
         name: "active run",

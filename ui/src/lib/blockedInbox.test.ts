@@ -93,7 +93,7 @@ function makeIssue(
 describe("blockedInbox", () => {
   it("maps every reason to a known variant and label", () => {
     const reasons: IssueBlockedInboxReason[] = [
-      "pending_board_decision",
+      "pending_operator_decision",
       "pending_user_decision",
       "missing_successful_run_disposition",
       "blocked_chain_stalled",
@@ -178,7 +178,7 @@ describe("blockedInbox", () => {
       ),
       makeIssue(
         { id: "decision-1" },
-        makeAttention({ reason: "pending_board_decision", severity: "medium" }),
+        makeAttention({ reason: "pending_operator_decision", severity: "medium" }),
       ),
     ];
     const groups = groupBlockedInboxRows(buildBlockedInboxRows(issues));

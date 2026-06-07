@@ -13,11 +13,11 @@ vi.mock("../services/index.js", () => ({
   agentService: () => ({
     getById: vi.fn(),
   }),
-  boardAuthService: () => ({
+  operatorAuthService: () => ({
     createChallenge: vi.fn(),
-    resolveBoardAccess: vi.fn(),
-    assertCurrentBoardKey: vi.fn(),
-    revokeBoardApiKey: vi.fn(),
+    resolveOperatorAccess: vi.fn(),
+    assertCurrentOperatorKey: vi.fn(),
+    revokeOperatorApiKey: vi.fn(),
   }),
   deduplicateAgentName: vi.fn(),
   logActivity: vi.fn(),
@@ -103,7 +103,7 @@ describe("GET /squads/:squadId/user-directory", () => {
 
   it("returns active human users for operators without manage-permissions access", async () => {
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,

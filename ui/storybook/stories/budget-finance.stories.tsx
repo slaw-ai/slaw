@@ -264,7 +264,7 @@ const claudeQuotaWindows: QuotaWindow[] = [
   { label: "Current session", usedPercent: 46, resetsAt: at(-180).toISOString(), valueLabel: null, detail: "Healthy session headroom for review tasks." },
   { label: "Current week all models", usedPercent: 74, resetsAt: at(-5_300).toISOString(), valueLabel: null, detail: "Warning threshold after the release documentation run." },
   { label: "Current week Opus only", usedPercent: 92, resetsAt: at(-5_300).toISOString(), valueLabel: null, detail: "Critical model-specific budget: route default work to Sonnet." },
-  { label: "Extra usage", usedPercent: null, resetsAt: null, valueLabel: "$18.40 overage", detail: "Overage billing is enabled for board-approved release checks." },
+  { label: "Extra usage", usedPercent: null, resetsAt: null, valueLabel: "$18.40 overage", detail: "Overage billing is enabled for operator-approved release checks." },
 ];
 
 const codexQuotaWindows: QuotaWindow[] = [
@@ -558,7 +558,7 @@ function BudgetFinanceMatrix() {
               <div className="slaw-story__label">Budget and finance</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Spend controls, quotas, and accounting surfaces</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                Fixture-backed coverage for the board's cost-control components: active incidents, sidebar budget markers,
+                Fixture-backed coverage for the operator's cost-control components: active incidents, sidebar budget markers,
                 provider quotas, biller allocation, account-level finance events, and subscription quota windows.
               </p>
             </div>
@@ -579,7 +579,7 @@ function BudgetFinanceMatrix() {
                 onRaiseAndResume={() => undefined}
               />
             </CaseFrame>
-            <CaseFrame title="Pending board decision" detail="Project execution is paused while a budget approval waits for review." tone="warning">
+            <CaseFrame title="Pending operator decision" detail="Project execution is paused while a budget approval waits for review." tone="warning">
               <BudgetIncidentCard
                 incident={budgetIncidents[1]!}
                 onKeepPaused={() => undefined}

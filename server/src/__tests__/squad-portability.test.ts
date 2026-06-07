@@ -150,12 +150,12 @@ describe("squad portability", () => {
       brandColor: "#5c5fff",
       logoAssetId: null,
       logoUrl: null,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     squadSvc.create.mockResolvedValue({
       id: "squad-imported",
       name: "Imported Slaw",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     agentSvc.list.mockResolvedValue([
       {
@@ -466,7 +466,7 @@ describe("squad portability", () => {
     expect(extension).toContain('default: ""');
     expect(extension).not.toContain("slawSkillSync");
     expect(extension).not.toContain("PATH:");
-    expect(extension).not.toContain("requireBoardApprovalForNewAgents: true");
+    expect(extension).not.toContain("requireOperatorApprovalForNewAgents: true");
     expect(extension).not.toContain("budgetMonthlyCents: 0");
     expect(exported.warnings).toContain("Agent claudecoder command /Users/dotta/.local/bin/claude was omitted from export because it is system-dependent.");
     expect(exported.warnings).toContain("Agent claudecoder PATH override was omitted from export because it is system-dependent.");
@@ -483,7 +483,7 @@ describe("squad portability", () => {
       brandColor: "#5c5fff",
       logoAssetId: null,
       logoUrl: null,
-      requireBoardApprovalForNewAgents: true,
+      requireOperatorApprovalForNewAgents: true,
     });
 
     const exported = await portability.exportBundle("squad-1", {
@@ -495,7 +495,7 @@ describe("squad portability", () => {
       },
     });
 
-    expect(asTextFile(exported.files[".slaw.yaml"])).toContain("requireBoardApprovalForNewAgents: true");
+    expect(asTextFile(exported.files[".slaw.yaml"])).toContain("requireOperatorApprovalForNewAgents: true");
   });
 
   it("exports legacy inline sensitive env values as declarations without values", async () => {
@@ -788,7 +788,7 @@ describe("squad portability", () => {
       brandColor: "#5c5fff",
       logoAssetId: "logo-1",
       logoUrl: "/api/assets/logo-1/content",
-      requireBoardApprovalForNewAgents: true,
+      requireOperatorApprovalForNewAgents: true,
     });
     assetSvc.getById.mockResolvedValue({
       id: "logo-1",
@@ -2358,7 +2358,7 @@ describe("squad portability", () => {
       name: "Slaw",
       description: "Existing squad",
       brandColor: "#123456",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     agentSvc.create.mockResolvedValue({
       id: "agent-cmo",
@@ -2774,7 +2774,7 @@ describe("squad portability", () => {
         squadId: "squad-1",
         authorType: "user",
         authorAgentId: null,
-        authorUserId: "local-board",
+        authorUserId: "local-operator",
         body: "Need private follow-up.",
         presentation: null,
         metadata: null,
@@ -2789,7 +2789,7 @@ describe("squad portability", () => {
 
     const extension = asTextFile(exported.files[".slaw.yaml"]);
     expect(extension).toContain('authorType: "user"');
-    expect(extension).not.toContain("authorUserId: local-board");
+    expect(extension).not.toContain("authorUserId: local-operator");
   });
 
   it("downgrades user-authored imported comments to system when no importing user exists", async () => {
@@ -2821,7 +2821,7 @@ describe("squad portability", () => {
         squadId: "squad-1",
         authorType: "user",
         authorAgentId: null,
-        authorUserId: "local-board",
+        authorUserId: "local-operator",
         body: "Need private follow-up.",
         presentation: null,
         metadata: null,
@@ -3045,7 +3045,7 @@ describe("squad portability", () => {
       status: "idle",
     }));
     expect(squadSvc.create).toHaveBeenCalledWith(expect.objectContaining({
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     }));
   });
 

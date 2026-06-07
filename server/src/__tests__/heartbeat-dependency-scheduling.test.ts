@@ -164,7 +164,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -426,7 +426,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -560,7 +560,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -756,7 +756,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -829,7 +829,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: childCommentId,
       squadId,
       issueId: deepDescendantIssueId,
-      authorUserId: "board-user",
+      authorUserId: "operator-user",
       body: "Please respond while this hold is active.",
     });
 
@@ -849,7 +849,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       reason: "issue_commented",
       payload: { issueId: deepDescendantIssueId, commentId: childCommentId },
       requestedByActorType: "user",
-      requestedByActorId: "board-user",
+      requestedByActorId: "operator-user",
       contextSnapshot: {
         issueId: deepDescendantIssueId,
         commentId: childCommentId,
@@ -885,7 +885,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: agentId,
@@ -925,7 +925,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       id: rootCommentId,
       squadId,
       issueId: rootIssueId,
-      authorUserId: "board-user",
+      authorUserId: "operator-user",
       body: "Please respond while this hold is active.",
     });
 
@@ -935,7 +935,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       reason: "issue_commented",
       payload: { issueId: rootIssueId, commentId: rootCommentId },
       requestedByActorType: "user",
-      requestedByActorId: "board-user",
+      requestedByActorId: "operator-user",
       contextSnapshot: {
         issueId: rootIssueId,
         commentId: rootCommentId,

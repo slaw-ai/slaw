@@ -7,14 +7,14 @@ export function assertAuthenticated(req: Request) {
   }
 }
 
-export function assertBoard(req: Request) {
-  if (req.actor.type !== "board") {
-    throw forbidden("Board access required");
+export function assertOperator(req: Request) {
+  if (req.actor.type !== "operator") {
+    throw forbidden("Operator access required");
   }
 }
 
-export function hasBoardOrgAccess(req: Request) {
-  if (req.actor.type !== "board") {
+export function hasOperatorOrgAccess(req: Request) {
+  if (req.actor.type !== "operator") {
     return false;
   }
   if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) {
@@ -23,16 +23,16 @@ export function hasBoardOrgAccess(req: Request) {
   return Array.isArray(req.actor.squadIds) && req.actor.squadIds.length > 0;
 }
 
-export function assertBoardOrgAccess(req: Request) {
-  assertBoard(req);
-  if (hasBoardOrgAccess(req)) {
+export function assertOperatorOrgAccess(req: Request) {
+  assertOperator(req);
+  if (hasOperatorOrgAccess(req)) {
     return;
   }
   throw forbidden("Squad membership or instance admin access required");
 }
 
 export function assertInstanceAdmin(req: Request) {
-  assertBoard(req);
+  assertOperator(req);
   if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) {
     return;
   }
@@ -44,7 +44,7 @@ export function assertSquadAccess(req: Request, squadId: string) {
   if (req.actor.type === "agent" && req.actor.squadId !== squadId) {
     throw forbidden("Agent key cannot access another squad");
   }
-  if (req.actor.type === "board" && req.actor.source !== "local_implicit") {
+  if (req.actor.type === "operator" && req.actor.source !== "local_implicit") {
     const allowedSquads = req.actor.squadIds ?? [];
     if (!allowedSquads.includes(squadId)) {
       throw forbidden("User does not have access to this squad");
@@ -76,7 +76,7 @@ export function getActorInfo(req: Request) {
 
   return {
     actorType: "user" as const,
-    actorId: req.actor.userId ?? "board",
+    actorId: req.actor.userId ?? "operator",
     agentId: null,
     runId: req.actor.runId ?? null,
   };

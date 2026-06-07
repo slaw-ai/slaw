@@ -30,8 +30,8 @@ function createApp(squadIds = ["squad-1"]) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds,
       source: "session",
       isInstanceAdmin: false,

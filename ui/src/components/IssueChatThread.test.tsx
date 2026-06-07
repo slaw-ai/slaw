@@ -494,7 +494,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             showComposer={false}
             showJumpToLatest={false}
@@ -548,7 +548,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             showComposer={false}
             showJumpToLatest={false}
@@ -610,7 +610,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             showComposer={false}
             showJumpToLatest={false}
@@ -643,7 +643,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             enableLiveTranscriptPolling={false}
             transcriptsByRunId={issueChatLongThreadTranscriptsByRunId}
@@ -700,7 +700,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             enableLiveTranscriptPolling={false}
             transcriptsByRunId={issueChatLongThreadTranscriptsByRunId}
@@ -760,7 +760,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             enableLiveTranscriptPolling={false}
             transcriptsByRunId={issueChatLongThreadTranscriptsByRunId}
@@ -860,7 +860,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             enableLiveTranscriptPolling={false}
             transcriptsByRunId={transcriptsByRunId}
@@ -928,7 +928,7 @@ describe("IssueChatThread", () => {
             timelineEvents={[]}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             enableLiveTranscriptPolling={false}
             onRefreshLatestComments={refreshMock}
@@ -990,7 +990,7 @@ describe("IssueChatThread", () => {
           timelineEvents={[]}
           liveRuns={[]}
           agentMap={issueChatLongThreadAgentMap}
-          currentUserId="user-board"
+          currentUserId="user-operator"
           onAdd={async () => {}}
           enableLiveTranscriptPolling={false}
           onRefreshLatestComments={async () => {
@@ -1058,7 +1058,7 @@ describe("IssueChatThread", () => {
             timelineEvents={[]}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             showComposer={false}
             showJumpToLatest={false}
@@ -1091,7 +1091,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={async () => {}}
             showComposer={false}
             showJumpToLatest={false}
@@ -1136,7 +1136,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={onAdd}
             showComposer={false}
             showJumpToLatest={false}
@@ -1160,7 +1160,7 @@ describe("IssueChatThread", () => {
             timelineEvents={issueChatLongThreadEvents}
             liveRuns={[]}
             agentMap={issueChatLongThreadAgentMap}
-            currentUserId="user-board"
+            currentUserId="user-operator"
             onAdd={onAdd}
             showComposer={false}
             showJumpToLatest
@@ -1270,7 +1270,7 @@ describe("IssueChatThread", () => {
               squadId: "squad-1",
               issueId: "issue-1",
               authorAgentId: null,
-              authorUserId: "local-board",
+              authorUserId: "local-operator",
               body: "Please continue validation.",
               authorType: "user",
               presentation: null,

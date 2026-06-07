@@ -5,9 +5,9 @@ import { validate } from "../middleware/validate.js";
 import { getActorInfo } from "./authz.js";
 import { logActivity, resourceMembershipService } from "../services/index.js";
 
-function requireBoardUserId(req: Request, res: Response): string | null {
-  if (req.actor.type !== "board" || !req.actor.userId) {
-    res.status(403).json({ error: "Board user access required" });
+function requireOperatorUserId(req: Request, res: Response): string | null {
+  if (req.actor.type !== "operator" || !req.actor.userId) {
+    res.status(403).json({ error: "Operator user access required" });
     return null;
   }
   return req.actor.userId;
@@ -51,7 +51,7 @@ export function resourceMembershipRoutes(db: Db) {
 
   router.get("/squads/:squadId/resource-memberships/me", async (req, res) => {
     const squadId = req.params.squadId as string;
-    const userId = requireBoardUserId(req, res);
+    const userId = requireOperatorUserId(req, res);
     if (!userId) return;
     res.json(await svc.listForUser(squadId, userId, req.actor));
   });
@@ -62,7 +62,7 @@ export function resourceMembershipRoutes(db: Db) {
     async (req, res) => {
       const squadId = req.params.squadId as string;
       const projectId = req.params.projectId as string;
-      const userId = requireBoardUserId(req, res);
+      const userId = requireOperatorUserId(req, res);
       if (!userId) return;
       const result = await svc.updateProject({
         squadId,
@@ -92,7 +92,7 @@ export function resourceMembershipRoutes(db: Db) {
     async (req, res) => {
       const squadId = req.params.squadId as string;
       const agentId = req.params.agentId as string;
-      const userId = requireBoardUserId(req, res);
+      const userId = requireOperatorUserId(req, res);
       if (!userId) return;
       const result = await svc.updateAgent({
         squadId,

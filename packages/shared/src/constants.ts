@@ -233,7 +233,7 @@ export type IssueRecoveryActionStatus = (typeof ISSUE_RECOVERY_ACTION_STATUSES)[
 export const ISSUE_RECOVERY_ACTION_OWNER_TYPES = [
   "agent",
   "user",
-  "board",
+  "operator",
   "system",
 ] as const;
 export type IssueRecoveryActionOwnerType = (typeof ISSUE_RECOVERY_ACTION_OWNER_TYPES)[number];
@@ -302,7 +302,7 @@ export type IssueExecutionPolicyMode = (typeof ISSUE_EXECUTION_POLICY_MODES)[num
 export const ISSUE_EXECUTION_STAGE_TYPES = ["review", "approval"] as const;
 export type IssueExecutionStageType = (typeof ISSUE_EXECUTION_STAGE_TYPES)[number];
 
-export const ISSUE_MONITOR_SCHEDULED_BY = ["assignee", "board"] as const;
+export const ISSUE_MONITOR_SCHEDULED_BY = ["assignee", "operator"] as const;
 export type IssueMonitorScheduledBy = (typeof ISSUE_MONITOR_SCHEDULED_BY)[number];
 
 export const ISSUE_EXECUTION_MONITOR_KINDS = ["external_service"] as const;
@@ -311,7 +311,7 @@ export type IssueExecutionMonitorKind = (typeof ISSUE_EXECUTION_MONITOR_KINDS)[n
 export const ISSUE_EXECUTION_MONITOR_RECOVERY_POLICIES = [
   "wake_owner",
   "create_recovery_issue",
-  "escalate_to_board",
+  "escalate_to_operator",
 ] as const;
 export type IssueExecutionMonitorRecoveryPolicy =
   (typeof ISSUE_EXECUTION_MONITOR_RECOVERY_POLICIES)[number];
@@ -424,7 +424,7 @@ export const APPROVAL_TYPES = [
   "hire_agent",
   "approve_squad_lead_strategy",
   "budget_override_required",
-  "request_board_approval",
+  "request_operator_approval",
 ] as const;
 export type ApprovalType = (typeof APPROVAL_TYPES)[number];
 
@@ -850,7 +850,7 @@ export type PluginDatabaseCoreReadTable = (typeof PLUGIN_DATABASE_CORE_READ_TABL
 export const PLUGIN_API_ROUTE_METHODS = ["GET", "POST", "PATCH", "DELETE"] as const;
 export type PluginApiRouteMethod = (typeof PLUGIN_API_ROUTE_METHODS)[number];
 
-export const PLUGIN_API_ROUTE_AUTH_MODES = ["board", "agent", "board-or-agent", "webhook"] as const;
+export const PLUGIN_API_ROUTE_AUTH_MODES = ["operator", "agent", "operator-or-agent", "webhook"] as const;
 export type PluginApiRouteAuthMode = (typeof PLUGIN_API_ROUTE_AUTH_MODES)[number];
 
 export const PLUGIN_API_ROUTE_CHECKOUT_POLICIES = [

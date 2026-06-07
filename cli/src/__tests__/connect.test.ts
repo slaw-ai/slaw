@@ -5,7 +5,7 @@ import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as prompts from "@clack/prompts";
 import { registerConnectCommand } from "../commands/client/connect.js";
-import { loginBoardCli } from "../client/board-auth.js";
+import { loginOperatorCli } from "../client/operator-auth.js";
 
 vi.mock("@clack/prompts", () => ({
   intro: vi.fn(),
@@ -16,8 +16,8 @@ vi.mock("@clack/prompts", () => ({
   select: vi.fn(),
 }));
 
-vi.mock("../client/board-auth.js", () => ({
-  loginBoardCli: vi.fn(),
+vi.mock("../client/operator-auth.js", () => ({
+  loginOperatorCli: vi.fn(),
 }));
 
 const SQUAD_ID = "22222222-2222-4222-8222-222222222222";
@@ -57,7 +57,7 @@ describe("connect command", () => {
     Object.defineProperty(process.stdin, "isTTY", { value: true, configurable: true });
     Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
     vi.restoreAllMocks();
-    vi.mocked(loginBoardCli).mockResolvedValue({
+    vi.mocked(loginOperatorCli).mockResolvedValue({
       token: "board-login-token",
       approvalUrl: `${API_BASE}/cli-auth/challenge-1`,
       userId: "user-1",
@@ -71,7 +71,7 @@ describe("connect command", () => {
     vi.restoreAllMocks();
   });
 
-  it("drives the interactive board profile flow through prompts and context writes", async () => {
+  it("drives the interactive operator profile flow through prompts and context writes", async () => {
     const contextPath = createTempContextPath();
     vi.mocked(prompts.text).mockResolvedValue(API_BASE);
     vi.mocked(prompts.select).mockResolvedValue(SQUAD_ID);
@@ -81,11 +81,11 @@ describe("connect command", () => {
       if (url.pathname === "/api/squads") {
         return jsonResponse([{ id: SQUAD_ID, name: "Connect Co" }]);
       }
-      if (url.pathname === "/api/board-api-keys" && init?.method === "POST") {
+      if (url.pathname === "/api/operator-api-keys" && init?.method === "POST") {
         return jsonResponse({
-          id: "board-key-1",
-          name: "connect-board-token",
-          token: "pcp_board_created",
+          id: "operator-key-1",
+          name: "connect-operator-token",
+          token: "slaw_op_created",
           createdAt: "2026-05-24T12:00:00.000Z",
           expiresAt: null,
         });
@@ -97,11 +97,11 @@ describe("connect command", () => {
     await createProgram().parseAsync([
       "connect",
       "--persona",
-      "board",
+      "operator",
       "--profile",
-      "cli-board",
+      "cli-operator",
       "--token-name",
-      "connect-board-token",
+      "connect-operator-token",
       "--context",
       contextPath,
       "--api-base",
@@ -109,25 +109,25 @@ describe("connect command", () => {
       "--json",
     ], { from: "user" });
 
-    expect(loginBoardCli).toHaveBeenCalledWith(expect.objectContaining({
+    expect(loginOperatorCli).toHaveBeenCalledWith(expect.objectContaining({
       apiBase: API_BASE,
-      requestedAccess: "board",
+      requestedAccess: "operator",
       command: "slaw connect",
     }));
     expect(fetchMock.mock.calls.map((call) => [call[1]?.method ?? "GET", new URL(String(call[0])).pathname])).toEqual([
       ["GET", "/api/health"],
       ["GET", "/api/squads"],
-      ["POST", "/api/board-api-keys"],
+      ["POST", "/api/operator-api-keys"],
     ]);
     expect(readContext(contextPath)).toMatchObject({
-      currentProfile: "cli-board",
+      currentProfile: "cli-operator",
       profiles: {
-        "cli-board": {
+        "cli-operator": {
           apiBase: API_BASE,
           squadId: SQUAD_ID,
-          persona: "board",
-          tokenId: "board-key-1",
-          tokenName: "connect-board-token",
+          persona: "operator",
+          tokenId: "operator-key-1",
+          tokenName: "connect-operator-token",
         },
       },
     });

@@ -87,7 +87,7 @@ describeEmbeddedPostgres("squadSearchService", () => {
       id: squadId,
       name,
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     return squadId;
   }

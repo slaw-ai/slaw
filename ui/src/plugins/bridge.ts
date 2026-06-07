@@ -285,7 +285,7 @@ function hasSquadPrefix(pathname: string, squadPrefix: string): boolean {
  * Resolve a plugin-provided Slaw path to the active squad scope.
  *
  * This intentionally handles plugin page roots such as `/wiki`, which cannot
- * be listed in the host router's static board-route table ahead of time.
+ * be listed in the host router's static operator-route table ahead of time.
  */
 export function resolveHostNavigationHref(
   to: string,

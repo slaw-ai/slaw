@@ -416,7 +416,7 @@ export function createToolDefinitions(client: SlawApiClient): ToolDefinition[] {
     ),
     makeTool(
       "slawCreateApproval",
-      "Create a board approval request, optionally linked to one or more issues",
+      "Create a operator approval request, optionally linked to one or more issues",
       createApprovalToolSchema,
       async ({ squadId, ...body }) =>
         client.requestJson("POST", `/squads/${client.resolveSquadId(squadId)}/approvals`, {

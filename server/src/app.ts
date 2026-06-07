@@ -7,7 +7,7 @@ import type { DeploymentExposure, DeploymentMode } from "@slaw/shared";
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
 import { actorMiddleware } from "./middleware/auth.js";
-import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
+import { operatorMutationGuard } from "./middleware/operator-mutation-guard.js";
 import { privateHostnameGuard, resolvePrivateHostnameAllowSet } from "./middleware/private-hostname-guard.js";
 import { healthRoutes } from "./routes/health.js";
 import { squadRoutes } from "./routes/squads.js";
@@ -24,7 +24,7 @@ import { approvalRoutes } from "./routes/approvals.js";
 import { secretRoutes } from "./routes/secrets.js";
 import { costRoutes } from "./routes/costs.js";
 import { activityRoutes } from "./routes/activity.js";
-import { dashboardRoutes } from "./routes/dashboard.js";
+import { dashoperatorRoutes } from "./routes/dashboard.js";
 import { userProfileRoutes } from "./routes/user-profiles.js";
 import { sidebarBadgeRoutes } from "./routes/sidebar-badges.js";
 import { sidebarPreferenceRoutes } from "./routes/sidebar-preferences.js";
@@ -201,7 +201,7 @@ export async function createApp(
 
   // Mount API routes
   const api = Router();
-  api.use(boardMutationGuard());
+  api.use(operatorMutationGuard());
   api.use(
     "/health",
     healthRoutes(db, {
@@ -231,7 +231,7 @@ export async function createApp(
   api.use(secretRoutes(db));
   api.use(costRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(activityRoutes(db));
-  api.use(dashboardRoutes(db));
+  api.use(dashoperatorRoutes(db));
   api.use(userProfileRoutes(db));
   api.use(sidebarBadgeRoutes(db));
   api.use(sidebarPreferenceRoutes(db));

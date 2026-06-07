@@ -55,7 +55,7 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -119,12 +119,12 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
     const locked = await svc.lockIssueDocument({
       issueId,
       key: "plan",
-      lockedByUserId: "board-user",
+      lockedByUserId: "operator-user",
     });
 
     expect(locked.changed).toBe(true);
     expect(locked.document.lockedAt).toBeInstanceOf(Date);
-    expect(locked.document.lockedByUserId).toBe("board-user");
+    expect(locked.document.lockedByUserId).toBe("operator-user");
 
     await expect(svc.upsertIssueDocument({
       issueId,
@@ -133,7 +133,7 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
       format: "markdown",
       body: "# Updated plan",
       baseRevisionId: locked.document.latestRevisionId,
-      createdByUserId: "board-user",
+      createdByUserId: "operator-user",
     })).rejects.toMatchObject({
       status: 409,
       message: "Document is locked",
@@ -150,7 +150,7 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
       format: "markdown",
       body: "# Updated plan",
       baseRevisionId: unlocked.document.latestRevisionId,
-      createdByUserId: "board-user",
+      createdByUserId: "operator-user",
     });
 
     expect(updated.created).toBe(false);
@@ -162,7 +162,7 @@ describeEmbeddedPostgres("documentService system issue documents", () => {
     const locked = await svc.lockIssueDocument({
       issueId,
       key: "plan",
-      lockedByUserId: "board-user",
+      lockedByUserId: "operator-user",
     });
 
     const fallback = await svc.upsertIssueDocument({

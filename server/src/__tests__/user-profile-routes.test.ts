@@ -61,7 +61,7 @@ describeEmbeddedPostgres("GET /squads/:squadId/users/:userSlug/profile", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `U${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(authUsers).values({
       id: userId,
@@ -114,7 +114,7 @@ describeEmbeddedPostgres("GET /squads/:squadId/users/:userSlug/profile", () => {
     app.use(express.json());
     app.use((req, _res, next) => {
       (req as any).actor = {
-        type: "board",
+        type: "operator",
         source: "local_implicit",
         userId,
         squadIds: [squadId],

@@ -53,7 +53,7 @@ describe("project and goal commands", () => {
     await createProgram().parseAsync([
       "project", "create",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--name", "Launch Site",
       "--status", "planned",
@@ -63,7 +63,7 @@ describe("project and goal commands", () => {
     await createProgram().parseAsync([
       "project", "update", PROJECT_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--status", "in_progress",
     ], { from: "user" });
 
@@ -88,14 +88,14 @@ describe("project and goal commands", () => {
     await createProgram().parseAsync([
       "project", "list",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
     ], { from: "user" });
 
     await createProgram().parseAsync([
       "project", "delete", PROJECT_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--yes",
     ], { from: "user" });
 
@@ -117,7 +117,7 @@ describe("project and goal commands", () => {
     await createProgram().parseAsync([
       "goal", "create",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
       "--title", "Grow",
       "--level", "squad",
@@ -127,21 +127,21 @@ describe("project and goal commands", () => {
     await createProgram().parseAsync([
       "goal", "update", GOAL_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--title", "Grow faster",
     ], { from: "user" });
 
     await createProgram().parseAsync([
       "goal", "list",
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--squad-id", SQUAD_ID,
     ], { from: "user" });
 
     await createProgram().parseAsync([
       "goal", "delete", GOAL_ID,
       "--api-base", "http://localhost:3100",
-      "--api-key", "board-token",
+      "--api-key", "operator-token",
       "--yes",
     ], { from: "user" });
 

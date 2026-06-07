@@ -324,7 +324,7 @@ describe("buildIssueChatMessages", () => {
     });
   });
 
-  it("prefers derived agent attribution when a board-authored comment is proven to come from a run", () => {
+  it("prefers derived agent attribution when a operator-authored comment is proven to come from a run", () => {
     const agentMap = new Map<string, Agent>([["agent-1", createAgent("agent-1", "Claude")]]);
     const messages = buildIssueChatMessages({
       comments: [
@@ -830,7 +830,7 @@ describe("buildIssueChatMessages", () => {
     });
   });
 
-  it("labels pause-caused cancelled runs as paused by board", () => {
+  it("labels pause-caused cancelled runs as paused by operator", () => {
     const messages = buildIssueChatMessages({
       comments: [],
       timelineEvents: [],
@@ -856,7 +856,7 @@ describe("buildIssueChatMessages", () => {
 
     expect(messages).toHaveLength(1);
     expect(messages[0]?.metadata.custom).toMatchObject({
-      chainOfThoughtLabel: "Paused by board after 1 minute",
+      chainOfThoughtLabel: "Paused by operator after 1 minute",
       runStatus: "cancelled",
     });
   });

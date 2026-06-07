@@ -856,7 +856,7 @@ function KitchenSinkIssueCrudDemo({ context }: { context: PluginPageProps["conte
   return (
     <Section title="Issue CRUD">
       <div style={mutedTextStyle}>
-        This is a regular embedded React page inside Slaw calling the board API directly. It creates, updates, and deletes issues for the current squad.
+        This is a regular embedded React page inside Slaw calling the operator API directly. It creates, updates, and deletes issues for the current squad.
       </div>
       {!context.squadId ? (
         <div style={mutedTextStyle}>Select a squad to use issue demos.</div>
@@ -1005,7 +1005,7 @@ function KitchenSinkSquadCrudDemo({ context }: { context: PluginPageProps["conte
   return (
     <Section title="Squad CRUD">
       <div style={mutedTextStyle}>
-        The worker SDK currently exposes squad reads. This page shows a pragmatic embedded-app pattern for broader board actions by calling the host REST API directly.
+        The worker SDK currently exposes squad reads. This page shows a pragmatic embedded-app pattern for broader operator actions by calling the host REST API directly.
       </div>
       <div style={subtleCardStyle}>
         <div style={rowStyle}>

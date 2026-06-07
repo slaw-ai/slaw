@@ -194,7 +194,7 @@ describe("POST /health/dev-server/restart", () => {
       const res = await request(app).post("/health/dev-server/restart");
 
       expect(res.status).toBe(403);
-      expect(res.body).toEqual({ error: "board_access_required" });
+      expect(res.body).toEqual({ error: "operator_access_required" });
     } finally {
       if (previousFile === undefined) {
         delete process.env.SLAW_DEV_SERVER_STATUS_FILE;

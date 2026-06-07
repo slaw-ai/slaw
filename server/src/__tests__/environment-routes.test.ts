@@ -95,7 +95,7 @@ function createEnvironment() {
 
 let server: Server | null = null;
 let currentActor: Record<string, unknown> = {
-  type: "board",
+  type: "operator",
   userId: "user-1",
   source: "local_implicit",
 };
@@ -208,7 +208,7 @@ describe("environment routes", () => {
   it("lists squad-scoped environments", async () => {
     mockEnvironmentService.list.mockResolvedValue([createEnvironment()]);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -225,7 +225,7 @@ describe("environment routes", () => {
 
   it("returns provider capabilities for the squad", async () => {
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -256,7 +256,7 @@ describe("environment routes", () => {
       },
     ]);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -424,7 +424,7 @@ describe("environment routes", () => {
   it("returns conflict when creating a second local environment", async () => {
     mockEnvironmentService.list.mockResolvedValue([createEnvironment()]);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -442,12 +442,12 @@ describe("environment routes", () => {
     expect(mockEnvironmentService.create).not.toHaveBeenCalled();
   });
 
-  it("allows non-admin board users with environments:manage to create environments", async () => {
+  it("allows non-admin operator users with environments:manage to create environments", async () => {
     const environment = createEnvironment();
     mockAccessService.canUser.mockResolvedValue(true);
     mockEnvironmentService.create.mockResolvedValue(environment);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       squadIds: ["squad-1"],
@@ -470,10 +470,10 @@ describe("environment routes", () => {
     );
   });
 
-  it("rejects non-admin board users without environments:manage", async () => {
+  it("rejects non-admin operator users without environments:manage", async () => {
     mockAccessService.canUser.mockResolvedValue(false);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       squadIds: ["squad-1"],
@@ -530,7 +530,7 @@ describe("environment routes", () => {
 
   it("rejects invalid SSH config on create", async () => {
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -575,7 +575,7 @@ describe("environment routes", () => {
     mockEnvironmentService.create.mockResolvedValue(environment);
     const pluginWorkerManager = {};
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     }, { pluginWorkerManager });
@@ -639,7 +639,7 @@ describe("environment routes", () => {
     };
     mockEnvironmentService.create.mockResolvedValue(environment);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -670,7 +670,7 @@ describe("environment routes", () => {
 
   it("rejects persisted fake sandbox environments", async () => {
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -707,7 +707,7 @@ describe("environment routes", () => {
     mockEnvironmentService.create.mockResolvedValue(environment);
     const pluginWorkerManager = {};
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     }, { pluginWorkerManager });
@@ -791,7 +791,7 @@ describe("environment routes", () => {
     });
     const pluginWorkerManager = {};
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     }, { pluginWorkerManager });
@@ -887,7 +887,7 @@ describe("environment routes", () => {
     });
     const pluginWorkerManager = {};
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     }, { pluginWorkerManager });
@@ -935,7 +935,7 @@ describe("environment routes", () => {
     mockEnvironmentService.create.mockResolvedValue(environment);
     const pluginWorkerManager = {};
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     }, { pluginWorkerManager });
@@ -1022,7 +1022,7 @@ describe("environment routes", () => {
       },
     ]);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1058,7 +1058,7 @@ describe("environment routes", () => {
       updatedAt: new Date("2026-04-16T05:05:00.000Z"),
     });
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1095,7 +1095,7 @@ describe("environment routes", () => {
       status: "archived",
     });
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1154,7 +1154,7 @@ describe("environment routes", () => {
       config: {},
     });
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1177,7 +1177,7 @@ describe("environment routes", () => {
   it("requires explicit SSH config when switching from local to SSH", async () => {
     mockEnvironmentService.getById.mockResolvedValue(createEnvironment());
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1196,7 +1196,7 @@ describe("environment routes", () => {
   it("rejects switching an environment to the built-in fake sandbox provider", async () => {
     mockEnvironmentService.getById.mockResolvedValue(createEnvironment());
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1219,7 +1219,7 @@ describe("environment routes", () => {
   it("returns 404 when patching a missing environment", async () => {
     mockEnvironmentService.getById.mockResolvedValue(null);
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
     });
@@ -1258,7 +1258,7 @@ describe("environment routes", () => {
       },
     });
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
       runId: "run-1",
@@ -1312,7 +1312,7 @@ describe("environment routes", () => {
       },
     });
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
       runId: "run-1",
@@ -1351,7 +1351,7 @@ describe("environment routes", () => {
     });
     const pluginWorkerManager = {};
     const app = createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "local_implicit",
       runId: "run-1",

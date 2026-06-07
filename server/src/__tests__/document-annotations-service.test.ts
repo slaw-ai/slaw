@@ -74,7 +74,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(issues).values({
@@ -149,7 +149,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
           },
           body: "Please review this text",
         },
-        { actorType: "user", actorId: "board-user", userId: "board-user" },
+        { actorType: "user", actorId: "operator-user", userId: "operator-user" },
       )
       .then(
         () => ({ status: "fulfilled" as const }),

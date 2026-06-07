@@ -50,7 +50,7 @@ vi.mock("../api/auth", () => ({
 }));
 
 vi.mock("../api/dashboard", () => ({
-  dashboardApi: { summary: apiMocks.dashboardSummary },
+  dashoperatorApi: { summary: apiMocks.dashboardSummary },
 }));
 
 vi.mock("../api/execution-workspaces", () => ({
@@ -235,8 +235,8 @@ function resetInboxApiMocks() {
   apiMocks.joinRequestsList.mockResolvedValue([]);
   apiMocks.userDirectoryList.mockResolvedValue({ users: [] });
   apiMocks.authSession.mockResolvedValue({
-    user: { id: "local-board" },
-    session: { userId: "local-board" },
+    user: { id: "local-operator" },
+    session: { userId: "local-operator" },
   });
   apiMocks.dashboardSummary.mockResolvedValue({
     agents: { error: 0 },

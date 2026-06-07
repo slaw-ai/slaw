@@ -116,7 +116,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -535,7 +535,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       .where(eq(agents.id, agentId));
 
     await expect(
-      svc.restoreRevision(routine.id, revision1Id, { userId: "board-user" }),
+      svc.restoreRevision(routine.id, revision1Id, { userId: "operator-user" }),
     ).rejects.toMatchObject({
       status: 409,
       message: "Cannot assign routines to terminated agents",
@@ -600,7 +600,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     ]);
   });
 
-  it("records the manual board runner on fresh routine issues so they appear in that user's inbox", async () => {
+  it("records the manual operator runner on fresh routine issues so they appear in that user's inbox", async () => {
     const { squadId, agentId, issueSvc, routine, svc } = await seedFixture();
     const userId = randomUUID();
 

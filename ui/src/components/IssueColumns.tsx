@@ -36,7 +36,7 @@ const issueColumnLabels: Record<InboxIssueColumn, string> = {
 const issueColumnDescriptions: Record<InboxIssueColumn, string> = {
   status: "Issue state chip on the left edge.",
   id: "Ticket identifier like PAP-1009.",
-  assignee: "Assigned agent or board user.",
+  assignee: "Assigned agent or operator user.",
   project: "Linked project pill with its color.",
   workspace: "Execution or project workspace used for the issue.",
   parent: "Parent issue identifier and title.",

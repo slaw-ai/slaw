@@ -133,7 +133,7 @@ describeEmbeddedPostgres("heartbeat issue graph liveness escalation", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values([
@@ -573,7 +573,7 @@ describeEmbeddedPostgres("heartbeat issue graph liveness escalation", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(agents).values({
       id: managerId,

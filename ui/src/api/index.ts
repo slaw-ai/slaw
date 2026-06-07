@@ -11,7 +11,7 @@ export { goalsApi } from "./goals";
 export { approvalsApi } from "./approvals";
 export { costsApi } from "./costs";
 export { activityApi } from "./activity";
-export { dashboardApi } from "./dashboard";
+export { dashoperatorApi } from "./dashboard";
 export { heartbeatsApi } from "./heartbeats";
 export { instanceSettingsApi } from "./instanceSettings";
 export { sidebarBadgesApi } from "./sidebarBadges";

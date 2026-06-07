@@ -73,7 +73,7 @@ describe("SquadInvites", () => {
       state: isActive ? "active" : "accepted",
       invitedByUser: {
         id: "user-1",
-        name: `Board User ${inviteNumber}`,
+        name: `Operator User ${inviteNumber}`,
         email: `board${inviteNumber}@slaw.local`,
         image: null,
       },
@@ -141,9 +141,9 @@ describe("SquadInvites", () => {
     expect(container.textContent).not.toContain("Invite an agent");
     expect(container.textContent).not.toContain("Generate agent onboarding prompt");
     expect(container.textContent).toContain("Invite history");
-    expect(container.textContent).toContain("Board User 25");
-    expect(container.textContent).toContain("Board User 21");
-    expect(container.textContent).not.toContain("Board User 20");
+    expect(container.textContent).toContain("Operator User 25");
+    expect(container.textContent).toContain("Operator User 21");
+    expect(container.textContent).not.toContain("Operator User 20");
     expect(container.textContent).toContain("Review request");
     expect(container.textContent).toContain("View more");
     expect(container.textContent).not.toContain("Human or agent");
@@ -171,8 +171,8 @@ describe("SquadInvites", () => {
     await flushReact();
 
     expect(listInvitesMock).toHaveBeenCalledWith("squad-1", { limit: 5, offset: 5 });
-    expect(container.textContent).toContain("Board User 20");
-    expect(container.textContent).toContain("Board User 16");
+    expect(container.textContent).toContain("Operator User 20");
+    expect(container.textContent).toContain("Operator User 16");
     expect(container.textContent).toContain("View more");
 
     await act(async () => {
@@ -238,7 +238,7 @@ describe("SquadInvites", () => {
     });
   });
 
-  it("falls back to selectable text when browser clipboard access is unavailable", async () => {
+  it("falls back to selectable text when browser clipoperator access is unavailable", async () => {
     Object.defineProperty(globalThis.navigator, "clipboard", {
       configurable: true,
       value: undefined,
@@ -312,8 +312,8 @@ describe("SquadInvites", () => {
     await flushReact();
     await flushReact();
 
-    expect(container.textContent).toContain("Board User 25");
-    expect(container.textContent).not.toContain("Board User 20");
+    expect(container.textContent).toContain("Operator User 25");
+    expect(container.textContent).not.toContain("Operator User 20");
     expect(listInvitesMock).toHaveBeenCalledWith("squad-1", { limit: 5, offset: 0 });
     expect(queryClient.getQueryData(queryKeys.access.invites("squad-1", "all", 5))).toMatchObject({
       pages: [

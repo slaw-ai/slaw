@@ -17,7 +17,7 @@ function createProgram(): Command {
 }
 
 async function run(args: string[]): Promise<void> {
-  await createProgram().parseAsync([...args, "--api-base", "http://localhost:3100", "--api-key", "board-token"], { from: "user" });
+  await createProgram().parseAsync([...args, "--api-base", "http://localhost:3100", "--api-key", "operator-token"], { from: "user" });
 }
 
 describe("access parity commands", () => {
@@ -101,8 +101,8 @@ describe("access parity commands", () => {
     await run(["sidebar", "badges", "--squad-id", SQUAD_ID]);
     await run(["inbox", "dismissals", "--squad-id", SQUAD_ID]);
     await run(["inbox", "dismiss", "--squad-id", SQUAD_ID, "--payload-json", "{\"itemKey\":\"run:1\"}"]);
-    await run(["board-claim", "show", "claim-token"]);
-    await run(["board-claim", "claim", "claim-token", "--payload-json", "{}"]);
+    await run(["instance-claim", "show", "claim-token"]);
+    await run(["instance-claim", "claim", "claim-token", "--payload-json", "{}"]);
     await run(["available-skill", "list"]);
     await run(["available-skill", "index"]);
     await run(["available-skill", "get", "slaw"]);
@@ -122,8 +122,8 @@ describe("access parity commands", () => {
       ["GET", `http://localhost:3100/api/squads/${SQUAD_ID}/sidebar-badges`],
       ["GET", `http://localhost:3100/api/squads/${SQUAD_ID}/inbox-dismissals`],
       ["POST", `http://localhost:3100/api/squads/${SQUAD_ID}/inbox-dismissals`],
-      ["GET", "http://localhost:3100/api/board-claim/claim-token"],
-      ["POST", "http://localhost:3100/api/board-claim/claim-token/claim"],
+      ["GET", "http://localhost:3100/api/instance-claim/claim-token"],
+      ["POST", "http://localhost:3100/api/instance-claim/claim-token/claim"],
       ["GET", "http://localhost:3100/api/skills/available"],
       ["GET", "http://localhost:3100/api/skills/index"],
       ["GET", "http://localhost:3100/api/skills/slaw"],

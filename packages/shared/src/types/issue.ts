@@ -246,12 +246,12 @@ export type IssueBlockedInboxReason =
   | "invalid_review_participant"
   | "in_review_without_action_path"
   | "missing_successful_run_disposition"
-  | "pending_board_decision"
+  | "pending_operator_decision"
   | "pending_user_decision"
   | "external_owner_action"
   | "open_recovery_issue";
 
-export type IssueBlockedInboxOwnerType = "agent" | "user" | "board" | "external" | "unknown";
+export type IssueBlockedInboxOwnerType = "agent" | "user" | "operator" | "external" | "unknown";
 
 export interface IssueBlockedInboxIssueRef {
   id: string;

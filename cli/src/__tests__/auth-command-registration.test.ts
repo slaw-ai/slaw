@@ -42,7 +42,7 @@ describe("client auth API commands", () => {
         "auth",
         ...args,
         "--api-base", "http://localhost:3100",
-        "--api-key", "board-token",
+        "--api-key", "operator-token",
       ], { from: "user" });
     }
 

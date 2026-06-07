@@ -55,7 +55,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
 
   it("upserts a single dismissal record per user and inbox item key", async () => {
     const squadId = randomUUID();
-    const userId = "board-user";
+    const userId = "operator-user";
     const firstDismissedAt = new Date("2026-03-11T01:00:00.000Z");
     const secondDismissedAt = new Date("2026-03-11T02:00:00.000Z");
 
@@ -63,7 +63,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await dismissalsSvc.dismiss(squadId, userId, "approval:approval-1", firstDismissedAt);
@@ -78,7 +78,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
 
   it("honors dismissal timestamps and resurfaces approvals with newer activity", async () => {
     const squadId = randomUUID();
-    const userId = "board-user";
+    const userId = "operator-user";
     const primaryAgentId = randomUUID();
     const secondaryAgentId = randomUUID();
     const hiddenApprovalId = randomUUID();
@@ -92,7 +92,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values([

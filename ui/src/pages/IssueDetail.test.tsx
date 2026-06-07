@@ -6,7 +6,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { canBoardResolveRecoveryAction, IssueDetail } from "./IssueDetail";
+import { canOperatorResolveRecoveryAction, IssueDetail } from "./IssueDetail";
 
 const mockIssuesApi = vi.hoisted(() => ({
   get: vi.fn(),
@@ -48,7 +48,7 @@ const mockAgentsApi = vi.hoisted(() => ({
 }));
 
 const mockAccessApi = vi.hoisted(() => ({
-  getCurrentBoardAccess: vi.fn(),
+  getCurrentOperatorAccess: vi.fn(),
   listUserDirectory: vi.fn(),
 }));
 
@@ -821,7 +821,7 @@ describe("IssueDetail", () => {
     mockHeartbeatsApi.liveRunsForIssue.mockResolvedValue([]);
     mockHeartbeatsApi.activeRunForIssue.mockResolvedValue(null);
     mockAgentsApi.list.mockResolvedValue([]);
-    mockAccessApi.getCurrentBoardAccess.mockResolvedValue({
+    mockAccessApi.getCurrentOperatorAccess.mockResolvedValue({
       squadIds: ["squad-1"],
       isInstanceAdmin: true,
       source: "session",
@@ -1416,7 +1416,7 @@ describe("IssueDetail", () => {
     localStorage.removeItem("slaw:issue-comment-draft:issue-1");
   });
 
-  it("renders Paused by board distinctly and defaults leaf resume to wake the assignee", async () => {
+  it("renders Paused by operator distinctly and defaults leaf resume to wake the assignee", async () => {
     const activeHold = createPauseHold();
     const releasedHold = createPauseHold({
       status: "released",
@@ -1462,7 +1462,7 @@ describe("IssueDetail", () => {
     await flushReact();
 
     await waitForAssertion(() => {
-      expect(container.textContent).toContain("Paused by board.");
+      expect(container.textContent).toContain("Paused by operator.");
       expect(container.textContent).toContain("in_review");
       expect(container.textContent).not.toContain("Subtree pause is active.");
     });
@@ -1671,10 +1671,10 @@ describe("IssueDetail", () => {
   });
 });
 
-describe("canBoardResolveRecoveryAction", () => {
+describe("canOperatorResolveRecoveryAction", () => {
   it("falls back to squadIds when memberships are not populated", () => {
     expect(
-      canBoardResolveRecoveryAction("squad-1", {
+      canOperatorResolveRecoveryAction("squad-1", {
         squadIds: ["squad-1"],
         memberships: [],
         isInstanceAdmin: false,
@@ -1686,9 +1686,9 @@ describe("canBoardResolveRecoveryAction", () => {
     ).toBe(true);
   });
 
-  it("uses populated memberships as the authoritative board access source", () => {
+  it("uses populated memberships as the authoritative operator access source", () => {
     expect(
-      canBoardResolveRecoveryAction("squad-1", {
+      canOperatorResolveRecoveryAction("squad-1", {
         squadIds: ["squad-1"],
         memberships: [
           {

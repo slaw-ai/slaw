@@ -455,7 +455,7 @@ function createTimelineEventMessage(args: {
     ? (agentMap?.get(event.actorId)?.name ?? event.actorId.slice(0, 8))
     : event.actorType === "system"
       ? "System"
-      : (formatAssigneeUserLabel(event.actorId, currentUserId, userLabelMap) ?? "Board");
+      : (formatAssigneeUserLabel(event.actorId, currentUserId, userLabelMap) ?? "Operator");
 
   const lines: string[] = [
     event.followUpRequested ? `${actorName} requested follow-up` : `${actorName} updated this issue`,
@@ -605,7 +605,7 @@ function runDurationLabel(run: {
       return durationText ? `Timed out after ${durationText}` : "Run timed out";
     case "cancelled":
       if (stopReason === "paused") {
-        return durationText ? `Paused by board after ${durationText}` : "Paused by board";
+        return durationText ? `Paused by operator after ${durationText}` : "Paused by operator";
       }
       return durationText ? `Cancelled after ${durationText}` : "Run cancelled";
     case "queued":

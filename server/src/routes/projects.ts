@@ -457,7 +457,7 @@ export function projectRoutes(db: Db) {
           return await runWorkspaceJobForControl({
             actor: {
               id: actor.agentId ?? null,
-              name: actor.actorType === "user" ? "Board" : "Agent",
+              name: actor.actorType === "user" ? "Operator" : "Agent",
               squadId: project.squadId,
             },
             issue: null,
@@ -512,7 +512,7 @@ export function projectRoutes(db: Db) {
             db,
             actor: {
               id: actor.agentId ?? null,
-              name: actor.actorType === "user" ? "Board" : "Agent",
+              name: actor.actorType === "user" ? "Operator" : "Agent",
               squadId: project.squadId,
             },
             issue: null,

@@ -51,9 +51,9 @@ const documentPayload = {
   latestRevisionId: "44444444-4444-4444-8444-444444444444",
   latestRevisionNumber: 1,
   createdByAgentId: null,
-  createdByUserId: "board-user",
+  createdByUserId: "operator-user",
   updatedByAgentId: null,
-  updatedByUserId: "board-user",
+  updatedByUserId: "operator-user",
   createdAt: new Date("2026-05-14T12:00:00.000Z"),
   updatedAt: new Date("2026-05-14T12:00:00.000Z"),
 };
@@ -83,7 +83,7 @@ const annotationThread = {
     position: { normalizedStart: 6, normalizedEnd: 19, markdownStart: 6, markdownEnd: 19 },
   },
   createdByAgentId: null,
-  createdByUserId: "board-user",
+  createdByUserId: "operator-user",
   resolvedByAgentId: null,
   resolvedByUserId: null,
   resolvedAt: null,
@@ -100,7 +100,7 @@ const annotationComment = {
   body: "Please review PAP-1",
   authorType: "user",
   authorAgentId: null,
-  authorUserId: "board-user",
+  authorUserId: "operator-user",
   createdByRunId: null,
   createdAt: new Date("2026-05-14T12:01:00.000Z"),
   updatedAt: new Date("2026-05-14T12:01:00.000Z"),
@@ -142,7 +142,7 @@ function registerModuleMocks() {
   }));
 }
 
-async function createApp(actor: "board" | "agent" = "board", actorSquadId = squadId) {
+async function createApp(actor: "operator" | "agent" = "operator", actorSquadId = squadId) {
   const [{ issueRoutes }, { errorHandler }] = await Promise.all([
     vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
     vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
@@ -158,8 +158,8 @@ async function createApp(actor: "board" | "agent" = "board", actorSquadId = squa
         runId: "88888888-8888-4888-8888-888888888888",
       }
       : {
-        type: "board",
-        userId: "board-user",
+        type: "operator",
+        userId: "operator-user",
         squadIds: [actorSquadId],
         source: "local_implicit",
         isInstanceAdmin: false,

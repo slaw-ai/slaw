@@ -16,7 +16,7 @@ const mockAuthApi = vi.hoisted(() => ({
 }));
 
 const mockAccessApi = vi.hoisted(() => ({
-  getCurrentBoardAccess: vi.fn(),
+  getCurrentOperatorAccess: vi.fn(),
   claimBootstrapAdmin: vi.fn(),
 }));
 
@@ -103,7 +103,7 @@ describe("CloudAccessGate", () => {
       session: { id: "session-1", userId: "user-1" },
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
     });
-    mockAccessApi.getCurrentBoardAccess.mockResolvedValue({
+    mockAccessApi.getCurrentOperatorAccess.mockResolvedValue({
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
       userId: "user-1",
       isInstanceAdmin: false,
@@ -121,12 +121,12 @@ describe("CloudAccessGate", () => {
     unmountRoot(root);
   });
 
-  it("allows authenticated users with squad access through to the board", async () => {
+  it("allows authenticated users with squad access through to the operator", async () => {
     mockAuthApi.getSession.mockResolvedValue({
       session: { id: "session-1", userId: "user-1" },
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
     });
-    mockAccessApi.getCurrentBoardAccess.mockResolvedValue({
+    mockAccessApi.getCurrentOperatorAccess.mockResolvedValue({
       user: { id: "user-1", email: "user@example.com", name: "User", image: null },
       userId: "user-1",
       isInstanceAdmin: false,
@@ -160,7 +160,7 @@ describe("CloudAccessGate", () => {
     expect(container.textContent).toContain("Finish setting up this Slaw");
     expect(container.textContent).toContain("Sign in / Create account");
     expect(container.textContent).toContain("pnpm slaw auth bootstrap-squad-lead");
-    expect(mockAccessApi.getCurrentBoardAccess).not.toHaveBeenCalled();
+    expect(mockAccessApi.getCurrentOperatorAccess).not.toHaveBeenCalled();
 
     unmountRoot(root);
   });
@@ -184,7 +184,7 @@ describe("CloudAccessGate", () => {
 
     expect(container.textContent).toContain("Claim this instance");
     expect(container.textContent).toContain("Signed in as user@example.com");
-    expect(mockAccessApi.getCurrentBoardAccess).not.toHaveBeenCalled();
+    expect(mockAccessApi.getCurrentOperatorAccess).not.toHaveBeenCalled();
 
     const button = Array.from(container.querySelectorAll("button")).find((candidate) =>
       candidate.textContent?.includes("Claim this instance"),

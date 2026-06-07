@@ -119,7 +119,7 @@ const NEUTRAL_METADATA: SystemNoticeMetadataSection[] = [
       {
         kind: "text",
         label: "Reason",
-        value: "Manual reassignment requested by Board.",
+        value: "Manual reassignment requested by Operator.",
       },
     ],
   },
@@ -199,6 +199,6 @@ export const systemNoticeFixtures: readonly SystemNoticeFixture[] = [
     label: "System warning",
     source: { label: "Slaw" },
     timestamp: "2026-05-04T17:02:00.000Z",
-    body: "This run paused while waiting on board approval.",
+    body: "This run paused while waiting on operator approval.",
   },
 ];

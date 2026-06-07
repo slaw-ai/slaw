@@ -195,7 +195,7 @@ describe("issue feedback trace routes", () => {
       sharingEnabled: true,
     });
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: true,
@@ -219,7 +219,7 @@ describe("issue feedback trace routes", () => {
     });
   });
 
-  it("rejects non-board callers before fetching a feedback trace", async () => {
+  it("rejects non-operator callers before fetching a feedback trace", async () => {
     const app = await createApp({
       type: "agent",
       agentId: "agent-1",
@@ -233,13 +233,13 @@ describe("issue feedback trace routes", () => {
     expect(mockFeedbackService.getFeedbackTraceById).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when a board user lacks access to the trace squad", async () => {
+  it("returns 404 when a operator user lacks access to the trace squad", async () => {
     mockFeedbackService.getFeedbackTraceById.mockResolvedValue({
       id: "trace-1",
       squadId: "squad-2",
     });
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,
@@ -251,7 +251,7 @@ describe("issue feedback trace routes", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 404 for bundle fetches when a board user lacks access to the trace squad", async () => {
+  it("returns 404 for bundle fetches when a operator user lacks access to the trace squad", async () => {
     mockFeedbackService.getFeedbackTraceBundle.mockResolvedValue({
       id: "trace-1",
       squadId: "squad-2",
@@ -259,7 +259,7 @@ describe("issue feedback trace routes", () => {
       files: [],
     });
     const app = await createApp({
-      type: "board",
+      type: "operator",
       userId: "user-1",
       source: "session",
       isInstanceAdmin: false,

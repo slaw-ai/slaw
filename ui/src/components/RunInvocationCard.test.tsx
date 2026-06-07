@@ -17,7 +17,7 @@ describe("RunInvocationCard", () => {
             commandArgs: ["--dangerously-skip-permissions"],
             commandNotes: ["Prompt is piped to claude via stdin."],
             prompt: "very long prompt body",
-            context: { triggeredBy: "board" },
+            context: { triggeredBy: "operator" },
             env: { ANTHROPIC_API_KEY: "***REDACTED***" },
           }}
           censorUsernameInLogs={false}

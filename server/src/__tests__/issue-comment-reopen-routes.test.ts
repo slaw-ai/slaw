@@ -167,8 +167,8 @@ async function installActor(app: express.Express, actor?: Record<string, unknown
   ]);
   app.use((req, _res, next) => {
     (req as any).actor = actor ?? {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -198,7 +198,7 @@ function makeIssue(status: "todo" | "done" | "blocked" | "cancelled" | "in_progr
     status,
     assigneeAgentId: "22222222-2222-4222-8222-222222222222",
     assigneeUserId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     identifier: "PAP-580",
     title: "Comment reopen default",
   };
@@ -294,7 +294,7 @@ describe.sequential("issue comment reopen routes", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       authorAgentId: null,
-      authorUserId: "local-board",
+      authorUserId: "local-operator",
     });
     mockIssueService.findMentionedAgents.mockResolvedValue([]);
     mockIssueService.getDependencyReadiness.mockResolvedValue({
@@ -393,7 +393,7 @@ describe.sequential("issue comment reopen routes", () => {
         assigneeAgentId: "33333333-3333-4333-8333-333333333333",
         status: "todo",
         actorAgentId: null,
-        actorUserId: "local-board",
+        actorUserId: "local-operator",
       }),
     );
     expect(mockLogActivity).toHaveBeenCalledWith(
@@ -471,7 +471,7 @@ describe.sequential("issue comment reopen routes", () => {
         assigneeAgentId: "33333333-3333-4333-8333-333333333333",
         status: "todo",
         actorAgentId: null,
-        actorUserId: "local-board",
+        actorUserId: "local-operator",
       }),
     );
     expect(mockLogActivity).toHaveBeenCalledWith(
@@ -701,7 +701,7 @@ describe.sequential("issue comment reopen routes", () => {
     ));
   });
 
-  it("passes validated comment presentation fields to trusted board comment writes", async () => {
+  it("passes validated comment presentation fields to trusted operator comment writes", async () => {
     const app = await installActor(createApp());
     mockIssueService.getById.mockResolvedValue(makeIssue("todo"));
     mockIssueService.addComment.mockResolvedValue({
@@ -710,7 +710,7 @@ describe.sequential("issue comment reopen routes", () => {
       squadId: "squad-1",
       authorType: "user",
       authorAgentId: null,
-      authorUserId: "local-board",
+      authorUserId: "local-operator",
       body: "Slaw needs a disposition before this issue can continue.",
       presentation: { kind: "system_notice", tone: "warning", detailsDefaultOpen: false },
       metadata: {
@@ -739,7 +739,7 @@ describe.sequential("issue comment reopen routes", () => {
     expect(mockIssueService.addComment).toHaveBeenCalledWith(
       "11111111-1111-4111-8111-111111111111",
       "Slaw needs a disposition before this issue can continue.",
-      { agentId: undefined, userId: "local-board", runId: null },
+      { agentId: undefined, userId: "local-operator", runId: null },
       {
         authorType: "user",
         presentation: { kind: "system_notice", tone: "warning", detailsDefaultOpen: false },
@@ -820,7 +820,7 @@ describe.sequential("issue comment reopen routes", () => {
     mockIssueService.getById.mockResolvedValue({
       ...makeIssue("done"),
       assigneeAgentId: null,
-      assigneeUserId: "local-board",
+      assigneeUserId: "local-operator",
     });
 
     const res = await request(await installActor(createApp()))
@@ -848,7 +848,7 @@ describe.sequential("issue comment reopen routes", () => {
       expect.objectContaining({
         status: "todo",
         actorAgentId: null,
-        actorUserId: "local-board",
+        actorUserId: "local-operator",
       }),
     );
     await waitForWakeup(() => expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
@@ -904,7 +904,7 @@ describe.sequential("issue comment reopen routes", () => {
       expect.objectContaining({
         status: "todo",
         actorAgentId: null,
-        actorUserId: "local-board",
+        actorUserId: "local-operator",
       }),
     );
     expect(mockHeartbeatService.cancelRun).toHaveBeenCalledWith("retry-run-1");
@@ -1012,7 +1012,7 @@ describe.sequential("issue comment reopen routes", () => {
       "11111111-1111-4111-8111-111111111111",
       expect.objectContaining({
         actorAgentId: null,
-        actorUserId: "local-board",
+        actorUserId: "local-operator",
       }),
     );
     expect(mockIssueService.update).not.toHaveBeenCalledWith(
@@ -1358,7 +1358,7 @@ describe.sequential("issue comment reopen routes", () => {
         {
           id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
           type: "approval",
-          participants: [{ type: "user", userId: "local-board" }],
+          participants: [{ type: "user", userId: "local-operator" }],
         },
       ],
     })!;
@@ -1366,14 +1366,14 @@ describe.sequential("issue comment reopen routes", () => {
       ...makeIssue("todo"),
       status: "in_review",
       assigneeAgentId: null,
-      assigneeUserId: "local-board",
+      assigneeUserId: "local-operator",
       executionPolicy: policy,
       executionState: {
         status: "pending",
         currentStageId: policy.stages[0].id,
         currentStageIndex: 0,
         currentStageType: "approval",
-        currentParticipant: { type: "user", userId: "local-board" },
+        currentParticipant: { type: "user", userId: "local-operator" },
         returnAssignee: { type: "agent", agentId: "22222222-2222-4222-8222-222222222222" },
         completedStageIds: [],
         lastDecisionId: null,
@@ -1456,7 +1456,7 @@ describe.sequential("issue comment reopen routes", () => {
       .send({
         status: "in_review",
         assigneeAgentId: null,
-        assigneeUserId: "local-board",
+        assigneeUserId: "local-operator",
         reviewRequest: {
           instructions: "Please verify the fix against the reproduction steps and note any residual risk.",
         },

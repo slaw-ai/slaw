@@ -36,16 +36,16 @@ describe("prompt handoff", () => {
     vi.restoreAllMocks();
   });
 
-  it("fails when an agent prompt uses a board persona profile", async () => {
+  it("fails when an agent prompt uses a operator persona profile", async () => {
     const contextPath = createTempContextPath();
     writeContext(
       {
         version: 2,
-        currentProfile: "board",
+        currentProfile: "operator",
         profiles: {
           board: {
             apiBase: "http://localhost:3100",
-            persona: "board",
+            persona: "operator",
           },
         },
       },
@@ -54,7 +54,7 @@ describe("prompt handoff", () => {
 
     await expect(runAgentPrompt("worker", "Do the work", { context: contextPath, apiKey: "agent-token" }))
       .rejects
-      .toThrow(/persona=board/);
+      .toThrow(/persona=operator/);
   });
 
   it("fails when the supplied agent key belongs to a different agent", async () => {

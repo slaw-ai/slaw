@@ -182,7 +182,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,
@@ -257,7 +257,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,
@@ -354,7 +354,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,
@@ -442,7 +442,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: "PAP",
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
     await db.insert(projects).values({
       id: projectId,

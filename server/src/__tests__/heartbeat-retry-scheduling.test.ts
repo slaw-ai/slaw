@@ -81,7 +81,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: input.squadId,
       name: "Slaw",
       issuePrefix: `T${input.squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -151,7 +151,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -226,7 +226,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -733,7 +733,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values([
@@ -846,7 +846,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         source: "issue.update",
       },
       requestedByActorType: "user",
-      requestedByActorId: "local-board",
+      requestedByActorId: "local-operator",
     });
 
     expect(newAssigneeRun).not.toBeNull();
@@ -886,7 +886,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values([
@@ -1003,7 +1003,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({
@@ -1101,7 +1101,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       id: squadId,
       name: "Slaw",
       issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
+      requireOperatorApprovalForNewAgents: false,
     });
 
     await db.insert(agents).values({

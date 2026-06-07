@@ -19,7 +19,7 @@ describe("issueChatLongThreadFixture", () => {
       linkedRuns: issueChatLongThreadLinkedRuns,
       liveRuns: [],
       agentMap: issueChatLongThreadAgentMap,
-      currentUserId: "user-board",
+      currentUserId: "user-operator",
       transcriptsByRunId: issueChatLongThreadTranscriptsByRunId,
       hasOutputForRun: (runId) => issueChatLongThreadTranscriptsByRunId.has(runId),
     });

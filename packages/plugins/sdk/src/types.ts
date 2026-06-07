@@ -1140,7 +1140,7 @@ export interface PluginIssueDocumentsClient {
 export interface PluginIssueMutationActor {
   /** Agent that initiated the plugin operation, when the plugin is acting from an agent run. */
   actorAgentId?: string | null;
-  /** Board/user that initiated the plugin operation, when known. */
+  /** Operator/user that initiated the plugin operation, when known. */
   actorUserId?: string | null;
   /** Heartbeat run that initiated the operation. Required for checkout-aware agent actions. */
   actorRunId?: string | null;
@@ -1680,7 +1680,7 @@ export interface PluginAuthorizationPolicyRecord {
 export interface PluginAssignmentPreviewInput {
   squadId: string;
   actor:
-    | { type: "board"; userId?: string | null; squadIds?: string[]; isInstanceAdmin?: boolean }
+    | { type: "operator"; userId?: string | null; squadIds?: string[]; isInstanceAdmin?: boolean }
     | { type: "agent"; agentId: string; squadId: string };
   target: {
     issueId?: string | null;

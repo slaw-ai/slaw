@@ -156,8 +156,8 @@ async function createApp(storage: StorageService, options?: { squadIds?: string[
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: options?.squadIds ?? ["squad-1"],
       source: options?.source ?? "local_implicit",
       isInstanceAdmin: false,
@@ -184,7 +184,7 @@ function makeAttachment(contentType: string, originalFilename: string) {
     sha256: "sha256-sample",
     originalFilename,
     createdByAgentId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     createdAt: now,
     updatedAt: now,
   };

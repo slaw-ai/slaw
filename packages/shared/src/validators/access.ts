@@ -50,17 +50,17 @@ export const claimJoinRequestApiKeySchema = z.object({
 
 export type ClaimJoinRequestApiKey = z.infer<typeof claimJoinRequestApiKeySchema>;
 
-export const boardCliAuthAccessLevelSchema = z.enum([
-  "board",
+export const operatorCliAuthAccessLevelSchema = z.enum([
+  "operator",
   "instance_admin_required",
 ]);
 
-export type BoardCliAuthAccessLevel = z.infer<typeof boardCliAuthAccessLevelSchema>;
+export type OperatorCliAuthAccessLevel = z.infer<typeof operatorCliAuthAccessLevelSchema>;
 
 export const createCliAuthChallengeSchema = z.object({
   command: z.string().min(1).max(240),
   clientName: z.string().max(120).optional().nullable(),
-  requestedAccess: boardCliAuthAccessLevelSchema.default("board"),
+  requestedAccess: operatorCliAuthAccessLevelSchema.default("operator"),
   requestedSquadId: z.string().uuid().optional().nullable(),
 });
 
@@ -72,13 +72,13 @@ export const resolveCliAuthChallengeSchema = z.object({
 
 export type ResolveCliAuthChallenge = z.infer<typeof resolveCliAuthChallengeSchema>;
 
-export const createBoardApiKeySchema = z.object({
+export const createOperatorApiKeySchema = z.object({
   name: z.string().trim().min(1).max(120).default("slaw cli"),
   expiresAt: z.coerce.date().optional().nullable(),
   requestedSquadId: z.string().uuid().optional().nullable(),
 });
 
-export type CreateBoardApiKey = z.infer<typeof createBoardApiKeySchema>;
+export type CreateOperatorApiKey = z.infer<typeof createOperatorApiKeySchema>;
 
 export const updateMemberPermissionsSchema = z.object({
   grants: z.array(

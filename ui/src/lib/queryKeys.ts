@@ -128,7 +128,7 @@ export const queryKeys = {
     adminUsers: (query: string) => ["access", "admin-users", query] as const,
     userSquadAccess: (userId: string) => ["access", "user-squad-access", userId] as const,
     invite: (token: string) => ["access", "invite", token] as const,
-    currentBoardAccess: ["access", "current-board-access"] as const,
+    currentOperatorAccess: ["access", "current-operator-access"] as const,
   },
   auth: {
     session: ["auth", "session"] as const,

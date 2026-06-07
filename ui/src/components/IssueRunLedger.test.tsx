@@ -384,7 +384,7 @@ describe("IssueRunLedger", () => {
     expect(container.textContent).toContain("timeout (30s timeout)");
     expect(container.textContent).toContain("cancelled");
     expect(container.textContent).toContain("budget paused");
-    expect(container.textContent).toContain("paused by board");
+    expect(container.textContent).toContain("paused by operator");
   });
 
   it("surfaces active and completed child issue summaries", () => {

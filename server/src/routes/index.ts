@@ -11,7 +11,7 @@ export { approvalRoutes } from "./approvals.js";
 export { secretRoutes } from "./secrets.js";
 export { costRoutes } from "./costs.js";
 export { activityRoutes } from "./activity.js";
-export { dashboardRoutes } from "./dashboard.js";
+export { dashoperatorRoutes } from "./dashboard.js";
 export { sidebarBadgeRoutes } from "./sidebar-badges.js";
 export { sidebarPreferenceRoutes } from "./sidebar-preferences.js";
 export { resourceMembershipRoutes } from "./resource-memberships.js";

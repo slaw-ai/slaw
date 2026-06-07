@@ -406,31 +406,31 @@ const r = responses;
 type OpenApiAuthLevel =
   | "public"
   | "authenticated"
-  | "board"
+  | "operator"
   | "instance_admin";
 
-const BOARD_SESSION_AUTH_SCHEME = "BoardSessionAuth";
-const BOARD_API_KEY_AUTH_SCHEME = "BoardApiKeyAuth";
+const OPERATOR_SESSION_AUTH_SCHEME = "OperatorSessionAuth";
+const OPERATOR_API_KEY_AUTH_SCHEME = "OperatorApiKeyAuth";
 const AGENT_BEARER_AUTH_SCHEME = "AgentBearerAuth";
 
 function securityRequirement(name: string): Record<string, string[]> {
   return { [name]: [] };
 }
 
-const BOARD_SECURITY: Array<Record<string, string[]>> = [
-  securityRequirement(BOARD_SESSION_AUTH_SCHEME),
-  securityRequirement(BOARD_API_KEY_AUTH_SCHEME),
+const OPERATOR_SECURITY: Array<Record<string, string[]>> = [
+  securityRequirement(OPERATOR_SESSION_AUTH_SCHEME),
+  securityRequirement(OPERATOR_API_KEY_AUTH_SCHEME),
 ];
 
 const AUTHENTICATED_SECURITY: Array<Record<string, string[]>> = [
-  ...BOARD_SECURITY,
+  ...OPERATOR_SECURITY,
   securityRequirement(AGENT_BEARER_AUTH_SCHEME),
 ];
 
 const PUBLIC_OPERATIONS = new Set([
   "GET /api/health",
   "GET /api/openapi.json",
-  "GET /api/board-claim/{token}",
+  "GET /api/instance-claim/{token}",
   "POST /api/cli-auth/challenges",
   "GET /api/cli-auth/challenges/{id}",
   "POST /api/cli-auth/challenges/{id}/cancel",
@@ -445,19 +445,19 @@ const PUBLIC_OPERATIONS = new Set([
   "POST /api/join-requests/{requestId}/claim-api-key",
 ]);
 
-const BOARD_ONLY_PREFIXES = [
+const OPERATOR_ONLY_PREFIXES = [
   "/api/auth/",
   "/api/admin/",
   "/api/plugins",
   "/api/instance/",
 ];
 
-const BOARD_ONLY_OPERATIONS = new Set([
+const OPERATOR_ONLY_OPERATIONS = new Set([
   "GET /api/squads",
   "POST /api/squads",
   "GET /api/squads/stats",
   "GET /api/squads/issues",
-  "POST /api/board-claim/{token}/claim",
+  "POST /api/instance-claim/{token}/claim",
   "GET /api/cli-auth/me",
   "POST /api/squads/{squadId}/invites",
   "GET /api/squads/{squadId}/invites",
@@ -538,17 +538,17 @@ function operationKey(method: string, path: string) {
   return `${method.toUpperCase()} ${path}`;
 }
 
-function isBoardOnlyOperation(method: string, path: string) {
+function isOperatorOnlyOperation(method: string, path: string) {
   const key = operationKey(method, path);
-  if (BOARD_ONLY_OPERATIONS.has(key)) return true;
-  return BOARD_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix));
+  if (OPERATOR_ONLY_OPERATIONS.has(key)) return true;
+  return OPERATOR_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
 function resolveOperationAuthLevel(method: string, path: string): OpenApiAuthLevel {
   const key = operationKey(method, path);
   if (PUBLIC_OPERATIONS.has(key)) return "public";
   if (INSTANCE_ADMIN_OPERATIONS.has(key)) return "instance_admin";
-  if (isBoardOnlyOperation(method, path)) return "board";
+  if (isOperatorOnlyOperation(method, path)) return "operator";
   return "authenticated";
 }
 
@@ -566,18 +566,18 @@ function applyOperationStatusOverride(
 function applyDocumentFixups(document: any): any {
   document.components ??= {};
   document.components.securitySchemes = {
-    [BOARD_SESSION_AUTH_SCHEME]: {
+    [OPERATOR_SESSION_AUTH_SCHEME]: {
       type: "apiKey",
       in: "cookie",
       name: "slaw_session",
       description:
-        "Board session cookie in authenticated mode. Slaw uses Better Auth; cookie transport may vary by deployment.",
+        "Operator session cookie in authenticated mode. Slaw uses Better Auth; cookie transport may vary by deployment.",
     },
-    [BOARD_API_KEY_AUTH_SCHEME]: {
+    [OPERATOR_API_KEY_AUTH_SCHEME]: {
       type: "http",
       scheme: "bearer",
-      bearerFormat: "Board API Key",
-      description: "Board API key presented in the Authorization bearer header.",
+      bearerFormat: "Operator API Key",
+      description: "Operator API key presented in the Authorization bearer header.",
     },
     [AGENT_BEARER_AUTH_SCHEME]: {
       type: "http",
@@ -597,16 +597,16 @@ function applyDocumentFixups(document: any): any {
       } else if (authLevel === "authenticated") {
         operation.security = AUTHENTICATED_SECURITY;
       } else {
-        operation.security = BOARD_SECURITY;
+        operation.security = OPERATOR_SECURITY;
       }
 
       operation["x-slaw-authorization"] =
         authLevel === "instance_admin"
-          ? { actor: "board", instanceAdmin: true }
-          : authLevel === "board"
-            ? { actor: "board" }
+          ? { actor: "operator", instanceAdmin: true }
+          : authLevel === "operator"
+            ? { actor: "operator" }
             : authLevel === "authenticated"
-              ? { actor: "board_or_agent" }
+              ? { actor: "operator_or_agent" }
               : { actor: "public" };
 
       const key = operationKey(method, path);
@@ -3611,22 +3611,22 @@ registry.registerPath({
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
-// ─── Board claim & CLI auth ───────────────────────────────────────────────────
+// ─── Operator claim & CLI auth ───────────────────────────────────────────────────
 
 registry.registerPath({
   method: "get",
-  path: "/api/board-claim/{token}",
+  path: "/api/instance-claim/{token}",
   tags: ["access"],
-  summary: "Get board claim details by token",
+  summary: "Get operator claim details by token",
   request: { params: z.object({ token: z.string() }) },
   responses: { 200: r.ok(), 404: r.notFound },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/api/board-claim/{token}/claim",
+  path: "/api/instance-claim/{token}/claim",
   tags: ["access"],
-  summary: "Claim a board token",
+  summary: "Claim an operator token",
   request: { params: z.object({ token: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });

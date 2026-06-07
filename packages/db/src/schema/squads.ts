@@ -16,7 +16,7 @@ export const squads = pgTable(
     attachmentMaxBytes: integer("attachment_max_bytes")
       .notNull()
       .default(10 * 1024 * 1024),
-    requireBoardApprovalForNewAgents: boolean("require_board_approval_for_new_agents")
+    requireOperatorApprovalForNewAgents: boolean("require_operator_approval_for_new_agents")
       .notNull()
       .default(false),
     feedbackDataSharingEnabled: boolean("feedback_data_sharing_enabled")

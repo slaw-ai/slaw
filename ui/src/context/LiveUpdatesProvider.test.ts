@@ -308,7 +308,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
     });
   });
 
-  it("still actively refetches visible issue detail for board-authored updates", () => {
+  it("still actively refetches visible issue detail for operator-authored updates", () => {
     const invalidations: unknown[] = [];
     const queryClient = {
       invalidateQueries: (input: unknown) => {

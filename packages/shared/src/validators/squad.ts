@@ -27,7 +27,7 @@ export const updateSquadSchema = createSquadSchema
   .extend({
     status: z.enum(SQUAD_STATUSES).optional(),
     spentMonthlyCents: z.number().int().nonnegative().optional(),
-    requireBoardApprovalForNewAgents: z.boolean().optional(),
+    requireOperatorApprovalForNewAgents: z.boolean().optional(),
     feedbackDataSharingEnabled: z.boolean().optional(),
     feedbackDataSharingConsentAt: z.coerce.date().nullable().optional(),
     feedbackDataSharingConsentByUserId: z.string().min(1).nullable().optional(),

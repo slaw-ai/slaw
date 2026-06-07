@@ -181,10 +181,10 @@ function hydrateQueries(client: ReturnType<typeof useQueryClient>) {
   client.setQueryData(queryKeys.access.squadUserDirectory(squadId), {
     users: [
       {
-        principalId: "user-board",
+        principalId: "user-operator",
         status: "active",
         user: {
-          id: "user-board",
+          id: "user-operator",
           email: "riley@slaw.local",
           name: "Riley Board",
           image: null,

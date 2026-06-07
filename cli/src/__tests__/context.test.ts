@@ -91,8 +91,8 @@ describe("client context store", () => {
           legacy: {
             apiBase: "http://localhost:3101",
             squadId: "squad-legacy",
-            persona: "board",
-            apiKeyEnvVarName: "SLAW_BOARD_TOKEN",
+            persona: "operator",
+            apiKeyEnvVarName: "SLAW_OPERATOR_TOKEN",
           },
         },
       }),
@@ -104,8 +104,8 @@ describe("client context store", () => {
     expect(context.profiles.legacy).toEqual({
       apiBase: "http://localhost:3101",
       squadId: "squad-legacy",
-      persona: "board",
-      apiKeyEnvVarName: "SLAW_BOARD_TOKEN",
+      persona: "operator",
+      apiKeyEnvVarName: "SLAW_OPERATOR_TOKEN",
     });
   });
 

@@ -14,7 +14,7 @@ export const issueThreadInteractionFixtureMeta = {
   squadId: "squad-storybook",
   projectId: "project-board-ui",
   issueId: "issue-thread-interactions",
-  currentUserId: "user-board",
+  currentUserId: "user-operator",
 } as const;
 
 function createComment(overrides: Partial<IssueChatComment>): IssueChatComment {
@@ -191,7 +191,7 @@ function createRequestConfirmationInteraction(
     kind: "request_confirmation",
     title: "Approve the proposed plan",
     summary:
-      "The assignee is waiting on a direct board decision before continuing from the plan document.",
+      "The assignee is waiting on a direct operator decision before continuing from the plan document.",
     status: "pending",
     continuationPolicy: "wake_assignee",
     createdByAgentId: "agent-codex",
@@ -467,7 +467,7 @@ export const failedRequestConfirmationInteraction = createRequestConfirmationInt
 
 export const issueThreadInteractionComments: IssueChatComment[] = [
   createComment({
-    id: "comment-thread-board",
+    id: "comment-thread-operator",
     body: "Pressure-test first-class issue-thread interactions before we touch persistence. I want to see the cards in the real feed, not in a disconnected mock.",
     createdAt: new Date("2026-04-20T14:02:00.000Z"),
     updatedAt: new Date("2026-04-20T14:02:00.000Z"),

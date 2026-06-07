@@ -144,8 +144,8 @@ describe("orchestration smoke plugin", () => {
       body: { assigneeAgentId: agentId },
       actor: {
         actorType: "user",
-        actorId: "board",
-        userId: "board",
+        actorId: "operator",
+        userId: "operator",
         agentId: null,
         runId: null,
       },

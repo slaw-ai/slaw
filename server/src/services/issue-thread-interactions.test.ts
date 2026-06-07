@@ -152,7 +152,7 @@ describe("issueThreadInteractionService", () => {
       title: null,
       summary: null,
       createdByAgentId: null,
-      createdByUserId: "local-board",
+      createdByUserId: "local-operator",
       resolvedByAgentId: null,
       resolvedByUserId: null,
       payload: {
@@ -197,7 +197,7 @@ describe("issueThreadInteractionService", () => {
       ],
       summaryMarkdown: "Phase 1 with tests and docs.",
     }, {
-      userId: "local-board",
+      userId: "local-operator",
     });
 
     expect(result.status).toBe("answered");

@@ -129,14 +129,14 @@ function registerModuleMocks() {
   }));
 }
 
-function createDb(requireBoardApprovalForNewAgents = false) {
+function createDb(requireOperatorApprovalForNewAgents = false) {
   return {
     select: vi.fn(() => ({
       from: vi.fn(() => ({
         where: vi.fn(async () => [
           {
             id: "squad-1",
-            requireBoardApprovalForNewAgents,
+            requireOperatorApprovalForNewAgents,
           },
         ]),
       })),
@@ -153,8 +153,8 @@ async function createApp(db: Record<string, unknown> = createDb()) {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -779,7 +779,7 @@ describe.sequential("agent skill routes", () => {
     expect(mockIssueApprovalService.linkManyForApproval).toHaveBeenCalledWith(
       "approval-1",
       [sourceIssueId],
-      { agentId: null, userId: "local-board" },
+      { agentId: null, userId: "local-operator" },
     );
   });
 

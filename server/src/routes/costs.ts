@@ -19,7 +19,7 @@ import {
   heartbeatService,
   logActivity,
 } from "../services/index.js";
-import { assertBoard, assertSquadAccess, getActorInfo } from "./authz.js";
+import { assertOperator, assertSquadAccess, getActorInfo } from "./authz.js";
 import { fetchAllQuotaWindows } from "../services/quota-windows.js";
 import { badRequest } from "../errors.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
@@ -102,7 +102,7 @@ export function costRoutes(
   router.post("/squads/:squadId/finance-events", validate(createFinanceEventSchema), async (req, res) => {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
-    assertBoard(req);
+    assertOperator(req);
 
     const event = await finance.createEvent(squadId, {
       ...req.body,
@@ -225,7 +225,7 @@ export function costRoutes(
   router.get("/squads/:squadId/costs/quota-windows", async (req, res) => {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
-    assertBoard(req);
+    assertOperator(req);
     // validate squadId resolves to a real squad so the "__none__" sentinel
     // and any forged ids are rejected before we touch provider credentials
     const squad = await squads.getById(squadId);
@@ -248,10 +248,10 @@ export function costRoutes(
     "/squads/:squadId/budgets/policies",
     validate(upsertBudgetPolicySchema),
     async (req, res) => {
-      assertBoard(req);
+      assertOperator(req);
       const squadId = req.params.squadId as string;
       assertSquadAccess(req, squadId);
-      const summary = await budgets.upsertPolicy(squadId, req.body, req.actor.userId ?? "board");
+      const summary = await budgets.upsertPolicy(squadId, req.body, req.actor.userId ?? "operator");
       res.json(summary);
     },
   );
@@ -260,11 +260,11 @@ export function costRoutes(
     "/squads/:squadId/budget-incidents/:incidentId/resolve",
     validate(resolveBudgetIncidentSchema),
     async (req, res) => {
-      assertBoard(req);
+      assertOperator(req);
       const squadId = req.params.squadId as string;
       const incidentId = req.params.incidentId as string;
       assertSquadAccess(req, squadId);
-      const incident = await budgets.resolveIncident(squadId, incidentId, req.body, req.actor.userId ?? "board");
+      const incident = await budgets.resolveIncident(squadId, incidentId, req.body, req.actor.userId ?? "operator");
       res.json(incident);
     },
   );
@@ -278,7 +278,7 @@ export function costRoutes(
   });
 
   router.patch("/squads/:squadId/budgets", validate(updateBudgetSchema), async (req, res) => {
-    assertBoard(req);
+    assertOperator(req);
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
     const squad = await squads.update(squadId, { budgetMonthlyCents: req.body.budgetMonthlyCents });
@@ -290,7 +290,7 @@ export function costRoutes(
     await logActivity(db, {
       squadId,
       actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorId: req.actor.userId ?? "operator",
       action: "squad.budget_updated",
       entityType: "squad",
       entityId: squadId,
@@ -305,7 +305,7 @@ export function costRoutes(
         amount: req.body.budgetMonthlyCents,
         windowKind: "calendar_month_utc",
       },
-      req.actor.userId ?? "board",
+      req.actor.userId ?? "operator",
     );
 
     res.json(squad);
@@ -320,7 +320,7 @@ export function costRoutes(
     }
 
     assertSquadAccess(req, agent.squadId);
-    assertBoard(req);
+    assertOperator(req);
 
     const updated = await agents.update(agentId, { budgetMonthlyCents: req.body.budgetMonthlyCents });
     if (!updated) {
@@ -348,7 +348,7 @@ export function costRoutes(
         amount: updated.budgetMonthlyCents,
         windowKind: "calendar_month_utc",
       },
-      req.actor.type === "board" ? req.actor.userId ?? "board" : null,
+      req.actor.type === "operator" ? req.actor.userId ?? "operator" : null,
     );
 
     res.json(updated);

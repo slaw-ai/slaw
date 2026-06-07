@@ -85,8 +85,8 @@ async function createApp() {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "board-user",
+      type: "operator",
+      userId: "operator-user",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,

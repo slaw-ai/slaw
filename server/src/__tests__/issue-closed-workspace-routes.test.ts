@@ -145,8 +145,8 @@ async function createApp() {
   app.use(express.json());
   app.use((req, _res, next) => {
     (req as any).actor = {
-      type: "board",
-      userId: "local-board",
+      type: "operator",
+      userId: "local-operator",
       squadIds: ["squad-1"],
       source: "local_implicit",
       isInstanceAdmin: false,
@@ -166,7 +166,7 @@ function makeIssue() {
     priority: "medium",
     assigneeAgentId: agentId,
     assigneeUserId: null,
-    createdByUserId: "local-board",
+    createdByUserId: "local-operator",
     identifier: "PAP-1085",
     title: "Closed worktree issue",
     projectId: null,
@@ -241,7 +241,7 @@ describe.sequential("closed isolated workspace issue routes", () => {
     expect(mockIssueService.checkout).not.toHaveBeenCalled();
   });
 
-  it("still allows non-comment board updates so the issue can be moved to a new workspace", async () => {
+  it("still allows non-comment operator updates so the issue can be moved to a new workspace", async () => {
     mockIssueService.update.mockResolvedValue({
       ...makeIssue(),
       executionWorkspaceId: nextWorkspaceId,

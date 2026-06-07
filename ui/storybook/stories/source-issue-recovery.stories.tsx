@@ -111,12 +111,12 @@ function AllStatesPanel() {
         action={buildAction({
           status: "escalated",
           attemptCount: 3,
-          wakePolicy: { type: "board_escalation" },
+          wakePolicy: { type: "operator_escalation" },
           evidence: {
             summary: "Three corrective wakes failed. The recovery owner has not produced a disposition.",
             sourceRunId: "7accd7a4-c9ca-4db2-9233-3228a037cc09",
           },
-          nextAction: "Board operator: assign an invokable owner or record a manual resolution.",
+          nextAction: "Operator: assign an invokable owner or record a manual resolution.",
         })}
         canFalsePositive
       />

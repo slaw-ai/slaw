@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertBoardOrgAccess, assertSquadAccess, hasBoardOrgAccess } from "../routes/authz.js";
+import { assertOperatorOrgAccess, assertSquadAccess, hasOperatorOrgAccess } from "../routes/authz.js";
 
 function makeReq(input: {
   method?: string;
@@ -16,7 +16,7 @@ describe("assertSquadAccess", () => {
     const req = makeReq({
       method: "GET",
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
         squadIds: ["squad-1"],
@@ -33,7 +33,7 @@ describe("assertSquadAccess", () => {
     const req = makeReq({
       method: "PATCH",
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
         squadIds: ["squad-1"],
@@ -50,7 +50,7 @@ describe("assertSquadAccess", () => {
     const req = makeReq({
       method: "POST",
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
         squadIds: ["squad-1"],
@@ -61,11 +61,11 @@ describe("assertSquadAccess", () => {
     expect(() => assertSquadAccess(req, "squad-1")).toThrow("User does not have active squad access");
   });
 
-  it("allows legacy board actors that only provide squad ids", () => {
+  it("allows legacy operator actors that only provide squad ids", () => {
     const req = makeReq({
       method: "POST",
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
         squadIds: ["squad-1"],
@@ -79,7 +79,7 @@ describe("assertSquadAccess", () => {
     const req = makeReq({
       method: "GET",
       actor: {
-        type: "board",
+        type: "operator",
         userId: "admin-1",
         source: "session",
         isInstanceAdmin: true,
@@ -91,12 +91,12 @@ describe("assertSquadAccess", () => {
     expect(() => assertSquadAccess(req, "squad-1")).toThrow("User does not have access to this squad");
   });
 
-  it("allows local trusted board access without explicit membership", () => {
+  it("allows local trusted operator access without explicit membership", () => {
     const req = makeReq({
       method: "GET",
       actor: {
-        type: "board",
-        userId: "local-board",
+        type: "operator",
+        userId: "local-operator",
         source: "local_implicit",
         isInstanceAdmin: true,
       },
@@ -106,11 +106,11 @@ describe("assertSquadAccess", () => {
   });
 });
 
-describe("assertBoardOrgAccess", () => {
-  it("allows signed-in board users with active squad access", () => {
+describe("assertOperatorOrgAccess", () => {
+  it("allows signed-in operator users with active squad access", () => {
     const req = makeReq({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "user-1",
         source: "session",
         squadIds: ["squad-1"],
@@ -119,14 +119,14 @@ describe("assertBoardOrgAccess", () => {
       },
     });
 
-    expect(hasBoardOrgAccess(req)).toBe(true);
-    expect(() => assertBoardOrgAccess(req)).not.toThrow();
+    expect(hasOperatorOrgAccess(req)).toBe(true);
+    expect(() => assertOperatorOrgAccess(req)).not.toThrow();
   });
 
   it("allows instance admins without squad memberships", () => {
     const req = makeReq({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "admin-1",
         source: "session",
         squadIds: [],
@@ -135,14 +135,14 @@ describe("assertBoardOrgAccess", () => {
       },
     });
 
-    expect(hasBoardOrgAccess(req)).toBe(true);
-    expect(() => assertBoardOrgAccess(req)).not.toThrow();
+    expect(hasOperatorOrgAccess(req)).toBe(true);
+    expect(() => assertOperatorOrgAccess(req)).not.toThrow();
   });
 
   it("rejects signed-in users without squad access or instance admin rights", () => {
     const req = makeReq({
       actor: {
-        type: "board",
+        type: "operator",
         userId: "outsider-1",
         source: "session",
         squadIds: [],
@@ -151,7 +151,7 @@ describe("assertBoardOrgAccess", () => {
       },
     });
 
-    expect(hasBoardOrgAccess(req)).toBe(false);
-    expect(() => assertBoardOrgAccess(req)).toThrow("Squad membership or instance admin access required");
+    expect(hasOperatorOrgAccess(req)).toBe(false);
+    expect(() => assertOperatorOrgAccess(req)).toThrow("Squad membership or instance admin access required");
   });
 });
