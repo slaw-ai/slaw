@@ -3453,6 +3453,7 @@ export function squadSkillService(db: Db) {
     version: number;
     markdown: string;
     files?: Array<{ path: string; content: string; encoding?: string }>;
+    metadata?: Record<string, unknown> | null;
   };
 
   async function upsertTowerSkill(squadId: string, content: TowerSkillContent): Promise<SquadSkill> {
@@ -3477,7 +3478,8 @@ export function squadSkillService(db: Db) {
       trustLevel: content.trustLevel ?? "markdown_only",
       compatibility: "compatible" as const,
       fileInventory,
-      metadata: { towerManaged: true } as Record<string, unknown>,
+      // carry the tower's two-axis classification (layer/discipline/tags) through install
+      metadata: { ...(content.metadata ?? {}), towerManaged: true } as Record<string, unknown>,
       isTowerManaged: true,
       towerSkillKey: content.key,
       towerSkillVersion: content.version,

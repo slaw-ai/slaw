@@ -99,6 +99,17 @@ export type LimitSpec = z.infer<typeof limitSpecSchema>;
  * "the catalog changed" cheaply; each skill carries its own monotonic version.
  */
 
+/** Two-axis classification + free tags carried alongside each skill.
+ * Optional/defaulted so older towers (pre-metadata) still validate. */
+export const skillMetadataSchema = z
+  .object({
+    layer: z.string().max(64).optional(),
+    discipline: z.string().max(64).optional(),
+    tags: z.array(z.string().max(64)).optional(),
+  })
+  .passthrough();
+export type SkillMetadata = z.infer<typeof skillMetadataSchema>;
+
 /** Lightweight descriptor returned by the catalog list (no markdown body). */
 export const skillCatalogEntrySchema = z.object({
   key: z.string().min(1).max(255),
@@ -110,6 +121,7 @@ export const skillCatalogEntrySchema = z.object({
   version: z.number().int().positive(),
   contentHash: z.string().max(128),
   hasFiles: z.boolean().default(false),
+  metadata: skillMetadataSchema.optional(),
   updatedAt: z.string().datetime(),
 });
 export type SkillCatalogEntry = z.infer<typeof skillCatalogEntrySchema>;
@@ -141,6 +153,7 @@ export const skillContentResponseSchema = z.object({
   contentHash: z.string().max(128),
   markdown: z.string(),
   files: z.array(skillFileSchema).default([]),
+  metadata: skillMetadataSchema.optional(),
 });
 export type SkillContentResponse = z.infer<typeof skillContentResponseSchema>;
 
