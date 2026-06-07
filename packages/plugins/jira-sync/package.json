@@ -1,0 +1,43 @@
+{
+  "name": "@slaw/plugin-jira-sync",
+  "version": "0.1.0",
+  "description": "Bidirectional sync between a Jira board and Slaw issues. Mirrors Jira issues into Slaw and reflects Slaw status changes back to Jira.",
+  "type": "module",
+  "private": true,
+  "files": [
+    "dist",
+    "migrations",
+    "README.md"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "slawPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js"
+  },
+  "scripts": {
+    "prebuild": "pnpm --filter @slaw/plugin-sdk ensure-build-deps",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "pnpm --filter @slaw/plugin-sdk ensure-build-deps && tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "keywords": [
+    "slaw",
+    "plugin",
+    "connector",
+    "jira",
+    "sync"
+  ],
+  "author": "Slaw",
+  "license": "MIT",
+  "dependencies": {
+    "@slaw/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.4",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.6"
+  }
+}
