@@ -17,6 +17,7 @@ import type {
   SquadSkillUpdateStatus,
 } from "@slaw/shared";
 import { squadSkillsApi } from "../api/squadSkills";
+import { botfatherApi, type SkillCatalogEntry } from "../api/botfather";
 import { agentsApi } from "../api/agents";
 import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -1685,6 +1686,131 @@ function SkillPane({
   );
 }
 
+function TowerCatalogDialog({
+  open,
+  onOpenChange,
+  squadId,
+  installedKeys,
+  onInstalled,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  squadId: string;
+  installedKeys: Set<string>;
+  onInstalled: () => void;
+}) {
+  const [filter, setFilter] = useState("");
+  const [installingKey, setInstallingKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { pushToast } = useToastActions();
+
+  const catalogQuery = useQuery({
+    queryKey: ["botfather-skill-catalog"],
+    queryFn: () => botfatherApi.skillCatalog(),
+    enabled: open,
+  });
+
+  const install = useMutation({
+    mutationFn: (key: string) => botfatherApi.installSkill(squadId, key),
+    onMutate: (key) => {
+      setInstallingKey(key);
+      setError(null);
+    },
+    onSuccess: (_data, key) => {
+      pushToast({ tone: "success", title: "Skill installed", body: `Added "${key}" from the control tower.` });
+      onInstalled();
+    },
+    onError: (err) => setError(err instanceof Error ? err.message : "Install failed"),
+    onSettled: () => setInstallingKey(null),
+  });
+
+  const skills = catalogQuery.data?.skills ?? [];
+  const lowered = filter.trim().toLowerCase();
+  const visible = lowered
+    ? skills.filter(
+        (s) =>
+          s.name.toLowerCase().includes(lowered) ||
+          s.key.toLowerCase().includes(lowered) ||
+          (s.category ?? "").toLowerCase().includes(lowered),
+      )
+    : skills;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            Control tower catalog
+          </DialogTitle>
+          <DialogDescription>
+            Skills published by your control tower. Installing adds a centrally-governed, read-only copy to this squad.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <Input placeholder="Filter skills…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+          {catalogQuery.isLoading ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">Loading catalog…</div>
+          ) : catalogQuery.error ? (
+            <div className="py-8 text-center text-sm text-destructive">
+              {catalogQuery.error instanceof Error ? catalogQuery.error.message : "Failed to load catalog."}
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              {skills.length === 0 ? "The control tower has no published skills yet." : "No skills match this filter."}
+            </div>
+          ) : (
+            <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
+              {visible.map((s: SkillCatalogEntry) => {
+                const installed = installedKeys.has(s.key);
+                return (
+                  <div
+                    key={s.key}
+                    className="flex items-start justify-between gap-3 rounded-md border border-border/60 p-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-medium">{s.name}</span>
+                        {s.category ? (
+                          <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            {s.category}
+                          </span>
+                        ) : null}
+                        <span className="font-mono text-[10px] text-muted-foreground">v{s.version}</span>
+                      </div>
+                      {s.description ? (
+                        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{s.description}</p>
+                      ) : null}
+                      <div className="mt-1 font-mono text-[10px] text-muted-foreground">{s.key}</div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={installed ? "ghost" : "default"}
+                      disabled={installingKey === s.key || (installed && installingKey === null)}
+                      onClick={() => install.mutate(s.key)}
+                      title={installed ? "Re-install to refresh to the latest version" : "Install onto this squad"}
+                    >
+                      {installingKey === s.key ? "Installing…" : installed ? "Re-install" : "Install"}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {error ? <div className="text-sm text-destructive">{error}</div> : null}
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function SquadSkills() {
   const { "*": routePath } = useParams<{ "*": string }>();
   const navigate = useNavigate();
@@ -1725,6 +1851,16 @@ export function SquadSkills() {
     error: string | null;
   }>({ open: false, catalogSkill: null, conflict: null, defaultSlug: null, defaultForce: false, defaultAction: "install", error: null });
   const [attachPopoverOpen, setAttachPopoverOpen] = useState(false);
+  const [towerCatalogOpen, setTowerCatalogOpen] = useState(false);
+  // Is this instance governed by a control tower? When connected+enrolled, skills
+  // are tower-mastered: local authoring is disabled and the catalog is the path.
+  const botfatherStatusQuery = useQuery({
+    queryKey: ["botfather-status"],
+    queryFn: () => botfatherApi.status(),
+    staleTime: 30_000,
+    retry: false,
+  });
+  const towerGoverned = botfatherStatusQuery.data?.state === "active";
   const parsedRoute = useMemo(() => parseSkillRoute(routePath), [routePath]);
   const routeSkillId = parsedRoute.skillId;
   const selectedPath = parsedRoute.filePath;
@@ -2247,6 +2383,18 @@ export function SquadSkills() {
 
   return (
     <>
+      {selectedSquadId ? (
+        <TowerCatalogDialog
+          open={towerCatalogOpen}
+          onOpenChange={setTowerCatalogOpen}
+          squadId={selectedSquadId}
+          installedKeys={new Set((skillsQuery.data ?? []).map((s) => s.key))}
+          onInstalled={() => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.squadSkills.list(selectedSquadId) });
+          }}
+        />
+      ) : null}
+
       <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -2394,12 +2542,21 @@ export function SquadSkills() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {towerGoverned ? (
+                  <DropdownMenuItem onSelect={() => setTowerCatalogOpen(true)}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Browse control tower
+                  </DropdownMenuItem>
+                ) : null}
                 <DropdownMenuItem onSelect={() => setViewParam("catalog")}>
                   <Boxes className="mr-2 h-4 w-4" />
                   Browse catalog
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  disabled={towerGoverned}
+                  title={towerGoverned ? "Skills are managed by your control tower" : undefined}
                   onSelect={() => {
+                    if (towerGoverned) return;
                     setViewParam("installed");
                     setEmptySourceHelpOpen(true);
                   }}
@@ -2408,7 +2565,10 @@ export function SquadSkills() {
                   Import from URL or path
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  disabled={towerGoverned}
+                  title={towerGoverned ? "Skills are managed by your control tower" : undefined}
                   onSelect={() => {
+                    if (towerGoverned) return;
                     setViewParam("installed");
                     setCreateOpen(true);
                   }}
