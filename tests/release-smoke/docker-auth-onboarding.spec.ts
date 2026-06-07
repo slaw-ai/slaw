@@ -44,7 +44,7 @@ test.describe("Docker authenticated onboarding smoke", () => {
     await signIn(page);
     await openOnboarding(page);
 
-    await page.locator('input[placeholder="Acme Corp"]').fill(SQUAD_NAME);
+    await page.locator('input[placeholder="Squad Lead"]').fill(SQUAD_NAME);
     await page.getByRole("button", { name: "Next" }).click();
 
     await expect(

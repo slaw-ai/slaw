@@ -13,7 +13,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   await page.goto("/onboarding");
   await expect(page.locator("h3", { hasText: "Name your squad" })).toBeVisible({ timeout: 5_000 });
 
-  await page.locator('input[placeholder="Acme Corp"]').fill(squadName);
+  await page.locator('input[placeholder="Squad Lead"]').fill(squadName);
   await page.getByRole("button", { name: "Next" }).click();
 
   await expect(page.locator("h3", { hasText: "Create your first agent" })).toBeVisible({ timeout: 30_000 });

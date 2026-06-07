@@ -84,7 +84,7 @@ Top of sidebar. Always visible.
 
 ```
 ┌─────────────────────────┐
-│ [icon] Acme Corp      ▼ │  ← Squad switcher dropdown
+│ [icon] Squad Lead     ▼ │  ← Squad switcher dropdown
 ├─────────────────────────┤
 │ [🔍]  [✏️]              │  ← Search + New Issue
 └─────────────────────────┘

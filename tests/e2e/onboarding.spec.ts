@@ -28,7 +28,7 @@ test.describe("Onboarding wizard", () => {
 
     await expect(wizardHeading).toBeVisible({ timeout: 5_000 });
 
-    const squadNameInput = page.locator('input[placeholder="Acme Corp"]');
+    const squadNameInput = page.locator('input[placeholder="Squad Lead"]');
     await squadNameInput.fill(SQUAD_NAME);
 
     const nextButton = page.getByRole("button", { name: "Next" });
