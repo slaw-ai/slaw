@@ -61,3 +61,8 @@ tests/release-smoke/playwright-report/
 .claude/worktrees/
 .herenow
 package-lock.json
+
+# Private design/planning/decision docs — kept as owner IP, never published
+/DESIGN-board-to-operator.md
+/SESSION-HANDOVER-2026-06-07-board-to-operator.md
+/PROJECT.md
