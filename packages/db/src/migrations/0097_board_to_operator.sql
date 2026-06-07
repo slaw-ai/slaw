@@ -1,5 +1,10 @@
 -- 0097: Retire "board" governance terminology → "operator".
--- Idempotent: safe on fresh DBs (renames skipped if already applied) and existing dev DBs.
+-- Structural renames only. On a fresh DB these run after the original creating
+-- migrations (which still use the old names), renaming them to the new names.
+-- No data-value rekey is needed: a fresh DB seeds the local actor directly as
+-- 'local-operator' / name 'Operator' at boot (see server/src/index.ts).
+-- (Existing pre-rename DBs should be wiped and re-seeded rather than migrated in
+-- place — a partial id rekey across the many free-text user_id columns is unsafe.)
 
 -- Rename board_api_keys → operator_api_keys + its indexes
 ALTER TABLE IF EXISTS "board_api_keys" RENAME TO "operator_api_keys";
@@ -19,13 +24,6 @@ BEGIN
     ALTER TABLE "cli_auth_challenges" RENAME COLUMN "board_api_key_id" TO "operator_api_key_id";
   END IF;
 END $$;
---> statement-breakpoint
-
--- Rekey the implicit local actor id on pre-existing dev DBs (local-board → local-operator)
-UPDATE "instance_user_roles" SET "user_id" = 'local-operator' WHERE "user_id" = 'local-board';
---> statement-breakpoint
-UPDATE "squad_memberships" SET "principal_id" = 'local-operator'
-  WHERE "principal_type" = 'user' AND "principal_id" = 'local-board';
 --> statement-breakpoint
 
 -- Rename squads.require_board_approval_for_new_agents → require_operator_approval_for_new_agents
