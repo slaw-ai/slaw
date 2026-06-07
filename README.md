@@ -237,7 +237,7 @@ Slaw is a full control plane, not a wrapper. Before you build any of this yourse
 <tr>
 <td>
 
-**Plugins** — Instance-wide plugin system with out-of-process workers, capability-gated host services, job scheduling, tool exposure, and UI contributions. Extend Slaw without forking it.
+**Plugins** — Instance-wide plugin system with out-of-process workers, capability-gated host services, job scheduling, tool exposure, and UI contributions. Extend Slaw without forking it. Ships with first-party integrations like **Jira Sync** (bidirectional Jira board ↔ Slaw issue sync).
 
 </td>
 <td>
@@ -383,6 +383,13 @@ This is the short roadmap preview. See the full roadmap in [ROADMAP.md](ROADMAP.
 ## Community & Plugins
 
 Find Plugins and more at [awesome-slaw](https://github.com/gsxdsm/awesome-slaw)
+
+**Bundled plugins** live under `packages/plugins/` and are auto-discovered at startup. Notably:
+
+- **Jira Sync** (`@slaw/plugin-jira-sync`) — connects one Jira board to a squad. Mirrors Jira issues
+  into Slaw (real-time webhook + hourly reconcile) and reflects Slaw completion back to Jira. Install
+  it into a squad, point it at a board, and it provisions a sync agent and an hourly routine for you.
+  See `packages/plugins/jira-sync/README.md`.
 
 ## Telemetry
 
