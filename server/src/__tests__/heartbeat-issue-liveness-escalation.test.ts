@@ -141,7 +141,7 @@ describeEmbeddedPostgres("heartbeat issue graph liveness escalation", () => {
         id: managerId,
         squadId,
         name: "CTO",
-        role: "cto",
+        role: "engineering_lead",
         status: "idle",
         adapterType: "codex_local",
         adapterConfig: {},

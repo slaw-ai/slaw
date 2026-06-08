@@ -19,7 +19,7 @@ In the hire comment, state which path you took so the board can audit the reason
 
 | Template | Use when hiring | Typical adapter | Lens density |
 |---|---|---|---|
-| [`Coder`](agents/coder.md) | Software engineers who implement code, debug issues, write tests, and coordinate with QA/CTO | `codex_local`, `claude_local`, `cursor`, or another coding adapter | Low (operational) |
+| [`Coder`](agents/coder.md) | Software engineers who implement code, debug issues, write tests, and coordinate with QA and the Engineering Lead | `codex_local`, `claude_local`, `cursor`, or another coding adapter | Low (operational) |
 | [`QA`](agents/qa.md) | QA engineers who reproduce bugs, validate fixes, capture screenshots, and report actionable findings | `claude_local` or another browser-capable adapter | Low (operational) |
 | [`UX Designer`](agents/uxdesigner.md) | Product designers who produce UX specs, review interface quality, and evolve the design system | `codex_local`, `claude_local`, or another adapter with repo/design context | High (lens-heavy) |
 | [`SecurityEngineer`](agents/securityengineer.md) | Security engineers who threat-model, review auth/crypto/input handling, triage supply-chain and LLM-agent risk, and drive remediations | `claude_local`, `codex_local`, or another adapter with repo context | High (lens-heavy) |

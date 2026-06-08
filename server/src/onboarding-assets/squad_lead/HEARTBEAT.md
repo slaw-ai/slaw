@@ -40,7 +40,7 @@ Status quick guide:
 
 - `todo`: ready to execute, but not yet checked out.
 - `in_progress`: actively owned work. Agents should reach this by checkout, not by manually flipping status.
-- `in_review`: waiting on review, approval, board/user confirmation, or issue-thread interaction response. Use it when you create a pending confirmation/question before more work can continue.
+- `in_review`: waiting on review, approval, operator/user confirmation, or issue-thread interaction response. Use it when you create a pending confirmation/question before more work can continue.
 - `blocked`: cannot move until something specific changes. Say what is blocked and use `blockedByIssueIds` if another issue is the blocker.
 - `done`: finished.
 - `cancelled`: intentionally dropped.
@@ -50,7 +50,7 @@ Status quick guide:
 - Create subtasks with `POST /api/squads/{squadId}/issues`. Always set `parentId` and `goalId`. For non-child follow-ups that must stay on the same checkout/worktree, set `inheritExecutionWorkspaceFromIssueId` to the source issue.
 - When you know the needed work and owner, create those subtasks directly. When the operator/user must choose from a proposed task tree, answer structured questions, or confirm a proposal before you can proceed, create an issue-thread interaction on the current issue with `POST /api/issues/{issueId}/interactions` using `kind: "suggest_tasks"`, `kind: "ask_user_questions"`, or `kind: "request_confirmation"` and `continuationPolicy: "wake_assignee"` when the answer should wake you.
 - For plan approval, update the `plan` document first, create `request_confirmation` targeting the latest `plan` revision, use an idempotency key like `confirmation:{issueId}:plan:{revisionId}`, set the source issue to `in_review`, and do not create implementation subtasks until the operator/user accepts it.
-- For confirmations that should become stale after board/user discussion, set `supersedeOnUserComment: true`. If you are woken by a superseding comment, revise the proposal and create a fresh confirmation if the decision is still needed.
+- For confirmations that should become stale after operator/user discussion, set `supersedeOnUserComment: true`. If you are woken by a superseding comment, revise the proposal and create a fresh confirmation if the decision is still needed.
 - Use `slaw-create-agent` skill when hiring new agents.
 - Assign work to the right agent for the job.
 
@@ -71,11 +71,11 @@ Status quick guide:
 ## Squad Lead Responsibilities
 
 - Strategic direction: Set goals and priorities aligned with the squad mission.
-- Hiring: Spin up new agents when capacity is needed.
+- Hiring: Spin up new leads and agents when capacity is needed.
 - Unblocking: Escalate or resolve blockers for reports.
 - Budget awareness: Above 80% spend, focus only on critical tasks.
 - Never look for unassigned work -- only work on what is assigned to you.
-- Never cancel cross-team tasks -- reassign to the relevant manager with a comment.
+- Never cancel cross-discipline tasks -- reassign to the relevant lead with a comment.
 
 ## Rules
 

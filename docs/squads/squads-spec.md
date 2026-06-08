@@ -163,7 +163,7 @@ name: Engineering
 description: Product and platform engineering team
 schema: agentsquads/v1
 slug: engineering
-manager: ../cto/AGENTS.md
+manager: ../engineering-lead/AGENTS.md
 includes:
   - ../platform-lead/AGENTS.md
   - ../frontend-lead/AGENTS.md
@@ -188,7 +188,7 @@ tags:
 
 ```yaml
 name: Squad Lead
-title: Chief Executive Officer
+title: Squad Lead
 reportsTo: null
 skills:
   - plan-squad_lead-review
@@ -232,7 +232,7 @@ Rules:
 ```yaml
 name: Q2 Launch
 description: Ship the Q2 launch plan and supporting assets
-owner: cto
+owner: engineering-lead
 ```
 
 ### Semantics
@@ -566,7 +566,7 @@ lean-dev-shop/
 ├── SQUAD.md
 ├── agents/
 │   ├── squad_lead/AGENTS.md
-│   └── cto/AGENTS.md
+│   └── engineering-lead/AGENTS.md
 ├── projects/
 │   └── q2-launch/
 │       ├── PROJECT.md

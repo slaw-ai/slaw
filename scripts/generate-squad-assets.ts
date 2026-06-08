@@ -97,22 +97,26 @@ function parseFrontmatter(content: string): { data: Record<string, unknown>; bod
 
 const SLUG_TO_ROLE: Record<string, string> = {
   squad_lead: "squad_lead",
-  cto: "cto",
-  cmo: "cmo",
-  cfo: "cfo",
+  engineering_lead: "engineering_lead",
+  marketing_lead: "marketing_lead",
+  finance_lead: "finance_lead",
   coo: "coo",
+  // Legacy paperclip-era slugs → leads-based roles.
+  cto: "engineering_lead",
+  cmo: "marketing_lead",
+  cfo: "finance_lead",
 };
 
 function inferRole(slug: string, title: string | null): string {
   // Check direct slug match first
   if (SLUG_TO_ROLE[slug]) return SLUG_TO_ROLE[slug];
 
-  // Check title for C-suite
+  // Check title (incl. legacy C-suite titles) and map to leads-based roles
   const t = (title || "").toLowerCase();
-  if (t.includes("chief executive")) return "squad_lead";
-  if (t.includes("chief technology")) return "cto";
-  if (t.includes("chief marketing")) return "cmo";
-  if (t.includes("chief financial")) return "cfo";
+  if (t.includes("chief executive") || t.includes("squad lead")) return "squad_lead";
+  if (t.includes("engineering lead") || t.includes("chief technology")) return "engineering_lead";
+  if (t.includes("marketing lead") || t.includes("chief marketing")) return "marketing_lead";
+  if (t.includes("finance lead") || t.includes("chief financial")) return "finance_lead";
   if (t.includes("chief operating")) return "coo";
   if (t.includes("vp") || t.includes("vice president")) return "vp";
   if (t.includes("manager")) return "manager";

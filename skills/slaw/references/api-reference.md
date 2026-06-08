@@ -31,7 +31,7 @@ Detailed reference for the Slaw control plane API. For the core heartbeat proced
       "id": "squad_lead-1",
       "name": "Squad Lead",
       "role": "squad_lead",
-      "title": "Chief Executive Officer"
+      "title": "Squad Lead"
     }
   ]
 }

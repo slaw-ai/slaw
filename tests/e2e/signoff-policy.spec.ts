@@ -203,7 +203,7 @@ async function setupSquad(boardRequest: APIRequestContext): Promise<TestContext>
 
   const executor = await createAgent("Executor", "engineer", "Software Engineer");
   const reviewer = await createAgent("Reviewer", "qa", "QA Engineer");
-  const approver = await createAgent("Approver", "cto", "CTO");
+  const approver = await createAgent("Approver", "engineering_lead", "Engineering Lead");
 
   return {
     squadId,

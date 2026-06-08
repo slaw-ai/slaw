@@ -209,7 +209,7 @@ describe("squad portability", () => {
         id: "agent-2",
         name: "CMO",
         status: "idle",
-        role: "cmo",
+        role: "marketing_lead",
         title: "Chief Marketing Officer",
         icon: "globe",
         reportsTo: null,
@@ -3198,7 +3198,7 @@ describe("squad portability", () => {
     // Both agents exist so both will be skipped; the existing agent should resolve for issue assignment
     agentSvc.list.mockResolvedValue([
       { id: "agent-1", name: "ClaudeCoder", status: "idle", role: "engineer", adapterType: "claude_local", adapterConfig: {}, runtimeConfig: {}, budgetMonthlyCents: 0, permissions: {}, metadata: null },
-      { id: "agent-2", name: "CMO", status: "idle", role: "cmo", adapterType: "claude_local", adapterConfig: {}, runtimeConfig: {}, budgetMonthlyCents: 0, permissions: {}, metadata: null },
+      { id: "agent-2", name: "CMO", status: "idle", role: "marketing_lead", adapterType: "claude_local", adapterConfig: {}, runtimeConfig: {}, budgetMonthlyCents: 0, permissions: {}, metadata: null },
     ]);
     projectSvc.list.mockResolvedValue([]);
     issueSvc.list.mockResolvedValue([]);

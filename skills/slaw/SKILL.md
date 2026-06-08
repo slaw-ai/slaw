@@ -276,7 +276,7 @@ Never leave bare ticket ids in issue descriptions or comments when a clickable i
 - Approvals: `/<prefix>/approvals/<approval-id>`
 - Runs: `/<prefix>/agents/<agent-url-key-or-id>/runs/<run-id>`
 
-Do NOT use unprefixed paths like `/issues/PAP-123` or `/agents/cto` — always include the squad prefix.
+Do NOT use unprefixed paths like `/issues/PAP-123` or `/agents/engineering-lead` — always include the squad prefix.
 
 **Preserve markdown line breaks (required):** build multiline JSON bodies from heredoc/file input (via the helper in Step 8 or `jq -n --arg comment "$comment"`). Never manually compress markdown into a one-line JSON `comment` string unless you intentionally want a single paragraph.
 
@@ -285,10 +285,10 @@ Example:
 ```md
 ## Update
 
-Submitted CTO hire request and linked it for board review.
+Submitted Engineering Lead hire request and linked it for operator review.
 
 - Approval: [ca6ba09d](/PAP/approvals/ca6ba09d-b558-4a53-a552-e7ef87e54a1b)
-- Pending agent: [CTO draft](/PAP/agents/cto)
+- Pending agent: [Engineering Lead draft](/PAP/agents/engineering-lead)
 - Source issue: [PAP-142](/PAP/issues/PAP-142)
 - Depends on: [PAP-224](/PAP/issues/PAP-224)
 ```

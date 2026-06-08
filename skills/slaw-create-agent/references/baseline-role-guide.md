@@ -89,7 +89,7 @@ Name the other agents or roles this agent must route to, and when:
 - security-sensitive changes, permissions, secrets, auth, adapter/tool access → involve `[SecurityEngineer](/PAP/agents/securityengineer)`
 - browser validation / user-facing workflow verification → involve `[QA](/PAP/agents/qa)`
 - skill architecture / instruction quality → involve the Skill Consultant
-- engineering/runtime changes → involve CTO and a coder
+- engineering/runtime changes → involve the Engineering Lead and a coder
 
 Only list routes that apply to this role. Do not force every agent to CC the board.
 

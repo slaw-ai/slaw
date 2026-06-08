@@ -45,7 +45,7 @@ const ORGS: Record<string, OrgNode> = {
         name: "CTO",
         role: "Technology",
         icon: "💻",
-        tag: "cto",
+        tag: "engineering_lead",
         children: [
           { name: "ClaudeCoder", role: "Engineer", tag: "eng" },
           { name: "CodexCoder", role: "Engineer", tag: "eng" },
@@ -58,7 +58,7 @@ const ORGS: Record<string, OrgNode> = {
         name: "CMO",
         role: "Marketing",
         icon: "🌐",
-        tag: "cmo",
+        tag: "marketing_lead",
         children: [{ name: "Designer", role: "Design", tag: "des" }],
       },
     ],
@@ -73,7 +73,7 @@ const ORGS: Record<string, OrgNode> = {
         name: "CTO",
         role: "Technology",
         icon: "💻",
-        tag: "cto",
+        tag: "engineering_lead",
         children: [
           { name: "Eng 1", role: "Eng", tag: "eng" },
           { name: "Eng 2", role: "Eng", tag: "eng" },
@@ -85,7 +85,7 @@ const ORGS: Record<string, OrgNode> = {
         name: "CMO",
         role: "Marketing",
         icon: "🌐",
-        tag: "cmo",
+        tag: "marketing_lead",
         children: [
           { name: "Designer", role: "Design", tag: "des" },
           { name: "Content", role: "Writer", tag: "eng" },
@@ -119,8 +119,8 @@ const OG_ORG: OrgNode = {
   role: "Chief Executive",
   tag: "squad_lead",
   children: [
-    { name: "CTO", role: "×5 reports", tag: "cto" },
-    { name: "CMO", role: "×1 report", tag: "cmo" },
+    { name: "CTO", role: "×5 reports", tag: "engineering_lead" },
+    { name: "CMO", role: "×1 report", tag: "marketing_lead" },
   ],
 };
 

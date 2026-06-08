@@ -24,7 +24,7 @@ const [squad_lead] = await db
     squadId: squad!.id,
     name: "Squad Lead Agent",
     role: "squad_lead",
-    title: "Chief Executive Officer",
+    title: "Squad Lead",
     status: "idle",
     adapterType: "process",
     adapterConfig: { command: "echo", args: ["hello from squad_lead"] },

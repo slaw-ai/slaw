@@ -40,7 +40,7 @@ const ORGS: Record<string, OrgNode> = {
     status: "active",
     reports: [
       {
-        id: "cto",
+        id: "engineering_lead",
         name: "CTO",
         role: "Technology",
         status: "active",
@@ -53,7 +53,7 @@ const ORGS: Record<string, OrgNode> = {
         ],
       },
       {
-        id: "cmo",
+        id: "marketing_lead",
         name: "CMO",
         role: "Marketing",
         status: "active",
@@ -70,7 +70,7 @@ const ORGS: Record<string, OrgNode> = {
     status: "active",
     reports: [
       {
-        id: "cto",
+        id: "engineering_lead",
         name: "CTO",
         role: "Technology",
         status: "active",
@@ -82,7 +82,7 @@ const ORGS: Record<string, OrgNode> = {
         ],
       },
       {
-        id: "cmo",
+        id: "marketing_lead",
         name: "CMO",
         role: "Marketing",
         status: "active",
@@ -92,7 +92,7 @@ const ORGS: Record<string, OrgNode> = {
         ],
       },
       {
-        id: "cfo",
+        id: "finance_lead",
         name: "CFO",
         role: "Finance",
         status: "active",

@@ -167,10 +167,10 @@ export const storybookAgents: Agent[] = [
   {
     id: "agent-cto",
     squadId: "squad-storybook",
-    name: "CTO",
+    name: "Engineering Lead",
     urlKey: "cto",
-    role: "cto",
-    title: "CTO",
+    role: "engineering_lead",
+    title: "Engineering Lead",
     icon: "crown",
     status: "active",
     reportsTo: null,

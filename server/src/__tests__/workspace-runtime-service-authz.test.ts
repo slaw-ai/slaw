@@ -182,7 +182,7 @@ describeEmbeddedPostgres("workspace runtime service authz helper", () => {
     const squadId = await seedSquad();
     const { projectId, projectWorkspaceId } = await seedProjectWorkspace(squadId);
     const executionWorkspaceId = await seedExecutionWorkspace(squadId, projectId, projectWorkspaceId);
-    const managerId = await seedAgent(squadId, { role: "cto", name: "Manager" });
+    const managerId = await seedAgent(squadId, { role: "engineering_lead", name: "Manager" });
     const reportId = await seedAgent(squadId, { reportsTo: managerId, name: "Report" });
 
     await db.insert(issues).values({

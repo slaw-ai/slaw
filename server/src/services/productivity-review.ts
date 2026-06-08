@@ -537,8 +537,8 @@ export function productivityReviewService(db: Db, deps?: { enqueueWakeup?: Enque
     const roleCandidates = await db
       .select({ id: agents.id })
       .from(agents)
-      .where(and(eq(agents.squadId, sourceIssue.squadId), inArray(agents.role, ["cto", "squad_lead"])))
-      .orderBy(sql`case when ${agents.role} = 'cto' then 0 else 1 end`, asc(agents.createdAt), asc(agents.id));
+      .where(and(eq(agents.squadId, sourceIssue.squadId), inArray(agents.role, ["engineering_lead", "squad_lead"])))
+      .orderBy(sql`case when ${agents.role} = 'engineering_lead' then 0 else 1 end`, asc(agents.createdAt), asc(agents.id));
     candidateIds.push(...roleCandidates.map((agent) => agent.id));
 
     const seen = new Set<string>();

@@ -64,7 +64,7 @@ describe("recovery classifier boundary", () => {
           id: managerId,
           squadId,
           name: "CTO",
-          role: "cto",
+          role: "engineering_lead",
           status: "idle",
           reportsTo: null,
         },

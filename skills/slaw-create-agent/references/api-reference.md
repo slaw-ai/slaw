@@ -20,7 +20,7 @@
 Approval collaboration:
 
 - `GET /api/approvals/:approvalId`
-- `POST /api/approvals/:approvalId/request-revision` (board)
+- `POST /api/approvals/:approvalId/request-revision` (operator)
 - `POST /api/approvals/:approvalId/resubmit`
 - `GET /api/approvals/:approvalId/comments`
 - `POST /api/approvals/:approvalId/comments`
@@ -32,9 +32,9 @@ Request body matches agent create shape:
 
 ```json
 {
-  "name": "CTO",
-  "role": "cto",
-  "title": "Chief Technology Officer",
+  "name": "Engineering Lead",
+  "role": "engineering_lead",
+  "title": "Engineering Lead",
   "icon": "crown",
   "reportsTo": "uuid-or-null",
   "capabilities": "Owns architecture and engineering execution",
@@ -47,7 +47,7 @@ Request body matches agent create shape:
   "instructionsBundle": {
     "entryFile": "AGENTS.md",
     "files": {
-      "AGENTS.md": "You are CTO..."
+      "AGENTS.md": "You are the Engineering Lead..."
     }
   },
   "runtimeConfig": {

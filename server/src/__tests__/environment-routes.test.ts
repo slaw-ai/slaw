@@ -320,7 +320,7 @@ describe("environment routes", () => {
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
       squadId: "squad-1",
-      role: "cto",
+      role: "engineering_lead",
       permissions: { canCreateAgents: true },
     });
     mockAccessService.hasPermission.mockResolvedValue(false);
@@ -376,7 +376,7 @@ describe("environment routes", () => {
     mockAgentService.getById.mockResolvedValue({
       id: "agent-1",
       squadId: "squad-1",
-      role: "cto",
+      role: "engineering_lead",
       permissions: { canCreateAgents: true },
     });
     mockAccessService.hasPermission.mockResolvedValue(false);

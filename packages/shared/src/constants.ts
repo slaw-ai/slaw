@@ -43,9 +43,9 @@ export type AgentAdapterType = (typeof AGENT_ADAPTER_TYPES)[number] | (string & 
 
 export const AGENT_ROLES = [
   "squad_lead",
-  "cto",
-  "cmo",
-  "cfo",
+  "engineering_lead",
+  "marketing_lead",
+  "finance_lead",
   "security",
   "engineer",
   "designer",
@@ -59,9 +59,9 @@ export type AgentRole = (typeof AGENT_ROLES)[number];
 
 export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
   squad_lead: "Squad Lead",
-  cto: "CTO",
-  cmo: "CMO",
-  cfo: "CFO",
+  engineering_lead: "Engineering Lead",
+  marketing_lead: "Marketing Lead",
+  finance_lead: "Finance Lead",
   security: "Security",
   engineer: "Engineer",
   designer: "Designer",
@@ -71,6 +71,22 @@ export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
   researcher: "Researcher",
   general: "General",
 };
+
+/**
+ * Legacy paperclip-era role values (C-suite) → current leads-based values.
+ * Used when importing squads exported before the leads-based rename so old
+ * manifests still resolve to valid roles. New code must use the values above.
+ */
+export const LEGACY_AGENT_ROLE_ALIASES: Record<string, AgentRole> = {
+  cto: "engineering_lead",
+  cmo: "marketing_lead",
+  cfo: "finance_lead",
+};
+
+/** Resolve a possibly-legacy role string to a current AgentRole value. */
+export function normalizeAgentRole(role: string): string {
+  return LEGACY_AGENT_ROLE_ALIASES[role] ?? role;
+}
 
 export const AGENT_DEFAULT_MAX_CONCURRENT_RUNS = 20;
 export const WORKSPACE_BRANCH_ROUTINE_VARIABLE = "workspaceBranch";

@@ -40,7 +40,7 @@ It looks like a task manager. Under the hood: org charts, budgets, governance, g
 |        | Step            | Example                                                            |
 | ------ | --------------- | ------------------------------------------------------------------ |
 | **01** | Define the goal | _"Build the #1 AI note-taking app to $1M MRR."_                    |
-| **02** | Hire the team   | Squad Lead, CTO, engineers, designers, marketers — any bot, any provider. |
+| **02** | Hire the team   | Squad Lead, discipline leads, engineers, designers, marketers — any bot, any provider. |
 | **03** | Approve and run | Review strategy. Set budgets. Hit go. Monitor from the dashboard.  |
 
 <br/>

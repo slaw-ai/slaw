@@ -1232,8 +1232,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const roleCandidates = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.squadId, input.run.squadId), inArray(agents.role, ["cto", "squad_lead"])))
-      .orderBy(sql`case when ${agents.role} = 'cto' then 0 else 1 end`, asc(agents.createdAt));
+      .where(and(eq(agents.squadId, input.run.squadId), inArray(agents.role, ["engineering_lead", "squad_lead"])))
+      .orderBy(sql`case when ${agents.role} = 'engineering_lead' then 0 else 1 end`, asc(agents.createdAt));
     candidateIds.push(...roleCandidates.map((agent) => agent.id));
 
     const seen = new Set<string>();
@@ -1854,8 +1854,8 @@ export function recoveryService(db: Db, deps: { enqueueWakeup: RecoveryWakeup })
     const roleCandidates = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.squadId, issue.squadId), inArray(agents.role, ["cto", "squad_lead"])))
-      .orderBy(sql`case when ${agents.role} = 'cto' then 0 else 1 end`, asc(agents.createdAt));
+      .where(and(eq(agents.squadId, issue.squadId), inArray(agents.role, ["engineering_lead", "squad_lead"])))
+      .orderBy(sql`case when ${agents.role} = 'engineering_lead' then 0 else 1 end`, asc(agents.createdAt));
     candidateIds.push(...roleCandidates.map((agent) => agent.id));
     if (issue.assigneeAgentId) candidateIds.push(issue.assigneeAgentId);
 

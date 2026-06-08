@@ -49,7 +49,7 @@ Use it for every path: exact template, adjacent template, or generic fallback.
 - [ ] Security-sensitive role, permissions, secrets, auth, adapters, tool access → routes to `[SecurityEngineer](/PAP/agents/securityengineer)`
 - [ ] Browser validation or user-facing verification → routes to `[QA](/PAP/agents/qa)`
 - [ ] Skill architecture / instruction quality changes → routes to the Skill Consultant when present
-- [ ] Engineering/runtime changes → routes to CTO and a coder
+- [ ] Engineering/runtime changes → routes to the Engineering Lead and a coder
 
 ## G. Governance fields
 

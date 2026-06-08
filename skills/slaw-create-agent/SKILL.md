@@ -14,10 +14,10 @@ Use this skill when you are asked to hire/create an agent.
 
 You need either:
 
-- board access, or
+- operator access, or
 - agent permission `can_create_agents=true` in your squad
 
-If you do not have this permission, escalate to your Squad Lead or board.
+If you do not have this permission, escalate to your Squad Lead or operator.
 
 ## Workflow
 
@@ -62,7 +62,7 @@ Template index and when-to-use guidance:
 Generic fallback for no-template hires:
 `skills/slaw-create-agent/references/baseline-role-guide.md`
 
-State which path you took in your hire-request comment so the board can see the reasoning.
+State which path you took in your hire-request comment so the operator can see the reasoning.
 
 ### 5. Discover allowed agent icons
 
@@ -100,16 +100,16 @@ curl -sS -X POST "$SLAW_API_URL/api/squads/$SLAW_SQUAD_ID/agent-hires" \
   -H "Authorization: Bearer $SLAW_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "CTO",
-    "role": "cto",
-    "title": "Chief Technology Officer",
+    "name": "Engineering Lead",
+    "role": "engineering_lead",
+    "title": "Engineering Lead",
     "icon": "crown",
     "reportsTo": "<squad_lead-agent-id>",
     "capabilities": "Owns technical roadmap, architecture, staffing, execution",
     "desiredSkills": ["vercel-labs/agent-browser/agent-browser"],
     "adapterType": "codex_local",
     "adapterConfig": {"cwd": "/abs/path/to/repo", "model": "o4-mini"},
-    "instructionsBundle": {"files": {"AGENTS.md": "You are the CTO..."}},
+    "instructionsBundle": {"files": {"AGENTS.md": "You are the Engineering Lead..."}},
     "runtimeConfig": {"heartbeat": {"enabled": false, "wakeOnDemand": true}},
     "sourceIssueId": "<issue-id>"
   }'
@@ -119,7 +119,7 @@ curl -sS -X POST "$SLAW_API_URL/api/squads/$SLAW_SQUAD_ID/agent-hires" \
 
 - if the response has `approval`, the hire is `pending_approval`
 - monitor and discuss on the approval thread
-- when the board approves, you will be woken with `SLAW_APPROVAL_ID`; read linked issues and close/comment follow-up
+- when the operator approves, you will be woken with `SLAW_APPROVAL_ID`; read linked issues and close/comment follow-up
 
 ```sh
 curl -sS "$SLAW_API_URL/api/approvals/<approval-id>" \
@@ -128,7 +128,7 @@ curl -sS "$SLAW_API_URL/api/approvals/<approval-id>" \
 curl -sS -X POST "$SLAW_API_URL/api/approvals/<approval-id>/comments" \
   -H "Authorization: Bearer $SLAW_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"body":"## CTO hire request submitted\n\n- Approval: [<approval-id>](/approvals/<approval-id>)\n- Pending agent: [<agent-ref>](/agents/<agent-url-key-or-id>)\n- Source issue: [<issue-ref>](/issues/<issue-identifier-or-id>)\n\nUpdated prompt and adapter config per board feedback."}'
+  -d '{"body":"## Engineering Lead hire request submitted\n\n- Approval: [<approval-id>](/approvals/<approval-id>)\n- Pending agent: [<agent-ref>](/agents/<agent-url-key-or-id>)\n- Source issue: [<issue-ref>](/issues/<issue-identifier-or-id>)\n\nUpdated prompt and adapter config per operator feedback."}'
 ```
 
 If the approval already exists and needs manual linking to the issue:

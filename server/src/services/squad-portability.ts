@@ -46,6 +46,7 @@ import {
   issueCommentAuthorTypeSchema,
   issueCommentMetadataSchema,
   issueCommentPresentationSchema,
+  normalizeAgentRole,
   normalizeAgentUrlKey,
 } from "@slaw/shared";
 import {
@@ -80,8 +81,12 @@ import { normalizePortablePath } from "./portable-path.js";
 /** Build OrgNode tree from manifest agent list (slug + reportsToSlug). */
 function buildOrgTreeFromManifest(agents: SquadPortabilityManifest["agents"]): OrgNode[] {
   const ROLE_LABELS: Record<string, string> = {
-    squad_lead: "Chief Executive", cto: "Technology", cmo: "Marketing",
-    cfo: "Finance", coo: "Operations", vp: "VP", manager: "Manager",
+    squad_lead: "Squad Lead",
+    engineering_lead: "Engineering Lead", marketing_lead: "Marketing Lead",
+    finance_lead: "Finance Lead",
+    // Legacy paperclip-era C-suite values (pre leads-based rename) → new labels.
+    cto: "Engineering Lead", cmo: "Marketing Lead", cfo: "Finance Lead",
+    coo: "Operations", vp: "VP", manager: "Manager",
     engineer: "Engineer", agent: "Agent",
   };
   const bySlug = new Map(agents.map((a) => [a.slug, a]));
@@ -4309,7 +4314,7 @@ export function squadPortabilityService(db: Db, storage?: StorageService) {
         );
         const patch = {
           name: planAgent.plannedName,
-          role: manifestAgent.role,
+          role: normalizeAgentRole(manifestAgent.role),
           title: manifestAgent.title,
           icon: manifestAgent.icon,
           capabilities: manifestAgent.capabilities,
