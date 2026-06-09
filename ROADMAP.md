@@ -64,6 +64,10 @@ We want a stronger memory and knowledge surface for squads, agents, and projects
 
 Slaw should get stricter about what counts as finished work. Tasks, approvals, and execution flows should resolve to clear outcomes like merged code, published artifacts, shipped docs, or explicit decisions instead of stopping at vague status updates.
 
+### 🚧 Reliability & Cost Control (pre-release)
+
+The execution loop must back off and stand down on its own. Today a squad that hits a shared Claude usage limit will keep retrying every agent on a backoff while the scheduler spawns fresh chains, and a squad that has finished its work keeps heartbeating with nothing to do — both burn quota without producing anything. Slaw needs an instance-wide circuit breaker that pauses all heartbeats on shared-account exhaustion until the reset window, quiescence detection that stands a squad down when no actionable work remains, wake de-duplication that breaks agent-to-agent comment loops, and bounded prompt assembly so context cost scales with new work rather than full history. The circuit breaker and quiescence detection are release blockers; the rest is the difference between "works" and "trustworthy." See `DESIGN-reliability-and-cost-control.md` for the full root-cause analysis (drawn from a real 375M-token runaway) and the five-fix design.
+
 ### ⚪ MAXIMIZER MODE
 
 This is the direction for higher-autonomy execution: more aggressive delegation, deeper follow-through, and stronger operating loops with clear budgets, visibility, and governance. The point is not hidden autonomy; the point is more output per human supervisor.

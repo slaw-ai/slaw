@@ -655,14 +655,49 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
   const renderedPrompt = shouldUseResumeDeltaPrompt ? "" : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.slawSessionHandoffMarkdown, "").trim();
-  const taskContextNote = asString(context.slawTaskMarkdown, "").trim();
-  const prompt = joinPromptSections([
-    renderedBootstrapPrompt,
-    wakePrompt,
-    sessionHandoffNote,
-    taskContextNote,
-    renderedPrompt,
-  ]);
+  let taskContextNote = asString(context.slawTaskMarkdown, "").trim();
+
+  // F5 — pre-flight prompt-size budget. A prompt that exceeds the model context
+  // 400s with "Prompt is too long" and (before the circuit breaker) triggered a
+  // retry storm. The task-context note is the largest variable section and the
+  // safest to trim, so when the assembled prompt is over budget we truncate it
+  // (keeping the head, where the task framing lives) and flag it on stderr.
+  // Budget is a generous char proxy for tokens (~4 chars/token); configurable.
+  const promptCharBudget = (() => {
+    const raw = Number(process.env.SLAW_CLAUDE_PROMPT_CHAR_BUDGET);
+    return Number.isFinite(raw) && raw > 0 ? raw : 600_000;
+  })();
+  let promptBudgetTrimmedChars = 0;
+  const assemble = () =>
+    joinPromptSections([
+      renderedBootstrapPrompt,
+      wakePrompt,
+      sessionHandoffNote,
+      taskContextNote,
+      renderedPrompt,
+    ]);
+  let prompt = assemble();
+  if (prompt.length > promptCharBudget && taskContextNote.length > 0) {
+    const overBy = prompt.length - promptCharBudget;
+    // Trim the task-context note by the overage (plus a small margin), but never
+    // below a floor so the agent keeps the task framing.
+    const floor = Math.min(taskContextNote.length, 8_000);
+    const target = Math.max(floor, taskContextNote.length - overBy - 2_000);
+    if (target < taskContextNote.length) {
+      promptBudgetTrimmedChars = taskContextNote.length - target;
+      taskContextNote =
+        taskContextNote.slice(0, target) +
+        "\n\n[...task context truncated to fit the prompt budget; see the issue for full detail...]";
+      prompt = assemble();
+    }
+  }
+  if (promptBudgetTrimmedChars > 0) {
+    await onLog(
+      "stdout",
+      `[slaw] Prompt exceeded the ${promptCharBudget}-char budget; trimmed ${promptBudgetTrimmedChars} chars of task context to avoid a "prompt too long" failure.\n`,
+    );
+  }
+
   const promptMetrics = {
     promptChars: prompt.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
@@ -670,6 +705,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     sessionHandoffChars: sessionHandoffNote.length,
     taskContextChars: taskContextNote.length,
     heartbeatPromptChars: renderedPrompt.length,
+    promptBudgetTrimmedChars,
   };
 
   const buildClaudeArgs = (

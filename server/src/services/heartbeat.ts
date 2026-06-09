@@ -53,6 +53,10 @@ import { conflict, HttpError, notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { publishLiveEvent } from "./live-events.js";
 import { getRunLogStore, type RunLogHandle } from "./run-log-store.js";
+import {
+  HeartbeatCircuitBreaker,
+  type CircuitBreakerState,
+} from "./heartbeat-circuit-breaker.js";
 import { getServerAdapter, listAdapterModelProfiles, runningProcesses } from "../adapters/index.js";
 import type {
   AdapterExecutionResult,
@@ -207,6 +211,9 @@ const MANAGED_WORKSPACE_GIT_CLONE_TIMEOUT_MS = 10 * 60 * 1000;
 const MAX_INLINE_WAKE_COMMENTS = 8;
 const MAX_INLINE_WAKE_COMMENT_BODY_CHARS = 4_000;
 const MAX_INLINE_WAKE_COMMENT_BODY_TOTAL_CHARS = 12_000;
+// F5 — cap accumulated wake-comment ids carried in the context snapshot so the
+// persisted/replayed prompt context can't grow unbounded across heartbeats.
+const MAX_WAKE_COMMENT_IDS = 50;
 const execFile = promisify(execFileCallback);
 const EXECUTION_PATH_HEARTBEAT_RUN_STATUSES = ["queued", "running", "scheduled_retry"] as const;
 const CANCELLABLE_HEARTBEAT_RUN_STATUSES = ["queued", "running", "scheduled_retry"] as const;
@@ -1844,6 +1851,13 @@ function mergeWakeCommentIds(...values: Array<unknown>): string[] {
     append(value);
   }
 
+  // F5 — bound the accumulated id list. It was growing without limit in the
+  // persisted context snapshot across heartbeats, inflating every subsequent
+  // prompt. The inline renderer only surfaces the most recent few, so keep a
+  // generous recent tail and drop the older head.
+  if (merged.length > MAX_WAKE_COMMENT_IDS) {
+    return merged.slice(merged.length - MAX_WAKE_COMMENT_IDS);
+  }
   return merged;
 }
 
@@ -2503,6 +2517,8 @@ export type HeartbeatEnvironmentRuntime = ReturnType<typeof environmentRuntimeSe
 export interface HeartbeatServiceOptions {
   pluginWorkerManager?: PluginWorkerManager;
   environmentRuntime?: HeartbeatEnvironmentRuntime;
+  /** F1 — inject a shared/pre-tripped breaker (tests); defaults to a fresh one. */
+  circuitBreaker?: HeartbeatCircuitBreaker;
 }
 
 export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) {
@@ -2512,6 +2528,9 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
   });
 
   const runLogStore = getRunLogStore();
+  // F1 — instance-wide circuit breaker. Process-local; shared by the scheduler
+  // gate (tickTimers) and the retry path (scheduleBoundedRetryForRun).
+  const circuitBreaker = options.circuitBreaker ?? new HeartbeatCircuitBreaker();
   const secretsSvc = secretService(db);
   const squadSkills = squadSkillService(db);
   const issuesSvc = issueService(db);
@@ -3343,6 +3362,31 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       clearOnClientError: false,
       activitySource: "manual",
     });
+  }
+
+  /**
+   * F2 — quiescence check. Returns true if the agent has anything worth waking
+   * for on a blind timer tick: at least one assigned issue that is not in a
+   * terminal status (done/cancelled). Conservative by design — when in doubt it
+   * returns true, so the timer still fires; it only suppresses the clearly-idle
+   * case that produced the post-completion churn. Event-driven wakes (comment,
+   * assignment, approval, monitor) bypass this entirely.
+   */
+  async function agentHasActionableWork(
+    agent: Pick<typeof agents.$inferSelect, "id" | "squadId">,
+  ): Promise<boolean> {
+    const [row] = await db
+      .select({ id: issues.id })
+      .from(issues)
+      .where(
+        and(
+          eq(issues.squadId, agent.squadId),
+          eq(issues.assigneeAgentId, agent.id),
+          notInArray(issues.status, ["done", "cancelled"]),
+        ),
+      )
+      .limit(1);
+    return Boolean(row);
   }
 
   async function tickDueIssueMonitors(now = new Date()) {
@@ -5369,6 +5413,52 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     const now = opts?.now ?? new Date();
     const retryReason = opts?.retryReason ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON;
     const wakeReason = opts?.wakeReason ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_WAKE_REASON;
+
+    // F1 — shared-account exhaustion (Claude usage/rate limit) must NOT be
+    // retried per-run: all agents share one account, so per-run retries just
+    // multiply the failure. Trip the instance-wide breaker instead, which pauses
+    // every agent's heartbeats until the limit resets. The agent will resume
+    // naturally on the next scheduler tick after the breaker closes.
+    if (
+      retryReason === BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON &&
+      readHeartbeatRunErrorFamily(run) === "transient_upstream"
+    ) {
+      const tripResult = circuitBreaker.recordFailure({
+        now,
+        errorFamily: "transient_upstream",
+        errorCode: run.errorCode ?? null,
+        resetHint: readTransientRetryNotBeforeFromRun(run),
+      });
+      if (tripResult.tripped) {
+        const state = circuitBreaker.state();
+        logger.warn(
+          {
+            squadId: run.squadId,
+            agentId: agent.id,
+            reason: tripResult.reason,
+            openUntil: state.openUntil?.toISOString() ?? null,
+          },
+          "heartbeat circuit breaker opened (shared-account exhaustion); pausing all heartbeats",
+        );
+      }
+      await appendRunEvent(run, await nextRunEventSeq(run.id), {
+        eventType: "lifecycle",
+        stream: "system",
+        level: "warn",
+        message:
+          "Shared-account usage/rate limit reached; deferring to the instance circuit breaker instead of a per-run retry",
+        payload: {
+          retryReason,
+          breakerOpenUntil: circuitBreaker.state().openUntil?.toISOString() ?? null,
+        },
+      });
+      return {
+        outcome: "not_scheduled" as const,
+        reason: "circuit_breaker_open",
+        errorCode: "circuit_breaker_open" as const,
+        issueId: readNonEmptyString(parseObject(run.contextSnapshot).issueId),
+      };
+    }
     const maxAttempts = Math.max(0, Math.floor(opts?.maxAttempts ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS));
     const nextAttempt = (run.scheduledRetryAttempt ?? 0) + 1;
     const baseSchedule = opts?.delayMs != null
@@ -8027,6 +8117,9 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         // failure on the succeeded path can still be recovered by recording
         // finalize=failed from the catch path below.
         adapterFinalizeOutcome = status;
+        // F1 — a successful run is evidence the upstream is healthy; clear the
+        // failure-rate backstop counter so old isolated failures don't add up.
+        if (status === "succeeded") circuitBreaker.recordSuccess();
       };
 
       let adapterResult: Awaited<ReturnType<typeof adapter.execute>>;
@@ -10195,10 +10288,25 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
     buildRunOutputSilence,
 
     tickTimers: async (now = new Date()) => {
+      // F1 — if the instance-wide breaker is open, skip ALL timer-driven
+      // wakeups this tick. One log line per tick instead of N failing runs.
+      if (circuitBreaker.isOpen(now)) {
+        const state = circuitBreaker.state();
+        logger.info(
+          {
+            reason: state.reason,
+            openUntil: state.openUntil?.toISOString() ?? null,
+          },
+          "heartbeat scheduler paused by circuit breaker; skipping timer wakeups",
+        );
+        return { checked: 0, enqueued: 0, skipped: 0, breakerOpen: true };
+      }
+
       const allAgents = await db.select().from(agents);
       let checked = 0;
       let enqueued = 0;
       let skipped = 0;
+      let quiesced = 0;
 
       for (const agent of allAgents) {
         if (agent.status === "paused" || agent.status === "terminated" || agent.status === "pending_approval") continue;
@@ -10209,6 +10317,15 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         const baseline = new Date(agent.lastHeartbeatAt ?? agent.createdAt).getTime();
         const elapsedMs = now.getTime() - baseline;
         if (elapsedMs < policy.intervalSec * 1000) continue;
+
+        // F2 — quiescence: don't wake an agent on the timer when it has no
+        // actionable work. An idle wake just burns a run (and, via comments,
+        // can wake peers). Event-driven wakes (assignment, comment, approval)
+        // are unaffected — only the blind interval timer is gated.
+        if (!(await agentHasActionableWork(agent))) {
+          quiesced += 1;
+          continue;
+        }
 
         const run = await enqueueWakeup(agent.id, {
           source: "timer",
@@ -10232,8 +10349,14 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         checked: checked + issueMonitors.checked,
         enqueued: enqueued + issueMonitors.triggered,
         skipped: skipped + issueMonitors.skipped,
+        quiesced,
       };
     },
+
+    /** F1 — expose breaker state for the UI banner / diagnostics. */
+    getCircuitBreakerState: (): CircuitBreakerState => circuitBreaker.state(),
+    /** F1 — test/ops hook to clear the breaker manually. */
+    resetCircuitBreaker: () => circuitBreaker.reset(),
 
     cancelRun: (runId: string) => cancelRunInternal(runId),
 

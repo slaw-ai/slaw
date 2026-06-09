@@ -86,6 +86,7 @@ export interface Config {
   feedbackExportBackendToken: string | undefined;
   heartbeatSchedulerEnabled: boolean;
   heartbeatSchedulerIntervalMs: number;
+  doneAcceptanceMode: "off" | "advisory" | "strict";
   squadDeletionEnabled: boolean;
   telemetryEnabled: boolean;
   /** resolved control-tower reporting config; url undefined = standalone (no gate, no reporter) */
@@ -334,6 +335,13 @@ export function loadConfig(): Config {
     feedbackExportBackendToken,
     heartbeatSchedulerEnabled: process.env.HEARTBEAT_SCHEDULER_ENABLED !== "false",
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
+    // F4 — acceptance gate on issue `done`. "advisory" (default) records when an
+    // issue is closed with no deliverable evidence but allows it; "strict"
+    // rejects an agent-driven `done` without evidence; "off" disables the gate.
+    doneAcceptanceMode: ((): "off" | "advisory" | "strict" => {
+      const raw = (process.env.SLAW_DONE_ACCEPTANCE_MODE ?? "advisory").toLowerCase();
+      return raw === "off" || raw === "strict" ? raw : "advisory";
+    })(),
     squadDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
     // Fall back to the resiliently-salvaged botfather section if the full-file

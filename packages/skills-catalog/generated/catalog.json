@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@slaw/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-06-05T07:31:36.544Z",
+  "generatedAt": "2026-06-07T09:34:31.022Z",
   "skills": [
     {
       "id": "slaw:bundled:docs:doc-maintenance",
@@ -174,11 +174,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4027,
-          "sha256": "b1a26b9956a681c9835ff5d2e1ffe6ff1c14acca959e74e19507c9bc604cfb8a"
+          "sizeBytes": 4030,
+          "sha256": "01d094015335d0867bc793eb65237d2b7b19270196592deda6f3ce59fe73ade4"
         }
       ],
-      "contentHash": "sha256:d3e6a5ebcfae6dc44e21eac800dc6c1df13c0c0d5e90c11fe6a3f9fbb39a9f4f"
+      "contentHash": "sha256:8cfdcb7914c26acc0260f368aa12c76059c5e8e1134faf5a15bd4bf54c149b05"
     },
     {
       "id": "slaw:bundled:slaw-operations:task-planning",

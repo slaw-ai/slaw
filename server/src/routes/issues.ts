@@ -11,6 +11,8 @@ import {
   issueExecutionDecisions,
   issueRelations,
   issues as issueRows,
+  issueWorkProducts,
+  issueDocuments,
   projectWorkspaces,
 } from "@slaw/db";
 import {
@@ -98,6 +100,7 @@ import {
   SVG_CONTENT_TYPE,
 } from "../attachment-types.js";
 import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.js";
+import { wakeCycleGuard } from "../services/wake-cycle-guard.js";
 import { assertEnvironmentSelectionForSquad } from "./environment-selection.js";
 import { executionWorkspaceService as executionWorkspaceServiceDirect } from "../services/execution-workspaces.js";
 import { feedbackService } from "../services/feedback.js";
@@ -900,6 +903,26 @@ export function issueRoutes(
   const router = Router();
   const svc = issueService(db);
   const access = accessService(db);
+
+  // F4 — does an issue have deliverable evidence (a work product or an attached
+  // document)? Used by the acceptance gate when an issue is marked `done`.
+  const issueHasDeliverableEvidence = async (
+    squadId: string,
+    issueId: string,
+  ): Promise<boolean> => {
+    const [wp] = await db
+      .select({ id: issueWorkProducts.id })
+      .from(issueWorkProducts)
+      .where(and(eq(issueWorkProducts.squadId, squadId), eq(issueWorkProducts.issueId, issueId)))
+      .limit(1);
+    if (wp) return true;
+    const [doc] = await db
+      .select({ documentId: issueDocuments.documentId })
+      .from(issueDocuments)
+      .where(and(eq(issueDocuments.squadId, squadId), eq(issueDocuments.issueId, issueId)))
+      .limit(1);
+    return Boolean(doc);
+  };
   const heartbeat = heartbeatService(db, {
     pluginWorkerManager: opts.pluginWorkerManager,
   });
@@ -4098,6 +4121,50 @@ export function issueRoutes(
     ) {
       return;
     }
+
+    // F4 — acceptance gate. When an AGENT moves an issue to `done` that wasn't
+    // already done, require deliverable evidence (a work product or attached
+    // document). "strict" rejects; "advisory" (default) allows but records the
+    // gap so QA/Operator can see "marked done with no deliverable"; "off" skips.
+    // Human operators are never gated — they can close anything by hand.
+    const doneAcceptanceMode = ((): "off" | "advisory" | "strict" => {
+      const raw = (process.env.SLAW_DONE_ACCEPTANCE_MODE ?? "advisory").toLowerCase();
+      return raw === "off" || raw === "strict" ? raw : "advisory";
+    })();
+    const agentMarkingDone =
+      actor.actorType === "agent" &&
+      updateFields.status === "done" &&
+      existing.status !== "done";
+    if (doneAcceptanceMode !== "off" && agentMarkingDone) {
+      const hasEvidence = await issueHasDeliverableEvidence(existing.squadId, existing.id);
+      if (!hasEvidence) {
+        if (doneAcceptanceMode === "strict") {
+          res.status(409).json({
+            error:
+              "Cannot mark this issue done: no deliverable evidence (work product or attached document) is linked to it. Record the deliverable, then close the issue.",
+            code: "acceptance_evidence_required",
+          });
+          return;
+        }
+        // advisory — allow, but leave a durable record.
+        logger.warn(
+          { issueId: existing.id, squadId: existing.squadId, agentId: actor.actorId },
+          "issue marked done with no deliverable evidence (F4 advisory gate)",
+        );
+        await svc
+          .addComment(
+            existing.id,
+            "⚠️ Closed without a linked deliverable (no work product or attached document). " +
+              "Flagged by the acceptance gate for review.",
+            {},
+            { authorType: "system" },
+          )
+          .catch((err) =>
+            logger.warn({ err, issueId: existing.id }, "failed to record acceptance-gate advisory comment"),
+          );
+      }
+    }
+
     const scheduledRetryForHumanComment =
       shouldHumanCommentResumeInProgressScheduledRetry({
         hasComment: !!commentBody,
@@ -4876,7 +4943,16 @@ export function issueRoutes(
         const selfComment = actorIsAgent && actor.actorId === assigneeId;
         const skipAssigneeCommentWake = selfComment || isClosed;
 
-        if (assigneeId && !assigneeChanged && (reopened || !skipAssigneeCommentWake)) {
+        // F3 — never wake the assignee on their OWN comment, even when that
+        // comment reopened the issue. The old `reopened || !skipAssigneeCommentWake`
+        // let a self-authored reopen re-wake the author, which (combined with
+        // status thrashing) was a driver of the self-wake loop. A self-comment
+        // is never new information for the author.
+        const wakeAssignee = selfComment
+          ? false
+          : reopened || !skipAssigneeCommentWake;
+
+        if (assigneeId && !assigneeChanged && wakeAssignee) {
           addWakeup(assigneeId, {
             source: "automation",
             triggerDetail: "system",
@@ -4992,7 +5068,32 @@ export function issueRoutes(
         }
       }
 
+      // F3 — register the issue's current state so the cycle guard resets its
+      // counters whenever status/assignee actually advances. Sterile loops
+      // (same wake edge, no state change) get throttled; real progress doesn't.
+      const stateToken = `${issue.status}:${issue.assigneeAgentId ?? "none"}`;
+      wakeCycleGuard.noteStateChange(issue.id, stateToken);
+
       for (const { agentId, wakeup } of wakeups.values()) {
+        const requesterId =
+          wakeup.requestedByActorType === "agent" ? wakeup.requestedByActorId ?? null : null;
+        const wakeIssueId =
+          wakeup.payload && typeof wakeup.payload === "object" && typeof wakeup.payload.issueId === "string"
+            ? wakeup.payload.issueId
+            : issue.id;
+        if (
+          !wakeCycleGuard.shouldAllow({
+            issueId: wakeIssueId,
+            requesterId,
+            targetAgentId: agentId,
+          })
+        ) {
+          logger.warn(
+            { issueId: wakeIssueId, requesterId, agentId },
+            "suppressed automation wake: repeated wake cycle with no issue state change (F3 guard)",
+          );
+          continue;
+        }
         heartbeat
           .wakeup(agentId, wakeup)
           .catch((err) => logger.warn({ err, issueId: issue.id, agentId }, "failed to wake agent on issue update"));
