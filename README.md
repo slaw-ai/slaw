@@ -2,8 +2,6 @@
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
   <a href="https://slaw.run/docs"><strong>Docs</strong></a> &middot;
   <a href="https://github.com/slaw-ai/slaw"><strong>GitHub</strong></a> &middot;
-  <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a> &middot;
-  <a href="https://x.com/slawing"><strong>Twitter</strong></a> &middot;
   <a href="https://slaw.run"><strong>Website</strong></a>
 </p>
 
@@ -383,8 +381,6 @@ We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for deta
 
 ## Community
 
-- [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
-- [Twitter / X](https://x.com/slawing) — Follow updates and announcements
 - [GitHub Issues](https://github.com/slaw-ai/slaw/issues) — bugs and feature requests
 - [GitHub Discussions](https://github.com/slaw-ai/slaw/discussions) — ideas and RFC
 
