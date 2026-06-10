@@ -37,6 +37,8 @@ It looks like a task manager. Under the hood: org charts, budgets, governance, g
     <td align="center"><img src="doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
     <td align="center"><img src="doc/assets/logos/bash.svg" width="32" alt="Bash" /><br/><sub>Bash</sub></td>
     <td align="center"><img src="doc/assets/logos/http.svg" width="32" alt="HTTP" /><br/><sub>HTTP</sub></td>
+    <td align="center"><img src="doc/assets/logos/jira.svg" width="32" alt="Jira" /><br/><sub>Jira</sub></td>
+    <td align="center"><img src="doc/assets/logos/botfather.svg" width="32" alt="Botfather" /><br/><sub>Botfather</sub></td>
   </tr>
 </table>
 
@@ -101,6 +103,12 @@ Hierarchies, roles, reporting lines. Your agents have a boss, a title, and a job
 <td align="center">
 <h3>📱 Mobile Ready</h3>
 Monitor and manage your autonomous businesses from anywhere.
+</td>
+</tr>
+<tr>
+<td align="center" colspan="3">
+<h3>🗼 Fleet Control Tower</h3>
+Running many SLAW instances? <a href="https://github.com/slaw-ai/slaw-botfather"><strong>SLAW Botfather</strong></a> puts one self-hosted tower over the whole fleet — health, spend, budgets, alerts, and a shared skill registry, while every instance stays local and sovereign.
 </td>
 </tr>
 </table>
