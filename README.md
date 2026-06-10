@@ -3,7 +3,7 @@
   <a href="https://docs.slaw.run"><strong>Docs</strong></a> &middot;
   <a href="https://github.com/slaw-ai/slaw"><strong>GitHub</strong></a> &middot;
   <a href="https://github.com/slaw-ai/slaw-botfather"><strong>Botfather</strong></a> &middot;
-  <a href="https://slaw.run"><strong>Website</strong></a>
+  <a href="https://docs.slaw.run"><strong>Website</strong></a>
 </p>
 
 <br/>
