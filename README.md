@@ -1,7 +1,8 @@
 <p align="center">
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="https://slaw.run/docs"><strong>Docs</strong></a> &middot;
+  <a href="https://docs.slaw.run"><strong>Docs</strong></a> &middot;
   <a href="https://github.com/slaw-ai/slaw"><strong>GitHub</strong></a> &middot;
+  <a href="https://github.com/slaw-ai/slaw-botfather"><strong>Botfather</strong></a> &middot;
   <a href="https://slaw.run"><strong>Website</strong></a>
 </p>
 
@@ -11,13 +12,13 @@
 
 Open-source orchestration for a simple, localised workforce of AI agents.
 
-**If an agent is an _employee_, SLAW is the _squad_.**
+**Localised agent fleet. Centralised control tower.**
 
 Slaw is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track work and costs from one dashboard.
 
 It looks like a task manager. Under the hood: org charts, budgets, governance, goal alignment, and agent coordination.
 
-**Manage business goals, not pull requests.**
+**Self-hosted squads. Fleet-wide control.**
 
 |        | Step            | Example                                                            |
 | ------ | --------------- | ------------------------------------------------------------------ |
@@ -132,6 +133,27 @@ Slaw handles the hard orchestration details correctly.
 | **Goal-aware execution.**         | Tasks carry full goal ancestry so agents consistently see the "why," not just a title.                        |
 | **Portable squad templates.**   | Export/import orgs, agents, and skills with secret scrubbing and collision handling.                          |
 | **True multi-squad isolation.** | Every entity is squad-scoped, so one deployment can run many squads with separate data and audit trails. |
+
+<br/>
+
+## SLAW Botfather — the fleet control tower
+
+SLAW and [**SLAW Botfather**](https://github.com/slaw-ai/slaw-botfather) go hand in hand: SLAW runs a squad on one machine; Botfather puts a single self-hosted tower over **every** SLAW instance you (or your team) run.
+
+Each instance stays fully local and sovereign — work content, prompts, and secrets never leave the machine. Enrolled instances report operational metadata outbound to the tower; the tower never reaches inbound into an instance.
+
+|                              |                                                                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Fleet view**               | Every enrolled instance at a glance — health, squads, spend today/MTD, alerts — with one-click drill-down.               |
+| **Cost analytics**           | Network-wide spend by day, cost by model, and top-burner instances and squads.                                            |
+| **Budgets & limits**         | An enterprise-wide default plus per-instance overrides; plan-aware (dollars for metered, tokens for subscription) with soft warn or hard block. |
+| **Alerts**                   | Offline instances, missed heartbeats, budget breaches, and skill-catalog drift.                                           |
+| **Approvals & admin**        | Enrollment is approval-gated; revoke instances at any time; optional auto-approve rules.                                  |
+| **Skill registry**           | The tower masters a versioned skill catalog; instances pull it and install skills onto local squads.                       |
+
+Enrolling an instance takes one setting: point **Settings → Control Tower** at your tower's URL and approve it in Botfather. Without a tower configured, SLAW runs standalone — Botfather is entirely optional.
+
+Repo: [github.com/slaw-ai/slaw-botfather](https://github.com/slaw-ai/slaw-botfather) &middot; Docs: [docs.slaw.run/botfather](https://docs.slaw.run/botfather/overview/what-is-botfather)
 
 <br/>
 
