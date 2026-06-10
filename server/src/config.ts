@@ -82,13 +82,10 @@ export interface Config {
   storageS3Endpoint: string | undefined;
   storageS3Prefix: string;
   storageS3ForcePathStyle: boolean;
-  feedbackExportBackendUrl: string | undefined;
-  feedbackExportBackendToken: string | undefined;
   heartbeatSchedulerEnabled: boolean;
   heartbeatSchedulerIntervalMs: number;
   doneAcceptanceMode: "off" | "advisory" | "strict";
   squadDeletionEnabled: boolean;
-  telemetryEnabled: boolean;
   /** resolved control-tower reporting config; url undefined = standalone (no gate, no reporter) */
   botfather: BotfatherConfig;
 }
@@ -152,15 +149,6 @@ export function loadConfig(): Config {
     process.env.SLAW_STORAGE_S3_FORCE_PATH_STYLE !== undefined
       ? process.env.SLAW_STORAGE_S3_FORCE_PATH_STYLE === "true"
       : (fileStorage?.s3?.forcePathStyle ?? false);
-  const feedbackExportBackendUrl =
-    process.env.SLAW_FEEDBACK_EXPORT_BACKEND_URL?.trim() ||
-    process.env.SLAW_TELEMETRY_BACKEND_URL?.trim() ||
-    undefined;
-  const feedbackExportBackendToken =
-    process.env.SLAW_FEEDBACK_EXPORT_BACKEND_TOKEN?.trim() ||
-    process.env.SLAW_TELEMETRY_BACKEND_TOKEN?.trim() ||
-    undefined;
-
   const deploymentModeFromEnvRaw = process.env.SLAW_DEPLOYMENT_MODE;
   const deploymentModeFromEnv =
     deploymentModeFromEnvRaw && DEPLOYMENT_MODES.includes(deploymentModeFromEnvRaw as DeploymentMode)
@@ -331,8 +319,6 @@ export function loadConfig(): Config {
     storageS3Endpoint,
     storageS3Prefix,
     storageS3ForcePathStyle,
-    feedbackExportBackendUrl,
-    feedbackExportBackendToken,
     heartbeatSchedulerEnabled: process.env.HEARTBEAT_SCHEDULER_ENABLED !== "false",
     heartbeatSchedulerIntervalMs: Math.max(10000, Number(process.env.HEARTBEAT_SCHEDULER_INTERVAL_MS) || 30000),
     // F4 — acceptance gate on issue `done`. "advisory" (default) records when an
@@ -343,7 +329,6 @@ export function loadConfig(): Config {
       return raw === "off" || raw === "strict" ? raw : "advisory";
     })(),
     squadDeletionEnabled,
-    telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
     // Fall back to the resiliently-salvaged botfather section if the full-file
     // read failed (e.g. a partial config file written on a zero-config dev
     // setup). This keeps the control-tower connection alive across restarts.

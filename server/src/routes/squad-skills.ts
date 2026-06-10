@@ -10,22 +10,12 @@ import {
   squadSkillProjectScanRequestSchema,
   squadSkillResetSchema,
 } from "@slaw/shared";
-import { trackSkillImported } from "@slaw/shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { accessService, agentService, squadSkillService, logActivity } from "../services/index.js";
 import { getCatalogSkillOrThrow, listCatalogSkills, readCatalogSkillFile } from "../services/skills-catalog.js";
 import { isTowerGoverned } from "../services/botfather/authoring-lock.js";
 import { conflict, forbidden } from "../errors.js";
 import { assertAuthenticated, assertSquadAccess, getActorInfo } from "./authz.js";
-import { getTelemetryClient } from "../telemetry.js";
-
-type SkillTelemetryInput = {
-  key: string;
-  slug: string;
-  sourceType: string;
-  sourceLocator: string | null;
-  metadata: Record<string, unknown> | null;
-};
 
 export function squadSkillRoutes(db: Db) {
   const router = Router();
@@ -36,26 +26,6 @@ export function squadSkillRoutes(db: Db) {
   function canCreateAgents(agent: { permissions: Record<string, unknown> | null | undefined }) {
     if (!agent.permissions || typeof agent.permissions !== "object") return false;
     return Boolean((agent.permissions as Record<string, unknown>).canCreateAgents);
-  }
-
-  function asString(value: unknown): string | null {
-    if (typeof value !== "string") return null;
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
-  }
-
-  function deriveTrackedSkillRef(skill: SkillTelemetryInput): string | null {
-    if (skill.sourceType === "skills_sh") {
-      return skill.key;
-    }
-    if (skill.sourceType !== "github") {
-      return null;
-    }
-    const hostname = asString(skill.metadata?.hostname);
-    if (hostname !== "github.com") {
-      return null;
-    }
-    return skill.key;
   }
 
   function firstQueryString(value: unknown): string | undefined {
@@ -267,16 +237,6 @@ export function squadSkillRoutes(db: Db) {
           warningCount: result.warnings.length,
         },
       });
-      const telemetryClient = getTelemetryClient();
-      if (telemetryClient) {
-        for (const skill of result.imported) {
-          trackSkillImported(telemetryClient, {
-            sourceType: skill.sourceType,
-            skillRef: deriveTrackedSkillRef(skill),
-          });
-        }
-      }
-
       res.status(201).json(result);
     },
   );

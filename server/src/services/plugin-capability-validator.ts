@@ -96,7 +96,6 @@ const OPERATION_CAPABILITIES: Record<string, readonly PluginCapability[]> = {
   "issue.interactions.create": ["issue.interactions.create"],
   "activity.log": ["activity.log.write"],
   "metrics.write": ["metrics.write"],
-  "telemetry.track": ["telemetry.track"],
   "db.migrate": ["database.namespace.migrate"],
   "db.execute": ["database.namespace.write"],
 

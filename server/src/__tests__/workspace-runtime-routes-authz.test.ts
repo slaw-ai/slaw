@@ -27,13 +27,9 @@ const mockEnvironmentService = vi.hoisted(() => ({
 
 const mockWorkspaceOperationService = vi.hoisted(() => ({}));
 const mockLogActivity = vi.hoisted(() => vi.fn());
-const mockGetTelemetryClient = vi.hoisted(() => vi.fn());
 const mockAssertCanManageProjectWorkspaceRuntimeServices = vi.hoisted(() => vi.fn());
 const mockAssertCanManageExecutionWorkspaceRuntimeServices = vi.hoisted(() => vi.fn());
 
-vi.mock("../telemetry.js", () => ({
-  getTelemetryClient: mockGetTelemetryClient,
-}));
 
 vi.mock("../services/index.js", () => ({
   environmentService: () => mockEnvironmentService,
@@ -57,9 +53,6 @@ vi.mock("../routes/workspace-runtime-service-authz.js", () => ({
 }));
 
 function registerWorkspaceRouteMocks() {
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: mockGetTelemetryClient,
-  }));
 
   vi.doMock("../services/index.js", () => ({
     environmentService: () => mockEnvironmentService,

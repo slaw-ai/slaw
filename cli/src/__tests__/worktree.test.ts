@@ -108,9 +108,6 @@ function buildSourceConfig(): SlawConfig {
       publicBaseUrl: "http://127.0.0.1:3100",
       disableSignUp: false,
     },
-    telemetry: {
-      enabled: true,
-    },
     storage: {
       provider: "local_disk",
       localDisk: {
@@ -600,7 +597,7 @@ describe("worktree helpers", () => {
         const sourceDbClient = createDb(sourceDb.connectionString);
         await sourceDbClient.insert(authUsers).values({
           id: "user-existing",
-          email: "existing@slaw.ing",
+          email: "existing@slaw.run",
           name: "Existing User",
           emailVerified: true,
           createdAt: new Date(),
@@ -660,7 +657,7 @@ describe("worktree helpers", () => {
             `postgres://slaw:slaw@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/slaw`,
           );
           const seededUsers = await targetDb.select().from(authUsers);
-          expect(seededUsers.some((row) => row.email === "existing@slaw.ing")).toBe(true);
+          expect(seededUsers.some((row) => row.email === "existing@slaw.run")).toBe(true);
         } finally {
           await targetPg.stop();
         }

@@ -51,10 +51,6 @@ vi.mock("../services/index.js", () => ({
   documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
   documentService: () => ({}),
   executionWorkspaceService: () => ({}),
-  feedbackService: () => ({
-    listIssueVotesForUser: vi.fn(async () => []),
-    saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-  }),
   goalService: () => ({}),
   heartbeatService: () => mockHeartbeatService,
   instanceSettingsService: () => ({
@@ -62,7 +58,6 @@ vi.mock("../services/index.js", () => ({
       id: "instance-settings-1",
       general: {
         censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
       },
     })),
     listSquadIds: vi.fn(async () => ["squad-1"]),
@@ -120,10 +115,6 @@ function registerModuleMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => ({}),
-    feedbackService: () => ({
-      listIssueVotesForUser: vi.fn(async () => []),
-      saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-    }),
     goalService: () => ({}),
     heartbeatService: () => mockHeartbeatService,
     instanceSettingsService: () => ({
@@ -131,7 +122,6 @@ function registerModuleMocks() {
         id: "instance-settings-1",
         general: {
           censorUsernameInLogs: false,
-          feedbackDataSharingPreference: "prompt",
         },
       })),
       listSquadIds: vi.fn(async () => ["squad-1"]),

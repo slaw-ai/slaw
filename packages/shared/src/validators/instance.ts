@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE } from "../types/feedback.js";
 import {
   DAILY_RETENTION_PRESETS,
   WEEKLY_RETENTION_PRESETS,
@@ -9,7 +8,6 @@ import {
   MAX_ISSUE_GRAPH_LIVENESS_AUTO_RECOVERY_LOOKBACK_HOURS,
   MIN_ISSUE_GRAPH_LIVENESS_AUTO_RECOVERY_LOOKBACK_HOURS,
 } from "../types/instance.js";
-import { feedbackDataSharingPreferenceSchema } from "./feedback.js";
 
 function presetSchema<T extends readonly number[]>(presets: T, label: string) {
   return z.number().refine(
@@ -27,9 +25,6 @@ export const backupRetentionPolicySchema = z.object({
 export const instanceGeneralSettingsSchema = z.object({
   censorUsernameInLogs: z.boolean().default(false),
   keyboardShortcuts: z.boolean().default(false),
-  feedbackDataSharingPreference: feedbackDataSharingPreferenceSchema.default(
-    DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
-  ),
   backupRetention: backupRetentionPolicySchema.default(DEFAULT_BACKUP_RETENTION),
 }).strict();
 

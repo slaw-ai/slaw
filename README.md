@@ -1,10 +1,10 @@
 <p align="center">
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="https://slaw.ing/docs"><strong>Docs</strong></a> &middot;
-  <a href="https://github.com/theferozbasha/slaw"><strong>GitHub</strong></a> &middot;
+  <a href="https://slaw.run/docs"><strong>Docs</strong></a> &middot;
+  <a href="https://github.com/slaw-ai/slaw"><strong>GitHub</strong></a> &middot;
   <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a> &middot;
   <a href="https://x.com/slawing"><strong>Twitter</strong></a> &middot;
-  <a href="https://slaw.ing"><strong>Website</strong></a>
+  <a href="https://slaw.run"><strong>Website</strong></a>
 </p>
 
 <br/>
@@ -280,7 +280,7 @@ If you already have Slaw configured, rerunning `onboard` keeps the existing conf
 Or manually:
 
 ```bash
-git clone https://github.com/theferozbasha/slaw.git
+git clone https://github.com/slaw-ai/slaw.git
 cd slaw
 pnpm install
 pnpm dev
@@ -375,19 +375,6 @@ Find Plugins and more at [awesome-slaw](https://github.com/gsxdsm/awesome-slaw)
   it into a squad, point it at a board, and it provisions a sync agent and an hourly routine for you.
   See `packages/plugins/jira-sync/README.md`.
 
-## Telemetry
-
-Slaw collects anonymous usage telemetry to help us understand how the product is used and improve it. No personal information, issue content, prompts, file paths, or secrets are ever collected. Private repository references are hashed with a per-install salt before being sent.
-
-Telemetry is **enabled by default** and can be disabled with any of the following:
-
-| Method               | How                                                     |
-| -------------------- | ------------------------------------------------------- |
-| Environment variable | `SLAW_TELEMETRY_DISABLED=1`                        |
-| Standard convention  | `DO_NOT_TRACK=1`                                        |
-| CI environments      | Automatically disabled when `CI=true`                   |
-| Config file          | Set `telemetry.enabled: false` in your Slaw config |
-
 ## Contributing
 
 We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for details.
@@ -398,18 +385,24 @@ We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for deta
 
 - [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
 - [Twitter / X](https://x.com/slawing) — Follow updates and announcements
-- [GitHub Issues](https://github.com/theferozbasha/slaw/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/theferozbasha/slaw/discussions) — ideas and RFC
+- [GitHub Issues](https://github.com/slaw-ai/slaw/issues) — bugs and feature requests
+- [GitHub Discussions](https://github.com/slaw-ai/slaw/discussions) — ideas and RFC
 
 <br/>
 
 ## License
 
-MIT &copy; 2026 [Slaw Labs, Inc](https://slaw.ing)
+MIT &copy; 2026 Slaw AI
+
+## Credits
+
+SLAW is a fork of [Paperclip](https://github.com/paperclipai/paperclip) by
+[@dotta](https://github.com/paperclipai), also MIT-licensed. Huge thanks to the
+Paperclip project and its contributors for the foundation this builds on.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=theferozbasha/slaw&type=date&legend=top-left)](https://www.star-history.com/?repos=theferozbasha%2Fslaw&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/image?repos=slaw-ai/slaw&type=date&legend=top-left)](https://www.star-history.com/?repos=slaw-ai%2Fslaw&type=date&legend=top-left)
 
 <br/>
 

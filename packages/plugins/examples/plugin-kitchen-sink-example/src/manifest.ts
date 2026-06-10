@@ -41,7 +41,6 @@ const manifest: SlawPluginManifestV1 = {
     "goals.update",
     "activity.log.write",
     "metrics.write",
-    "telemetry.track",
     "plugin.state.read",
     "plugin.state.write",
     "events.subscribe",

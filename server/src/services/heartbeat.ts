@@ -68,8 +68,6 @@ import type {
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { parseObject, asBoolean, asNumber, appendWithByteCap, MAX_EXCERPT_BYTES } from "../adapters/utils.js";
 import { costService } from "./costs.js";
-import { trackAgentFirstHeartbeat } from "@slaw/shared/telemetry";
-import { getTelemetryClient } from "../telemetry.js";
 import { squadSkillService } from "./squad-skills.js";
 import { budgetService, type BudgetEnforcementScope } from "./budgets.js";
 import { secretService } from "./secrets.js";
@@ -6529,8 +6527,6 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       return;
     }
 
-    const isFirstHeartbeat = !existing.lastHeartbeatAt;
-
     const runningCount = await countRunningRunsForAgent(agentId);
     const nextStatus =
       runningCount > 0
@@ -6549,11 +6545,6 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       .where(eq(agents.id, agentId))
       .returning()
       .then((rows) => rows[0] ?? null);
-
-    if (isFirstHeartbeat && updated) {
-      const tc = getTelemetryClient();
-      if (tc) trackAgentFirstHeartbeat(tc, { agentRole: updated.role, agentId: updated.id });
-    }
 
     if (updated) {
       publishLiveEvent({

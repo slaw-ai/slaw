@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="https://slaw.ing/docs"><strong>Docs</strong></a> &middot;
+  <a href="https://slaw.run/docs"><strong>Docs</strong></a> &middot;
   <a href="https://github.com/slaw/slaw"><strong>GitHub</strong></a> &middot;
   <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a> &middot;
   <a href="https://x.com/slawing"><strong>Twitter</strong></a>

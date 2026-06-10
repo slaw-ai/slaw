@@ -48,16 +48,11 @@ const mockDb = vi.hoisted(() => ({
   select: mockDbSelect,
   transaction: vi.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx)),
 }));
-const mockFeedbackService = vi.hoisted(() => ({
-  listIssueVotesForUser: vi.fn(async () => []),
-  saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-}));
 const mockInstanceSettingsService = vi.hoisted(() => ({
   get: vi.fn(async () => ({
     id: "instance-settings-1",
     general: {
       censorUsernameInLogs: false,
-      feedbackDataSharingPreference: "prompt",
     },
   })),
   listSquadIds: vi.fn(async () => ["squad-1"]),
@@ -76,14 +71,7 @@ const mockIssueTreeControlService = vi.hoisted(() => ({
   getActivePauseHoldGate: vi.fn(async () => null),
 }));
 
-vi.mock("@slaw/shared/telemetry", () => ({
-  trackAgentTaskCompleted: vi.fn(),
-  trackErrorHandlerCrash: vi.fn(),
-}));
 
-vi.mock("../telemetry.js", () => ({
-  getTelemetryClient: vi.fn(() => ({ track: vi.fn() })),
-}));
 
 vi.mock("../services/access.js", () => ({
   accessService: () => mockAccessService,
@@ -98,7 +86,6 @@ vi.mock("../services/agents.js", () => ({
 }));
 
 vi.mock("../services/feedback.js", () => ({
-  feedbackService: () => mockFeedbackService,
 }));
 
 vi.mock("../services/heartbeat.js", () => ({
@@ -126,7 +113,6 @@ vi.mock("../services/index.js", () => ({
   documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
   documentService: () => ({}),
   executionWorkspaceService: () => ({}),
-  feedbackService: () => mockFeedbackService,
   goalService: () => ({}),
   heartbeatService: () => mockHeartbeatService,
   instanceSettingsService: () => mockInstanceSettingsService,
@@ -242,8 +228,6 @@ describe.sequential("issue comment reopen routes", () => {
     mockAgentService.list.mockReset();
     mockAgentService.resolveByReference.mockReset();
     mockLogActivity.mockReset();
-    mockFeedbackService.listIssueVotesForUser.mockReset();
-    mockFeedbackService.saveIssueVote.mockReset();
     mockInstanceSettingsService.get.mockReset();
     mockInstanceSettingsService.listSquadIds.mockReset();
     mockRoutineService.syncRunStatusForIssue.mockReset();
@@ -269,17 +253,10 @@ describe.sequential("issue comment reopen routes", () => {
     mockHeartbeatService.getActiveRunForAgent.mockResolvedValue(null);
     mockHeartbeatService.cancelRun.mockResolvedValue(null);
     mockLogActivity.mockResolvedValue(undefined);
-    mockFeedbackService.listIssueVotesForUser.mockResolvedValue([]);
-    mockFeedbackService.saveIssueVote.mockResolvedValue({
-      vote: null,
-      consentEnabledNow: false,
-      sharingEnabled: false,
-    });
     mockInstanceSettingsService.get.mockResolvedValue({
       id: "instance-settings-1",
       general: {
         censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
       },
     });
     mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);

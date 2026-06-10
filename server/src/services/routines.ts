@@ -46,10 +46,8 @@ import {
   stringifyRoutineVariableValue,
   syncRoutineVariablesWithTemplate,
 } from "@slaw/shared";
-import { trackRoutineRun } from "@slaw/shared/telemetry";
 import { conflict, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
-import { getTelemetryClient } from "../telemetry.js";
 import { getConfiguredSecretProvider } from "../secrets/configured-provider.js";
 import { issueService } from "./issues.js";
 import { secretService } from "./secrets.js";
@@ -1364,14 +1362,6 @@ export function routineService(
       } catch (err) {
         logger.warn({ err, routineId: input.routine.id, runId: run.id }, "failed to log automated routine run");
       }
-    }
-
-    const telemetryClient = getTelemetryClient();
-    if (telemetryClient) {
-      trackRoutineRun(telemetryClient, {
-        source: run.source,
-        status: run.status,
-      });
     }
 
     return run;

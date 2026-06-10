@@ -39,19 +39,7 @@ const mockAdapterExecute = vi.hoisted(() =>
   })),
 );
 
-vi.mock("../telemetry.ts", () => ({
-  getTelemetryClient: () => ({ track: vi.fn() }),
-}));
 
-vi.mock("@slaw/shared/telemetry", async () => {
-  const actual = await vi.importActual<typeof import("@slaw/shared/telemetry")>(
-    "@slaw/shared/telemetry",
-  );
-  return {
-    ...actual,
-    trackAgentFirstHeartbeat: vi.fn(),
-  };
-});
 
 vi.mock("../adapters/index.ts", async () => {
   const actual = await vi.importActual<typeof import("../adapters/index.ts")>("../adapters/index.ts");

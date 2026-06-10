@@ -3,9 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import type {
   Agent,
   Approval,
-  FeedbackDataSharingPreference,
-  FeedbackVote,
-  FeedbackVoteValue,
   IssueComment,
 } from "@slaw/shared";
 import { Button } from "@/components/ui/button";
@@ -16,7 +13,6 @@ import { Identity } from "./Identity";
 import { InlineEntitySelector, type InlineEntityOption } from "./InlineEntitySelector";
 import { MarkdownBody } from "./MarkdownBody";
 import { MarkdownEditor, type MarkdownEditorRef, type MentionOption } from "./MarkdownEditor";
-import { OutputFeedbackButtons } from "./OutputFeedbackButtons";
 import { ApprovalCard } from "./ApprovalCard";
 import { AgentIcon } from "./AgentIconPicker";
 import { formatAssigneeUserLabel } from "../lib/assignees";
@@ -70,9 +66,6 @@ interface CommentThreadProps {
   comments: CommentWithRunMeta[];
   queuedComments?: CommentWithRunMeta[];
   linkedApprovals?: Approval[];
-  feedbackVotes?: FeedbackVote[];
-  feedbackDataSharingPreference?: FeedbackDataSharingPreference;
-  feedbackTermsUrl?: string | null;
   linkedRuns?: LinkedRunItem[];
   timelineEvents?: IssueTimelineEvent[];
   squadId?: string | null;
@@ -83,11 +76,6 @@ interface CommentThreadProps {
     approvalId: string;
     action: "approve" | "reject";
   } | null;
-  onVote?: (
-    commentId: string,
-    vote: FeedbackVoteValue,
-    options?: { allowSharing?: boolean; reason?: string },
-  ) => Promise<void>;
   onAdd: (body: string, reopen?: boolean, reassignment?: CommentReassignment) => Promise<void>;
   issueStatus?: string;
   agentMap?: Map<string, Agent>;
@@ -317,11 +305,6 @@ function CommentCard({
   agentMap,
   squadId,
   projectId,
-  feedbackVote = null,
-  feedbackDataSharingPreference = "prompt",
-  feedbackTermsUrl = null,
-  onVote,
-  voting = false,
   highlightCommentId,
   queued = false,
 }: {
@@ -329,14 +312,6 @@ function CommentCard({
   agentMap?: Map<string, Agent>;
   squadId?: string | null;
   projectId?: string | null;
-  feedbackVote?: FeedbackVoteValue | null;
-  feedbackDataSharingPreference?: FeedbackDataSharingPreference;
-  feedbackTermsUrl?: string | null;
-  onVote?: (
-    vote: FeedbackVoteValue,
-    options?: { allowSharing?: boolean; reason?: string },
-  ) => Promise<void>;
-  voting?: boolean;
   highlightCommentId?: string | null;
   queued?: boolean;
 }) {
@@ -427,30 +402,7 @@ function CommentCard({
           />
         </div>
       ) : null}
-      {comment.authorAgentId && onVote && !isQueued && !isPending ? (
-        <OutputFeedbackButtons
-          activeVote={feedbackVote}
-          disabled={voting}
-          sharingPreference={feedbackDataSharingPreference}
-          termsUrl={feedbackTermsUrl}
-          onVote={onVote}
-          rightSlot={comment.runId && !isPending ? (
-            comment.runAgentId ? (
-              <Link
-                to={`/agents/${comment.runAgentId}/runs/${comment.runId}`}
-                className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-[10px] font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-              >
-                run {comment.runId.slice(0, 8)}
-              </Link>
-            ) : (
-              <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-[10px] font-mono text-muted-foreground">
-                run {comment.runId.slice(0, 8)}
-              </span>
-            )
-          ) : undefined}
-        />
-      ) : null}
-      {comment.runId && !isPending && !(comment.authorAgentId && onVote && !isQueued) ? (
+      {comment.runId && !isPending ? (
         <div className="mt-3 pt-3 border-t border-border/60">
           {comment.runAgentId ? (
             <Link
@@ -564,11 +516,6 @@ const TimelineList = memo(function TimelineList({
   onApproveApproval,
   onRejectApproval,
   pendingApprovalAction,
-  feedbackVoteByTargetId,
-  feedbackDataSharingPreference = "prompt",
-  feedbackTermsUrl = null,
-  onVote,
-  votingTargetId,
   highlightCommentId,
 }: {
   timeline: TimelineItem[];
@@ -582,15 +529,6 @@ const TimelineList = memo(function TimelineList({
     approvalId: string;
     action: "approve" | "reject";
   } | null;
-  feedbackVoteByTargetId?: Map<string, FeedbackVoteValue>;
-  feedbackDataSharingPreference?: FeedbackDataSharingPreference;
-  feedbackTermsUrl?: string | null;
-  onVote?: (
-    commentId: string,
-    vote: FeedbackVoteValue,
-    options?: { allowSharing?: boolean; reason?: string },
-  ) => Promise<void>;
-  votingTargetId?: string | null;
   highlightCommentId?: string | null;
 }) {
   if (timeline.length === 0) {
@@ -707,11 +645,6 @@ const TimelineList = memo(function TimelineList({
             agentMap={agentMap}
             squadId={squadId}
             projectId={projectId}
-            feedbackVote={feedbackVoteByTargetId?.get(comment.id) ?? null}
-            feedbackDataSharingPreference={feedbackDataSharingPreference}
-            feedbackTermsUrl={feedbackTermsUrl}
-            onVote={onVote ? (vote, options) => onVote(comment.id, vote, options) : undefined}
-            voting={votingTargetId === comment.id}
             highlightCommentId={highlightCommentId}
           />
         );
@@ -724,9 +657,6 @@ export function CommentThread({
   comments,
   queuedComments = [],
   linkedApprovals = [],
-  feedbackVotes = [],
-  feedbackDataSharingPreference = "prompt",
-  feedbackTermsUrl = null,
   linkedRuns = [],
   timelineEvents = [],
   squadId,
@@ -734,7 +664,6 @@ export function CommentThread({
   onApproveApproval,
   onRejectApproval,
   pendingApprovalAction = null,
-  onVote,
   onAdd,
   issueStatus,
   agentMap,
@@ -758,7 +687,6 @@ export function CommentThread({
   const effectiveSuggestedAssigneeValue = suggestedAssigneeValue ?? currentAssigneeValue;
   const [reassignTarget, setReassignTarget] = useState(effectiveSuggestedAssigneeValue);
   const [highlightCommentId, setHighlightCommentId] = useState<string | null>(null);
-  const [votingTargetId, setVotingTargetId] = useState<string | null>(null);
   const editorRef = useRef<MarkdownEditorRef>(null);
   const attachInputRef = useRef<HTMLInputElement | null>(null);
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -810,15 +738,6 @@ export function CommentThread({
       return kindOrder[a.kind] - kindOrder[b.kind];
     });
   }, [comments, linkedApprovals, timelineEvents, linkedRuns]);
-
-  const feedbackVoteByTargetId = useMemo(() => {
-    const map = new Map<string, FeedbackVoteValue>();
-    for (const feedbackVote of feedbackVotes) {
-      if (feedbackVote.targetType !== "issue_comment") continue;
-      map.set(feedbackVote.targetId, feedbackVote.vote);
-    }
-    return map;
-  }, [feedbackVotes]);
 
   // Build mention options from agent map (exclude terminated agents)
   const mentions = useMemo<MentionOption[]>(() => {
@@ -925,20 +844,6 @@ export function CommentThread({
     }
   }
 
-  async function handleFeedbackVote(
-    commentId: string,
-    vote: FeedbackVoteValue,
-    options?: { allowSharing?: boolean; reason?: string },
-  ) {
-    if (!onVote) return;
-    setVotingTargetId(commentId);
-    try {
-      await onVote(commentId, vote, options);
-    } finally {
-      setVotingTargetId(null);
-    }
-  }
-
   const canSubmit = !submitting && !!body.trim();
 
   return (
@@ -954,12 +859,7 @@ export function CommentThread({
         onApproveApproval={onApproveApproval}
         onRejectApproval={onRejectApproval}
         pendingApprovalAction={pendingApprovalAction}
-        feedbackVoteByTargetId={feedbackVoteByTargetId}
-        feedbackDataSharingPreference={feedbackDataSharingPreference}
-        onVote={onVote ? handleFeedbackVote : undefined}
-        votingTargetId={votingTargetId}
         highlightCommentId={highlightCommentId}
-        feedbackTermsUrl={feedbackTermsUrl}
       />
 
       {liveRunSlot}

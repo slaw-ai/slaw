@@ -62,7 +62,12 @@ tests/release-smoke/playwright-report/
 .herenow
 package-lock.json
 
-# Private design/planning/decision docs — kept as owner IP, never published
+# Private design/planning/decision docs — kept as owner IP, never published.
+# Pattern-based so new docs can't slip through a `git add -A`.
+/DESIGN-*.md
+/SESSION-HANDOVER-*.md
+/FINISH-*.sh
+/PROJECT.md
+# (legacy explicit entries, retained for clarity)
 /DESIGN-board-to-operator.md
 /SESSION-HANDOVER-2026-06-07-board-to-operator.md
-/PROJECT.md

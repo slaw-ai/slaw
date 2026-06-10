@@ -184,13 +184,11 @@ describe("agent live run routes", () => {
       id: "instance-settings-1",
       general: {
         censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
       },
     });
     mockInstanceSettingsService.getExperimental.mockResolvedValue({});
     mockInstanceSettingsService.getGeneral.mockResolvedValue({
       censorUsernameInLogs: false,
-      feedbackDataSharingPreference: "prompt",
     });
     mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);
     mockHeartbeatService.buildRunOutputSilence.mockResolvedValue(null);

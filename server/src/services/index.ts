@@ -1,6 +1,5 @@
 export { squadService } from "./squads.js";
 export { squadSearchService } from "./squad-search.js";
-export { feedbackService } from "./feedback.js";
 export { squadSkillService } from "./squad-skills.js";
 export { agentService, deduplicateAgentName } from "./agents.js";
 export { agentInstructionsService, syncInstructionsBundleConfigFromFilePath } from "./agent-instructions.js";

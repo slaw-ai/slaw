@@ -24,20 +24,11 @@ const mockCatalogService = vi.hoisted(() => ({
 }));
 
 const mockLogActivity = vi.hoisted(() => vi.fn());
-const mockTrackSkillImported = vi.hoisted(() => vi.fn());
-const mockGetTelemetryClient = vi.hoisted(() => vi.fn());
 
 function registerModuleMocks() {
   vi.doMock("../routes/authz.js", async () => vi.importActual("../routes/authz.js"));
 
-  vi.doMock("@slaw/shared/telemetry", () => ({
-    trackSkillImported: mockTrackSkillImported,
-    trackErrorHandlerCrash: vi.fn(),
-  }));
 
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: mockGetTelemetryClient,
-  }));
 
   vi.doMock("../services/access.js", () => ({
     accessService: () => mockAccessService,
@@ -84,8 +75,6 @@ async function createApp(actor: Record<string, unknown>) {
 describe("squad skill mutation permissions", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@slaw/shared/telemetry");
-    vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
     vi.doUnmock("../services/agents.js");
@@ -97,7 +86,6 @@ describe("squad skill mutation permissions", () => {
     vi.doUnmock("../middleware/index.js");
     registerModuleMocks();
     vi.clearAllMocks();
-    mockGetTelemetryClient.mockReturnValue({ track: vi.fn() });
     mockSquadSkillService.importFromSource.mockResolvedValue({
       imported: [],
       warnings: [],
@@ -308,140 +296,6 @@ describe("squad skill mutation permissions", () => {
         originHash: "sha256:abc",
       }),
     }));
-  });
-
-  it("tracks public GitHub skill imports with an explicit skill reference", async () => {
-    mockSquadSkillService.importFromSource.mockResolvedValue({
-      imported: [
-        {
-          id: "skill-1",
-          squadId: "squad-1",
-          key: "vercel-labs/agent-browser/find-skills",
-          slug: "find-skills",
-          name: "Find Skills",
-          description: null,
-          markdown: "# Find Skills",
-          sourceType: "github",
-          sourceLocator: "https://github.com/vercel-labs/agent-browser",
-          sourceRef: null,
-          trustLevel: "markdown_only",
-          compatibility: "compatible",
-          fileInventory: [],
-          metadata: {
-            hostname: "github.com",
-            owner: "vercel-labs",
-            repo: "agent-browser",
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-      warnings: [],
-    });
-
-    const res = await request(await createApp({
-      type: "operator",
-      userId: "local-operator",
-      squadIds: ["squad-1"],
-      source: "local_implicit",
-      isInstanceAdmin: false,
-    }))
-      .post("/api/squads/squad-1/skills/import")
-      .send({ source: "https://github.com/vercel-labs/agent-browser" });
-
-    expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
-    expect(mockTrackSkillImported).toHaveBeenCalledWith(expect.anything(), {
-      sourceType: "github",
-      skillRef: "vercel-labs/agent-browser/find-skills",
-    });
-  });
-
-  it("does not expose a skill reference for non-public skill imports", async () => {
-    mockSquadSkillService.importFromSource.mockResolvedValue({
-      imported: [
-        {
-          id: "skill-1",
-          squadId: "squad-1",
-          key: "private-skill",
-          slug: "private-skill",
-          name: "Private Skill",
-          description: null,
-          markdown: "# Private Skill",
-          sourceType: "github",
-          sourceLocator: "https://ghe.example.com/acme/private-skill",
-          sourceRef: null,
-          trustLevel: "markdown_only",
-          compatibility: "compatible",
-          fileInventory: [],
-          metadata: {
-            hostname: "ghe.example.com",
-            owner: "acme",
-            repo: "private-skill",
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-      warnings: [],
-    });
-
-    const res = await request(await createApp({
-      type: "operator",
-      userId: "local-operator",
-      squadIds: ["squad-1"],
-      source: "local_implicit",
-      isInstanceAdmin: false,
-    }))
-      .post("/api/squads/squad-1/skills/import")
-      .send({ source: "https://ghe.example.com/acme/private-skill" });
-
-    expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
-    expect(mockTrackSkillImported).toHaveBeenCalledWith(expect.anything(), {
-      sourceType: "github",
-      skillRef: null,
-    });
-  });
-
-  it("does not expose a skill reference when GitHub metadata is missing", async () => {
-    mockSquadSkillService.importFromSource.mockResolvedValue({
-      imported: [
-        {
-          id: "skill-1",
-          squadId: "squad-1",
-          key: "unknown/private-skill",
-          slug: "private-skill",
-          name: "Private Skill",
-          description: null,
-          markdown: "# Private Skill",
-          sourceType: "github",
-          sourceLocator: "https://github.com/acme/private-skill",
-          sourceRef: null,
-          trustLevel: "markdown_only",
-          compatibility: "compatible",
-          fileInventory: [],
-          metadata: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-      warnings: [],
-    });
-
-    const res = await request(await createApp({
-      type: "operator",
-      userId: "local-operator",
-      squadIds: ["squad-1"],
-      source: "local_implicit",
-      isInstanceAdmin: false,
-    }))
-      .post("/api/squads/squad-1/skills/import")
-      .send({ source: "https://github.com/acme/private-skill" });
-
-    expect([200, 201], JSON.stringify(res.body)).toContain(res.status);
-    expect(mockTrackSkillImported).toHaveBeenCalledWith(expect.anything(), {
-      sourceType: "github",
-      skillRef: null,
-    });
   });
 
   it("blocks same-squad agents without management permission from mutating squad skills", async () => {

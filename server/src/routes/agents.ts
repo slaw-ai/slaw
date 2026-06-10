@@ -30,7 +30,6 @@ import {
   readSlawSkillSyncPreference,
   writeSlawSkillSyncPreference,
 } from "@slaw/adapter-utils/server-utils";
-import { trackAgentCreated } from "@slaw/shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import {
   agentService,
@@ -96,7 +95,6 @@ import {
   loadDefaultAgentInstructionsBundle,
   resolveDefaultAgentInstructionsBundleRole,
 } from "../services/default-agent-instructions.js";
-import { getTelemetryClient } from "../telemetry.js";
 import { assertEnvironmentSelectionForSquad } from "./environment-selection.js";
 import { recoveryService } from "../services/recovery/service.js";
 
@@ -2076,11 +2074,6 @@ export function agentRoutes(
         desiredSkills: desiredSkillAssignment.desiredSkills,
       },
     });
-    const telemetryClient = getTelemetryClient();
-    if (telemetryClient) {
-      trackAgentCreated(telemetryClient, { agentRole: agent.role, agentId: agent.id });
-    }
-
     await applyDefaultAgentTaskAssignGrant(
       squadId,
       agent.id,
@@ -2197,11 +2190,6 @@ export function agentRoutes(
         desiredSkills: desiredSkillAssignment.desiredSkills,
       },
     });
-    const telemetryClient = getTelemetryClient();
-    if (telemetryClient) {
-      trackAgentCreated(telemetryClient, { agentRole: agent.role, agentId: agent.id });
-    }
-
     await applyDefaultAgentTaskAssignGrant(
       squadId,
       agent.id,

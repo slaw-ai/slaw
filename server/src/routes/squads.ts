@@ -2,18 +2,14 @@ import { randomUUID } from "node:crypto";
 import { Router, type Request } from "express";
 import type { Db } from "@slaw/db";
 import {
-  DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
   squadPortabilityExportSchema,
   squadPortabilityImportSchema,
   squadPortabilityPreviewSchema,
   createSquadSchema,
-  feedbackTargetTypeSchema,
-  feedbackTraceStatusSchema,
-  feedbackVoteValueSchema,
   updateSquadBrandingSchema,
   updateSquadSchema,
 } from "@slaw/shared";
-import { badRequest, forbidden } from "../errors.js";
+import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {
   accessService,
@@ -21,7 +17,6 @@ import {
   budgetService,
   squadPortabilityService,
   squadService,
-  feedbackService,
   logActivity,
 } from "../services/index.js";
 import type { StorageService } from "../storage/types.js";
@@ -35,22 +30,8 @@ export function squadRoutes(db: Db, storage?: StorageService) {
   const portability = squadPortabilityService(db, storage);
   const access = accessService(db);
   const budgets = budgetService(db);
-  const feedback = feedbackService(db);
   const importJobs = new Map<string, ImportJobRecord>();
   const importJobTerminalRetentionMs = 5 * 60 * 1000;
-
-  function parseBooleanQuery(value: unknown) {
-    return value === true || value === "true" || value === "1";
-  }
-
-  function parseDateQuery(value: unknown, field: string) {
-    if (typeof value !== "string" || value.trim().length === 0) return undefined;
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      throw badRequest(`Invalid ${field} query value`);
-    }
-    return parsed;
-  }
 
   function assertImportTargetAccess(
     req: Request,
@@ -136,34 +117,6 @@ export function squadRoutes(db: Db, storage?: StorageService) {
       return;
     }
     res.json(squad);
-  });
-
-  router.get("/:squadId/feedback-traces", async (req, res) => {
-    const squadId = req.params.squadId as string;
-    assertSquadAccess(req, squadId);
-    assertOperator(req);
-
-    const targetTypeRaw = typeof req.query.targetType === "string" ? req.query.targetType : undefined;
-    const voteRaw = typeof req.query.vote === "string" ? req.query.vote : undefined;
-    const statusRaw = typeof req.query.status === "string" ? req.query.status : undefined;
-    const issueId = typeof req.query.issueId === "string" && req.query.issueId.trim().length > 0 ? req.query.issueId : undefined;
-    const projectId = typeof req.query.projectId === "string" && req.query.projectId.trim().length > 0
-      ? req.query.projectId
-      : undefined;
-
-    const traces = await feedback.listFeedbackTraces({
-      squadId,
-      issueId,
-      projectId,
-      targetType: targetTypeRaw ? feedbackTargetTypeSchema.parse(targetTypeRaw) : undefined,
-      vote: voteRaw ? feedbackVoteValueSchema.parse(voteRaw) : undefined,
-      status: statusRaw ? feedbackTraceStatusSchema.parse(statusRaw) : undefined,
-      from: parseDateQuery(req.query.from, "from"),
-      to: parseDateQuery(req.query.to, "to"),
-      sharedOnly: parseBooleanQuery(req.query.sharedOnly),
-      includePayload: parseBooleanQuery(req.query.includePayload),
-    });
-    res.json(traces);
   });
 
   router.post("/:squadId/export", validate(squadPortabilityExportSchema), async (req, res) => {
@@ -353,17 +306,6 @@ export function squadRoutes(db: Db, storage?: StorageService) {
       assertOperator(req);
       body = updateSquadSchema.parse(req.body);
 
-      if (body.feedbackDataSharingEnabled === true && !existingSquad.feedbackDataSharingEnabled) {
-        body = {
-          ...body,
-          feedbackDataSharingConsentAt: new Date(),
-          feedbackDataSharingConsentByUserId: req.actor.userId ?? "local-operator",
-          feedbackDataSharingTermsVersion:
-            typeof body.feedbackDataSharingTermsVersion === "string" && body.feedbackDataSharingTermsVersion.length > 0
-              ? body.feedbackDataSharingTermsVersion
-              : DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
-        };
-      }
     }
 
     const squad = await svc.update(squadId, body);

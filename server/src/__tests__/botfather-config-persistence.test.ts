@@ -79,7 +79,6 @@ describe("botfather config persistence across restart", () => {
       database: { mode: "embedded-postgres" },
       logging: { mode: "file" },
       server: { deploymentMode: "local_trusted", exposure: "private", host: "127.0.0.1" },
-      telemetry: { enabled: true },
     };
     fs.writeFileSync(configPath, JSON.stringify(fullConfig));
     expect(readConfigFile()).not.toBeNull(); // sanity: valid to begin with

@@ -15,7 +15,6 @@ const mockIssuesApi = vi.hoisted(() => ({
   listComments: vi.fn(),
   listAttachments: vi.fn(),
   listWorkProducts: vi.fn(),
-  listFeedbackVotes: vi.fn(),
   markRead: vi.fn(),
   update: vi.fn(),
   previewTreeControl: vi.fn(),
@@ -26,7 +25,6 @@ const mockIssuesApi = vi.hoisted(() => ({
   archiveFromInbox: vi.fn(),
   addComment: vi.fn(),
   cancelComment: vi.fn(),
-  upsertFeedbackVote: vi.fn(),
   uploadAttachment: vi.fn(),
   deleteAttachment: vi.fn(),
   upsertDocument: vi.fn(),
@@ -812,7 +810,6 @@ describe("IssueDetail", () => {
     mockIssuesApi.listComments.mockResolvedValue([]);
     mockIssuesApi.listAttachments.mockResolvedValue([]);
     mockIssuesApi.listWorkProducts.mockResolvedValue([]);
-    mockIssuesApi.listFeedbackVotes.mockResolvedValue([]);
     mockIssuesApi.markRead.mockResolvedValue({ id: "issue-1", lastReadAt: new Date().toISOString() });
     mockIssuesApi.getTreeControlState.mockResolvedValue({ activePauseHold: null });
     mockIssuesApi.listTreeHolds.mockResolvedValue([]);
@@ -834,7 +831,6 @@ describe("IssueDetail", () => {
     mockProjectsApi.list.mockResolvedValue([]);
     mockInstanceSettingsApi.getGeneral.mockResolvedValue({
       keyboardShortcuts: false,
-      feedbackDataSharingPreference: "prompt",
     });
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableIssuePlanDecompositions: false,

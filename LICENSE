@@ -1,6 +1,11 @@
 MIT License
 
-Copyright (c) 2025 Slaw AI
+Copyright (c) 2026 Slaw AI
+Copyright (c) 2025 Paperclip AI
+
+SLAW is derived from Paperclip (https://github.com/paperclipai/paperclip),
+which is licensed under the MIT License. The original copyright notice is
+retained above as required by that license.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

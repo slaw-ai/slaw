@@ -33,10 +33,6 @@ import {
   createIssueSchema,
   resolveCreateIssueStatusDefault,
   resolveIssueRecoveryActionSchema,
-  feedbackTargetTypeSchema,
-  feedbackTraceStatusSchema,
-  feedbackVoteValueSchema,
-  upsertIssueFeedbackVoteSchema,
   linkIssueApprovalSchema,
   issueDocumentKeySchema,
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
@@ -56,8 +52,6 @@ import {
   type IssueRelationIssueSummary,
   type SuccessfulRunHandoffState,
 } from "@slaw/shared";
-import { trackAgentTaskCompleted } from "@slaw/shared/telemetry";
-import { getTelemetryClient } from "../telemetry.js";
 import type { StorageService } from "../storage/types.js";
 import { validate } from "../middleware/validate.js";
 import * as serviceIndex from "../services/index.js";
@@ -103,7 +97,6 @@ import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.
 import { wakeCycleGuard } from "../services/wake-cycle-guard.js";
 import { assertEnvironmentSelectionForSquad } from "./environment-selection.js";
 import { executionWorkspaceService as executionWorkspaceServiceDirect } from "../services/execution-workspaces.js";
-import { feedbackService } from "../services/feedback.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { readAcceptedPlanConfirmationTarget } from "../services/issues.js";
 import { environmentService } from "../services/environments.js";
@@ -887,14 +880,6 @@ export function issueRoutes(
   db: Db,
   storage: StorageService,
   opts: {
-    feedbackExportService?: {
-      flushPendingFeedbackTraces(input?: {
-        squadId?: string;
-        traceId?: string;
-        limit?: number;
-        now?: Date;
-      }): Promise<unknown>;
-    };
     searchService?: SquadSearchService;
     searchRateLimiter?: SquadSearchRateLimiter;
     pluginWorkerManager?: PluginWorkerManager;
@@ -926,7 +911,6 @@ export function issueRoutes(
   const heartbeat = heartbeatService(db, {
     pluginWorkerManager: opts.pluginWorkerManager,
   });
-  const feedback = feedbackService(db);
   const squadsSvc = squadService(db);
   let searchSvc = opts.searchService ?? null;
   const getSearchService = () => {
@@ -958,7 +942,6 @@ export function issueRoutes(
   const treeControlSvc = issueTreeControlFactory?.(db) ?? {
     getActivePauseHoldGate: async () => null,
   };
-  const feedbackExportService = opts?.feedbackExportService;
   const environmentsSvc = environmentService(db);
 
   async function cancelScheduledRetrySupersededByComment(input: {
@@ -4749,22 +4732,6 @@ export function issueRoutes(
       });
     }
 
-    if (issue.status === "done" && existing.status !== "done") {
-      const tc = getTelemetryClient();
-      if (tc && actor.agentId) {
-        const actorAgent = await agentsSvc.getById(actor.agentId);
-        if (actorAgent) {
-          const model = typeof actorAgent.adapterConfig?.model === "string" ? actorAgent.adapterConfig.model : undefined;
-          trackAgentTaskCompleted(tc, {
-            agentRole: actorAgent.role,
-            agentId: actorAgent.id,
-            adapterType: actorAgent.adapterType,
-            model,
-          });
-        }
-      }
-    }
-
     let comment = null;
     if (commentBody) {
       const commentReferenceSummaryBefore = updateReferenceSummaryAfter
@@ -5760,86 +5727,6 @@ export function issueRoutes(
     res.json(removed);
   });
 
-  router.get("/issues/:id/feedback-votes", async (req, res) => {
-    const id = req.params.id as string;
-    const issue = await svc.getById(id);
-    if (!issue) {
-      res.status(404).json({ error: "Issue not found" });
-      return;
-    }
-    assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "operator") {
-      res.status(403).json({ error: "Only operator users can view feedback votes" });
-      return;
-    }
-
-    const votes = await feedback.listIssueVotesForUser(id, req.actor.userId ?? "local-operator");
-    res.json(votes);
-  });
-
-  router.get("/issues/:id/feedback-traces", async (req, res) => {
-    const id = req.params.id as string;
-    const issue = await svc.getById(id);
-    if (!issue) {
-      res.status(404).json({ error: "Issue not found" });
-      return;
-    }
-    assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "operator") {
-      res.status(403).json({ error: "Only operator users can view feedback traces" });
-      return;
-    }
-
-    const targetTypeRaw = typeof req.query.targetType === "string" ? req.query.targetType : undefined;
-    const voteRaw = typeof req.query.vote === "string" ? req.query.vote : undefined;
-    const statusRaw = typeof req.query.status === "string" ? req.query.status : undefined;
-    const targetType = targetTypeRaw ? feedbackTargetTypeSchema.parse(targetTypeRaw) : undefined;
-    const vote = voteRaw ? feedbackVoteValueSchema.parse(voteRaw) : undefined;
-    const status = statusRaw ? feedbackTraceStatusSchema.parse(statusRaw) : undefined;
-
-    const traces = await feedback.listFeedbackTraces({
-      squadId: issue.squadId,
-      issueId: issue.id,
-      targetType,
-      vote,
-      status,
-      from: parseDateQuery(req.query.from, "from"),
-      to: parseDateQuery(req.query.to, "to"),
-      sharedOnly: parseBooleanQuery(req.query.sharedOnly),
-      includePayload: parseBooleanQuery(req.query.includePayload),
-    });
-    res.json(traces);
-  });
-
-  router.get("/feedback-traces/:traceId", async (req, res) => {
-    const traceId = req.params.traceId as string;
-    if (req.actor.type !== "operator") {
-      res.status(403).json({ error: "Only operator users can view feedback traces" });
-      return;
-    }
-    const includePayload = parseBooleanQuery(req.query.includePayload) || req.query.includePayload === undefined;
-    const trace = await feedback.getFeedbackTraceById(traceId, includePayload);
-    if (!trace || !actorCanAccessSquad(req, trace.squadId)) {
-      res.status(404).json({ error: "Feedback trace not found" });
-      return;
-    }
-    res.json(trace);
-  });
-
-  router.get("/feedback-traces/:traceId/bundle", async (req, res) => {
-    const traceId = req.params.traceId as string;
-    if (req.actor.type !== "operator") {
-      res.status(403).json({ error: "Only operator users can view feedback trace bundles" });
-      return;
-    }
-    const bundle = await feedback.getFeedbackTraceBundle(traceId);
-    if (!bundle || !actorCanAccessSquad(req, bundle.squadId)) {
-      res.status(404).json({ error: "Feedback trace not found" });
-      return;
-    }
-    res.json(bundle);
-  });
-
   router.post("/issues/:id/comments", validate(addIssueCommentSchema), async (req, res) => {
     const id = req.params.id as string;
     const issue = await svc.getById(id);
@@ -6157,105 +6044,6 @@ export function issueRoutes(
     })();
 
     res.status(201).json(comment);
-  });
-
-  router.post("/issues/:id/feedback-votes", validate(upsertIssueFeedbackVoteSchema), async (req, res) => {
-    const id = req.params.id as string;
-    const issue = await svc.getById(id);
-    if (!issue) {
-      res.status(404).json({ error: "Issue not found" });
-      return;
-    }
-    assertSquadAccess(req, issue.squadId);
-    if (req.actor.type !== "operator") {
-      res.status(403).json({ error: "Only operator users can vote on AI feedback" });
-      return;
-    }
-
-    const actor = getActorInfo(req);
-    const result = await feedback.saveIssueVote({
-      issueId: id,
-      targetType: req.body.targetType,
-      targetId: req.body.targetId,
-      vote: req.body.vote,
-      reason: req.body.reason,
-      authorUserId: req.actor.userId ?? "local-operator",
-      allowSharing: req.body.allowSharing === true,
-    });
-
-    await logActivity(db, {
-      squadId: issue.squadId,
-      actorType: actor.actorType,
-      actorId: actor.actorId,
-      agentId: actor.agentId,
-      runId: actor.runId,
-      action: "issue.feedback_vote_saved",
-      entityType: "issue",
-      entityId: issue.id,
-      details: {
-        identifier: issue.identifier,
-        targetType: result.vote.targetType,
-        targetId: result.vote.targetId,
-        vote: result.vote.vote,
-        hasReason: Boolean(result.vote.reason),
-        sharingEnabled: result.sharingEnabled,
-      },
-    });
-
-    if (result.consentEnabledNow) {
-      await logActivity(db, {
-        squadId: issue.squadId,
-        actorType: actor.actorType,
-        actorId: actor.actorId,
-        agentId: actor.agentId,
-        runId: actor.runId,
-        action: "squad.feedback_data_sharing_updated",
-        entityType: "squad",
-        entityId: issue.squadId,
-        details: {
-          feedbackDataSharingEnabled: true,
-          source: "issue_feedback_vote",
-        },
-      });
-    }
-
-    if (result.persistedSharingPreference) {
-      const settings = await instanceSettings.get();
-      const squadIds = await instanceSettings.listSquadIds();
-      await Promise.all(
-        squadIds.map((squadId) =>
-          logActivity(db, {
-            squadId,
-            actorType: actor.actorType,
-            actorId: actor.actorId,
-            agentId: actor.agentId,
-            runId: actor.runId,
-            action: "instance.settings.general_updated",
-            entityType: "instance_settings",
-            entityId: settings.id,
-            details: {
-              general: settings.general,
-              changedKeys: ["feedbackDataSharingPreference"],
-              source: "issue_feedback_vote",
-            },
-          }),
-        ),
-      );
-    }
-
-    if (result.sharingEnabled && result.traceId && feedbackExportService) {
-      try {
-        await feedbackExportService.flushPendingFeedbackTraces({
-          squadId: issue.squadId,
-          traceId: result.traceId,
-          limit: 1,
-        });
-      } catch (err) {
-        logger.warn({ err, issueId: issue.id, traceId: result.traceId }, "failed to flush shared feedback trace immediately");
-      }
-    }
-
-    res.status(201).json(result.vote);
   });
 
   router.get("/issues/:id/attachments", async (req, res) => {

@@ -25,7 +25,6 @@ import {
   updateIssueWorkProductSchema,
   upsertIssueDocumentSchema,
   restoreIssueDocumentRevisionSchema,
-  upsertIssueFeedbackVoteSchema,
   // Project
   createProjectSchema,
   updateProjectSchema,
@@ -734,15 +733,6 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: "get",
-  path: "/api/squads/{squadId}/feedback-traces",
-  tags: ["squads"],
-  summary: "List squad feedback traces",
-  request: { params: z.object({ squadId: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
   method: "post",
   path: "/api/squads/{squadId}/exports",
   tags: ["squads"],
@@ -1435,54 +1425,6 @@ registry.registerPath({
   summary: "Un-archive issue from inbox",
   request: { params: z.object({ id: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "get",
-  path: "/api/issues/{id}/feedback-votes",
-  tags: ["issues"],
-  summary: "List issue feedback votes",
-  request: { params: z.object({ id: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/issues/{id}/feedback-votes",
-  tags: ["issues"],
-  summary: "Upsert a feedback vote",
-  request: {
-    params: z.object({ id: z.string() }),
-    body: jsonBody(upsertIssueFeedbackVoteSchema),
-  },
-  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "get",
-  path: "/api/issues/{id}/feedback-traces",
-  tags: ["issues"],
-  summary: "List issue feedback traces",
-  request: { params: z.object({ id: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "get",
-  path: "/api/feedback-traces/{traceId}",
-  tags: ["issues"],
-  summary: "Get a feedback trace",
-  request: { params: z.object({ traceId: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
-});
-
-registry.registerPath({
-  method: "get",
-  path: "/api/feedback-traces/{traceId}/bundle",
-  tags: ["issues"],
-  summary: "Get a feedback trace bundle",
-  request: { params: z.object({ traceId: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
 });
 
 registry.registerPath({

@@ -1,8 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { HttpError } from "../errors.js";
-import { trackErrorHandlerCrash } from "@slaw/shared/telemetry";
-import { getTelemetryClient } from "../telemetry.js";
 import { SQUAD_IMPORT_API_PATH } from "../routes/squad-import-paths.js";
 
 export interface ErrorContext {
@@ -47,8 +45,6 @@ export function errorHandler(
         { message: err.message, stack: err.stack, name: err.name, details: err.details },
         err,
       );
-      const tc = getTelemetryClient();
-      if (tc) trackErrorHandlerCrash(tc, { errorCode: err.name });
     }
     res.status(err.status).json({
       error: err.message,
@@ -71,9 +67,6 @@ export function errorHandler(
       : { message: String(err), raw: err, stack: rootError.stack, name: rootError.name },
     rootError,
   );
-
-  const tc = getTelemetryClient();
-  if (tc) trackErrorHandlerCrash(tc, { errorCode: rootError.name });
 
   res.status(500).json({
     error: "Internal server error",

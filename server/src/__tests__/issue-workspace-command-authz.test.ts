@@ -28,10 +28,6 @@ const mockExecutionWorkspaceService = vi.hoisted(() => ({
   getById: vi.fn(),
 }));
 
-const mockFeedbackService = vi.hoisted(() => ({
-  listIssueVotesForUser: vi.fn(),
-  saveIssueVote: vi.fn(),
-}));
 
 const mockHeartbeatService = vi.hoisted(() => ({
   wakeup: vi.fn(),
@@ -70,7 +66,6 @@ function registerRouteMocks() {
   }));
 
   vi.doMock("../services/feedback.js", () => ({
-    feedbackService: () => mockFeedbackService,
   }));
 
   vi.doMock("../services/heartbeat.js", () => ({
@@ -98,7 +93,6 @@ function registerRouteMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => mockExecutionWorkspaceService,
-    feedbackService: () => mockFeedbackService,
     goalService: () => ({}),
     heartbeatService: () => mockHeartbeatService,
     instanceSettingsService: () => mockInstanceSettingsService,
@@ -203,12 +197,6 @@ describe("issue workspace command authorization", () => {
     mockAccessService.hasPermission.mockResolvedValue(true);
     mockAgentService.getById.mockResolvedValue(null);
     mockExecutionWorkspaceService.getById.mockResolvedValue(null);
-    mockFeedbackService.listIssueVotesForUser.mockResolvedValue([]);
-    mockFeedbackService.saveIssueVote.mockResolvedValue({
-      vote: null,
-      consentEnabledNow: false,
-      sharingEnabled: false,
-    });
     mockHeartbeatService.wakeup.mockResolvedValue(undefined);
     mockHeartbeatService.reportRunActivity.mockResolvedValue(undefined);
     mockHeartbeatService.getRun.mockResolvedValue(null);
@@ -218,7 +206,6 @@ describe("issue workspace command authorization", () => {
       id: "instance-settings-1",
       general: {
         censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
       },
     });
     mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);

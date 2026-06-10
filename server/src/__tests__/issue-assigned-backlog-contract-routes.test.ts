@@ -43,9 +43,6 @@ vi.mock("../services/index.js", () => ({
   executionWorkspaceService: () => ({
     getById: vi.fn(async () => null),
   }),
-  feedbackService: () => ({
-    listIssueVotesForUser: vi.fn(async () => []),
-  }),
   goalService: () => ({
     getById: vi.fn(async () => null),
     getDefaultSquadGoal: vi.fn(async () => null),
@@ -60,7 +57,6 @@ vi.mock("../services/index.js", () => ({
       id: "instance-settings-1",
       general: {
         censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
       },
     })),
     listSquadIds: vi.fn(async () => ["squad-1"]),

@@ -40,14 +40,7 @@ const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
 function registerServiceMocks() {
   vi.doMock("../routes/authz.js", async () => vi.importActual("../routes/authz.js"));
 
-  vi.doMock("@slaw/shared/telemetry", () => ({
-    trackAgentTaskCompleted: vi.fn(),
-    trackErrorHandlerCrash: vi.fn(),
-  }));
 
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: vi.fn(() => ({ track: vi.fn() })),
-  }));
 
   vi.doMock("../services/access.js", () => ({
     accessService: () => mockAccessService,
@@ -84,10 +77,6 @@ function registerServiceMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => mockExecutionWorkspaceService,
-    feedbackService: () => ({
-      listIssueVotesForUser: vi.fn(async () => []),
-      saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-    }),
     goalService: () => ({
       getDefaultSquadGoal: vi.fn(async () => null),
       getById: vi.fn(async () => null),
@@ -98,7 +87,6 @@ function registerServiceMocks() {
         id: "instance-settings-1",
         general: {
           censorUsernameInLogs: false,
-          feedbackDataSharingPreference: "prompt",
         },
       })),
       listSquadIds: vi.fn(async () => ["squad-1"]),
@@ -189,8 +177,6 @@ function makeClosedWorkspace() {
 describe.sequential("closed isolated workspace issue routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@slaw/shared/telemetry");
-    vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
     vi.doUnmock("../services/execution-workspaces.js");

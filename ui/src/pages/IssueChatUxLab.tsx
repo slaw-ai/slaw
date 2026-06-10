@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { IssueChatThread } from "../components/IssueChatThread";
 import {
   issueChatUxAgentMap,
-  issueChatUxFeedbackVotes,
   issueChatUxLinkedRuns,
   issueChatUxLiveComments,
   issueChatUxLiveEvents,
@@ -271,7 +270,6 @@ export function IssueChatUxLab() {
           agentMap={issueChatUxAgentMap}
           currentUserId="user-1"
           onAdd={noop}
-          onVote={noop}
           onCancelRun={noop}
           onInterruptQueued={noop}
           draftKey="issue-chat-ux-lab-primary"
@@ -318,14 +316,11 @@ export function IssueChatUxLab() {
             comments={issueChatUxReviewComments}
             linkedRuns={issueChatUxLinkedRuns.slice(1)}
             timelineEvents={issueChatUxReviewEvents}
-            feedbackVotes={issueChatUxFeedbackVotes}
-            feedbackTermsUrl="/feedback-terms"
             issueStatus="in_review"
             agentMap={issueChatUxAgentMap}
             currentUserId="user-1"
             onAdd={noop}
-            onVote={noop}
-            draftKey="issue-chat-ux-lab-review"
+              draftKey="issue-chat-ux-lab-review"
             showComposer={false}
             enableLiveTranscriptPolling={false}
           />

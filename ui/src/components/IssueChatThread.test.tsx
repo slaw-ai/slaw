@@ -130,10 +130,6 @@ vi.mock("./Identity", () => ({
   Identity: ({ name }: { name: string }) => <span>{name}</span>,
 }));
 
-vi.mock("./OutputFeedbackButtons", () => ({
-  OutputFeedbackButtons: () => null,
-}));
-
 vi.mock("@/components/ui/tooltip", () => ({
   Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
   TooltipContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -1167,85 +1163,6 @@ describe("IssueChatThread", () => {
             enableLiveTranscriptPolling={false}
             transcriptsByRunId={issueChatLongThreadTranscriptsByRunId}
             hasOutputForRun={hasOutputForRun}
-          />
-        </MemoryRouter>,
-      );
-    });
-
-    expect(markdownBodyRenderMock).not.toHaveBeenCalled();
-
-    act(() => {
-      root.unmount();
-    });
-  });
-
-  it("does not re-render unchanged markdown when feedback votes change", () => {
-    const root = createRoot(container);
-    const onAdd = async () => {};
-    const onVote = async () => {};
-    const comments = [{
-      id: "comment-agent-feedback",
-      squadId: "squad-1",
-      issueId: "issue-1",
-      authorAgentId: "agent-1",
-      authorUserId: null,
-      body: "Agent summary with **markdown**",
-      authorType: "agent" as const,
-      presentation: null,
-      metadata: null,
-      createdAt: new Date("2026-04-06T12:00:00.000Z"),
-      updatedAt: new Date("2026-04-06T12:00:00.000Z"),
-    }];
-
-    act(() => {
-      root.render(
-        <MemoryRouter>
-          <IssueChatThread
-            comments={comments}
-            linkedRuns={[]}
-            timelineEvents={[]}
-            liveRuns={[]}
-            onAdd={onAdd}
-            onVote={onVote}
-            feedbackVotes={[]}
-            showComposer={false}
-            enableLiveTranscriptPolling={false}
-          />
-        </MemoryRouter>,
-      );
-    });
-
-    expect(markdownBodyRenderMock).toHaveBeenCalled();
-    markdownBodyRenderMock.mockClear();
-
-    act(() => {
-      root.render(
-        <MemoryRouter>
-          <IssueChatThread
-            comments={comments}
-            linkedRuns={[]}
-            timelineEvents={[]}
-            liveRuns={[]}
-            onAdd={onAdd}
-            onVote={onVote}
-            feedbackVotes={[{
-              id: "feedback-1",
-              squadId: "squad-1",
-              issueId: "issue-1",
-              targetType: "issue_comment",
-              targetId: "comment-agent-feedback",
-              authorUserId: "user-1",
-              vote: "up",
-              reason: null,
-              sharedWithLabs: false,
-              sharedAt: null,
-              consentVersion: null,
-              redactionSummary: null,
-              createdAt: new Date("2026-04-06T12:01:00.000Z"),
-              updatedAt: new Date("2026-04-06T12:01:00.000Z"),
-            }]}
-            showComposer={false}
-            enableLiveTranscriptPolling={false}
           />
         </MemoryRouter>,
       );

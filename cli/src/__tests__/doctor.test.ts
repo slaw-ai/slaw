@@ -46,9 +46,6 @@ function createTempConfig(): string {
       baseUrlMode: "auto",
       disableSignUp: false,
     },
-    telemetry: {
-      enabled: true,
-    },
     storage: {
       provider: "local_disk",
       localDisk: {

@@ -22,14 +22,7 @@ const mockWorkProductService = vi.hoisted(() => ({
 const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
 
 function registerRouteMocks() {
-  vi.doMock("@slaw/shared/telemetry", () => ({
-    trackAgentTaskCompleted: vi.fn(),
-    trackErrorHandlerCrash: vi.fn(),
-  }));
 
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: vi.fn(() => ({ track: vi.fn() })),
-  }));
 
   vi.doMock("../services/issues.js", () => ({
     issueService: () => mockIssueService,
@@ -51,10 +44,6 @@ function registerRouteMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => ({}),
-    feedbackService: () => ({
-      listIssueVotesForUser: vi.fn(async () => []),
-      saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-    }),
     goalService: () => ({}),
     heartbeatService: () => ({
       wakeup: vi.fn(async () => undefined),
@@ -68,7 +57,6 @@ function registerRouteMocks() {
         id: "instance-settings-1",
         general: {
           censorUsernameInLogs: false,
-          feedbackDataSharingPreference: "prompt",
         },
       })),
       listSquadIds: vi.fn(async () => ["squad-1"]),
@@ -214,8 +202,6 @@ describe("normalizeIssueAttachmentMaxBytes", () => {
 describe("issue attachment routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@slaw/shared/telemetry");
-    vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/issues.js");
     vi.doUnmock("../services/index.js");
     vi.doUnmock("../services/activity-log.js");

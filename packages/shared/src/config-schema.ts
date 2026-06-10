@@ -99,10 +99,6 @@ export const secretsConfigSchema = z.object({
   }),
 });
 
-export const telemetryConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-}).default({});
-
 // Botfather control-tower reporting (ARCHITECTURE §8). A configured `url`
 // turns the integration on AND engages the startup gate; no `enabled` flag.
 export const botfatherConfigSchema = z
@@ -130,7 +126,6 @@ export const slawConfigSchema = z
     database: databaseConfigSchema,
     logging: loggingConfigSchema,
     server: serverConfigSchema,
-    telemetry: telemetryConfigSchema,
     botfather: botfatherConfigSchema.optional(),
     auth: authConfigSchema.default({
       baseUrlMode: "auto",
@@ -216,6 +211,5 @@ export type StorageS3Config = z.infer<typeof storageS3ConfigSchema>;
 export type SecretsConfig = z.infer<typeof secretsConfigSchema>;
 export type SecretsLocalEncryptedConfig = z.infer<typeof secretsLocalEncryptedConfigSchema>;
 export type AuthConfig = z.infer<typeof authConfigSchema>;
-export type TelemetryConfig = z.infer<typeof telemetryConfigSchema>;
 export type ConfigMeta = z.infer<typeof configMetaSchema>;
 export type DatabaseBackupConfig = z.infer<typeof databaseBackupConfigSchema>;

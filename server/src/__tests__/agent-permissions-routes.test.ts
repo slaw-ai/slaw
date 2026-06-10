@@ -97,8 +97,6 @@ const mockSquadSkillService = vi.hoisted(() => ({
 }));
 const mockWorkspaceOperationService = vi.hoisted(() => ({}));
 const mockLogActivity = vi.hoisted(() => vi.fn());
-const mockTrackAgentCreated = vi.hoisted(() => vi.fn());
-const mockGetTelemetryClient = vi.hoisted(() => vi.fn());
 const mockSyncInstructionsBundleConfigFromFilePath = vi.hoisted(() => vi.fn());
 const mockEnsureOpenCodeModelConfiguredAndAvailable = vi.hoisted(() => vi.fn());
 const mockEnvironmentService = vi.hoisted(() => ({
@@ -118,14 +116,7 @@ function registerModuleMocks() {
     };
   });
 
-  vi.doMock("@slaw/shared/telemetry", () => ({
-    trackAgentCreated: mockTrackAgentCreated,
-    trackErrorHandlerCrash: vi.fn(),
-  }));
 
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: mockGetTelemetryClient,
-  }));
 
   vi.doMock("../services/agents.js", () => ({
     agentService: () => mockAgentService,
@@ -270,8 +261,6 @@ async function requestApp(
 describe.sequential("agent permission routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@slaw/shared/telemetry");
-    vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
     vi.doUnmock("../services/agent-instructions.js");
@@ -324,14 +313,11 @@ describe.sequential("agent permission routes", () => {
     mockSquadSkillService.listRuntimeSkillEntries.mockReset();
     mockSquadSkillService.resolveRequestedSkillKeys.mockReset();
     mockLogActivity.mockReset();
-    mockTrackAgentCreated.mockReset();
-    mockGetTelemetryClient.mockReset();
     mockSyncInstructionsBundleConfigFromFilePath.mockReset();
     mockInstanceSettingsService.getGeneral.mockReset();
     mockEnvironmentService.getById.mockReset();
     mockEnsureOpenCodeModelConfiguredAndAvailable.mockReset();
     mockSyncInstructionsBundleConfigFromFilePath.mockImplementation((_agent, config) => config);
-    mockGetTelemetryClient.mockReturnValue({ track: vi.fn() });
     mockAgentService.getById.mockResolvedValue(baseAgent);
     mockAgentService.list.mockResolvedValue([baseAgent]);
     mockAgentService.getChainOfCommand.mockResolvedValue([]);

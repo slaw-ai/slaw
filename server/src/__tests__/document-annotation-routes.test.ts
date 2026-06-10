@@ -115,7 +115,6 @@ function registerModuleMocks() {
     documentService: () => mockDocumentService,
     environmentService: () => ({}),
     executionWorkspaceService: () => ({}),
-    feedbackService: () => ({}),
     goalService: () => ({}),
     heartbeatService: () => mockHeartbeatService,
     instanceSettingsService: () => ({

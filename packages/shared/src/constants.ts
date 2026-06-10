@@ -802,7 +802,6 @@ export const PLUGIN_CAPABILITIES = [
   "agent.sessions.close",
   "activity.log.write",
   "metrics.write",
-  "telemetry.track",
   "database.namespace.migrate",
   "database.namespace.write",
   // Plugin State

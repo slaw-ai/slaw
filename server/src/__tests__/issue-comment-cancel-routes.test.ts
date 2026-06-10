@@ -20,16 +20,11 @@ const mockHeartbeatService = vi.hoisted(() => ({
 }));
 
 const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
-const mockFeedbackService = vi.hoisted(() => ({
-  listIssueVotesForUser: vi.fn(async () => []),
-  saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-}));
 const mockInstanceSettingsService = vi.hoisted(() => ({
   get: vi.fn(async () => ({
     id: "instance-settings-1",
     general: {
       censorUsernameInLogs: false,
-      feedbackDataSharingPreference: "prompt",
     },
   })),
   listSquadIds: vi.fn(async () => ["squad-1"]),
@@ -40,14 +35,7 @@ const mockIssueThreadInteractionService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@slaw/shared/telemetry", () => ({
-    trackAgentTaskCompleted: vi.fn(),
-    trackErrorHandlerCrash: vi.fn(),
-  }));
 
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: vi.fn(() => ({ track: vi.fn() })),
-  }));
 
   vi.doMock("../services/access.js", () => ({
     accessService: () => mockAccessService,
@@ -58,7 +46,6 @@ function registerModuleMocks() {
   }));
 
   vi.doMock("../services/feedback.js", () => ({
-    feedbackService: () => mockFeedbackService,
   }));
 
   vi.doMock("../services/heartbeat.js", () => ({
@@ -82,7 +69,6 @@ function registerModuleMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => ({}),
-    feedbackService: () => mockFeedbackService,
     goalService: () => ({}),
     heartbeatService: () => mockHeartbeatService,
     instanceSettingsService: () => mockInstanceSettingsService,
@@ -170,8 +156,6 @@ function makeComment(overrides: Record<string, unknown> = {}) {
 describe.sequential("issue comment cancel routes", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@slaw/shared/telemetry");
-    vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
     vi.doUnmock("../services/feedback.js");
@@ -190,12 +174,6 @@ describe.sequential("issue comment cancel routes", () => {
     mockIssueService.removeComment.mockResolvedValue(makeComment());
     mockAccessService.canUser.mockResolvedValue(false);
     mockAccessService.hasPermission.mockResolvedValue(false);
-    mockFeedbackService.listIssueVotesForUser.mockResolvedValue([]);
-    mockFeedbackService.saveIssueVote.mockResolvedValue({
-      vote: null,
-      consentEnabledNow: false,
-      sharingEnabled: false,
-    });
     mockHeartbeatService.getRun.mockResolvedValue({
       id: "run-1",
       squadId: "squad-1",
@@ -209,7 +187,6 @@ describe.sequential("issue comment cancel routes", () => {
       id: "instance-settings-1",
       general: {
         censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
       },
     });
     mockInstanceSettingsService.listSquadIds.mockResolvedValue(["squad-1"]);

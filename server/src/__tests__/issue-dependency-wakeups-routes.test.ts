@@ -34,7 +34,6 @@ vi.mock("../services/index.js", () => ({
   executionWorkspaceService: () => ({
     getById: vi.fn(),
   }),
-  feedbackService: () => ({}),
   goalService: () => ({
     getById: vi.fn(),
     getDefaultSquadGoal: vi.fn(),

@@ -79,14 +79,7 @@ const mockHeartbeatService = vi.hoisted(() => ({
 }));
 
 function registerRouteMocks() {
-  vi.doMock("@slaw/shared/telemetry", () => ({
-    trackAgentTaskCompleted: vi.fn(),
-    trackErrorHandlerCrash: vi.fn(),
-  }));
 
-  vi.doMock("../telemetry.js", () => ({
-    getTelemetryClient: vi.fn(() => ({ track: vi.fn() })),
-  }));
 
   vi.doMock("../services/access.js", () => ({
     accessService: () => mockAccessService,
@@ -120,10 +113,6 @@ function registerRouteMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => mockDocumentService,
     executionWorkspaceService: () => ({}),
-    feedbackService: () => ({
-      listIssueVotesForUser: vi.fn(async () => []),
-      saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-    }),
     goalService: () => ({}),
     heartbeatService: () => mockHeartbeatService,
     instanceSettingsService: () => ({
@@ -131,7 +120,6 @@ function registerRouteMocks() {
         id: "instance-settings-1",
         general: {
           censorUsernameInLogs: false,
-          feedbackDataSharingPreference: "prompt",
         },
       })),
       listSquadIds: vi.fn(async () => [squadId]),
@@ -263,8 +251,6 @@ function operatorActor() {
 describe("agent issue mutation checkout ownership", () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.doUnmock("@slaw/shared/telemetry");
-    vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/access.js");
     vi.doUnmock("../services/activity-log.js");
     vi.doUnmock("../services/agents.js");

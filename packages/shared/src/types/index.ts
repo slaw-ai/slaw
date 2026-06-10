@@ -12,18 +12,6 @@ export type {
   SshEnvironmentConfig,
 } from "./environment.js";
 export type {
-  FeedbackVote,
-  FeedbackDataSharingPreference,
-  FeedbackTargetType,
-  FeedbackVoteValue,
-  FeedbackTrace,
-  FeedbackTraceStatus,
-  FeedbackTraceTargetSummary,
-  FeedbackTraceBundleCaptureStatus,
-  FeedbackTraceBundleFile,
-  FeedbackTraceBundle,
-} from "./feedback.js";
-export type {
   InstanceExperimentalSettings,
   InstanceGeneralSettings,
   InstanceSettings,

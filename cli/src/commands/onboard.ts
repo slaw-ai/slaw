@@ -38,11 +38,6 @@ import {
 } from "../config/home.js";
 import { bootstrapSquadLeadInvite } from "./auth-bootstrap-squad-lead.js";
 import { printSlawCliBanner } from "../utils/banner.js";
-import {
-  getTelemetryClient,
-  trackInstallStarted,
-  trackInstallCompleted,
-} from "../telemetry.js";
 
 type SetupMode = "quickstart" | "advanced";
 
@@ -455,9 +450,6 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     setupMode = setupModeChoice as SetupMode;
   }
 
-  const tc = getTelemetryClient();
-  if (tc) trackInstallStarted(tc);
-
   let llm: SlawConfig["llm"] | undefined;
   const { defaults: derivedDefaults, usedEnvKeys, ignoredEnvKeys } = quickstartDefaultsFromEnv({
     preferTrustedLocal: opts.yes === true && !opts.bind,
@@ -611,9 +603,6 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     logging,
     server,
     auth,
-    telemetry: {
-      enabled: true,
-    },
     storage,
     secrets,
   };
@@ -626,10 +615,6 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   }
 
   writeConfig(config, opts.config);
-
-  if (tc) trackInstallCompleted(tc, {
-    adapterType: server.deploymentMode,
-  });
 
   p.note(
     [

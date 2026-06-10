@@ -51,10 +51,6 @@ function registerModuleMocks() {
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => ({}),
     executionWorkspaceService: () => ({}),
-    feedbackService: () => ({
-      listIssueVotesForUser: vi.fn(async () => []),
-      saveIssueVote: vi.fn(async () => ({ vote: null, consentEnabledNow: false, sharingEnabled: false })),
-    }),
     goalService: () => ({}),
     heartbeatService: () => mockHeartbeatService,
     environmentService: () => ({
@@ -65,7 +61,6 @@ function registerModuleMocks() {
         id: "instance-settings-1",
         general: {
           censorUsernameInLogs: false,
-          feedbackDataSharingPreference: "prompt",
         },
       })),
       listSquadIds: vi.fn(async () => ["squad-1"]),

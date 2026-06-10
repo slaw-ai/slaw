@@ -19,13 +19,11 @@ import { registerApprovalCommands } from "./commands/client/approval.js";
 import { registerActivityCommands } from "./commands/client/activity.js";
 import { registerDashboardCommands } from "./commands/client/dashboard.js";
 import { registerRoutineCommands } from "./commands/routines.js";
-import { registerFeedbackCommands } from "./commands/client/feedback.js";
 import { registerSecretCommands } from "./commands/client/secrets.js";
 import { registerCloudCommands } from "./commands/client/cloud.js";
 import { registerSkillsCommands } from "./commands/client/skills.js";
 import { applyDataDirOverride, type DataDirOptionLike } from "./config/data-dir.js";
 import { loadSlawEnvFile } from "./config/env.js";
-import { initTelemetryFromConfigFile, flushTelemetry } from "./telemetry.js";
 import { registerWorktreeCommands } from "./commands/worktree.js";
 import { registerPluginCommands } from "./commands/client/plugin.js";
 import { registerClientAuthCommands } from "./commands/client/auth.js";
@@ -60,7 +58,6 @@ program.hook("preAction", (_thisCommand, actionCommand) => {
     hasContextOption: optionNames.has("context"),
   });
   loadSlawEnvFile(options.config);
-  initTelemetryFromConfigFile(options.config);
 });
 
 program
@@ -178,7 +175,6 @@ registerAdapterCommands(program);
 registerAssetCommands(program);
 registerSkillCommands(program);
 registerRoutineCommands(program);
-registerFeedbackCommands(program);
 registerSecretCommands(program);
 registerCloudCommands(program);
 registerSkillsCommands(program);
@@ -207,8 +203,6 @@ async function main(): Promise<void> {
   } catch (err) {
     failed = true;
     console.error(err instanceof Error ? err.message : String(err));
-  } finally {
-    await flushTelemetry();
   }
 
   if (failed) {

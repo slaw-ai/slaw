@@ -39,8 +39,6 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { runningProcesses } from "../adapters/index.ts";
-const mockTelemetryClient = vi.hoisted(() => ({ track: vi.fn() }));
-const mockTrackAgentFirstHeartbeat = vi.hoisted(() => vi.fn());
 const mockAdapterExecute = vi.hoisted(() =>
   vi.fn(async () => ({
     exitCode: 0,
@@ -53,19 +51,7 @@ const mockAdapterExecute = vi.hoisted(() =>
   })),
 );
 
-vi.mock("../telemetry.ts", () => ({
-  getTelemetryClient: () => mockTelemetryClient,
-}));
 
-vi.mock("@slaw/shared/telemetry", async () => {
-  const actual = await vi.importActual<typeof import("@slaw/shared/telemetry")>(
-    "@slaw/shared/telemetry",
-  );
-  return {
-    ...actual,
-    trackAgentFirstHeartbeat: mockTrackAgentFirstHeartbeat,
-  };
-});
 
 vi.mock("../adapters/index.ts", async () => {
   const actual = await vi.importActual<typeof import("../adapters/index.ts")>("../adapters/index.ts");
@@ -1781,13 +1767,6 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
     await heartbeat.cancelRun(runId);
 
-    expect(mockTrackAgentFirstHeartbeat).toHaveBeenCalledWith(
-      mockTelemetryClient,
-      expect.objectContaining({
-        agentRole: "engineer",
-        agentId,
-      }),
-    );
   });
 
   it("records manual cancellation stop metadata", async () => {

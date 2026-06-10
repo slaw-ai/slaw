@@ -71,7 +71,6 @@ import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
 import { logger } from "../middleware/logger.js";
-import { getTelemetryClient } from "../telemetry.js";
 import { accessService } from "./access.js";
 import { authorizationService, type AuthorizationActor } from "./authorization.js";
 import { sanitizeRecord } from "../redaction.js";
@@ -88,7 +87,6 @@ const DNS_LOOKUP_TIMEOUT_MS = 5_000;
 
 /** Only these protocols are allowed for plugin HTTP requests. */
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
-const TELEMETRY_EVENT_NAME_REGEX = /^[a-z0-9][a-z0-9_-]*$/;
 
 /**
  * Check if an IP address is in a private/reserved range (RFC 1918, loopback,
@@ -1271,20 +1269,6 @@ export function buildHostServices(
             console.error("[plugin-host-services] Triggered metric flush failed:", err);
           });
         }
-      },
-    },
-
-    telemetry: {
-      async track(params) {
-        const eventName = String(params.eventName ?? "").trim();
-        if (!TELEMETRY_EVENT_NAME_REGEX.test(eventName)) {
-          throw new Error(
-            'Plugin telemetry event names must be lowercase slugs using letters, numbers, "_" or "-".',
-          );
-        }
-        const telemetryClient = getTelemetryClient();
-        if (!telemetryClient) return;
-        telemetryClient.track(`plugin.${pluginKey}.${eventName}`, params.dimensions);
       },
     },
 

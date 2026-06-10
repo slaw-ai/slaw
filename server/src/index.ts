@@ -30,7 +30,6 @@ import { loadConfig } from "./config.js";
 import { logger } from "./middleware/logger.js";
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
 import {
-  feedbackService,
   backfillPrincipalAccessCompatibility,
   heartbeatService,
   instanceSettingsService,
@@ -38,7 +37,6 @@ import {
   reconcilePersistedRuntimeServicesOnStartup,
   routineService,
 } from "./services/index.js";
-import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
 import { BotfatherService } from "./services/botfather/service.js";
 import { writeBotfatherConfigSection } from "./config-file.js";
 import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
@@ -47,7 +45,6 @@ import { createStorageServiceFromConfig } from "./storage/index.js";
 import { printStartupBanner } from "./startup-banner.js";
 import { getInstanceClaimWarningUrl, initializeInstanceClaimChallenge } from "./instance-claim.js";
 import { maybePersistWorktreeRuntimePorts } from "./worktree-config.js";
-import { initTelemetry, getTelemetryClient } from "./telemetry.js";
 import { conflict } from "./errors.js";
 import type {
   InstanceDatabaseBackupRunResult,
@@ -93,7 +90,6 @@ export interface StartedServer {
 
 export async function startServer(): Promise<StartedServer> {
   let config = loadConfig();
-  initTelemetry({ enabled: config.telemetryEnabled });
   if (process.env.SLAW_SECRETS_PROVIDER === undefined) {
     process.env.SLAW_SECRETS_PROVIDER = config.secretsProvider;
   }
@@ -565,9 +561,6 @@ export async function startServer(): Promise<StartedServer> {
   });
   const uiMode = config.uiDevMiddleware ? "vite-dev" : config.serveUi ? "static" : "none";
   const storageService = createStorageServiceFromConfig(config);
-  const feedback = feedbackService(db as any, {
-    shareClient: createFeedbackTraceShareClientFromConfig(config),
-  });
   const backupSettingsSvc = instanceSettingsService(db);
   let databaseBackupInFlight = false;
   const runServerDatabaseBackup = async (
@@ -641,7 +634,6 @@ export async function startServer(): Promise<StartedServer> {
     botfatherService,
     serverPort: listenPort,
     storageService,
-    feedbackExportService: feedback,
     databaseBackupService: {
       runManualBackup: async () => {
         const result = await runServerDatabaseBackup("manual");
@@ -932,12 +924,6 @@ export async function startServer(): Promise<StartedServer> {
   
   {
     const shutdown = async (signal: "SIGINT" | "SIGTERM") => {
-      const telemetryClient = getTelemetryClient();
-      if (telemetryClient) {
-        telemetryClient.stop();
-        await telemetryClient.flush();
-      }
-
       const appShutdown = (app as { locals?: { slawShutdown?: () => void } }).locals?.slawShutdown;
       appShutdown?.();
 

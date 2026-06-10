@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, FeedbackVote, IssueComment } from "@slaw/shared";
+import type { Agent, IssueComment } from "@slaw/shared";
 import type { TranscriptEntry } from "@/adapters";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 import { CommentThread } from "@/components/CommentThread";
@@ -279,25 +279,6 @@ const commentLinkedRuns = [
     createdAt: new Date("2026-04-20T13:22:00.000Z"),
     startedAt: new Date("2026-04-20T13:22:00.000Z"),
     finishedAt: null,
-  },
-];
-
-const feedbackVotes: FeedbackVote[] = [
-  {
-    id: "feedback-chat-comment-01",
-    squadId,
-    issueId,
-    targetType: "issue_comment",
-    targetId: "comment-issue-agent",
-    authorUserId: currentUserId,
-    vote: "up",
-    reason: null,
-    sharedWithLabs: false,
-    sharedAt: null,
-    consentVersion: null,
-    redactionSummary: null,
-    createdAt: new Date("2026-04-20T13:52:00.000Z"),
-    updatedAt: new Date("2026-04-20T13:52:00.000Z"),
   },
 ];
 
@@ -687,8 +668,6 @@ function IssueChatMatrix() {
             linkedRuns={issueLinkedRuns}
             timelineEvents={issueTimelineEvents}
             liveRuns={[liveRun]}
-            feedbackVotes={feedbackVotes}
-            feedbackDataSharingPreference="allowed"
             squadId={squadId}
             projectId={projectId}
             issueStatus="in_progress"
@@ -696,7 +675,6 @@ function IssueChatMatrix() {
             currentUserId={currentUserId}
             userLabelMap={operatorUserLabels}
             onAdd={async () => {}}
-            onVote={async () => {}}
             onStopRun={async () => {}}
             enableReassign
             reassignOptions={reassignOptions}

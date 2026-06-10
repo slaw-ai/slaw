@@ -248,7 +248,6 @@ export type {
   PluginStreamsClient,
   PluginToolsClient,
   PluginMetricsClient,
-  PluginTelemetryClient,
   PluginLogger,
 } from "./types.js";
 

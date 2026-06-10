@@ -405,16 +405,6 @@ async function registerActionHandlers(ctx: PluginContext): Promise<void> {
       data: { squadId },
     });
     await ctx.metrics.write("demo.events.emitted", 1, { source: "manual" });
-    await ctx.telemetry.track("demo_event", {
-      source: "manual",
-      has_squad: Boolean(squadId),
-    });
-    pushRecord({
-      level: "info",
-      source: "telemetry",
-      message: "Tracked plugin telemetry event demo_event",
-      data: { squadId },
-    });
     return { ok: true, message };
   });
 
