@@ -1,11 +1,11 @@
 name: Docker
 
 on:
+  # Image publish on every master push disabled for now — runs on version tags or manually.
   push:
-    branches:
-      - "master"
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: read

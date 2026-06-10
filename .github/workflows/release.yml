@@ -1,9 +1,10 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  # Auto-publish on push disabled until npm publishing is configured for slaw-ai.
+  # Re-enable by restoring:
+  #   push:
+  #     branches: [master]
   workflow_dispatch:
     inputs:
       source_ref:
