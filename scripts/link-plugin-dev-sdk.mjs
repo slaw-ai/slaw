@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 const packageDir = process.cwd();
 const sdkDir = join(repoRoot, "packages", "plugins", "sdk");
-const scopeDir = join(packageDir, "node_modules", "@slaw");
+const scopeDir = join(packageDir, "node_modules", "@slaw-ai");
 const linkTarget = join(scopeDir, "plugin-sdk");
 
 if (!existsSync(join(packageDir, "package.json"))) {
