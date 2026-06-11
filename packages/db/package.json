@@ -2,13 +2,13 @@
   "name": "@slaw/db",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/slaw/slaw",
+  "homepage": "https://github.com/slaw-ai/slaw",
   "bugs": {
-    "url": "https://github.com/slaw/slaw/issues"
+    "url": "https://github.com/slaw-ai/slaw/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/slaw/slaw",
+    "url": "https://github.com/slaw-ai/slaw",
     "directory": "packages/db"
   },
   "type": "module",
@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "check:migrations": "tsx src/check-migration-numbering.ts",
-    "build": "pnpm run check:migrations && tsc && cp -r src/migrations dist/migrations",
+    "build": "pnpm run check:migrations && tsc && rm -rf dist/migrations && cp -r src/migrations dist/migrations",
     "clean": "rm -rf dist",
     "typecheck": "pnpm run check:migrations && tsc --noEmit",
     "generate": "pnpm run check:migrations && tsc -p tsconfig.json && drizzle-kit generate",
