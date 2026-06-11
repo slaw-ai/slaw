@@ -23,7 +23,7 @@
     "@slaw-ai/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^24.12.4",
+    "@types/node": "^22.19.21",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "esbuild": "^0.27.7",
