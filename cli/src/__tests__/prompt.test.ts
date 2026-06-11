@@ -43,7 +43,7 @@ describe("prompt handoff", () => {
         version: 2,
         currentProfile: "operator",
         profiles: {
-          board: {
+          operator: {
             apiBase: "http://localhost:3100",
             persona: "operator",
           },

@@ -1312,8 +1312,11 @@ describe("IssuesList", () => {
     await waitForAssertion(() => {
       expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(100);
     });
-    await flush();
-    expect(onLoadMoreIssues).toHaveBeenCalledTimes(1);
+    // The fill-viewport load-more fires asynchronously; under a loaded full
+    // suite the two flush() ticks were not always enough (flaky).
+    await waitForAssertion(() => {
+      expect(onLoadMoreIssues).toHaveBeenCalledTimes(1);
+    });
     await flush();
     expect(onLoadMoreIssues).toHaveBeenCalledTimes(1);
 
