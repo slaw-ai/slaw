@@ -70,9 +70,9 @@ It:
 Users install canaries with:
 
 ```bash
-npx slaw@canary onboard
+npx @slaw-ai/slaw@canary onboard
 # or
-npx slaw@canary onboard --data-dir "$(mktemp -d /tmp/slaw-canary.XXXXXX)"
+npx @slaw-ai/slaw@canary onboard --data-dir "$(mktemp -d /tmp/slaw-canary.XXXXXX)"
 ```
 
 ### Stable
@@ -187,7 +187,7 @@ gh workflow run release-smoke.yml -f slaw_version=latest
 
 Minimum checks:
 
-- `npx slaw@canary onboard` installs
+- `npx @slaw-ai/slaw@canary onboard` installs
 - onboarding completes without crashes
 - authenticated login works with the smoke credentials
 - the browser lands in onboarding on a fresh instance

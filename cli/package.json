@@ -1,5 +1,5 @@
 {
-  "name": "slaw",
+  "name": "@slaw-ai/slaw",
   "version": "0.3.1",
   "description": "Slaw CLI — orchestrate AI agent teams to run a business",
   "type": "module",

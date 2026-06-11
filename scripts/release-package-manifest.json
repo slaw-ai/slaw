@@ -81,7 +81,7 @@
   },
   {
     "dir": "cli",
-    "name": "slaw",
+    "name": "@slaw-ai/slaw",
     "publishFromCi": true
   },
   {

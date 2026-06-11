@@ -18,7 +18,7 @@ const nonServerProjects = [
   "@slaw-ai/plugin-sdk",
   "@slaw-ai/create-slaw-plugin",
   "@slaw-ai/ui",
-  "slaw",
+  "@slaw-ai/slaw",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -54,7 +54,7 @@ const allModeName = "all";
 const generalServerGroupName = "general-server";
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@slaw-ai/ui", "slaw"];
+const generalWorkspacesAProjects = ["@slaw-ai/ui", "@slaw-ai/slaw"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const serializedServerVitestArgs = [

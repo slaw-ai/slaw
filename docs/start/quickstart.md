@@ -8,7 +8,7 @@ Get Slaw running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
-npx slaw onboard --yes
+npx @slaw-ai/slaw onboard --yes
 ```
 
 This walks you through setup, configures your environment, and gets Slaw running.
@@ -18,10 +18,10 @@ If you already have a Slaw install, rerunning `onboard` keeps your current confi
 To start Slaw again later:
 
 ```sh
-npx slaw run
+npx @slaw-ai/slaw run
 ```
 
-> **Note:** If you used `npx` for setup, always use `npx slaw` to run commands. The `pnpm slaw` form only works inside a cloned copy of the Slaw repository (see Local Development below).
+> **Note:** If you used `npx` for setup, always use `npx @slaw-ai/slaw` to run commands. The `pnpm slaw` form only works inside a cloned copy of the Slaw repository (see Local Development below).
 
 ## Local Development
 

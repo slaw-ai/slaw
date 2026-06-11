@@ -292,15 +292,15 @@ Slaw is a full control plane, not a wrapper. Before you build any of this yourse
 Open source. Self-hosted. No Slaw account required.
 
 ```bash
-npx slaw onboard --yes
+npx @slaw-ai/slaw onboard --yes
 ```
 
 That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
 
 ```bash
-npx slaw onboard --yes --bind lan
+npx @slaw-ai/slaw onboard --yes --bind lan
 # or:
-npx slaw onboard --yes --bind tailnet
+npx @slaw-ai/slaw onboard --yes --bind tailnet
 ```
 
 If you already have Slaw configured, rerunning `onboard` keeps the existing config in place. Use `slaw configure` to edit settings.

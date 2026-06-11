@@ -333,7 +333,7 @@ if [ "$dry_run" = true ]; then
 else
   if [ "$channel" = "canary" ]; then
     release_info "Published canary ${TARGET_PUBLISH_VERSION}."
-    release_info "Install with: npx slaw@canary onboard"
+    release_info "Install with: npx @slaw-ai/slaw@canary onboard"
     release_info "Next step: git push ${PUBLISH_REMOTE} refs/tags/${tag_name}"
   else
     release_info "Published stable ${TARGET_PUBLISH_VERSION}."

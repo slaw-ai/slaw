@@ -232,7 +232,7 @@ After setup:
 Install-path check:
 
 ```bash
-npx slaw@canary onboard
+npx @slaw-ai/slaw@canary onboard
 ```
 
 ## 12. Verify the Stable Workflow
