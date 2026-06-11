@@ -79,7 +79,7 @@ npx slaw@canary onboard --data-dir "$(mktemp -d /tmp/slaw-canary.XXXXXX)"
 
 Use [`.github/workflows/release.yml`](../.github/workflows/release.yml) from the Actions tab with the manual `workflow_dispatch` inputs.
 
-[Run the action here](https://github.com/slaw/slaw/actions/workflows/release.yml)
+[Run the action here](https://github.com/slaw-ai/slaw/actions/workflows/release.yml)
 
 Inputs:
 

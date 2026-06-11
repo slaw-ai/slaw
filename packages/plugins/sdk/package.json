@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Stable public API for Slaw plugins — worker-side context and UI bridge hooks",
   "license": "MIT",
-  "homepage": "https://github.com/slaw/slaw",
+  "homepage": "https://github.com/slaw-ai/slaw",
   "bugs": {
-    "url": "https://github.com/slaw/slaw/issues"
+    "url": "https://github.com/slaw-ai/slaw/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/slaw/slaw",
+    "url": "https://github.com/slaw-ai/slaw",
     "directory": "packages/plugins/sdk"
   },
   "type": "module",

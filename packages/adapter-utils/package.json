@@ -2,13 +2,13 @@
   "name": "@slaw/adapter-utils",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/slaw/slaw",
+  "homepage": "https://github.com/slaw-ai/slaw",
   "bugs": {
-    "url": "https://github.com/slaw/slaw/issues"
+    "url": "https://github.com/slaw-ai/slaw/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/slaw/slaw",
+    "url": "https://github.com/slaw-ai/slaw",
     "directory": "packages/adapter-utils"
   },
   "type": "module",

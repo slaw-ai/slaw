@@ -16,12 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/slaw/slaw",
+    "url": "https://github.com/slaw-ai/slaw",
     "directory": "cli"
   },
-  "homepage": "https://github.com/slaw/slaw",
+  "homepage": "https://github.com/slaw-ai/slaw",
   "bugs": {
-    "url": "https://github.com/slaw/slaw/issues"
+    "url": "https://github.com/slaw-ai/slaw/issues"
   },
   "files": [
     "dist"

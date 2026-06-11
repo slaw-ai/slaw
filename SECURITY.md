@@ -3,6 +3,6 @@
 ## Reporting a Vulnerability
 
 Please report security vulnerabilities through GitHub's Security Advisory feature:
-[https://github.com/slaw/slaw/security/advisories/new](https://github.com/slaw/slaw/security/advisories/new)
+[https://github.com/slaw-ai/slaw/security/advisories/new](https://github.com/slaw-ai/slaw/security/advisories/new)
 
 Do not open public issues for security vulnerabilities.

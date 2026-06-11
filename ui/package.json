@@ -3,13 +3,13 @@
   "version": "0.3.1",
   "description": "Prebuilt Slaw board UI assets.",
   "license": "MIT",
-  "homepage": "https://github.com/slaw/slaw",
+  "homepage": "https://github.com/slaw-ai/slaw",
   "bugs": {
-    "url": "https://github.com/slaw/slaw/issues"
+    "url": "https://github.com/slaw-ai/slaw/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/slaw/slaw",
+    "url": "https://github.com/slaw-ai/slaw",
     "directory": "ui"
   },
   "type": "module",
