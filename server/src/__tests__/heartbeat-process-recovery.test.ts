@@ -1239,7 +1239,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(comments).toHaveLength(0);
   });
 
-  it("schedules a bounded retry for codex transient upstream failures instead of blocking the issue immediately", async () => {
+  it("defers codex transient upstream failures to the circuit breaker without blocking the issue", async () => {
     mockAdapterExecute.mockResolvedValueOnce({
       exitCode: 1,
       signal: null,
@@ -1268,30 +1268,39 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         .where(eq(heartbeatRuns.agentId, agentId));
       return rows.length >= 2 ? rows : null;
     });
-    expect(runs).toHaveLength(2);
 
     const failedRun = runs?.find((row) => row.id === runId);
-    const retryRun = runs?.find((row) => row.id !== runId);
     expect(failedRun?.status).toBe("failed");
     expect(failedRun?.errorCode).toBe("adapter_failed");
     expect((failedRun?.resultJson as Record<string, unknown> | null)?.errorFamily).toBe("transient_upstream");
-    expect(retryRun?.status).toBe("scheduled_retry");
-    expect(retryRun?.scheduledRetryReason).toBe("transient_failure");
-    expect(retryRun?.contextSnapshot).toMatchObject({
-      codexTransientFallbackMode: "same_session",
-    });
-    expect(retryRun?.contextSnapshot as Record<string, unknown>).not.toHaveProperty("modelProfile");
 
+    // F1 — shared-account exhaustion (usage/rate limit, overloaded upstream)
+    // is never retried per-run: the instance-wide circuit breaker opens and
+    // pauses heartbeats until the limit resets.
+    const breaker = heartbeat.getCircuitBreakerState();
+    expect(breaker.reason).toBe("shared_account_exhaustion");
+    expect(breaker.openUntil).not.toBeNull();
+
+    // No per-run bounded retry may be scheduled for this failure family.
+    const scheduledRetries = runs?.filter((row) => row.status === "scheduled_retry") ?? [];
+    expect(scheduledRetries).toHaveLength(0);
+
+    // The issue must not be blocked: it stays in_progress and its follow-up
+    // run is held by the breaker gate (queued/running) rather than failed.
     const issue = await db
       .select()
       .from(issues)
       .where(eq(issues.id, issueId))
       .then((rows) => rows[0] ?? null);
     expect(issue?.status).toBe("in_progress");
-    expect(issue?.executionRunId).toBe(retryRun?.id ?? null);
+
+    const followUpRun = runs?.find((row) => row.id !== runId);
+    expect(["queued", "running", "succeeded"]).toContain(followUpRun?.status);
 
     const comments = await db.select().from(issueComments).where(eq(issueComments.issueId, issueId));
     expect(comments).toHaveLength(0);
+
+    heartbeat.resetCircuitBreaker();
   });
 
   it("queues one finish-handoff wake when a successful run leaves in-progress work without a next action", async () => {

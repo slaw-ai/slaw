@@ -1068,7 +1068,7 @@ describe.sequential("issue comment reopen routes", () => {
     );
   });
 
-  it("explicit same-agent resume works through the PATCH comment path", async () => {
+  it("explicit same-agent resume reopens via the PATCH comment path without self-wake (F3)", async () => {
     mockIssueService.getById.mockResolvedValue(makeIssue("done"));
     mockIssueService.update.mockImplementation(async (_id: string, patch: Record<string, unknown>) => ({
       ...makeIssue("done"),
@@ -1099,18 +1099,10 @@ describe.sequential("issue comment reopen routes", () => {
         }),
       }),
     );
-    expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
-      "22222222-2222-4222-8222-222222222222",
-      expect.objectContaining({
-        reason: "issue_reopened_via_comment",
-        payload: expect.objectContaining({
-          commentId: "comment-1",
-          reopenedFrom: "done",
-          resumeIntent: true,
-          followUpRequested: true,
-        }),
-      }),
-    );
+    // F3 — a self-authored comment never wakes its author, even when it
+    // reopened the issue. The issue is back in todo; the scheduler resumes it.
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 
   it("keeps generic same-agent comments on closed issues inert", async () => {
@@ -1125,7 +1117,7 @@ describe.sequential("issue comment reopen routes", () => {
     expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 
-  it("explicit same-agent resume comments reopen closed issues and mark the wake payload", async () => {
+  it("explicit same-agent resume comments reopen closed issues without self-wake (F3)", async () => {
     mockIssueService.getById.mockResolvedValue(makeIssue("done"));
     mockIssueService.update.mockImplementation(async (_id: string, patch: Record<string, unknown>) => ({
       ...makeIssue("done"),
@@ -1152,23 +1144,11 @@ describe.sequential("issue comment reopen routes", () => {
         }),
       }),
     );
-    expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
-      "22222222-2222-4222-8222-222222222222",
-      expect.objectContaining({
-        reason: "issue_reopened_via_comment",
-        payload: expect.objectContaining({
-          commentId: "comment-1",
-          reopenedFrom: "done",
-          resumeIntent: true,
-          followUpRequested: true,
-        }),
-        contextSnapshot: expect.objectContaining({
-          wakeReason: "issue_reopened_via_comment",
-          resumeIntent: true,
-          followUpRequested: true,
-        }),
-      }),
-    );
+    // F3 — a self-authored comment never wakes its author, even when it
+    // reopened the issue. This POST path was the loop driver the reliability
+    // design called out; the issue still reopens and the scheduler resumes it.
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 
   it("rejects explicit agent resume intent from a non-assignee", async () => {

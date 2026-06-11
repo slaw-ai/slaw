@@ -5952,7 +5952,11 @@ export function issueRoutes(
       const actorIsAgent = actor.actorType === "agent";
       const selfComment = actorIsAgent && actor.actorId === assigneeId;
       const skipWake = selfComment || isClosed;
-      if (assigneeId && (reopened || !skipWake)) {
+      // F3 — never wake the assignee on their OWN comment, even when that
+      // comment reopened the issue (mirrors the PATCH comment path; this POST
+      // path is the site the reliability design called out as the loop driver).
+      const wakeAssignee = selfComment ? false : reopened || !skipWake;
+      if (assigneeId && wakeAssignee) {
         if (reopened) {
           wakeups.set(assigneeId, {
             source: "automation",
