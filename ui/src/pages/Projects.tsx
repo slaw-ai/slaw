@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Project } from "@slaw/shared";
+import type { Project } from "@slaw-ai/shared";
 import { projectsApi } from "../api/projects";
 import { useSquad } from "../context/SquadContext";
 import { useDialogActions } from "../context/DialogContext";

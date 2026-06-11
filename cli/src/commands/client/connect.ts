@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { Agent, Squad } from "@slaw/shared";
-import { createAgentKeySchema, createOperatorApiKeySchema } from "@slaw/shared";
+import type { Agent, Squad } from "@slaw-ai/shared";
+import { createAgentKeySchema, createOperatorApiKeySchema } from "@slaw-ai/shared";
 import { loginOperatorCli } from "../../client/operator-auth.js";
 import { SlawApiClient } from "../../client/http.js";
 import { resolveProfile, readContext, setCurrentProfile, upsertProfile } from "../../client/context.js";

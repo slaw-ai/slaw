@@ -3,7 +3,7 @@ import type {
   HeartbeatRunEvent,
   InstanceSchedulerHeartbeatAgent,
   WorkspaceOperation,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export interface RunLivenessFields {

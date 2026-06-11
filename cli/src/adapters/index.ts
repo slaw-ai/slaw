@@ -1,2 +1,2 @@
 export { getCLIAdapter } from "./registry.js";
-export type { CLIAdapterModule } from "@slaw/adapter-utils";
+export type { CLIAdapterModule } from "@slaw-ai/adapter-utils";

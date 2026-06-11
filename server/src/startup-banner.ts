@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolveSlawConfigPath, resolveSlawEnvPath } from "./paths.js";
-import type { BindMode, DeploymentExposure, DeploymentMode } from "@slaw/shared";
+import type { BindMode, DeploymentExposure, DeploymentMode } from "@slaw-ai/shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
 

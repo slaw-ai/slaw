@@ -2,7 +2,7 @@ import type {
   IssueCommentMetadata,
   IssueCommentMetadataRow,
   IssueCommentPresentation,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type {
   SystemNoticeMetadataRow,
   SystemNoticeMetadataSection,

@@ -22,8 +22,8 @@
 import type {
   SlawPluginManifestV1,
   PluginToolDeclaration,
-} from "@slaw/shared";
-import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@slaw/plugin-sdk";
+} from "@slaw-ai/shared";
+import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@slaw-ai/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { logger } from "../middleware/logger.js";
 

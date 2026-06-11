@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   createCostEventSchema,
   createFinanceEventSchema,
@@ -7,7 +7,7 @@ import {
   resolveBudgetIncidentSchema,
   updateBudgetSchema,
   upsertBudgetPolicySchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import {
   budgetService,

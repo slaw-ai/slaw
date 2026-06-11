@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, RoutineListItem } from "@slaw/shared";
+import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, RoutineListItem } from "@slaw-ai/shared";
 import { Copy, ExternalLink, Loader2, Play, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction } from "@/components/ui/card";

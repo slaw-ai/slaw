@@ -1,4 +1,4 @@
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const PLUGIN_ID = "slaw.e2b-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0";

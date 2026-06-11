@@ -10,7 +10,7 @@ import type {
   SquadPortabilityInclude,
   SquadPortabilityPreviewResult,
   SquadPortabilityImportResult,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { ApiRequestError } from "../../client/http.js";
 import { openUrl } from "../../client/operator-auth.js";
 import { binaryContentTypeByExtension, readZipArchive } from "./zip.js";

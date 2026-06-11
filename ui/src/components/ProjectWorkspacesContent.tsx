@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ExecutionWorkspace } from "@slaw/shared";
+import type { ExecutionWorkspace } from "@slaw-ai/shared";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { projectsApi } from "../api/projects";
 import { queryKeys } from "../lib/queryKeys";

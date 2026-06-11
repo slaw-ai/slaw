@@ -1,4 +1,4 @@
-# @slaw/plugin-jira-sync
+# @slaw-ai/plugin-jira-sync
 
 Bidirectional sync between a Jira board and a Slaw squad.
 

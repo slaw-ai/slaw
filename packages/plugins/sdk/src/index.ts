@@ -1,13 +1,13 @@
 /**
- * `@slaw/plugin-sdk` — Slaw plugin worker-side SDK.
+ * `@slaw-ai/plugin-sdk` — Slaw plugin worker-side SDK.
  *
  * This is the main entrypoint for plugin worker code.  For plugin UI bundles,
- * import from `@slaw/plugin-sdk/ui` instead.
+ * import from `@slaw-ai/plugin-sdk/ui` instead.
  *
  * @example
  * ```ts
  * // Plugin worker entrypoint (dist/worker.ts)
- * import { definePlugin, runWorker, z } from "@slaw/plugin-sdk";
+ * import { definePlugin, runWorker, z } from "@slaw-ai/plugin-sdk";
  *
  * const plugin = definePlugin({
  *   async setup(ctx) {
@@ -280,9 +280,9 @@ export type {
   MembershipStatus,
 } from "./types.js";
 
-// Manifest and constant types re-exported from @slaw/shared
+// Manifest and constant types re-exported from @slaw-ai/shared
 // Plugin authors import manifest types from here so they have a single
-// dependency (@slaw/plugin-sdk) for all plugin authoring needs.
+// dependency (@slaw-ai/plugin-sdk) for all plugin authoring needs.
 export type {
   SlawPluginManifestV1,
   PluginJobDeclaration,
@@ -356,7 +356,7 @@ export type {
  *
  * @example
  * ```ts
- * import { z } from "@slaw/plugin-sdk";
+ * import { z } from "@slaw-ai/plugin-sdk";
  *
  * const configSchema = z.object({
  *   apiKey: z.string().describe("Your API key"),
@@ -390,4 +390,4 @@ export {
   HUMAN_SQUAD_MEMBERSHIP_ROLE_LABELS,
   MEMBERSHIP_STATUSES,
   PRINCIPAL_TYPES,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";

@@ -1,4 +1,4 @@
-# @slaw/shared
+# @slaw-ai/shared
 
 ## 0.3.1
 

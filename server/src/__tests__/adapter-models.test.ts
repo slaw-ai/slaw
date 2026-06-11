@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { models as claudeFallbackModels } from "@slaw/adapter-claude-local";
-import { resetClaudeModelsCacheForTests } from "@slaw/adapter-claude-local/server";
-import { models as codexFallbackModels } from "@slaw/adapter-codex-local";
-import { models as cursorFallbackModels } from "@slaw/adapter-cursor-local";
-import { models as opencodeFallbackModels } from "@slaw/adapter-opencode-local";
-import { resetOpenCodeModelsCacheForTests } from "@slaw/adapter-opencode-local/server";
+import { models as claudeFallbackModels } from "@slaw-ai/adapter-claude-local";
+import { resetClaudeModelsCacheForTests } from "@slaw-ai/adapter-claude-local/server";
+import { models as codexFallbackModels } from "@slaw-ai/adapter-codex-local";
+import { models as cursorFallbackModels } from "@slaw-ai/adapter-cursor-local";
+import { models as opencodeFallbackModels } from "@slaw-ai/adapter-opencode-local";
+import { resetOpenCodeModelsCacheForTests } from "@slaw-ai/adapter-opencode-local/server";
 import { listAdapterModels, listServerAdapters, refreshAdapterModels } from "../adapters/index.js";
 import { resetCodexModelsCacheForTests } from "../adapters/codex-models.js";
 import { resetCursorModelsCacheForTests, setCursorModelsRunnerForTests } from "../adapters/cursor-models.js";

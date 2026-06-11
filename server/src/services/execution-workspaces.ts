@@ -3,8 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { executionWorkspaces, issues, projects, projectWorkspaces, workspaceRuntimeServices } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { executionWorkspaces, issues, projects, projectWorkspaces, workspaceRuntimeServices } from "@slaw-ai/db";
 import type {
   ExecutionWorkspace,
   ExecutionWorkspaceSummary,
@@ -14,7 +14,7 @@ import type {
   ExecutionWorkspaceConfig,
   WorkspaceRuntimeDesiredState,
   WorkspaceRuntimeService,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { parseProjectExecutionWorkspacePolicy } from "./execution-workspace-policy.js";
 import {
   listCurrentRuntimeServicesForExecutionWorkspaces,

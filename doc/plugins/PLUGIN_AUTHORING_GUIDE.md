@@ -18,7 +18,7 @@ It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec i
 - Plugin-owned JSON API routes must be declared in the manifest and are mounted
   only under `/api/plugins/:pluginId/api/*`.
 - The host provides a small shared React component kit through
-  `@slaw/plugin-sdk/ui`; use it for common Slaw controls before
+  `@slaw-ai/plugin-sdk/ui`; use it for common Slaw controls before
   building custom versions.
 - `ctx.assets` is not supported in the current runtime.
 
@@ -39,9 +39,9 @@ That creates `<output>/plugin-name/` with:
 - `esbuild.config.mjs`
 - `rollup.config.mjs`
 
-Inside this monorepo, the scaffold uses `workspace:*` for `@slaw/plugin-sdk`.
+Inside this monorepo, the scaffold uses `workspace:*` for `@slaw-ai/plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@slaw/plugin-sdk` from the local Slaw checkout into a `.slaw-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/slaw/packages/plugins/sdk` if you have more than one Slaw checkout.
+Outside this monorepo, the scaffold snapshots `@slaw-ai/plugin-sdk` from the local Slaw checkout into a `.slaw-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/slaw/packages/plugins/sdk` if you have more than one Slaw checkout.
 
 ## Local development workflow
 
@@ -183,7 +183,7 @@ routine; if a ref is still missing, the routine resolution reports
 `missing_refs` instead of guessing.
 
 ```ts
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const manifest: SlawPluginManifestV1 = {
   id: "example.research-plugin",
@@ -270,7 +270,7 @@ In the worker, expose a small setup action or settings-page action that
 reconciles the resources for the selected squad:
 
 ```ts
-import { definePlugin } from "@slaw/plugin-sdk";
+import { definePlugin } from "@slaw-ai/plugin-sdk";
 
 export default definePlugin({
   setup(ctx) {
@@ -317,7 +317,7 @@ UI:
 - `usePluginStream`
 - `usePluginToast`
 - `useHostContext`
-- typed slot props from `@slaw/plugin-sdk/ui`
+- typed slot props from `@slaw-ai/plugin-sdk/ui`
 
 Mount surfaces currently wired in the host include:
 
@@ -338,7 +338,7 @@ Mount surfaces currently wired in the host include:
 
 ## Shared host components
 
-Use shared components from `@slaw/plugin-sdk/ui` when the plugin needs a
+Use shared components from `@slaw-ai/plugin-sdk/ui` when the plugin needs a
 Slaw-native control. The host owns the implementation, so plugins inherit
 the board's current styling, ordering, recent selections, and dark-mode behavior
 without importing `ui/src` internals.
@@ -359,7 +359,7 @@ Currently exposed components include:
 - `ManagedRoutinesList` for plugin-owned routine settings pages.
 
 ```tsx
-import { AssigneePicker, ProjectPicker } from "@slaw/plugin-sdk/ui";
+import { AssigneePicker, ProjectPicker } from "@slaw-ai/plugin-sdk/ui";
 
 export function PluginAssignmentControls({ squadId }: { squadId: string }) {
   const [assignee, setAssignee] = useState("");
@@ -391,7 +391,7 @@ data the plugin actually has.
 
 ### When to use the shared `FileTree`
 
-Use `FileTree` from `@slaw/plugin-sdk/ui` whenever the plugin only needs
+Use `FileTree` from `@slaw-ai/plugin-sdk/ui` whenever the plugin only needs
 to render a serializable file/directory list and react to selection or
 expand/collapse. The host owns the implementation, so plugin UI inherits the
 board's icons, indent, focus ring, and dark-mode styling without importing host
@@ -401,7 +401,7 @@ internals.
 import {
   FileTree,
   type FileTreeNode,
-} from "@slaw/plugin-sdk/ui";
+} from "@slaw-ai/plugin-sdk/ui";
 
 const nodes: FileTreeNode[] = [
   { name: "AGENTS.md", path: "AGENTS.md", kind: "file", children: [] },

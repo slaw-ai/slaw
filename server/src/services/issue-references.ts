@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   documentAnnotationComments,
   documents,
@@ -7,15 +7,15 @@ import {
   issueDocuments,
   issueReferenceMentions,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   IssueReferenceSource,
   IssueReferenceSourceKind,
   IssueRelatedWorkItem,
   IssueRelatedWorkSummary,
   IssueRelationIssueSummary,
-} from "@slaw/shared";
-import { extractIssueReferenceMatches } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import { extractIssueReferenceMatches } from "@slaw-ai/shared";
 import { notFound } from "../errors.js";
 
 const SOURCE_KIND_ORDER: Record<IssueReferenceSourceKind, number> = {

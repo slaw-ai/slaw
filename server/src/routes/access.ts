@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import type { Request } from "express";
 import { and, desc, eq, gt, inArray, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   assets,
   agentApiKeys,
@@ -26,7 +26,7 @@ import {
   invites,
   joinRequests,
   principalPermissionGrants,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   acceptInviteSchema,
   createCliAuthChallengeSchema,
@@ -44,8 +44,8 @@ import {
   updateUserSquadAccessSchema,
   PERMISSION_KEYS,
   isUuidLike,
-} from "@slaw/shared";
-import type { DeploymentExposure, DeploymentMode, HumanSquadMembershipRole, PermissionKey } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import type { DeploymentExposure, DeploymentMode, HumanSquadMembershipRole, PermissionKey } from "@slaw-ai/shared";
 import {
   forbidden,
   conflict,

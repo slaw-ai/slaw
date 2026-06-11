@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { and, desc, eq, gte, isNull, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   activityLog,
   agents,
@@ -9,13 +9,13 @@ import {
   costEvents,
   issueComments,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   UserProfileDailyPoint,
   UserProfileIdentity,
   UserProfileResponse,
   UserProfileWindowStats,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { notFound } from "../errors.js";
 import { assertSquadAccess } from "./authz.js";
 

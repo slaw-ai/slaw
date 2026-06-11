@@ -9,7 +9,7 @@ import type {
   Resources,
   Sandbox,
 } from "@daytonaio/sdk";
-import { definePlugin } from "@slaw/plugin-sdk";
+import { definePlugin } from "@slaw-ai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -24,7 +24,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 
 interface DaytonaDriverConfig {
   apiKey: string | null;

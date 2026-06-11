@@ -6,8 +6,8 @@ import type {
   SquadSecret,
   EnvBinding,
   Environment,
-} from "@slaw/shared";
-import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter } from "@slaw-ai/shared";
 import type { AdapterModel } from "../api/agents";
 import { agentsApi } from "../api/agents";
 import { environmentsApi } from "../api/environments";
@@ -17,10 +17,10 @@ import { assetsApi } from "../api/assets";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@slaw/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@slaw/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@slaw/adapter-gemini-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@slaw/adapter-opencode-local";
+} from "@slaw-ai/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@slaw-ai/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@slaw-ai/adapter-gemini-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@slaw-ai/adapter-opencode-local";
 import {
   Popover,
   PopoverContent,
@@ -61,10 +61,10 @@ import { filterAcpxModelsByAgent } from "../lib/acpx-model-filter";
 
 /* ---- Create mode values ---- */
 
-// Canonical type lives in @slaw/adapter-utils; re-exported here
+// Canonical type lives in @slaw-ai/adapter-utils; re-exported here
 // so existing imports from this file keep working.
-export type { CreateConfigValues } from "@slaw/adapter-utils";
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+export type { CreateConfigValues } from "@slaw-ai/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 
 /* ---- Props ---- */
 

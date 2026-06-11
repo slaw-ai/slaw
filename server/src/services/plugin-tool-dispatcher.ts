@@ -22,12 +22,12 @@
  * @see PLUGIN_SPEC.md §13.10 — `executeTool`
  */
 
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import type {
   SlawPluginManifestV1,
   PluginRecord,
-} from "@slaw/shared";
-import type { ToolRunContext, ToolResult } from "@slaw/plugin-sdk";
+} from "@slaw-ai/shared";
+import type { ToolRunContext, ToolResult } from "@slaw-ai/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import {

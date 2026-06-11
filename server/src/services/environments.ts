@@ -1,6 +1,6 @@
 import { and, desc, eq, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { environmentLeases, environments } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { environmentLeases, environments } from "@slaw-ai/db";
 import {
   ENVIRONMENT_DRIVERS,
   ENVIRONMENT_LEASE_CLEANUP_STATUSES,
@@ -14,7 +14,7 @@ import {
   type EnvironmentLeasePolicy,
   type EnvironmentLeaseStatus,
   type UpdateEnvironment,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 type EnvironmentRow = typeof environments.$inferSelect;
 type EnvironmentLeaseRow = typeof environmentLeases.$inferSelect;

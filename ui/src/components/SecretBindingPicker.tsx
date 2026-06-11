@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, KeyRound, Loader2, Plus, X } from "lucide-react";
-import type { SquadSecret, SecretVersionSelector } from "@slaw/shared";
+import type { SquadSecret, SecretVersionSelector } from "@slaw-ai/shared";
 import { secretsApi } from "../api/secrets";
 import { queryKeys } from "../lib/queryKeys";
 import { useSquad } from "../context/SquadContext";

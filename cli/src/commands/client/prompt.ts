@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import type { Agent, Issue, IssueComment } from "@slaw/shared";
-import { addIssueCommentSchema, createIssueSchema } from "@slaw/shared";
+import type { Agent, Issue, IssueComment } from "@slaw-ai/shared";
+import { addIssueCommentSchema, createIssueSchema } from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

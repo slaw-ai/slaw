@@ -10,7 +10,7 @@ import type {
   EnvBinding,
   SecretProvider,
   SecretProviderDescriptor,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

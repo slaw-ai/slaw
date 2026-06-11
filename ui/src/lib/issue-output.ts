@@ -2,7 +2,7 @@ import {
   attachmentArtifactWorkProductMetadataSchema,
   type AttachmentArtifactWorkProductMetadata,
   type IssueWorkProduct,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 /**
  * Helpers + selectors for the issue Output surface (PAP-10162 Phase 3).

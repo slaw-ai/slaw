@@ -6,7 +6,7 @@ import type { AnchorHTMLAttributes, ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
-import type { IssueRetryNowOutcome, IssueScheduledRetry } from "@slaw/shared";
+import type { IssueRetryNowOutcome, IssueScheduledRetry } from "@slaw-ai/shared";
 import { IssueBlockedNotice } from "./IssueBlockedNotice";
 import { ToastProvider } from "../context/ToastContext";
 

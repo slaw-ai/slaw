@@ -1,6 +1,6 @@
 import { inflateRawSync } from "node:zlib";
 import path from "node:path";
-import type { SquadPortabilityFileEntry } from "@slaw/shared";
+import type { SquadPortabilityFileEntry } from "@slaw-ai/shared";
 
 const textDecoder = new TextDecoder();
 

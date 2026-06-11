@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext } from "@slaw/adapter-utils";
+import type { AdapterExecutionContext } from "@slaw-ai/adapter-utils";
 import { execute } from "./execute.js";
 
 type MockRunOptions = {

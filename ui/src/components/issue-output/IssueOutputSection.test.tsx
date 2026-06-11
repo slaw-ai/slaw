@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { IssueWorkProduct } from "@slaw/shared";
+import type { IssueWorkProduct } from "@slaw-ai/shared";
 import { IssueOutputSection } from "./IssueOutputSection";
 
 function makeWorkProduct(overrides: Partial<IssueWorkProduct> & { id: string }): IssueWorkProduct {

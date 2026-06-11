@@ -1,4 +1,4 @@
-import { type TranscriptEntry } from "@slaw/adapter-utils";
+import { type TranscriptEntry } from "@slaw-ai/adapter-utils";
 
 function safeJsonParse(text: string): unknown {
   try {

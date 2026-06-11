@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { pluginManifestV1Schema, type SlawPluginManifestV1 } from "@slaw/shared";
+import { pluginManifestV1Schema, type SlawPluginManifestV1 } from "@slaw-ai/shared";
 
 const mockRegistry = vi.hoisted(() => ({
   getById: vi.fn(),

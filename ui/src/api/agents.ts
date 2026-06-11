@@ -12,12 +12,12 @@ import type {
   HeartbeatRun,
   Approval,
   AgentConfigRevision,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type {
   AdapterModelProfileDefinition,
   AdapterModelProfileKey,
-} from "@slaw/adapter-utils";
-import { isUuidLike, normalizeAgentUrlKey } from "@slaw/shared";
+} from "@slaw-ai/adapter-utils";
+import { isUuidLike, normalizeAgentUrlKey } from "@slaw-ai/shared";
 import { ApiError, api } from "./client";
 
 export interface AgentKey {

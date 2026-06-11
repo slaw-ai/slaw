@@ -7,8 +7,8 @@ import {
   documents,
   issueDocuments,
   issues,
-} from "@slaw/db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@slaw/shared";
+} from "@slaw-ai/db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@slaw-ai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

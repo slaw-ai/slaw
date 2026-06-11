@@ -35,7 +35,7 @@ export interface CatalogSkill {
 
 export interface CatalogManifest {
   schemaVersion: 1;
-  packageName: "@slaw/skills-catalog";
+  packageName: "@slaw-ai/skills-catalog";
   packageVersion: string;
   generatedAt: string;
   skills: CatalogSkill[];

@@ -3,7 +3,7 @@ import type { Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@slaw/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@slaw-ai/adapter-utils";
 import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetRemoteCwd,
@@ -23,7 +23,7 @@ import {
   runAdapterExecutionTargetProcess,
   runAdapterExecutionTargetShellCommand,
   startAdapterExecutionTargetSlawBridge,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import {
   asBoolean,
   asNumber,
@@ -46,7 +46,7 @@ import {
   stringifySlawWakePayload,
   DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE,
   runChildProcess,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import { DEFAULT_GEMINI_LOCAL_MODEL, SANDBOX_INSTALL_COMMAND } from "../index.js";
 import {
   describeGeminiFailure,

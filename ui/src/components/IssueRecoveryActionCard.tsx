@@ -5,7 +5,7 @@ import type {
   IssueRecoveryActionKind,
   IssueRecoveryActionOutcome,
   IssueRecoveryActionStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Eye, OctagonAlert, RefreshCw, Sparkles, TriangleAlert } from "lucide-react";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";

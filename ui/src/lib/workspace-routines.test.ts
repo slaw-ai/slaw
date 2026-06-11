@@ -1,4 +1,4 @@
-import type { RoutineListItem } from "@slaw/shared";
+import type { RoutineListItem } from "@slaw-ai/shared";
 import { describe, expect, it } from "vitest";
 import {
   getWorkspaceSpecificRoutineVariableNames,

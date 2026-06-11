@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { shouldApplyLimit, applyDirectives } from "./limits-store.js";
-import type { Db } from "@slaw/db";
-import type { Directive, LimitSpec } from "@slaw/shared/botfather/protocol";
+import type { Db } from "@slaw-ai/db";
+import type { Directive, LimitSpec } from "@slaw-ai/shared/botfather/protocol";
 
 function spec(version: number, over: Partial<LimitSpec> = {}): LimitSpec {
   return {

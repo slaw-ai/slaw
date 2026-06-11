@@ -21,7 +21,7 @@ function usage() {
       "  node scripts/bootstrap-npm-package.mjs <package-name-or-dir> [--publish --otp <code>] [--skip-build]",
       "",
       "Examples:",
-      "  node scripts/bootstrap-npm-package.mjs @slaw/adapter-acpx-local",
+      "  node scripts/bootstrap-npm-package.mjs @slaw-ai/adapter-acpx-local",
       "  node scripts/bootstrap-npm-package.mjs packages/adapters/acpx-local --publish",
       "",
     ].join("\n"),

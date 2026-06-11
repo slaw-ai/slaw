@@ -3,7 +3,7 @@ import { AlertTriangle, MessageSquarePlus } from "lucide-react";
 import type {
   DocumentAnnotationAnchorState,
   DocumentAnnotationThreadStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -11,7 +11,7 @@ import {
   getContainerTextOffset,
   rangesForNormalizedSpan,
 } from "@/lib/document-annotation-selection";
-import type { DocumentAnnotationAnchorSelector } from "@slaw/shared";
+import type { DocumentAnnotationAnchorSelector } from "@slaw-ai/shared";
 
 export interface AnnotationOverlayThread {
   id: string;

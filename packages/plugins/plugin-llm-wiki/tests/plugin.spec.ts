@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createTestHarness } from "@slaw/plugin-sdk/testing";
-import type { Agent, Issue, PluginManagedRoutineResolution, Project } from "@slaw/plugin-sdk";
+import { createTestHarness } from "@slaw-ai/plugin-sdk/testing";
+import type { Agent, Issue, PluginManagedRoutineResolution, Project } from "@slaw-ai/plugin-sdk";
 import manifest, {
   CURSOR_WINDOW_ROUTINE_KEY,
   INDEX_REFRESH_ROUTINE_KEY,

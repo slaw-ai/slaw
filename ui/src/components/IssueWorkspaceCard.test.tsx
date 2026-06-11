@@ -3,7 +3,7 @@
 import { act } from "react";
 import type { ComponentProps } from "react";
 import { createRoot } from "react-dom/client";
-import type { ExecutionWorkspace, Issue } from "@slaw/shared";
+import type { ExecutionWorkspace, Issue } from "@slaw-ai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueWorkspaceCard } from "./IssueWorkspaceCard";
 

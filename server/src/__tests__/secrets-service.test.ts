@@ -13,7 +13,7 @@ import {
   squadSecrets,
   createDb,
   secretAccessEvents,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { awsSecretsManagerProvider } from "../secrets/aws-secrets-manager-provider.js";
 import { localEncryptedProvider } from "../secrets/local-encrypted-provider.js";

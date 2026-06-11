@@ -1,4 +1,4 @@
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 import {
   DEFAULT_CONFIG,
   EXPORT_NAMES,

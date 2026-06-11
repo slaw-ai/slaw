@@ -40,9 +40,9 @@ const {
   })),
 }));
 
-vi.mock("@slaw/adapter-utils/server-utils", async () => {
-  const actual = await vi.importActual<typeof import("@slaw/adapter-utils/server-utils")>(
-    "@slaw/adapter-utils/server-utils",
+vi.mock("@slaw-ai/adapter-utils/server-utils", async () => {
+  const actual = await vi.importActual<typeof import("@slaw-ai/adapter-utils/server-utils")>(
+    "@slaw-ai/adapter-utils/server-utils",
   );
   return {
     ...actual,
@@ -52,9 +52,9 @@ vi.mock("@slaw/adapter-utils/server-utils", async () => {
   };
 });
 
-vi.mock("@slaw/adapter-utils/ssh", async () => {
-  const actual = await vi.importActual<typeof import("@slaw/adapter-utils/ssh")>(
-    "@slaw/adapter-utils/ssh",
+vi.mock("@slaw-ai/adapter-utils/ssh", async () => {
+  const actual = await vi.importActual<typeof import("@slaw-ai/adapter-utils/ssh")>(
+    "@slaw-ai/adapter-utils/ssh",
   );
   return {
     ...actual,
@@ -64,9 +64,9 @@ vi.mock("@slaw/adapter-utils/ssh", async () => {
   };
 });
 
-vi.mock("@slaw/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@slaw/adapter-utils/execution-target")>(
-    "@slaw/adapter-utils/execution-target",
+vi.mock("@slaw-ai/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@slaw-ai/adapter-utils/execution-target")>(
+    "@slaw-ai/adapter-utils/execution-target",
   );
   return {
     ...actual,

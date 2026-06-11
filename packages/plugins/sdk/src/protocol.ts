@@ -40,8 +40,8 @@ import type {
   Goal,
   PluginLocalFolderDeclaration,
   PrincipalPermissionGrant,
-} from "@slaw/shared";
-export type { PluginLauncherRenderContextSnapshot } from "@slaw/shared";
+} from "@slaw-ai/shared";
+export type { PluginLauncherRenderContextSnapshot } from "@slaw-ai/shared";
 
 import type {
   PluginEvent,

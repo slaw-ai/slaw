@@ -1,4 +1,4 @@
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { formatMonitorOffset } from "@/lib/issue-monitor";
 import { formatDateTime } from "@/lib/utils";

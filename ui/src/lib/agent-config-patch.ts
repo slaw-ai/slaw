@@ -1,4 +1,4 @@
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 
 export interface AgentModelProfileOverlay {
   enabled?: boolean;

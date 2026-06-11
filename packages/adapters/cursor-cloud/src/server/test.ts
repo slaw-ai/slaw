@@ -3,8 +3,8 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@slaw/adapter-utils";
-import { asString, parseObject } from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils";
+import { asString, parseObject } from "@slaw-ai/adapter-utils/server-utils";
 
 function summarizeStatus(checks: AdapterEnvironmentCheck[]): AdapterEnvironmentTestResult["status"] {
   if (checks.some((check) => check.level === "error")) return "fail";

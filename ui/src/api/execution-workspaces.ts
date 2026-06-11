@@ -4,7 +4,7 @@ import type {
   ExecutionWorkspaceCloseReadiness,
   WorkspaceOperation,
   WorkspaceRuntimeControlTarget,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 import { sanitizeWorkspaceRuntimeControlTarget } from "./workspace-runtime-control";
 

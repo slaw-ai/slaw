@@ -1,4 +1,4 @@
-import type { IssueCommentAuthorType, IssueCommentMetadata, IssueCommentPresentation } from "@slaw/shared";
+import type { IssueCommentAuthorType, IssueCommentMetadata, IssueCommentPresentation } from "@slaw-ai/shared";
 import { pgTable, uuid, text, timestamp, index, jsonb } from "drizzle-orm/pg-core";
 import { squads } from "./squads.js";
 import { issues } from "./issues.js";

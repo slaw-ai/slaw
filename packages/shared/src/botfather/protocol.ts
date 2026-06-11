@@ -1,8 +1,8 @@
 // VENDORED from slaw-botfather/packages/protocol/src/index.ts — keep in sync with the tower.
-// The wire contract must match the botfather server's @slaw/botfather-protocol package.
+// The wire contract must match the botfather server's @slaw-ai/botfather-protocol package.
 
 /**
- * @slaw/botfather-protocol — the single source of truth for the
+ * @slaw-ai/botfather-protocol — the single source of truth for the
  * instance ⇄ botfather wire contract. Consumed by both the SLAW
  * reporter and the botfather ingest API.
  *

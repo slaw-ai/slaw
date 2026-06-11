@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 import { buildCursorCloudConfig } from "./build-config.js";
 
 function makeValues(overrides: Partial<CreateConfigValues> = {}): CreateConfigValues {

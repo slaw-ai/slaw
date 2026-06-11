@@ -1,4 +1,4 @@
-import type { AgentAdapterType, JoinRequest, PermissionKey } from "@slaw/shared";
+import type { AgentAdapterType, JoinRequest, PermissionKey } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export type HumanSquadRole = "owner" | "admin" | "operator" | "viewer";

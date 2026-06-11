@@ -3,7 +3,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildProjectMentionHref, buildRoutineMentionHref, buildSkillMentionHref } from "@slaw/shared";
+import { buildProjectMentionHref, buildRoutineMentionHref, buildSkillMentionHref } from "@slaw-ai/shared";
 import {
   computeMentionMenuPosition,
   findClosestAutocompleteAnchor,

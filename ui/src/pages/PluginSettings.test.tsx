@@ -64,7 +64,7 @@ function basePlugin(overrides: Record<string, unknown> = {}) {
   return {
     id: "plugin-1",
     pluginKey: "slaw.e2b-sandbox-provider",
-    packageName: "@slaw/plugin-e2b",
+    packageName: "@slaw-ai/plugin-e2b",
     version: "0.1.0",
     status: "error",
     categories: ["automation"],
@@ -178,7 +178,7 @@ describe("PluginSettings", () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
       pluginKey: "slaw.plugin-llm-wiki",
-      packageName: "@slaw/plugin-llm-wiki",
+      packageName: "@slaw-ai/plugin-llm-wiki",
       status: "ready",
       manifestJson: {
         displayName: "LLM Wiki",

@@ -1,13 +1,13 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AdapterConfigSchema, CreateConfigValues } from "@slaw/adapter-utils";
-import { parseAcpxStdoutLine } from "@slaw/adapter-acpx-local/ui";
+import type { AdapterConfigSchema, CreateConfigValues } from "@slaw-ai/adapter-utils";
+import { parseAcpxStdoutLine } from "@slaw-ai/adapter-acpx-local/ui";
 import type {
   Agent,
   AgentSkillSnapshot,
   SquadSkillListItem,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { SchemaConfigFields } from "@/adapters/schema-config-fields";
 import type { TranscriptEntry } from "@/adapters";
 import { RunTranscriptView } from "@/components/transcript/RunTranscriptView";

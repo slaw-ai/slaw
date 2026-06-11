@@ -2,8 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { createDb, instanceUserRoles, invites } from "@slaw/db";
-import { inferBindModeFromHost } from "@slaw/shared";
+import { createDb, instanceUserRoles, invites } from "@slaw-ai/db";
+import { inferBindModeFromHost } from "@slaw-ai/shared";
 import { loadSlawEnvFile } from "../config/env.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 

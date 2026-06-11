@@ -1,5 +1,5 @@
-import type { Db } from "@slaw/db";
-import { squads, instanceSettings } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { squads, instanceSettings } from "@slaw-ai/db";
 import {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_ISSUE_GRAPH_LIVENESS_AUTO_RECOVERY_LOOKBACK_HOURS,
@@ -10,7 +10,7 @@ import {
   type PatchInstanceGeneralSettings,
   type InstanceSettings,
   type PatchInstanceExperimentalSettings,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { eq } from "drizzle-orm";
 
 const DEFAULT_SINGLETON_KEY = "default";

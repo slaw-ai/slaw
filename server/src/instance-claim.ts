@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { squads, squadMemberships, instanceUserRoles } from "@slaw/db";
-import type { DeploymentMode } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { squads, squadMemberships, instanceUserRoles } from "@slaw-ai/db";
+import type { DeploymentMode } from "@slaw-ai/shared";
 import { ensureHumanRoleDefaultGrants } from "./services/principal-access-compatibility.js";
 
 const LOCAL_OPERATOR_USER_ID = "local-operator";

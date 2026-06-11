@@ -1,4 +1,4 @@
-import { definePlugin, runWorker } from "@slaw/plugin-sdk";
+import { definePlugin, runWorker } from "@slaw-ai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {

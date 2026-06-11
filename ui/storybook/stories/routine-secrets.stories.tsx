@@ -9,7 +9,7 @@ import type {
   RoutineEnvConfig,
   RoutineRevision,
   RoutineRevisionSnapshotV1,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { EnvVarEditor } from "@/components/EnvVarEditor";
 import { RoutineHistoryTab } from "@/components/RoutineHistoryTab";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

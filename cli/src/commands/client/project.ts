@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import type { Project } from "@slaw/shared";
-import { createProjectSchema, updateProjectSchema } from "@slaw/shared";
+import type { Project } from "@slaw-ai/shared";
+import { createProjectSchema, updateProjectSchema } from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

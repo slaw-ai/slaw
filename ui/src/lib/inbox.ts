@@ -5,7 +5,7 @@ import type {
   InboxDismissal,
   Issue,
   JoinRequest,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   applyIssueFilters,
   defaultIssueFilterState,

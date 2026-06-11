@@ -1,10 +1,10 @@
 import { Router, type Request } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   issueGraphLivenessAutoRecoveryRequestSchema,
   patchInstanceExperimentalSettingsSchema,
   patchInstanceGeneralSettingsSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { heartbeatService, instanceSettingsService, logActivity } from "../services/index.js";

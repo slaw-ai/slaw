@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isClaudeMaxTurnsResult } from "@slaw/adapter-claude-local/server";
-import { parseClaudeStdoutLine } from "@slaw/adapter-claude-local/ui";
-import { printClaudeStreamEvent } from "@slaw/adapter-claude-local/cli";
+import { isClaudeMaxTurnsResult } from "@slaw-ai/adapter-claude-local/server";
+import { parseClaudeStdoutLine } from "@slaw-ai/adapter-claude-local/ui";
+import { printClaudeStreamEvent } from "@slaw-ai/adapter-claude-local/cli";
 
 describe("claude_local max-turn detection", () => {
   it("detects max-turn exhaustion by subtype", () => {

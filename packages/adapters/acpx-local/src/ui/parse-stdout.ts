@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@slaw/adapter-utils";
+import type { TranscriptEntry } from "@slaw-ai/adapter-utils";
 
 function parseJson(line: string): Record<string, unknown> | null {
   try {

@@ -1,4 +1,4 @@
-import type { ActivityEvent } from "@slaw/shared";
+import type { ActivityEvent } from "@slaw-ai/shared";
 import { Plus, Minus } from "lucide-react";
 import { IssueReferencePill } from "./IssueReferencePill";
 

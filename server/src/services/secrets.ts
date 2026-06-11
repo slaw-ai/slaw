@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, like, ne, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   squadSecretBindings,
@@ -12,7 +12,7 @@ import {
   projects,
   routines,
   secretAccessEvents,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   AgentEnvConfig,
   SquadSecretBindingTarget,
@@ -27,7 +27,7 @@ import type {
   SecretProviderConfigHealthStatus,
   SecretProviderConfigStatus,
   SecretVersionSelector,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   createSecretProviderConfigSchema,
   deriveProjectUrlKey,
@@ -37,7 +37,7 @@ import {
   secretProviderConfigPayloadSchema,
   secretProviderConfigDiscoveryPreviewSchema,
   updateSecretProviderConfigSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, HttpError, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import {

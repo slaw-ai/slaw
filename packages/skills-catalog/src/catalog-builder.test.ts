@@ -111,7 +111,7 @@ describe("skills catalog manifest", () => {
       path.join(packageDir, "generated", "catalog.json"),
       formatCatalogManifest({
         schemaVersion: 1,
-        packageName: "@slaw/skills-catalog",
+        packageName: "@slaw-ai/skills-catalog",
         packageVersion: "0.3.1",
         generatedAt: "2026-05-26T00:00:00.000Z",
         skills: [],
@@ -122,7 +122,7 @@ describe("skills catalog manifest", () => {
     const result = await validateCatalog(packageDir);
 
     expect(result.errors).toContain(
-      "generated/catalog.json is stale. Run pnpm --filter @slaw/skills-catalog build:manifest.",
+      "generated/catalog.json is stale. Run pnpm --filter @slaw-ai/skills-catalog build:manifest.",
     );
   });
 });

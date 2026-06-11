@@ -1,4 +1,4 @@
-import type { Approval, ApprovalComment, Issue } from "@slaw/shared";
+import type { Approval, ApprovalComment, Issue } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const approvalsApi = {

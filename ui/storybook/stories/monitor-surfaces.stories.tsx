@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { IssueMonitorActivityCard } from "@/components/IssueMonitorActivityCard";
 import { IssueProperties } from "@/components/IssueProperties";
 import {

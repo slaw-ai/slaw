@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SquadPortabilityPreviewResult } from "@slaw/shared";
+import type { SquadPortabilityPreviewResult } from "@slaw-ai/shared";
 import {
   buildSquadDashboardUrl,
   buildDefaultImportAdapterOverrides,

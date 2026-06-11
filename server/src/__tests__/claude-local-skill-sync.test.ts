@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listClaudeSkills,
   syncClaudeSkills,
-} from "@slaw/adapter-claude-local/server";
+} from "@slaw-ai/adapter-claude-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));

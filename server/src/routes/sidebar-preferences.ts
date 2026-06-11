@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@slaw/db";
-import { upsertSidebarOrderPreferenceSchema } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { upsertSidebarOrderPreferenceSchema } from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { logActivity, sidebarPreferenceService } from "../services/index.js";
 import { assertOperator, assertSquadAccess, getActorInfo } from "./authz.js";

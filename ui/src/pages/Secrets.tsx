@@ -37,7 +37,7 @@ import type {
   SecretProviderConfigStatus,
   SecretProviderDescriptor,
   SecretStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";

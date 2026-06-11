@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agents, costEvents, financeEvents, goals, heartbeatRuns, issues, projects } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { agents, costEvents, financeEvents, goals, heartbeatRuns, issues, projects } from "@slaw-ai/db";
 import { notFound, unprocessable } from "../errors.js";
 
 export interface FinanceDateRange {

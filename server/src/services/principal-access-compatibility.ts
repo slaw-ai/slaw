@@ -1,7 +1,7 @@
 import { and, eq, notInArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agents, squadMemberships, principalPermissionGrants } from "@slaw/db";
-import type { PermissionKey, PrincipalType } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { agents, squadMemberships, principalPermissionGrants } from "@slaw-ai/db";
+import type { PermissionKey, PrincipalType } from "@slaw-ai/shared";
 import { grantsForHumanRole, normalizeHumanRole } from "./squad-member-roles.js";
 
 type GrantInput = {

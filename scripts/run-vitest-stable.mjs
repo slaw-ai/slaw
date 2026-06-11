@@ -8,16 +8,16 @@ const repoRoot = process.cwd();
 const serverRoot = path.join(repoRoot, "server");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const nonServerProjects = [
-  "@slaw/shared",
-  "@slaw/skills-catalog",
-  "@slaw/db",
-  "@slaw/adapter-utils",
-  "@slaw/adapter-acpx-local",
-  "@slaw/adapter-codex-local",
-  "@slaw/adapter-opencode-local",
-  "@slaw/plugin-sdk",
-  "@slaw/create-slaw-plugin",
-  "@slaw/ui",
+  "@slaw-ai/shared",
+  "@slaw-ai/skills-catalog",
+  "@slaw-ai/db",
+  "@slaw-ai/adapter-utils",
+  "@slaw-ai/adapter-acpx-local",
+  "@slaw-ai/adapter-codex-local",
+  "@slaw-ai/adapter-opencode-local",
+  "@slaw-ai/plugin-sdk",
+  "@slaw-ai/create-slaw-plugin",
+  "@slaw-ai/ui",
   "slaw",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
@@ -54,7 +54,7 @@ const allModeName = "all";
 const generalServerGroupName = "general-server";
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@slaw/ui", "slaw"];
+const generalWorkspacesAProjects = ["@slaw-ai/ui", "slaw"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const serializedServerVitestArgs = [
@@ -287,7 +287,7 @@ function runGeneralGroup(routeTests, groupName) {
     runVitest(
       [
         "--project",
-        "@slaw/server",
+        "@slaw-ai/server",
         ...serializedServerVitestArgs,
         ...excludeRouteArgs,
       ],
@@ -319,7 +319,7 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     runVitest(
       [
         "--project",
-        "@slaw/server",
+        "@slaw-ai/server",
         routeTest.repoPath,
         "--pool=forks",
         "--poolOptions.forks.isolate=true",

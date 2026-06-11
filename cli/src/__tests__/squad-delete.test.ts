@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Squad } from "@slaw/shared";
+import type { Squad } from "@slaw-ai/shared";
 import { assertDeleteConfirmation, resolveSquadForDeletion } from "../commands/client/squad.js";
 
 function makeSquad(overrides: Partial<Squad>): Squad {

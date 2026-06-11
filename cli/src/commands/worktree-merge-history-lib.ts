@@ -9,7 +9,7 @@ import {
   issues,
   projects,
   projectWorkspaces,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 
 type IssueRow = typeof issues.$inferSelect;
 type CommentRow = typeof issueComments.$inferSelect;

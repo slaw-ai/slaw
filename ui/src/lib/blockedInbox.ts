@@ -3,7 +3,7 @@ import type {
   IssueBlockedInboxAttention,
   IssueBlockedInboxReason,
   IssueBlockedInboxSeverity,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 export type BlockedReasonVariant =
   | "needs_decision"

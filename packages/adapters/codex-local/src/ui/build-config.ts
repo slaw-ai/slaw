@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,

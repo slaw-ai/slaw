@@ -18,13 +18,13 @@ The server reads its configuration from environment variables:
 ## Usage
 
 ```sh
-npx -y @slaw/mcp-server
+npx -y @slaw-ai/mcp-server
 ```
 
 Or locally in this repo:
 
 ```sh
-pnpm --filter @slaw/mcp-server build
+pnpm --filter @slaw-ai/mcp-server build
 node packages/mcp-server/dist/stdio.js
 ```
 

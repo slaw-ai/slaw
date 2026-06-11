@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import type { AdapterModel } from "@slaw/adapter-utils";
-import { asString, runChildProcess } from "@slaw/adapter-utils/server-utils";
+import type { AdapterModel } from "@slaw-ai/adapter-utils";
+import { asString, runChildProcess } from "@slaw-ai/adapter-utils/server-utils";
 
 const MODELS_CACHE_TTL_MS = 60_000;
 

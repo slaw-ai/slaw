@@ -157,7 +157,7 @@ import {
   type RequestConfirmationInteraction,
   type SuggestTasksInteraction,
   type IssueTreeControlMode,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 type CommentReassignment = IssueCommentReassignment;
 type ActionableIssueThreadInteraction = SuggestTasksInteraction | RequestConfirmationInteraction;

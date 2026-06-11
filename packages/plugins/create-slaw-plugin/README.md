@@ -1,15 +1,15 @@
-# @slaw/create-slaw-plugin
+# @slaw-ai/create-slaw-plugin
 
 Scaffolding tool for creating new Slaw plugins.
 
 ```bash
-npx @slaw/create-slaw-plugin my-plugin
+npx @slaw-ai/create-slaw-plugin my-plugin
 ```
 
 Or with options:
 
 ```bash
-npx @slaw/create-slaw-plugin @acme/my-plugin \
+npx @slaw-ai/create-slaw-plugin @acme/my-plugin \
   --template connector \
   --category connector \
   --display-name "Acme Connector" \
@@ -22,16 +22,16 @@ Supported categories: `connector`, `workspace`, `automation`, `ui`
 
 Generates:
 - typed manifest + worker entrypoint
-- example UI widget using the supported `@slaw/plugin-sdk/ui` hooks
-- test file using `@slaw/plugin-sdk/testing`
+- example UI widget using the supported `@slaw-ai/plugin-sdk/ui` hooks
+- test file using `@slaw-ai/plugin-sdk/testing`
 - `esbuild` and `rollup` config files using SDK bundler presets
 - dev server script for hot-reload (`slaw-plugin-dev-server`)
 
-The scaffold starts with plain React elements so the generated plugin stays minimal. For Slaw-native controls, import shared host components such as `MarkdownEditor`, `FileTree`, `AssigneePicker`, and `ProjectPicker` from `@slaw/plugin-sdk/ui`.
+The scaffold starts with plain React elements so the generated plugin stays minimal. For Slaw-native controls, import shared host components such as `MarkdownEditor`, `FileTree`, `AssigneePicker`, and `ProjectPicker` from `@slaw-ai/plugin-sdk/ui`.
 
-Inside this repo, the generated package uses `@slaw/plugin-sdk` via `workspace:*`.
+Inside this repo, the generated package uses `@slaw-ai/plugin-sdk` via `workspace:*`.
 
-Outside this repo, the scaffold snapshots `@slaw/plugin-sdk` from your local Slaw checkout into a `.slaw-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
+Outside this repo, the scaffold snapshots `@slaw-ai/plugin-sdk` from your local Slaw checkout into a `.slaw-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
 
 ```bash
 node packages/plugins/create-slaw-plugin/dist/bin.js @acme/my-plugin \

@@ -1,7 +1,7 @@
 import {
   buildSandboxNpmInstallCommand,
   type AdapterModelProfileDefinition,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 
 export const type = "gemini_local";
 export const label = "Gemini CLI (local)";

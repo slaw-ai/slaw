@@ -6,11 +6,11 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   asString,
   parseObject,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 
 const require = createRequire(import.meta.url);
 const MIN_NODE_MAJOR = 22;

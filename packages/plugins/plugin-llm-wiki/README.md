@@ -45,9 +45,9 @@ pnpm test
 From the Slaw repo root:
 
 ```bash
-pnpm --filter @slaw/plugin-llm-wiki typecheck
-pnpm --filter @slaw/plugin-llm-wiki test
-pnpm --filter @slaw/plugin-llm-wiki build
+pnpm --filter @slaw-ai/plugin-llm-wiki typecheck
+pnpm --filter @slaw-ai/plugin-llm-wiki test
+pnpm --filter @slaw-ai/plugin-llm-wiki build
 ```
 
 ## Alpha Verification
@@ -56,9 +56,9 @@ Run these commands from the Slaw repo root before handing off alpha plugin
 changes:
 
 ```bash
-pnpm --filter @slaw/plugin-llm-wiki typecheck
-pnpm --filter @slaw/plugin-llm-wiki test
-pnpm --filter @slaw/plugin-llm-wiki build
+pnpm --filter @slaw-ai/plugin-llm-wiki typecheck
+pnpm --filter @slaw-ai/plugin-llm-wiki test
+pnpm --filter @slaw-ai/plugin-llm-wiki build
 ```
 
 The focused Vitest suite covers:
@@ -92,14 +92,14 @@ curl -X POST http://127.0.0.1:3100/api/plugins/install \
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@slaw/plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@slaw-ai/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.
 
 After changing manifest-loaded assets such as skills, agent instructions, or
 templates, recompile the local plugin before re-enabling it:
 
 ```bash
-pnpm --filter @slaw/plugin-llm-wiki build
+pnpm --filter @slaw-ai/plugin-llm-wiki build
 ```
 
 The package-local `dist/` directory is ignored by git, but local Slaw

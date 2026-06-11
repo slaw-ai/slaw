@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull, ne, or } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agents, issues } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { agents, issues } from "@slaw-ai/db";
 import type { Request } from "express";
 import { forbidden } from "../errors.js";
 import { assertSquadAccess } from "./authz.js";

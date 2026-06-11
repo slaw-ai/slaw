@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { pluginManifestV1Schema, type Issue } from "@slaw/shared";
-import { createTestHarness } from "@slaw/plugin-sdk/testing";
+import { pluginManifestV1Schema, type Issue } from "@slaw-ai/shared";
+import { createTestHarness } from "@slaw-ai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 

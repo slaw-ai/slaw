@@ -1,4 +1,4 @@
-import { SECRET_PROVIDERS, type SecretProvider } from "@slaw/shared";
+import { SECRET_PROVIDERS, type SecretProvider } from "@slaw-ai/shared";
 
 export function getConfiguredSecretProvider(): SecretProvider {
   const configuredProvider = process.env.SLAW_SECRETS_PROVIDER;

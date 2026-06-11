@@ -12,11 +12,11 @@ import {
   type Agent,
   type AgentWakeupResponse,
   type Issue,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   removeMaintainerOnlySkillSymlinks,
   resolveSlawSkillsDir,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";

@@ -1,4 +1,4 @@
-import type { Goal } from "@slaw/shared";
+import type { Goal } from "@slaw-ai/shared";
 import { Link } from "@/lib/router";
 import { StatusBadge } from "./StatusBadge";
 import { ChevronRight } from "lucide-react";

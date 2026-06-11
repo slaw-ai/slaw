@@ -14,8 +14,8 @@ import {
   routineRuns,
   routineTriggers,
   routines,
-} from "@slaw/db";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -134,7 +134,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@slaw/plugin-managed-routines-test",
+      packageName: "@slaw-ai/plugin-managed-routines-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,

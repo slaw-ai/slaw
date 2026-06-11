@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
-import { createTestHarness } from "@slaw/plugin-sdk/testing";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
+import { createTestHarness } from "@slaw-ai/plugin-sdk/testing";
 
 describe("plugin SDK test harness", () => {
   it("returns scoped execution workspace metadata with the read capability", async () => {

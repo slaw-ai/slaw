@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, WorkspaceRuntimeService } from "@slaw/shared";
+import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, WorkspaceRuntimeService } from "@slaw-ai/shared";
 import { buildProjectWorkspaceSummaries } from "./project-workspaces-tab";
 
 function createProjectWorkspace(overrides: Partial<ProjectWorkspace>): ProjectWorkspace {

@@ -1,11 +1,11 @@
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { plugins, pluginState } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { plugins, pluginState } from "@slaw-ai/db";
 import type {
   PluginStateScopeKind,
   SetPluginState,
   ListPluginState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { notFound } from "../errors.js";
 
 // ---------------------------------------------------------------------------

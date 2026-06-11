@@ -1,5 +1,5 @@
 import type { UIAdapterModule } from "../types";
-import { parseAcpxStdoutLine, buildAcpxLocalConfig } from "@slaw/adapter-acpx-local/ui";
+import { parseAcpxStdoutLine, buildAcpxLocalConfig } from "@slaw-ai/adapter-acpx-local/ui";
 import { SchemaConfigFields } from "../schema-config-fields";
 
 export const acpxLocalUIAdapter: UIAdapterModule = {

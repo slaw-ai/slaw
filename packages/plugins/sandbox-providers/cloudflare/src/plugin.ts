@@ -1,4 +1,4 @@
-import { definePlugin } from "@slaw/plugin-sdk";
+import { definePlugin } from "@slaw-ai/plugin-sdk";
 import type {
   PluginLogger,
   PluginEnvironmentAcquireLeaseParams,
@@ -14,7 +14,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import { CloudflareBridgeError, createCloudflareBridgeClient } from "./bridge-client.js";
 import {
   parseCloudflareDriverConfig,

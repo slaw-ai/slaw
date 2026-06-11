@@ -1,4 +1,4 @@
-import { z } from "@slaw/plugin-sdk";
+import { z } from "@slaw-ai/plugin-sdk";
 
 export const workspaceDiffViewSchema = z.enum(["working-tree", "head"]);
 

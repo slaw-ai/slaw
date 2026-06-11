@@ -1,4 +1,4 @@
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   activityLog,
   agentTaskSessions as agentTaskSessionsTable,
@@ -11,7 +11,7 @@ import {
   pluginLogs,
   principalPermissionGrants,
   projects as projectsTable,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { eq, and, like, desc, inArray, sql, isNull, isNotNull, gt, lte } from "drizzle-orm";
 import type {
   HostServices,
@@ -25,9 +25,9 @@ import type {
   PluginIssueAssigneeSummary,
   PluginIssueOrchestrationSummary,
   PluginExecutionWorkspaceMetadata,
-} from "@slaw/plugin-sdk";
-import type { CreateIssueThreadInteraction, InviteJoinType, IssueDocumentSummary, PermissionKey, PrincipalType } from "@slaw/shared";
-import { pluginOperationIssueOriginKind } from "@slaw/shared";
+} from "@slaw-ai/plugin-sdk";
+import type { CreateIssueThreadInteraction, InviteJoinType, IssueDocumentSummary, PermissionKey, PrincipalType } from "@slaw-ai/shared";
+import { pluginOperationIssueOriginKind } from "@slaw-ai/shared";
 import { squadService } from "./squads.js";
 import { agentService } from "./agents.js";
 import { projectService } from "./projects.js";
@@ -482,7 +482,7 @@ export function buildHostServices(
   pluginKey: string,
   eventBus: PluginEventBus,
   notifyWorker?: (method: string, params: unknown) => void,
-  options: { pluginWorkerManager?: PluginWorkerManager; manifest?: import("@slaw/shared").SlawPluginManifestV1 } = {},
+  options: { pluginWorkerManager?: PluginWorkerManager; manifest?: import("@slaw-ai/shared").SlawPluginManifestV1 } = {},
 ): HostServices & { dispose(): void } {
   const registry = pluginRegistryService(db);
   const stateStore = pluginStateStore(db);
@@ -1195,7 +1195,7 @@ export function buildHostServices(
         await scopedBus.emit(params.name, params.squadId, params.payload);
       },
       async subscribe(params: { eventPattern: string; filter?: Record<string, unknown> | null }) {
-        const handler = async (event: import("@slaw/plugin-sdk").PluginEvent) => {
+        const handler = async (event: import("@slaw-ai/plugin-sdk").PluginEvent) => {
           if (notifyWorker) {
             notifyWorker("onEvent", { event });
           }

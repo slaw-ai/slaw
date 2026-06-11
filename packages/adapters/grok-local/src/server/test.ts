@@ -2,21 +2,21 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   asNumber,
   asString,
   asStringArray,
   ensurePathInEnv,
   parseObject,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import {
   describeAdapterExecutionTarget,
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
   resolveAdapterExecutionTargetCwd,
   runAdapterExecutionTargetProcess,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import { DEFAULT_GROK_LOCAL_MODEL } from "../index.js";
 import { parseGrokJsonl } from "./parse.js";
 

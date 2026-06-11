@@ -15,8 +15,8 @@ import type {
   CloudUpstreamWarning,
   SquadPortabilityExportResult,
   SquadPortabilityFileEntry,
-} from "@slaw/shared";
-import type { Db } from "@slaw/db";
+} from "@slaw-ai/shared";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   cloudUpstreamConnections,
@@ -27,7 +27,7 @@ import {
   issues,
   projects,
   routines,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { badRequest, conflict, HttpError, notFound } from "../errors.js";
 import { squadPortabilityService } from "./squad-portability.js";
 import { localEncryptedProvider } from "../secrets/local-encrypted-provider.js";

@@ -4,7 +4,7 @@ import type {
   IssueExecutionWorkspaceSettings,
   ProjectExecutionWorkspaceDefaultMode,
   ProjectExecutionWorkspacePolicy,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { asString, parseObject } from "../adapters/utils.js";
 
 type ParsedExecutionWorkspaceMode = Exclude<ExecutionWorkspaceMode, "inherit" | "reuse_existing">;

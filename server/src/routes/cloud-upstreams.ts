@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { badRequest, notFound } from "../errors.js";
 import { assertOperatorOrgAccess } from "./authz.js";
 import { cloudUpstreamService, instanceSettingsService } from "../services/index.js";

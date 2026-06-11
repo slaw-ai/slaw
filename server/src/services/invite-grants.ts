@@ -1,5 +1,5 @@
-import { PERMISSION_KEYS } from "@slaw/shared";
-import type { HumanSquadMembershipRole } from "@slaw/shared";
+import { PERMISSION_KEYS } from "@slaw-ai/shared";
+import type { HumanSquadMembershipRole } from "@slaw-ai/shared";
 import { grantsForHumanRole } from "./squad-member-roles.js";
 
 export function grantsFromDefaults(

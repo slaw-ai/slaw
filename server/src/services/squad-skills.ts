@@ -3,10 +3,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { and, asc, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { squads, squadSkills } from "@slaw/db";
-import { readSlawSkillSyncPreference } from "@slaw/adapter-utils/server-utils";
-import type { SlawSkillEntry } from "@slaw/adapter-utils/server-utils";
+import type { Db } from "@slaw-ai/db";
+import { squads, squadSkills } from "@slaw-ai/db";
+import { readSlawSkillSyncPreference } from "@slaw-ai/adapter-utils/server-utils";
+import type { SlawSkillEntry } from "@slaw-ai/adapter-utils/server-utils";
 import type {
   CatalogSkill,
   SquadSkill,
@@ -32,8 +32,8 @@ import type {
   SquadSkillUpdateStatus,
   SquadSkillUpdateHoldReason,
   SquadSkillUsageAgent,
-} from "@slaw/shared";
-import { normalizeAgentUrlKey } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import { normalizeAgentUrlKey } from "@slaw-ai/shared";
 import { resolveSlawInstanceRoot } from "../home-paths.js";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";

@@ -13,7 +13,7 @@ import {
   heartbeatRuns,
   issues,
   projects,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { costService } from "../services/costs.ts";
 import { financeService } from "../services/finance.ts";
 import {

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@slaw/adapter-utils";
+import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@slaw-ai/adapter-utils";
 import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetRemoteCwd,
@@ -18,7 +18,7 @@ import {
   resolveAdapterExecutionTargetCommandForLogs,
   runAdapterExecutionTargetProcess,
   startAdapterExecutionTargetSlawBridge,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import {
   asString,
   asNumber,
@@ -37,7 +37,7 @@ import {
   stringifySlawWakePayload,
   DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE,
   joinPromptSections,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import {
   parseCodexJsonl,
   extractCodexRetryNotBefore,

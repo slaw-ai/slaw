@@ -20,7 +20,7 @@ import type {
   SecretProviderDescriptor,
   SidebarBadges,
   WorkspaceRuntimeService,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type { RunForIssue } from "@/api/activity";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 
@@ -357,7 +357,7 @@ const storybookWorkspaceRuntime = {
       id: "typecheck-ui",
       name: "UI typecheck",
       kind: "job",
-      command: "pnpm --filter @slaw/ui typecheck",
+      command: "pnpm --filter @slaw-ai/ui typecheck",
       cwd: ".",
     },
   ],

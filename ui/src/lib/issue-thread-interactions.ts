@@ -20,7 +20,7 @@ export type {
   SuggestTasksPayload,
   SuggestTasksResult,
   SuggestTasksResultCreatedTask,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type {
   AskUserQuestionsAnswer,
   AskUserQuestionsInteraction,
@@ -30,7 +30,7 @@ import type {
   SuggestedTaskDraft,
   SuggestTasksInteraction,
   SuggestTasksResultCreatedTask,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 export interface SuggestedTaskTreeNode {
   task: SuggestedTaskDraft;

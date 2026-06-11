@@ -6,7 +6,7 @@ import type {
   IssueBlockedInboxAttention,
   IssueBlockedInboxReason,
   IssueBlockedInboxSeverity,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   BLOCKED_REASON_VARIANT_ORDER,
   blockedBadgeTone,

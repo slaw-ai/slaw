@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@slaw/db";
-import { AGENT_ICON_NAMES } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { AGENT_ICON_NAMES } from "@slaw-ai/shared";
 import { forbidden } from "../errors.js";
 import { listServerAdapters } from "../adapters/index.js";
 import { agentService } from "../services/agents.js";

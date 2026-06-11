@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as RouterDom from "react-router-dom";
 import type { NavigateOptions, To } from "react-router-dom";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { useSquad } from "@/context/SquadContext";
 import { IssueLinkQuicklook } from "@/components/IssueLinkQuicklook";
 import {

@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/plugin-sdk",
+  "name": "@slaw-ai/plugin-sdk",
   "version": "1.0.0",
   "description": "Stable public API for Slaw plugins — worker-side context and UI bridge hooks",
   "license": "MIT",
@@ -101,14 +101,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm --filter @slaw/shared build && tsc",
+    "build": "pnpm --filter @slaw-ai/shared build && tsc",
     "clean": "rm -rf dist",
     "ensure-build-deps": "node ../../../scripts/ensure-plugin-build-deps.mjs",
-    "typecheck": "pnpm --filter @slaw/shared build && tsc --noEmit",
+    "typecheck": "pnpm --filter @slaw-ai/shared build && tsc --noEmit",
     "dev:server": "tsx src/dev-cli.ts"
   },
   "dependencies": {
-    "@slaw/shared": "workspace:*",
+    "@slaw-ai/shared": "workspace:*",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import { describe, expect, it } from "vitest";
 import { formatActivityVerb, formatIssueActivityAction } from "./activity-format";
 

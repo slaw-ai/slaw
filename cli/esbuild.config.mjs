@@ -1,7 +1,7 @@
 /**
  * esbuild configuration for building the slaw CLI for npm.
  *
- * Bundles all workspace packages (@slaw/*) into a single file.
+ * Bundles all workspace packages (@slaw-ai/*) into a single file.
  * External npm packages remain as regular dependencies.
  */
 
@@ -24,9 +24,9 @@ const workspacePaths = [
 ];
 
 // Workspace packages that should NOT be bundled — they'll be published
-// to npm and resolved at runtime (e.g. @slaw/server uses dynamic import).
+// to npm and resolved at runtime (e.g. @slaw-ai/server uses dynamic import).
 const externalWorkspacePackages = new Set([
-  "@slaw/server",
+  "@slaw-ai/server",
 ]);
 
 // Collect all external (non-workspace) npm package names
@@ -36,7 +36,7 @@ for (const p of workspacePaths) {
   for (const name of Object.keys(pkg.dependencies || {})) {
     if (externalWorkspacePackages.has(name)) {
       externals.add(name);
-    } else if (!name.startsWith("@slaw/")) {
+    } else if (!name.startsWith("@slaw-ai/")) {
       externals.add(name);
     }
   }

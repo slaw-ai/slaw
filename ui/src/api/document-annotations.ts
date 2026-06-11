@@ -6,7 +6,7 @@ import type {
   DocumentAnnotationThreadStatus,
   DocumentAnnotationThreadWithComments,
   UpdateDocumentAnnotationThreadRequest,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export type DocumentAnnotationListFilter = "open" | "resolved" | "all";

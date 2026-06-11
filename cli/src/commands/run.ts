@@ -143,7 +143,7 @@ function getMissingModuleSpecifier(err: unknown): string | null {
 function maybeEnableUiDevMiddleware(entrypoint: string): void {
   if (process.env.SLAW_UI_DEV_MIDDLEWARE !== undefined) return;
   const normalized = entrypoint.replaceAll("\\", "/");
-  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@slaw/server/src/index.ts")) {
+  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@slaw-ai/server/src/index.ts")) {
     process.env.SLAW_UI_DEV_MIDDLEWARE = "true";
   }
 }
@@ -182,17 +182,17 @@ async function importServerEntry(): Promise<StartedServer> {
     return await startServerFromModule(mod, devEntry);
   }
 
-  // Production mode: import the published @slaw/server package
+  // Production mode: import the published @slaw-ai/server package
   try {
-    const mod = await import("@slaw/server");
-    return await startServerFromModule(mod, "@slaw/server");
+    const mod = await import("@slaw-ai/server");
+    return await startServerFromModule(mod, "@slaw-ai/server");
   } catch (err) {
     const missingSpecifier = getMissingModuleSpecifier(err);
-    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@slaw/server";
+    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@slaw-ai/server";
     if (isModuleNotFoundError(err) && missingServerEntrypoint) {
       throw new Error(
         `Could not locate a Slaw server entrypoint.\n` +
-          `Tried: ${devEntry}, @slaw/server\n` +
+          `Tried: ${devEntry}, @slaw-ai/server\n` +
           `${formatError(err)}`,
       );
     }

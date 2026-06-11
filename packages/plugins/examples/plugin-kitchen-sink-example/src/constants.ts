@@ -1,4 +1,4 @@
-import type { PluginLauncherRegistration } from "@slaw/plugin-sdk";
+import type { PluginLauncherRegistration } from "@slaw-ai/plugin-sdk";
 
 export const PLUGIN_ID = "slaw-kitchen-sink-example";
 export const PLUGIN_VERSION = "0.1.0";

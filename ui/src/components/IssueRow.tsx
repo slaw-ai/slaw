@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Issue, IssueRecoveryAction } from "@slaw/shared";
+import type { Issue, IssueRecoveryAction } from "@slaw-ai/shared";
 import { Link } from "@/lib/router";
 import { Eye, Flag, X } from "lucide-react";
 import {

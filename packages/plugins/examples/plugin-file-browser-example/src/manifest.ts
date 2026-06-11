@@ -1,4 +1,4 @@
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const PLUGIN_ID = "slaw-file-browser-example";
 const FILES_SIDEBAR_SLOT_ID = "files-link";

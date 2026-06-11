@@ -46,7 +46,7 @@ import {
   createEmbeddedPostgresLogBuffer,
   formatEmbeddedPostgresError,
   prepareEmbeddedPostgresNativeRuntime,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, loadSlawEnvFile, mergeSlawEnvEntries, readSlawEnvEntries, resolveSlawEnvFile } from "../config/env.js";
 import { expandHomePrefix } from "../config/home.js";

@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { authUsers } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { authUsers } from "@slaw-ai/db";
 import {
   authSessionSchema,
   currentUserProfileSchema,
   updateCurrentUserProfileSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { unauthorized } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 

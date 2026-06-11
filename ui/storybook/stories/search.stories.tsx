@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { SquadSearchResult, SquadSearchResponse } from "@slaw/shared";
+import type { SquadSearchResult, SquadSearchResponse } from "@slaw-ai/shared";
 import { Badge } from "@/components/ui/badge";
 import { IssueGroupHeader } from "@/components/IssueGroupHeader";
 import { Input } from "@/components/ui/input";

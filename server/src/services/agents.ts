@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq, gte, inArray, lt, ne, or, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   agentConfigRevisions,
@@ -15,8 +15,8 @@ import {
   issueExecutionDecisions,
   issues,
   issueComments,
-} from "@slaw/db";
-import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, isUuidLike, normalizeAgentUrlKey } from "@slaw/shared";
+} from "@slaw-ai/db";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, isUuidLike, normalizeAgentUrlKey } from "@slaw-ai/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { normalizeAgentPermissions } from "./agent-permissions.js";
 import { REDACTED_EVENT_VALUE, sanitizeRecord } from "../redaction.js";

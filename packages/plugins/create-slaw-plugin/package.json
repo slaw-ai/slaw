@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/create-slaw-plugin",
+  "name": "@slaw-ai/create-slaw-plugin",
   "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://github.com/slaw-ai/slaw",
@@ -42,7 +42,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@slaw/plugin-sdk": "workspace:*"
+    "@slaw-ai/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.12.4",

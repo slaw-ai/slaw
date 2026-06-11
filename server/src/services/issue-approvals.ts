@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { approvals, issueApprovals, issues } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { approvals, issueApprovals, issues } from "@slaw-ai/db";
 import { notFound, unprocessable } from "../errors.js";
 import { redactEventPayload } from "../redaction.js";
 

@@ -72,7 +72,7 @@ import type {
   RoutineEnvConfig,
   RoutineTrigger,
   RoutineVariable,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 const concurrencyPolicies = ["coalesce_if_active", "always_enqueue", "skip_if_active"];
 const catchUpPolicies = ["skip_missed", "enqueue_missed_with_cap"];

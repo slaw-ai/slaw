@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PluginRecord } from "@slaw/shared";
+import type { PluginRecord } from "@slaw-ai/shared";
 import { Link } from "@/lib/router";
 import { AlertTriangle, FlaskConical, Plus, Power, Puzzle, Settings, Trash } from "lucide-react";
 import { useSquad } from "@/context/SquadContext";
@@ -210,7 +210,7 @@ export function PluginManager() {
                 <Label htmlFor="packageName">npm Package Name</Label>
                 <Input
                   id="packageName"
-                  placeholder="@slaw/plugin-example"
+                  placeholder="@slaw-ai/plugin-example"
                   value={installPackage}
                   onChange={(e) => setInstallPackage(e.target.value)}
                 />

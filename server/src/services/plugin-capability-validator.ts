@@ -24,7 +24,7 @@ import type {
   SlawPluginManifestV1,
   PluginUiSlotType,
   PluginLauncherPlacementZone,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { forbidden } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 

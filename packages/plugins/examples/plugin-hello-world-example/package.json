@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/plugin-hello-world-example",
+  "name": "@slaw-ai/plugin-hello-world-example",
   "version": "0.1.0",
   "description": "First-party reference plugin that adds a Hello World dashboard widget",
   "type": "module",
@@ -13,13 +13,13 @@
     "ui": "./dist/ui/"
   },
   "scripts": {
-    "prebuild": "pnpm --filter @slaw/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps",
     "build": "tsc",
     "clean": "rm -rf dist",
-    "typecheck": "pnpm --filter @slaw/plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
-    "@slaw/plugin-sdk": "workspace:*"
+    "@slaw-ai/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.12.4",

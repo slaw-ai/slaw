@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import {
   Popover,
   PopoverContent,

@@ -1,4 +1,4 @@
-import { definePlugin, runWorker } from "@slaw/plugin-sdk";
+import { definePlugin, runWorker } from "@slaw-ai/plugin-sdk";
 import * as fs from "node:fs";
 import * as path from "node:path";
 

@@ -11,7 +11,7 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { AgentIcon } from "../components/AgentIconPicker";
 import { Download, Maximize2, Minus, Network, Plus, Upload } from "lucide-react";
-import { AGENT_ROLE_LABELS, type Agent } from "@slaw/shared";
+import { AGENT_ROLE_LABELS, type Agent } from "@slaw-ai/shared";
 
 // Layout constants
 const CARD_W = 200;

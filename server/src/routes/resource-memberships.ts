@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@slaw/db";
-import { updateResourceMembershipSchema } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { updateResourceMembershipSchema } from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { getActorInfo } from "./authz.js";
 import { logActivity, resourceMembershipService } from "../services/index.js";

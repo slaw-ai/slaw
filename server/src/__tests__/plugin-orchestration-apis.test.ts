@@ -18,7 +18,7 @@ import {
   pluginManagedResources,
   plugins,
   projects,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -285,7 +285,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "slaw.plugin-llm-wiki",
-      packageName: "@slaw/plugin-llm-wiki",
+      packageName: "@slaw-ai/plugin-llm-wiki",
       version: "0.1.0",
       manifestJson: {
         id: "slaw.plugin-llm-wiki",
@@ -382,7 +382,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "slaw.local-folders",
-      packageName: "@slaw/plugin-local-folders",
+      packageName: "@slaw-ai/plugin-local-folders",
       version: "0.1.0",
       manifestJson: {
         id: "slaw.local-folders",
@@ -455,7 +455,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "slaw.missions",
-      packageName: "@slaw/plugin-missions",
+      packageName: "@slaw-ai/plugin-missions",
       version: "0.1.0",
       apiVersion: 1,
       categories: ["automation"],

@@ -6,7 +6,7 @@ import {
   type Environment,
   type EnvironmentProbeResult,
   type JsonSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Check, Settings } from "lucide-react";
 import { environmentsApi } from "@/api/environments";
 import { instanceSettingsApi } from "@/api/instanceSettings";

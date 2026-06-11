@@ -11,7 +11,7 @@
  * @example
  * ```ts
  * // dist/worker.ts
- * import { definePlugin } from "@slaw/plugin-sdk";
+ * import { definePlugin } from "@slaw-ai/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {
@@ -320,7 +320,7 @@ export interface SlawPlugin {
  *
  * @example
  * ```ts
- * import { definePlugin } from "@slaw/plugin-sdk";
+ * import { definePlugin } from "@slaw-ai/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {

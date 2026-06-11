@@ -1,4 +1,4 @@
-import type { SquadSearchResponse, SquadSearchScope } from "@slaw/shared";
+import type { SquadSearchResponse, SquadSearchScope } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export interface SquadSearchParams {

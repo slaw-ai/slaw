@@ -1,4 +1,4 @@
-import type { IssueAttachment } from "@slaw/shared";
+import type { IssueAttachment } from "@slaw-ai/shared";
 import { isVideoContentType } from "./issue-output";
 
 const GENERIC_ATTACHMENT_CONTENT_TYPES = new Set([

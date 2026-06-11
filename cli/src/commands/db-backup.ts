@@ -1,7 +1,7 @@
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { formatDatabaseBackupResult, runDatabaseBackup } from "@slaw/db";
+import { formatDatabaseBackupResult, runDatabaseBackup } from "@slaw-ai/db";
 import {
   expandHomePrefix,
   resolveDefaultBackupDir,

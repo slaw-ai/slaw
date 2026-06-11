@@ -1,9 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { Router } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { and, count, eq, gt, inArray, isNull, sql } from "drizzle-orm";
-import { heartbeatRuns, instanceUserRoles, invites } from "@slaw/db";
-import type { DeploymentExposure, DeploymentMode } from "@slaw/shared";
+import { heartbeatRuns, instanceUserRoles, invites } from "@slaw-ai/db";
+import type { DeploymentExposure, DeploymentMode } from "@slaw-ai/shared";
 import { readPersistedDevServerStatus, toDevServerHealthStatus, writeDevServerRestartRequest } from "../dev-server-status.js";
 import { logger } from "../middleware/logger.js";
 import { instanceSettingsService } from "../services/instance-settings.js";

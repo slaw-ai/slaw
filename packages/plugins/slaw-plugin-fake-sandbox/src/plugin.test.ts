@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertEnvironmentEventOrder,
   createEnvironmentTestHarness,
-} from "@slaw/plugin-sdk/testing";
+} from "@slaw-ai/plugin-sdk/testing";
 import manifest from "./manifest.js";
 import plugin from "./plugin.js";
 

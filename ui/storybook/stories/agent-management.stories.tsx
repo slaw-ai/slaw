@@ -8,7 +8,7 @@ import {
   type AgentRuntimeState,
   type SquadSecret,
   type EnvBinding,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { ActiveAgentsPanel } from "@/components/ActiveAgentsPanel";
 import { AgentConfigForm, type CreateConfigValues } from "@/components/AgentConfigForm";
 import { defaultCreateValues } from "@/components/agent-config-defaults";

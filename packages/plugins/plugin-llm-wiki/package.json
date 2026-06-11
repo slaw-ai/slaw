@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/plugin-llm-wiki",
+  "name": "@slaw-ai/plugin-llm-wiki",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -13,13 +13,13 @@
     "README.md"
   ],
   "scripts": {
-    "prebuild": "pnpm --filter @slaw/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps",
     "build": "node ./esbuild.config.mjs",
     "build:rollup": "rollup -c",
     "dev": "node ./esbuild.config.mjs --watch",
     "dev:ui": "slaw-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
     "test": "vitest run --config ./vitest.config.ts",
-    "typecheck": "pnpm --filter @slaw/plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "slawPlugin": {
     "manifest": "./dist/manifest.js",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
-    "@slaw/plugin-sdk": "workspace:*",
+    "@slaw-ai/plugin-sdk": "workspace:*",
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",

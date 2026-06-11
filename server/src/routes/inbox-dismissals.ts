@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { validate } from "../middleware/validate.js";
 import { assertSquadAccess, getActorInfo } from "./authz.js";
 import { inboxDismissalService, logActivity } from "../services/index.js";

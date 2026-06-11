@@ -16,7 +16,7 @@ import {
   projectWorkspaces,
   projects,
   workspaceRuntimeServices,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { eq } from "drizzle-orm";
 import {
   buildWorkspaceRuntimeDesiredStatePatch,
@@ -39,7 +39,7 @@ import {
 } from "../services/workspace-runtime.ts";
 import { writeLocalServiceRegistryRecord } from "../services/local-service-supervisor.ts";
 import { resolveSlawConfigPath } from "../paths.ts";
-import type { WorkspaceOperation } from "@slaw/shared";
+import type { WorkspaceOperation } from "@slaw-ai/shared";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 import {
   getEmbeddedPostgresTestSupport,
@@ -217,21 +217,21 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@slaw/server",
+        name: "@slaw-ai/server",
         dependencies: {
-          "@slaw/db": "workspace:*",
+          "@slaw-ai/db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@slaw/db" }),
+      JSON.stringify({ name: "@slaw-ai/db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@slaw/db" }),
+      JSON.stringify({ name: "@slaw-ai/db" }),
       "utf8",
     );
     await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "db"));
@@ -253,16 +253,16 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@slaw/server",
+        name: "@slaw-ai/server",
         dependencies: {
-          "@slaw/db": "workspace:*",
+          "@slaw-ai/db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@slaw/db" }),
+      JSON.stringify({ name: "@slaw-ai/db" }),
       "utf8",
     );
     await fs.symlink(expectedPackageDir, path.join(serverNodeModulesScopeDir, "db"));
@@ -286,21 +286,21 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@slaw/server",
+        name: "@slaw-ai/server",
         dependencies: {
-          "@slaw/db": "workspace:*",
+          "@slaw-ai/db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@slaw/db" }),
+      JSON.stringify({ name: "@slaw-ai/db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@slaw/db" }),
+      JSON.stringify({ name: "@slaw-ai/db" }),
       "utf8",
     );
     await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "db"));

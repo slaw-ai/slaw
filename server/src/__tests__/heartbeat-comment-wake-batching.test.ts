@@ -8,7 +8,7 @@ import {
   createDb,
   heartbeatRuns,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { heartbeatService } from "../services/heartbeat.ts";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.ts";
 

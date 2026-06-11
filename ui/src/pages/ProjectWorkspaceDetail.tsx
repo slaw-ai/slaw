@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isUuidLike, type ProjectWorkspace } from "@slaw/shared";
+import { isUuidLike, type ProjectWorkspace } from "@slaw-ai/shared";
 import { ArrowLeft, Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";

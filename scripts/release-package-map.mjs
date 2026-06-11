@@ -175,7 +175,7 @@ function replaceWorkspaceDeps(deps, version) {
   const next = { ...deps };
 
   for (const [name, value] of Object.entries(next)) {
-    if (!name.startsWith("@slaw/")) continue;
+    if (!name.startsWith("@slaw-ai/")) continue;
     if (typeof value !== "string" || !value.startsWith("workspace:")) continue;
     next[name] = version;
   }

@@ -18,7 +18,7 @@ import {
   issueDocuments,
   issues,
   workspaceRuntimeServices,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -1,4 +1,4 @@
-import type { ProjectWorkspaceRuntimeConfig } from "@slaw/shared";
+import type { ProjectWorkspaceRuntimeConfig } from "@slaw-ai/shared";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

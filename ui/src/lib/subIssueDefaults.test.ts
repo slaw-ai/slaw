@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExecutionWorkspace, Issue } from "@slaw/shared";
+import type { ExecutionWorkspace, Issue } from "@slaw-ai/shared";
 import { buildSubIssueDefaults, buildSubIssueDefaultsForViewer } from "./subIssueDefaults";
 
 function makeExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): ExecutionWorkspace {

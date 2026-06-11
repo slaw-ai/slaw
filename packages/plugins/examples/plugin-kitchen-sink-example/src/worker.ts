@@ -20,8 +20,8 @@ import {
   type ScopeKey,
   type ToolResult,
   type ToolRunContext,
-} from "@slaw/plugin-sdk";
-import type { Goal, Issue } from "@slaw/shared";
+} from "@slaw-ai/plugin-sdk";
+import type { Goal, Issue } from "@slaw-ai/shared";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,

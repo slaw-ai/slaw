@@ -60,8 +60,8 @@ export interface PluginBundlerPresets {
  */
 export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {}): PluginBundlerPresets {
   const uiExternal = [
-    "@slaw/plugin-sdk/ui",
-    "@slaw/plugin-sdk/ui/hooks",
+    "@slaw-ai/plugin-sdk/ui",
+    "@slaw-ai/plugin-sdk/ui/hooks",
     "react",
     "react-dom",
     "react/jsx-runtime",
@@ -94,7 +94,7 @@ export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {})
     platform: "node",
     target: "node20",
     sourcemap,
-    external: ["@slaw/plugin-sdk"],
+    external: ["@slaw-ai/plugin-sdk"],
   };
 
   const esbuildUi = uiEntry
@@ -130,7 +130,7 @@ export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {})
       sourcemap,
       entryFileNames: "manifest.js",
     },
-    external: ["@slaw/plugin-sdk"],
+    external: ["@slaw-ai/plugin-sdk"],
   };
 
   const rollupUi = uiEntry

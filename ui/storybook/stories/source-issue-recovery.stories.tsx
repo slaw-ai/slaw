@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
-import type { IssueRecoveryAction, IssueRelationIssueSummary } from "@slaw/shared";
+import type { IssueRecoveryAction, IssueRelationIssueSummary } from "@slaw-ai/shared";
 import { Eye, ExternalLink, OctagonAlert, RefreshCw, TriangleAlert } from "lucide-react";
 import { IssueRecoveryActionCard } from "@/components/IssueRecoveryActionCard";
 import { IssueRow } from "@/components/IssueRow";

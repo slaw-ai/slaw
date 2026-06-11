@@ -4,7 +4,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { healthRoutes } from "../routes/health.js";
 
 const tempDirs: string[] = [];

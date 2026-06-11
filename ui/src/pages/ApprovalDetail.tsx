@@ -13,7 +13,7 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
-import type { ApprovalComment } from "@slaw/shared";
+import type { ApprovalComment } from "@slaw-ai/shared";
 import { MarkdownBody } from "../components/MarkdownBody";
 
 export function ApprovalDetail() {

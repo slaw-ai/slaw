@@ -16,7 +16,7 @@ import {
   issueExecutionDecisions,
   issueReadStates,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

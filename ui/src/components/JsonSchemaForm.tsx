@@ -7,7 +7,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { isUuidLike } from "@slaw/shared";
+import { isUuidLike } from "@slaw-ai/shared";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

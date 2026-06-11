@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { BackupRetentionPolicy, RunDatabaseBackupResult } from "@slaw/db";
+import type { BackupRetentionPolicy, RunDatabaseBackupResult } from "@slaw-ai/db";
 import { assertInstanceAdmin } from "./authz.js";
 
 export type InstanceDatabaseBackupTrigger = "manual" | "scheduled";

@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AdapterExecutionContext } from "@slaw/adapter-utils";
-import { resolveSlawInstanceRootForAdapter } from "@slaw/adapter-utils/server-utils";
+import type { AdapterExecutionContext } from "@slaw-ai/adapter-utils";
+import { resolveSlawInstanceRootForAdapter } from "@slaw-ai/adapter-utils/server-utils";
 
 const SEEDED_SHARED_FILES = [
   ".credentials.json",

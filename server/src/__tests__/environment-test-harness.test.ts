@@ -8,8 +8,8 @@ import {
   assertWorkspaceRealizationLifecycle,
   assertExecutionLifecycle,
   assertEnvironmentError,
-} from "@slaw/plugin-sdk/testing";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
+} from "@slaw-ai/plugin-sdk/testing";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
 
 const FAKE_MANIFEST: SlawPluginManifestV1 = {
   id: "test-env-plugin",

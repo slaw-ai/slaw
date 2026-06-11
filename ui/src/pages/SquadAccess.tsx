@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   HUMAN_SQUAD_MEMBERSHIP_ROLE_LABELS,
   type Agent,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Shield, ShieldCheck, Trash2, Users } from "lucide-react";
 import { accessApi, type SquadMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";

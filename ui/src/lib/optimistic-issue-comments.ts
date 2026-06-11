@@ -1,4 +1,4 @@
-import type { Issue, IssueComment } from "@slaw/shared";
+import type { Issue, IssueComment } from "@slaw-ai/shared";
 
 export interface IssueCommentReassignment {
   assigneeAgentId: string | null;

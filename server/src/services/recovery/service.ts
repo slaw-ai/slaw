@@ -1,12 +1,12 @@
 import { and, asc, desc, eq, gt, gte, inArray, isNull, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   DEFAULT_ISSUE_GRAPH_LIVENESS_AUTO_RECOVERY_LOOKBACK_HOURS,
   MAX_ISSUE_GRAPH_LIVENESS_AUTO_RECOVERY_LOOKBACK_HOURS,
   MIN_ISSUE_GRAPH_LIVENESS_AUTO_RECOVERY_LOOKBACK_HOURS,
   type IssueGraphLivenessAutoRecoveryPreview,
   type IssueGraphLivenessAutoRecoveryPreviewItem,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   agents,
   agentWakeupRequests,
@@ -22,7 +22,7 @@ import {
   issueRelations,
   issueThreadInteractions,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { parseObject, asBoolean, asNumber } from "../../adapters/utils.js";
 import { runningProcesses } from "../../adapters/index.js";
 import { forbidden, notFound } from "../../errors.js";

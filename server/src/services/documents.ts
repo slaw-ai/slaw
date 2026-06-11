@@ -1,7 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { documentRevisions, documents, issueDocuments, issues } from "@slaw/db";
-import { isSystemIssueDocumentKey, issueDocumentKeySchema } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { documentRevisions, documents, issueDocuments, issues } from "@slaw-ai/db";
+import { isSystemIssueDocumentKey, issueDocumentKeySchema } from "@slaw-ai/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 function normalizeDocumentKey(key: string) {

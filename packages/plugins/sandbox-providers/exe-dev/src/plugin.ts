@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
-import { definePlugin } from "@slaw/plugin-sdk";
+import { definePlugin } from "@slaw-ai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -18,7 +18,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 
 interface ExeDevDriverConfig {
   apiKey: string | null;

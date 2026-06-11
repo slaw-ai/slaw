@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   catalogSkillListQuerySchema,
   squadSkillCreateSchema,
@@ -9,7 +9,7 @@ import {
   squadSkillInstallUpdateSchema,
   squadSkillProjectScanRequestSchema,
   squadSkillResetSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { accessService, agentService, squadSkillService, logActivity } from "../services/index.js";
 import { getCatalogSkillOrThrow, listCatalogSkills, readCatalogSkillFile } from "../services/skills-catalog.js";

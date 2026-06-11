@@ -1,4 +1,4 @@
-import type { PluginWidgetProps } from "@slaw/plugin-sdk/ui";
+import type { PluginWidgetProps } from "@slaw-ai/plugin-sdk/ui";
 
 const WIDGET_LABEL = "Hello world plugin widget";
 
@@ -9,7 +9,7 @@ export function HelloWorldDashboardWidget({ context }: PluginWidgetProps) {
   return (
     <section aria-label={WIDGET_LABEL}>
       <strong>Hello world</strong>
-      <div>This widget was added by @slaw/plugin-hello-world-example.</div>
+      <div>This widget was added by @slaw-ai/plugin-hello-world-example.</div>
       {/* Include host context so authors can see where scoped IDs come from. */}
       <div>Squad context: {context.squadId}</div>
     </section>

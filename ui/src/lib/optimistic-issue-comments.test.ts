@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import {
   applyLocalQueuedIssueCommentState,
   applyOptimisticIssueFieldUpdate,

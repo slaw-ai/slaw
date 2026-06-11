@@ -1,4 +1,4 @@
-import type { AssetImage } from "@slaw/shared";
+import type { AssetImage } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const assetsApi = {

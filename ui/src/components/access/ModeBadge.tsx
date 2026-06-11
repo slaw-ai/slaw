@@ -1,4 +1,4 @@
-import type { DeploymentExposure, DeploymentMode } from "@slaw/shared";
+import type { DeploymentExposure, DeploymentMode } from "@slaw-ai/shared";
 import { Badge } from "@/components/ui/badge";
 
 export function ModeBadge({

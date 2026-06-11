@@ -10,7 +10,7 @@ import {
   createDb,
   projects,
   routines,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

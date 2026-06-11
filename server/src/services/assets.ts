@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { assets } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { assets } from "@slaw-ai/db";
 
 export function assetService(db: Db) {
   return {

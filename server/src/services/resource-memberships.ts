@@ -1,17 +1,17 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agentMemberships,
   agents,
   projectMemberships,
   projects,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   ResourceMembershipResourceType,
   ResourceMembershipState,
   ResourceMemberships,
   ResourceMembershipUpdateResult,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { forbidden, notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 

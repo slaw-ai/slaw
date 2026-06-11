@@ -109,7 +109,7 @@ import {
   // Instance settings
   patchInstanceGeneralSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 extendZodWithOpenApi(z);
 

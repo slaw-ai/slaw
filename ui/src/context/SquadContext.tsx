@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Squad } from "@slaw/shared";
+import type { Squad } from "@slaw-ai/shared";
 import { squadsApi } from "../api/squads";
 import { squadsListQueryOptions, type SquadListResult } from "../api/squads-query";
 import { queryKeys } from "../lib/queryKeys";

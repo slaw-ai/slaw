@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import os from "node:os";
 import path from "node:path";
-import type { QuotaWindow } from "@slaw/adapter-utils";
+import type { QuotaWindow } from "@slaw-ai/adapter-utils";
 
 // Pure utility functions — import directly from adapter source
 import {
@@ -11,7 +11,7 @@ import {
   parseClaudeCliUsageText,
   readClaudeToken,
   claudeConfigDir,
-} from "@slaw/adapter-claude-local/server";
+} from "@slaw-ai/adapter-claude-local/server";
 
 import {
   secondsToWindowLabel,
@@ -20,7 +20,7 @@ import {
   fetchCodexQuota,
   mapCodexRpcQuota,
   codexHomeDir,
-} from "@slaw/adapter-codex-local/server";
+} from "@slaw-ai/adapter-codex-local/server";
 
 // ---------------------------------------------------------------------------
 // toPercent

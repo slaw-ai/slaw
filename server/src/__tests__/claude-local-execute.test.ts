@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@slaw/adapter-utils/server-utils";
-import { claudeSessionCwdMatchesExecutionTarget, execute } from "@slaw/adapter-claude-local/server";
+import { runChildProcess } from "@slaw-ai/adapter-utils/server-utils";
+import { claudeSessionCwdMatchesExecutionTarget, execute } from "@slaw-ai/adapter-claude-local/server";
 
 async function writeFailingClaudeCommand(
   commandPath: string,

@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { and, asc, desc, eq, gt, inArray, isNull, like, lt, ne, notInArray, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   activityLog,
   agentWakeupRequests,
@@ -31,7 +31,7 @@ import {
   projectWorkspaces,
   projects,
   workspaceOperations,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   AcceptedPlanDecomposition,
   IssueCommentAuthorType,
@@ -44,7 +44,7 @@ import type {
   IssueProductivityReviewTrigger,
   IssueRelationIssueSummary,
   SuccessfulRunHandoffState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   clampIssueRequestDepth,
   extractAgentMentionIds,
@@ -54,7 +54,7 @@ import {
   issueCommentPresentationSchema,
   isUuidLike,
   normalizeIssueIdentifier as normalizeIssueReferenceIdentifier,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, HttpError, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { parseObject } from "../adapters/utils.js";

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import type { Issue, SlawPluginManifestV1 } from "@slaw/shared";
+import type { Issue, SlawPluginManifestV1 } from "@slaw-ai/shared";
 import { createTestHarness } from "../../../packages/plugins/sdk/src/testing.js";
 
 function manifest(capabilities: SlawPluginManifestV1["capabilities"]): SlawPluginManifestV1 {

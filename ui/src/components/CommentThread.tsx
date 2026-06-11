@@ -4,7 +4,7 @@ import type {
   Agent,
   Approval,
   IssueComment,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Check, Copy, Paperclip } from "lucide-react";

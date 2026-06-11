@@ -1,15 +1,15 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   pluginManagedResources,
-} from "@slaw/db";
-import { normalizeAgentUrlKey } from "@slaw/shared";
+} from "@slaw-ai/db";
+import { normalizeAgentUrlKey } from "@slaw-ai/shared";
 import type {
   SquadSkill,
   SlawPluginManifestV1,
   PluginManagedSkillDeclaration,
   PluginManagedSkillResolution,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { notFound } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import { squadSkillService } from "./squad-skills.js";

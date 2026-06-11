@@ -8,7 +8,7 @@ import type {
   SquadPortabilityPreviewRequest,
   SquadPortabilityPreviewResult,
   UpdateSquadBranding,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export type SquadStats = Record<string, { agentCount: number; issueCount: number }>;

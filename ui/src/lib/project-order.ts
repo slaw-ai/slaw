@@ -1,4 +1,4 @@
-import type { Project } from "@slaw/shared";
+import type { Project } from "@slaw-ai/shared";
 
 export const PROJECT_ORDER_UPDATED_EVENT = "slaw:project-order-updated";
 export const PROJECT_SORT_MODE_UPDATED_EVENT = "slaw:project-sort-mode-updated";

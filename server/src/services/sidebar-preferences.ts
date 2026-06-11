@@ -1,10 +1,10 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   squadUserSidebarPreferences,
   userSidebarPreferences,
-} from "@slaw/db";
-import type { SidebarOrderPreference } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { SidebarOrderPreference } from "@slaw-ai/shared";
 
 function normalizeOrderedIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

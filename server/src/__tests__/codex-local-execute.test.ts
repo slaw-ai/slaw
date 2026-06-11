@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@slaw/adapter-utils/server-utils";
-import { execute } from "@slaw/adapter-codex-local/server";
+import { runChildProcess } from "@slaw-ai/adapter-utils/server-utils";
+import { execute } from "@slaw-ai/adapter-codex-local/server";
 
 async function writeFakeCodexCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node

@@ -6,7 +6,7 @@ import type {
   DocumentAnnotationThreadWithComments,
   Issue,
   IssueDocument,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { DocumentAnnotationPanel } from "@/components/DocumentAnnotationPanel";
 import { DocumentAnnotationLayer, type PendingAnchor } from "@/components/DocumentAnnotationLayer";
 import {

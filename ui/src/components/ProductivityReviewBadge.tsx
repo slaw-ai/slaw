@@ -1,5 +1,5 @@
 import { Eye } from "lucide-react";
-import type { IssueProductivityReview } from "@slaw/shared";
+import type { IssueProductivityReview } from "@slaw-ai/shared";
 import { Link } from "../lib/router";
 import { cn } from "../lib/utils";
 import { createIssueDetailPath } from "../lib/issueDetailBreadcrumb";

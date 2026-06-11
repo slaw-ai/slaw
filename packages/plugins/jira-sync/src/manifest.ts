@@ -1,4 +1,4 @@
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 import { JOB_KEYS, MANAGED, PLUGIN_ID, PLUGIN_VERSION, WEBHOOK_KEYS, DB_NAMESPACE_SLUG } from "./constants.js";
 
 /**

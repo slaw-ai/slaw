@@ -25,7 +25,7 @@ How to apply:
   has any `git remote` configured. If you need data from the previous run,
   read it from the local cwd Slaw handed you.
 - If your adapter runs the agent on a different host (ssh, sandbox, remote
-  container), use the round-trip helpers in `@slaw/adapter-utils`:
+  container), use the round-trip helpers in `@slaw-ai/adapter-utils`:
   [`prepareWorkspaceForSshExecution`](../adapter-utils/src/ssh.ts) bundles the
   local cwd to the remote dir before the run, and
   [`restoreWorkspaceFromSshExecution`](../adapter-utils/src/ssh.ts) syncs

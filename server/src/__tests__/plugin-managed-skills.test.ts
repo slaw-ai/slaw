@@ -8,8 +8,8 @@ import {
   createDb,
   pluginManagedResources,
   plugins,
-} from "@slaw/db";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -95,7 +95,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@slaw/plugin-managed-skills-test",
+      packageName: "@slaw-ai/plugin-managed-skills-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,

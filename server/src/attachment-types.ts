@@ -17,7 +17,7 @@
 import {
   DEFAULT_SQUAD_ATTACHMENT_MAX_BYTES,
   MAX_SQUAD_ATTACHMENT_MAX_BYTES,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 export const DEFAULT_ALLOWED_TYPES: readonly string[] = [
   "image/png",

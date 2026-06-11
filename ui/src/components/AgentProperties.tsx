@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
-import { AGENT_ROLE_LABELS, type Agent, type AgentRuntimeState } from "@slaw/shared";
+import { AGENT_ROLE_LABELS, type Agent, type AgentRuntimeState } from "@slaw-ai/shared";
 import { agentsApi } from "../api/agents";
 import { useSquad } from "../context/SquadContext";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";

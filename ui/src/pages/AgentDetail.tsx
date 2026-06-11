@@ -27,7 +27,7 @@ import { PageTabBar } from "../components/PageTabBar";
 import { adapterLabels, roleLabels, help } from "../components/agent-config-primitives";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
-import { redactCommandText as redactCommandSecretText } from "@slaw/adapter-utils";
+import { redactCommandText as redactCommandSecretText } from "@slaw-ai/adapter-utils";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { assetsApi } from "../api/assets";
 import { getUIAdapter, buildTranscript, onAdapterChange } from "../adapters";
@@ -100,8 +100,8 @@ import {
   type AgentRuntimeState,
   type LiveEvent,
   type WorkspaceOperation,
-} from "@slaw/shared";
-import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@slaw/adapter-utils";
+} from "@slaw-ai/shared";
+import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@slaw-ai/adapter-utils";
 import { agentRouteRef } from "../lib/utils";
 import {
   resourceMembershipState,

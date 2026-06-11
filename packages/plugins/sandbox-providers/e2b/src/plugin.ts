@@ -6,7 +6,7 @@ import {
   SandboxNotFoundError,
   TimeoutError,
 } from "e2b";
-import { definePlugin } from "@slaw/plugin-sdk";
+import { definePlugin } from "@slaw-ai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -21,7 +21,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 
 interface E2bDriverConfig {
   template: string;

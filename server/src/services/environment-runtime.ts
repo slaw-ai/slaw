@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { environmentLeases } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { environmentLeases } from "@slaw-ai/db";
 import type {
   Environment,
   EnvironmentLease,
@@ -9,13 +9,13 @@ import type {
   ExecutionWorkspace,
   PluginEnvironmentConfig,
   SandboxEnvironmentConfig,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type {
   PluginEnvironmentExecuteResult,
   PluginEnvironmentLease,
   PluginEnvironmentRealizeWorkspaceResult,
-} from "@slaw/plugin-sdk";
-import { ensureSshWorkspaceReady } from "@slaw/adapter-utils/ssh";
+} from "@slaw-ai/plugin-sdk";
+import { ensureSshWorkspaceReady } from "@slaw-ai/adapter-utils/ssh";
 import { environmentService } from "./environments.js";
 import {
   parseEnvironmentDriverConfig,

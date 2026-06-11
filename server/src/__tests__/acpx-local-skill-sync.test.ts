@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   listAcpxSkills,
   syncAcpxSkills,
-} from "@slaw/adapter-acpx-local/server";
+} from "@slaw-ai/adapter-acpx-local/server";
 
 describe("acpx local skill sync", () => {
   const slawKey = "slaw/slaw/slaw";

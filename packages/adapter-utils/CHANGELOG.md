@@ -1,4 +1,4 @@
-# @slaw/adapter-utils
+# @slaw-ai/adapter-utils
 
 ## 0.3.1
 

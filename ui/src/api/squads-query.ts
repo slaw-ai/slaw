@@ -1,4 +1,4 @@
-import type { Squad } from "@slaw/shared";
+import type { Squad } from "@slaw-ai/shared";
 import { squadsApi } from "./squads";
 import { ApiError } from "./client";
 import { queryKeys } from "../lib/queryKeys";

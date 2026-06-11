@@ -1,4 +1,4 @@
-import type { SecretProvider, SecretProviderDescriptor } from "@slaw/shared";
+import type { SecretProvider, SecretProviderDescriptor } from "@slaw-ai/shared";
 import { awsSecretsManagerProvider } from "./aws-secrets-manager-provider.js";
 import { localEncryptedProvider } from "./local-encrypted-provider.js";
 import {

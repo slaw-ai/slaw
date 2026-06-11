@@ -3,17 +3,17 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   pluginDatabaseNamespaces,
   pluginMigrations,
   plugins,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   SlawPluginManifestV1,
   PluginDatabaseCoreReadTable,
   PluginMigrationRecord,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const MAX_POSTGRES_IDENTIFIER_LENGTH = 63;

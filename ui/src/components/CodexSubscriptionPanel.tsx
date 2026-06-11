@@ -1,4 +1,4 @@
-import type { QuotaWindow } from "@slaw/shared";
+import type { QuotaWindow } from "@slaw-ai/shared";
 import { cn, quotaSourceDisplayName } from "@/lib/utils";
 
 interface CodexSubscriptionPanelProps {

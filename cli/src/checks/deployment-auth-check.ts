@@ -1,4 +1,4 @@
-import { inferBindModeFromHost } from "@slaw/shared";
+import { inferBindModeFromHost } from "@slaw-ai/shared";
 import type { SlawConfig } from "../config/schema.js";
 import type { CheckResult } from "./index.js";
 

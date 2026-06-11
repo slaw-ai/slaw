@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parseClaudeStdoutLine } from "@slaw/adapter-claude-local/ui";
+import { parseClaudeStdoutLine } from "@slaw-ai/adapter-claude-local/ui";
 import { ClaudeLocalConfigFields } from "./config-fields";
-import { buildClaudeLocalConfig } from "@slaw/adapter-claude-local/ui";
+import { buildClaudeLocalConfig } from "@slaw-ai/adapter-claude-local/ui";
 
 export const claudeLocalUIAdapter: UIAdapterModule = {
   type: "claude_local",

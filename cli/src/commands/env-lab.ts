@@ -8,7 +8,7 @@ import {
   readSshEnvLabFixtureStatus,
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
-} from "@slaw/adapter-utils/ssh";
+} from "@slaw-ai/adapter-utils/ssh";
 import { resolveSlawInstanceId, resolveSlawInstanceRoot } from "../config/home.js";
 
 export function resolveEnvLabSshStatePath(instanceId?: string): string {

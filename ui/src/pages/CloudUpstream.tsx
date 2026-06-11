@@ -17,7 +17,7 @@ import type {
   CloudUpstreamPreview,
   CloudUpstreamRun,
   CloudUpstreamStep,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cloudUpstreamsApi } from "@/api/cloudUpstreams";

@@ -21,7 +21,7 @@ import {
   routines,
   routineTriggers,
   secretAccessEvents,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

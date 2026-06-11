@@ -9,7 +9,7 @@ import type {
   Issue,
   JoinRequest,
   ProjectWorkspace,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   DEFAULT_INBOX_ISSUE_COLUMNS,
   buildGroupedInboxSections,

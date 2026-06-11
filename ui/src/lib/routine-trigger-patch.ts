@@ -1,4 +1,4 @@
-import type { RoutineTrigger } from "@slaw/shared";
+import type { RoutineTrigger } from "@slaw-ai/shared";
 
 export type RoutineTriggerEditorDraft = {
   label: string;

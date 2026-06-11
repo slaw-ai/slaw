@@ -8,7 +8,7 @@ import {
   createDb,
   invites,
   principalPermissionGrants,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { buildHostServices } from "../services/plugin-host-services.js";
 import {
   getEmbeddedPostgresTestSupport,

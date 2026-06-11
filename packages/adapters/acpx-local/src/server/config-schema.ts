@@ -1,4 +1,4 @@
-import type { AdapterConfigSchema } from "@slaw/adapter-utils";
+import type { AdapterConfigSchema } from "@slaw-ai/adapter-utils";
 import {
   DEFAULT_ACPX_LOCAL_AGENT,
   DEFAULT_ACPX_LOCAL_NON_INTERACTIVE_PERMISSIONS,

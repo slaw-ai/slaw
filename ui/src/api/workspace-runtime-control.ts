@@ -1,4 +1,4 @@
-import type { WorkspaceRuntimeControlTarget } from "@slaw/shared";
+import type { WorkspaceRuntimeControlTarget } from "@slaw-ai/shared";
 
 export function sanitizeWorkspaceRuntimeControlTarget(
   target: WorkspaceRuntimeControlTarget = {},

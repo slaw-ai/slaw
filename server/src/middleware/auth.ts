@@ -1,10 +1,10 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { Request, RequestHandler } from "express";
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agentApiKeys, agents, authUsers, squads, squadMemberships, instanceUserRoles } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { agentApiKeys, agents, authUsers, squads, squadMemberships, instanceUserRoles } from "@slaw-ai/db";
 import { verifyLocalAgentJwt } from "../agent-auth-jwt.js";
-import type { DeploymentMode } from "@slaw/shared";
+import type { DeploymentMode } from "@slaw-ai/shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "./logger.js";
 import { operatorAuthService } from "../services/operator-auth.js";

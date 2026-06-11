@@ -1,5 +1,5 @@
-import type { Db } from "@slaw/db";
-import type { BotfatherConfig } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import type { BotfatherConfig } from "@slaw-ai/shared";
 import { createBotfatherClient } from "./client.js";
 import { installCatalogSkill, syncSkillCatalog } from "./skill-catalog.js";
 import { BotfatherEnrollment, type EnrollmentStatus } from "./enrollment.js";

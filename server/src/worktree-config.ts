@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { SlawConfig } from "@slaw/shared";
+import type { SlawConfig } from "@slaw-ai/shared";
 import { resolveSlawConfigPath, resolveSlawEnvPath } from "./paths.js";
 
 function nonEmpty(value: string | null | undefined): string | null {

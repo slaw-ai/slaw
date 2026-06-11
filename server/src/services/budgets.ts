@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, inArray, lt, ne, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   approvals,
@@ -8,7 +8,7 @@ import {
   squads,
   costEvents,
   projects,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   BudgetIncident,
   BudgetIncidentResolutionInput,
@@ -20,7 +20,7 @@ import type {
   BudgetScopeType,
   BudgetThresholdType,
   BudgetWindowKind,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import {

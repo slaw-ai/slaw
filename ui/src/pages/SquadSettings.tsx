@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DEFAULT_SQUAD_ATTACHMENT_MAX_BYTES,
   MAX_SQUAD_ATTACHMENT_MAX_BYTES,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { squadsApi } from "../api/squads";

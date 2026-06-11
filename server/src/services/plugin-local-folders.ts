@@ -8,7 +8,7 @@ import type {
   PluginLocalFolderListing,
   PluginLocalFolderProblem,
   PluginLocalFolderStatus,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import { badRequest, forbidden, notFound } from "../errors.js";
 
 export interface StoredPluginLocalFolderConfig {

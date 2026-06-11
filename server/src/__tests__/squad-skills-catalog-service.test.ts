@@ -4,12 +4,12 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { and, eq } from "drizzle-orm";
-import { squads, squadSkills, createDb } from "@slaw/db";
+import { squads, squadSkills, createDb } from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
-import type { CatalogSkill, CatalogSkillFile } from "@slaw/shared";
+import type { CatalogSkill, CatalogSkillFile } from "@slaw-ai/shared";
 
 function sha256(value: string | Buffer) {
   return createHash("sha256").update(value).digest("hex");
@@ -57,7 +57,7 @@ const sampleCatalogSkill: CatalogSkill = {
 
 const mockCatalogService = vi.hoisted(() => ({
   getCatalogPackageMetadata: vi.fn(() => ({
-    packageName: "@slaw/skills-catalog",
+    packageName: "@slaw-ai/skills-catalog",
     packageVersion: "0.3.1",
   })),
   getCatalogSkillOrThrow: vi.fn(),
@@ -166,7 +166,7 @@ describeEmbeddedPostgres("squadSkillService.installFromCatalog", () => {
         catalogKey: sampleCatalogSkill.key,
         catalogKind: "bundled",
         catalogCategory: "software-development",
-        packageName: "@slaw/skills-catalog",
+        packageName: "@slaw-ai/skills-catalog",
         originHash: sampleCatalogSkill.contentHash,
         installedHash: sampleCatalogSkill.contentHash,
         auditVerdict: "pass",
@@ -179,7 +179,7 @@ describeEmbeddedPostgres("squadSkillService.installFromCatalog", () => {
     expect(listed.find((skill) => skill.id === result.skill.id)).toMatchObject({
       catalogKind: "bundled",
       originHash: sampleCatalogSkill.contentHash,
-      packageName: "@slaw/skills-catalog",
+      packageName: "@slaw-ai/skills-catalog",
       packageVersion: "0.3.1",
     });
   });
@@ -243,7 +243,7 @@ describeEmbeddedPostgres("squadSkillService.installFromCatalog", () => {
         `      catalogKey: "${sampleCatalogSkill.key}"`,
         '      catalogKind: "bundled"',
         '      catalogPath: "catalog/bundled/software-development/review"',
-        '      packageName: "@slaw/skills-catalog"',
+        '      packageName: "@slaw-ai/skills-catalog"',
         '      packageVersion: "0.3.1"',
         `      installedHash: "${sampleCatalogSkill.contentHash}"`,
         '      userModifiedAt: "2026-05-01T00:00:00.000Z"',
@@ -278,7 +278,7 @@ describeEmbeddedPostgres("squadSkillService.installFromCatalog", () => {
         catalogKey: sampleCatalogSkill.key,
         catalogKind: "bundled",
         catalogPath: "catalog/bundled/software-development/review",
-        packageName: "@slaw/skills-catalog",
+        packageName: "@slaw-ai/skills-catalog",
         packageVersion: "0.3.1",
         installedHash: sampleCatalogSkill.contentHash,
         userModifiedAt: "2026-05-01T00:00:00.000Z",

@@ -1,4 +1,4 @@
-# `@slaw/plugin-modal`
+# `@slaw-ai/plugin-modal`
 
 First-party Modal sandbox provider plugin for Slaw.
 
@@ -9,7 +9,7 @@ Like the other sandbox-provider packages in this repo, it lives inside the Slaw 
 From a Slaw instance, install:
 
 ```text
-@slaw/plugin-modal
+@slaw-ai/plugin-modal
 ```
 
 The host plugin installer runs `npm install` into the managed plugin directory, so the `modal` SDK dependency is pulled in during installation.
@@ -57,7 +57,7 @@ pnpm test
 pnpm typecheck
 ```
 
-These commands assume the repo root has already been installed once so the local `@slaw/plugin-sdk` workspace package is available to the compiler during development.
+These commands assume the repo root has already been installed once so the local `@slaw-ai/plugin-sdk` workspace package is available to the compiler during development.
 
 ## Operator verification
 

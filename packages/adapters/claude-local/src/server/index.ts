@@ -20,7 +20,7 @@ export {
   fetchWithTimeout,
   claudeConfigDir,
 } from "./quota.js";
-import type { AdapterSessionCodec } from "@slaw/adapter-utils";
+import type { AdapterSessionCodec } from "@slaw-ai/adapter-utils";
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;

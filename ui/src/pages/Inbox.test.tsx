@@ -4,7 +4,7 @@ import { act } from "react";
 import type { ComponentProps } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SquadJoinRequest } from "../api/access";
 

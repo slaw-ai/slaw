@@ -182,7 +182,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
       ? {
         pnpm: {
           overrides: {
-            "@slaw/shared": `file:${toPosixPath(path.relative(outputDir, packedSharedTarball))}`,
+            "@slaw-ai/shared": `file:${toPosixPath(path.relative(outputDir, packedSharedTarball))}`,
           },
         },
       }
@@ -190,10 +190,10 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
     devDependencies: {
       ...(packedSharedTarball
         ? {
-          "@slaw/shared": `file:${toPosixPath(path.relative(outputDir, packedSharedTarball))}`,
+          "@slaw-ai/shared": `file:${toPosixPath(path.relative(outputDir, packedSharedTarball))}`,
         }
         : {}),
-      "@slaw/plugin-sdk": sdkDependency,
+      "@slaw-ai/plugin-sdk": sdkDependency,
       "@rollup/plugin-node-resolve": "^16.0.1",
       "@rollup/plugin-typescript": "^12.1.2",
       "@types/node": "^24.6.0",
@@ -235,7 +235,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
   writeFile(
     path.join(outputDir, "esbuild.config.mjs"),
     `import esbuild from "esbuild";
-import { createPluginBundlerPresets } from "@slaw/plugin-sdk/bundlers";
+import { createPluginBundlerPresets } from "@slaw-ai/plugin-sdk/bundlers";
 
 const presets = createPluginBundlerPresets({ uiEntry: "src/ui/index.tsx" });
 const watch = process.argv.includes("--watch");
@@ -258,7 +258,7 @@ if (watch) {
     path.join(outputDir, "rollup.config.mjs"),
     `import { nodeResolve } from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
-import { createPluginBundlerPresets } from "@slaw/plugin-sdk/bundlers";
+import { createPluginBundlerPresets } from "@slaw-ai/plugin-sdk/bundlers";
 
 const presets = createPluginBundlerPresets({ uiEntry: "src/ui/index.tsx" });
 
@@ -303,7 +303,7 @@ export default defineConfig({
   if (template === "environment") {
     writeFile(
       path.join(outputDir, "src", "manifest.ts"),
-      `import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+      `import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const manifest: SlawPluginManifestV1 = {
   id: ${quote(manifestId)},
@@ -347,7 +347,7 @@ export default manifest;
 
     writeFile(
       path.join(outputDir, "src", "worker.ts"),
-      `import { definePlugin, runWorker } from "@slaw/plugin-sdk";
+      `import { definePlugin, runWorker } from "@slaw-ai/plugin-sdk";
 import type {
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentProbeParams,
@@ -357,7 +357,7 @@ import type {
   PluginEnvironmentDestroyLeaseParams,
   PluginEnvironmentRealizeWorkspaceParams,
   PluginEnvironmentExecuteParams,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -427,7 +427,7 @@ runWorker(plugin, import.meta.url);
 
     writeFile(
       path.join(outputDir, "src", "ui", "index.tsx"),
-      `import { usePluginData, type PluginWidgetProps } from "@slaw/plugin-sdk/ui";
+      `import { usePluginData, type PluginWidgetProps } from "@slaw-ai/plugin-sdk/ui";
 
 type HealthData = {
   status: "ok" | "degraded" | "error";
@@ -459,7 +459,7 @@ import {
   createFakeEnvironmentDriver,
   assertEnvironmentEventOrder,
   assertLeaseLifecycle,
-} from "@slaw/plugin-sdk/testing";
+} from "@slaw-ai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 
@@ -530,7 +530,7 @@ describe("environment plugin scaffold", () => {
   } else {
     writeFile(
       path.join(outputDir, "src", "manifest.ts"),
-      `import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+      `import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const manifest: SlawPluginManifestV1 = {
   id: ${quote(manifestId)},
@@ -568,7 +568,7 @@ export default manifest;
 
     writeFile(
       path.join(outputDir, "src", "worker.ts"),
-      `import { definePlugin, runWorker } from "@slaw/plugin-sdk";
+      `import { definePlugin, runWorker } from "@slaw-ai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -600,7 +600,7 @@ runWorker(plugin, import.meta.url);
 
     writeFile(
       path.join(outputDir, "src", "ui", "index.tsx"),
-      `import { usePluginAction, usePluginData, type PluginWidgetProps } from "@slaw/plugin-sdk/ui";
+      `import { usePluginAction, usePluginData, type PluginWidgetProps } from "@slaw-ai/plugin-sdk/ui";
 
 type HealthData = {
   status: "ok" | "degraded" | "error";
@@ -629,7 +629,7 @@ export function DashboardWidget(_props: PluginWidgetProps) {
     writeFile(
       path.join(outputDir, "tests", "plugin.spec.ts"),
       `import { describe, expect, it } from "vitest";
-import { createTestHarness } from "@slaw/plugin-sdk/testing";
+import { createTestHarness } from "@slaw-ai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 
@@ -678,7 +678,7 @@ output and reloads the plugin worker. Local installs run trusted code from this
 folder on your machine.
 
 ${sdkDependency.startsWith("file:")
-  ? `This scaffold snapshots \`@slaw/plugin-sdk\` and \`@slaw/shared\` from a local Slaw checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.slaw-sdk/\` for local development. Before publishing this plugin, switch those dependencies to published package versions once they are available on npm.\n\n`
+  ? `This scaffold snapshots \`@slaw-ai/plugin-sdk\` and \`@slaw-ai/shared\` from a local Slaw checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.slaw-sdk/\` for local development. Before publishing this plugin, switch those dependencies to published package versions once they are available on npm.\n\n`
   : ""}
 
 ## Install Into Slaw
@@ -689,7 +689,7 @@ slaw plugin install ${shellQuote(toPosixPath(outputDir))}
 
 ## Build Options
 
-- \`pnpm build\` uses esbuild presets from \`@slaw/plugin-sdk/bundlers\`.
+- \`pnpm build\` uses esbuild presets from \`@slaw-ai/plugin-sdk/bundlers\`.
 - \`pnpm build:rollup\` uses rollup presets from the same SDK.
 `,
   );

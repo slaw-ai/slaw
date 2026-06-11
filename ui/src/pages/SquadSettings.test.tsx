@@ -3,7 +3,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AGENT_ADAPTER_TYPES, getEnvironmentCapabilities } from "@slaw/shared";
+import { AGENT_ADAPTER_TYPES, getEnvironmentCapabilities } from "@slaw-ai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SquadEnvironments } from "./SquadEnvironments";
 import { TooltipProvider } from "@/components/ui/tooltip";

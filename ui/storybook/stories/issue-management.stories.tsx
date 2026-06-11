@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import type { RunForIssue } from "@/api/activity";
 import { useQueryClient } from "@tanstack/react-query";
 import {

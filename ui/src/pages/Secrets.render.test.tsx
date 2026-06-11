@@ -8,7 +8,7 @@ import type {
   SquadSecretProviderConfig,
   SecretProviderConfigDiscoveryPreviewResult,
   SecretProviderDescriptor,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProviderVaultsTab, Secrets } from "./Secrets";
 import { ApiError } from "../api/client";

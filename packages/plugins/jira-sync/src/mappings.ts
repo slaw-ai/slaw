@@ -6,7 +6,7 @@
  * references are qualified with that namespace.
  */
 
-import type { PluginDatabaseClient } from "@slaw/plugin-sdk";
+import type { PluginDatabaseClient } from "@slaw-ai/plugin-sdk";
 
 export interface JiraIssueMapping {
   id: number;

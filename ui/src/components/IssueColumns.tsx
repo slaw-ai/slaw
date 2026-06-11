@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { Columns3 } from "lucide-react";
 import { pickTextColorForPillBg } from "@/lib/color-contrast";
 import { Button } from "@/components/ui/button";

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { HeartbeatRun, Issue } from "@slaw/shared";
+import type { HeartbeatRun, Issue } from "@slaw-ai/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive,

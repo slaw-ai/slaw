@@ -35,8 +35,8 @@
  */
 
 import { and, eq, lte, or } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { pluginJobs, pluginJobRuns } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { pluginJobs, pluginJobRuns } from "@slaw-ai/db";
 import type { PluginJobStore } from "./plugin-job-store.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { parseCron, nextCronTick, validateCron } from "./cron.js";

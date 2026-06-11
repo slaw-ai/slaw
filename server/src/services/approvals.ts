@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { approvalComments, approvals } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { approvalComments, approvals } from "@slaw-ai/db";
 import { notFound, unprocessable } from "../errors.js";
 import { redactCurrentUserText } from "../log-redaction.js";
 import { agentService } from "./agents.js";

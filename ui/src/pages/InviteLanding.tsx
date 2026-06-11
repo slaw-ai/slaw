@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AGENT_ADAPTER_TYPES } from "@slaw/shared";
-import type { AgentAdapterType, JoinRequest } from "@slaw/shared";
+import { AGENT_ADAPTER_TYPES } from "@slaw-ai/shared";
+import type { AgentAdapterType, JoinRequest } from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { SquadPatternIcon } from "@/components/SquadPatternIcon";
 import { useSquad } from "@/context/SquadContext";

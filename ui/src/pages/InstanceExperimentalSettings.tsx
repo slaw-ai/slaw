@@ -4,7 +4,7 @@ import { Clock, FlaskConical, Play, Search } from "lucide-react";
 import type {
   IssueGraphLivenessAutoRecoveryPreview,
   PatchInstanceExperimentalSettings,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";

@@ -4,7 +4,7 @@ import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, getTableColumns, gt, inArray, isNull, lt, lte, notInArray, or, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
@@ -20,7 +20,7 @@ import {
   type ModelProfileKey,
   type RoutineRevisionSnapshotV1,
   type RunLivenessState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   agents,
   agentRuntimeState,
@@ -48,7 +48,7 @@ import {
   routineRuns,
   routines,
   workspaceOperations,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { conflict, HttpError, notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { publishLiveEvent } from "./live-events.js";
@@ -164,12 +164,12 @@ import {
   hasSessionCompactionThresholds,
   resolveSessionCompactionPolicy,
   type SessionCompactionPolicy,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   readSlawSkillSyncPreference,
   writeSlawSkillSyncPreference,
-} from "@slaw/adapter-utils/server-utils";
-import { extractSkillMentionIds, isUuidLike } from "@slaw/shared";
+} from "@slaw-ai/adapter-utils/server-utils";
+import { extractSkillMentionIds, isUuidLike } from "@slaw-ai/shared";
 import { environmentService } from "./environments.js";
 import { environmentRuntimeService } from "./environment-runtime.js";
 import { environmentRunOrchestrator } from "./environment-run-orchestrator.js";

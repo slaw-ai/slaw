@@ -6,7 +6,7 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { agentsApi } from "../api/agents";
 import { squadSkillsApi } from "../api/squadSkills";
 import { queryKeys } from "../lib/queryKeys";
-import { AGENT_ROLES, type AdapterEnvironmentTestResult } from "@slaw/shared";
+import { AGENT_ROLES, type AdapterEnvironmentTestResult } from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -31,10 +31,10 @@ import { buildNewAgentHirePayload } from "../lib/new-agent-hire-payload";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@slaw/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@slaw/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@slaw/adapter-gemini-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@slaw/adapter-opencode-local";
+} from "@slaw-ai/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@slaw-ai/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@slaw-ai/adapter-gemini-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@slaw-ai/adapter-opencode-local";
 
 function createValuesForAdapterType(
   adapterType: CreateConfigValues["adapterType"],

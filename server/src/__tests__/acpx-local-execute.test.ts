@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AdapterExecutionContext } from "@slaw/adapter-utils";
-import { createAcpxLocalExecutor } from "@slaw/adapter-acpx-local/server";
+import type { AdapterExecutionContext } from "@slaw-ai/adapter-utils";
+import { createAcpxLocalExecutor } from "@slaw-ai/adapter-acpx-local/server";
 import type {
   AcpRuntime,
   AcpRuntimeEvent,

@@ -1,5 +1,5 @@
-import type { Agent, SquadPortabilitySidebarOrder, Project } from "@slaw/shared";
-import { deriveProjectUrlKey, normalizeAgentUrlKey } from "@slaw/shared";
+import type { Agent, SquadPortabilitySidebarOrder, Project } from "@slaw-ai/shared";
+import { deriveProjectUrlKey, normalizeAgentUrlKey } from "@slaw-ai/shared";
 
 function uniqueSlug(base: string, used: Set<string>) {
   if (!used.has(base)) {

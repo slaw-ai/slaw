@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   pluginManagedResources,
@@ -7,7 +7,7 @@ import {
   projects,
   routines,
   routineTriggers,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   CreateRoutineTrigger,
   PluginManagedResourceRef,
@@ -16,8 +16,8 @@ import type {
   Routine,
   RoutineManagedByPlugin,
   RoutineStatus,
-} from "@slaw/shared";
-import { ROUTINE_STATUSES } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import { ROUTINE_STATUSES } from "@slaw-ai/shared";
 import { notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import { routineService } from "./routines.js";
@@ -28,7 +28,7 @@ const MANAGED_ROUTINE_RESOURCE_KIND = "routine";
 interface PluginManagedRoutineServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: import("@slaw/shared").SlawPluginManifestV1 | null;
+  manifest?: import("@slaw-ai/shared").SlawPluginManifestV1 | null;
   pluginWorkerManager?: PluginWorkerManager;
 }
 

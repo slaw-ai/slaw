@@ -1,4 +1,4 @@
-import type { HeartbeatRun } from "@slaw/shared";
+import type { HeartbeatRun } from "@slaw-ai/shared";
 
 export type SourceResolvedFoldCleanupOutcome =
   | "terminated"

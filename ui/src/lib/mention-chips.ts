@@ -6,7 +6,7 @@ import {
   parseRoutineMentionHref,
   parseSkillMentionHref,
   parseUserMentionHref,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { getAgentIcon } from "./agent-icons";
 import { hexToRgb, pickTextColorForPillBg } from "./color-contrast";
 

@@ -1,12 +1,12 @@
 import { Router } from "express";
 import type { Request } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   createIssueTreeHoldSchema,
   isUuidLike,
   previewIssueTreeControlSchema,
   releaseIssueTreeHoldSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { heartbeatService, issueService, issueTreeControlService, logActivity } from "../services/index.js";
 import { assertOperator, assertSquadAccess, getActorInfo } from "./authz.js";

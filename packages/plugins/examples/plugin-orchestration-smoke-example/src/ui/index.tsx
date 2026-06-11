@@ -4,7 +4,7 @@ import {
   type PluginDetailTabProps,
   type PluginSettingsPageProps,
   type PluginWidgetProps,
-} from "@slaw/plugin-sdk/ui";
+} from "@slaw-ai/plugin-sdk/ui";
 import type React from "react";
 
 type SurfaceStatus = {

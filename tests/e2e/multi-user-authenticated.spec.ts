@@ -65,7 +65,7 @@ function createBootstrapInvite() {
     pnpmCommand,
     [
       "--filter",
-      "@slaw/db",
+      "@slaw-ai/db",
       "exec",
       "tsx",
       BOOTSTRAP_SCRIPT_PATH,

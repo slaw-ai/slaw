@@ -2,7 +2,7 @@
  * Core types for the Slaw plugin worker-side SDK.
  *
  * These types define the stable public API surface that plugin workers import
- * from `@slaw/plugin-sdk`.  The host provides a concrete implementation
+ * from `@slaw-ai/plugin-sdk`.  The host provides a concrete implementation
  * of `PluginContext` to the plugin at initialisation time.
  *
  * @see PLUGIN_SPEC.md §14 — SDK Surface
@@ -45,11 +45,11 @@ import type {
   PermissionKey,
   PrincipalPermissionGrant,
   PrincipalType,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type { PluginPerformActionContext } from "./protocol.js";
 
 // ---------------------------------------------------------------------------
-// Re-exports from @slaw/shared (plugin authors import from one place)
+// Re-exports from @slaw-ai/shared (plugin authors import from one place)
 // ---------------------------------------------------------------------------
 
 export type {
@@ -133,7 +133,7 @@ export type {
   PermissionKey,
   PrincipalPermissionGrant,
   PrincipalType,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 // ---------------------------------------------------------------------------
 // Scope key — identifies where plugin state is stored
@@ -494,7 +494,7 @@ export interface PluginLocalFolderListing {
 
 export interface PluginLocalFoldersClient {
   /** Manifest-declared local folders for this plugin. */
-  declarations(): import("@slaw/shared").PluginLocalFolderDeclaration[];
+  declarations(): import("@slaw-ai/shared").PluginLocalFolderDeclaration[];
   /** Persist a squad-scoped local folder path after validating it. */
   configure(input: PluginLocalFolderConfigureInput): Promise<PluginLocalFolderStatus>;
   /** Check the stored folder readiness for a squad and folder key. */
@@ -1757,7 +1757,7 @@ export interface PluginAuthorizationClient {
  * ctx.streams.close("chat");
  * ```
  *
- * @see usePluginStream in `@slaw/plugin-sdk/ui`
+ * @see usePluginStream in `@slaw-ai/plugin-sdk/ui`
  */
 export interface PluginStreamsClient {
   /**
@@ -1794,7 +1794,7 @@ export interface PluginStreamsClient {
  *
  * @example
  * ```ts
- * import { definePlugin } from "@slaw/plugin-sdk";
+ * import { definePlugin } from "@slaw-ai/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {

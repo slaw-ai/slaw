@@ -1,4 +1,4 @@
-import { asNumber, asString, parseJson, parseObject } from "@slaw/adapter-utils/server-utils";
+import { asNumber, asString, parseJson, parseObject } from "@slaw-ai/adapter-utils/server-utils";
 
 interface ParsedPiOutput {
   sessionId: string | null;

@@ -2,12 +2,12 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   asString,
   parseObject,
   ensurePathInEnv,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
@@ -16,7 +16,7 @@ import {
   describeAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
   prepareAdapterExecutionTargetRuntime,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";

@@ -5,14 +5,14 @@ import net from "node:net";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import type { AdapterRuntimeServiceReport } from "@slaw/adapter-utils";
-import type { Db } from "@slaw/db";
-import { executionWorkspaces, projectWorkspaces, workspaceRuntimeServices } from "@slaw/db";
+import type { AdapterRuntimeServiceReport } from "@slaw-ai/adapter-utils";
+import type { Db } from "@slaw-ai/db";
+import { executionWorkspaces, projectWorkspaces, workspaceRuntimeServices } from "@slaw-ai/db";
 import {
   listWorkspaceServiceCommandDefinitions,
   type WorkspaceRuntimeDesiredState,
   type WorkspaceRuntimeServiceStateMap,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { asNumber, asString, parseObject, renderTemplate } from "../adapters/utils.js";
 import { resolveHomeAwarePath } from "../home-paths.js";

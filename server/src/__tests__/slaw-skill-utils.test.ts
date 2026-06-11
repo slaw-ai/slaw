@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listSlawSkillEntries,
   removeMaintainerOnlySkillSymlinks,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));

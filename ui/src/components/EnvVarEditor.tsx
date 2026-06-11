@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { SquadSecret, EnvBinding, SecretVersionSelector } from "@slaw/shared";
+import type { SquadSecret, EnvBinding, SecretVersionSelector } from "@slaw-ai/shared";
 import { AlertCircle, X } from "lucide-react";
 import { cn } from "../lib/utils";
 

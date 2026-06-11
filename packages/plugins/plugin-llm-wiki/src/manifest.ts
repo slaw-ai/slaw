@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 import { DEFAULT_AGENT_INSTRUCTION_FILES, DEFAULT_AGENT_INSTRUCTIONS } from "./templates.js";
 
 export const PLUGIN_ID = "slaw.plugin-llm-wiki";

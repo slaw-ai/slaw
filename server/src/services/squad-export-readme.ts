@@ -1,7 +1,7 @@
 /**
  * Generates README.md with Mermaid org chart for squad exports.
  */
-import type { SquadPortabilityManifest } from "@slaw/shared";
+import type { SquadPortabilityManifest } from "@slaw-ai/shared";
 
 const ROLE_LABELS: Record<string, string> = {
   squad_lead: "Squad Lead",

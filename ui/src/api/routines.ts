@@ -8,7 +8,7 @@ import type {
   RoutineRunSummary,
   RoutineTrigger,
   RoutineTriggerSecretMaterial,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { activityApi } from "./activity";
 import { api } from "./client";
 

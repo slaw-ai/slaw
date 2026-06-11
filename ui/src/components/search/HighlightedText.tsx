@@ -1,4 +1,4 @@
-import type { SquadSearchHighlight } from "@slaw/shared";
+import type { SquadSearchHighlight } from "@slaw-ai/shared";
 import { cn } from "@/lib/utils";
 
 export interface HighlightedTextProps {

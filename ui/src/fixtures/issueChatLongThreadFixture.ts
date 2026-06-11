@@ -1,4 +1,4 @@
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import type {
   IssueChatComment,

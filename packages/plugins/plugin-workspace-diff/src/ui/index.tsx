@@ -1,5 +1,5 @@
-import type { PluginDetailTabProps } from "@slaw/plugin-sdk/ui";
-import { usePluginData, usePluginToast } from "@slaw/plugin-sdk/ui";
+import type { PluginDetailTabProps } from "@slaw-ai/plugin-sdk/ui";
+import { usePluginData, usePluginToast } from "@slaw-ai/plugin-sdk/ui";
 import { DIFFS_TAG_NAME, getSingularPatch } from "@pierre/diffs";
 import type { PatchDiffProps } from "@pierre/diffs/react";
 import { useFileDiffInstance } from "@pierre/diffs/react";

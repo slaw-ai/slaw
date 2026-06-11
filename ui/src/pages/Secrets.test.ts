@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import type { SecretProviderDescriptor } from "@slaw/shared";
+import type { SecretProviderDescriptor } from "@slaw-ai/shared";
 import {
   getAwsManagedPathPreview,
   getCreateProviderBlockReason,

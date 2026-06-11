@@ -1,82 +1,82 @@
 [
   {
     "dir": "packages/adapter-utils",
-    "name": "@slaw/adapter-utils",
+    "name": "@slaw-ai/adapter-utils",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/acpx-local",
-    "name": "@slaw/adapter-acpx-local",
+    "name": "@slaw-ai/adapter-acpx-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/claude-local",
-    "name": "@slaw/adapter-claude-local",
+    "name": "@slaw-ai/adapter-claude-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/codex-local",
-    "name": "@slaw/adapter-codex-local",
+    "name": "@slaw-ai/adapter-codex-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/cursor-cloud",
-    "name": "@slaw/adapter-cursor-cloud",
+    "name": "@slaw-ai/adapter-cursor-cloud",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/cursor-local",
-    "name": "@slaw/adapter-cursor-local",
+    "name": "@slaw-ai/adapter-cursor-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/gemini-local",
-    "name": "@slaw/adapter-gemini-local",
+    "name": "@slaw-ai/adapter-gemini-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/grok-local",
-    "name": "@slaw/adapter-grok-local",
+    "name": "@slaw-ai/adapter-grok-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/opencode-local",
-    "name": "@slaw/adapter-opencode-local",
+    "name": "@slaw-ai/adapter-opencode-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/pi-local",
-    "name": "@slaw/adapter-pi-local",
+    "name": "@slaw-ai/adapter-pi-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/shared",
-    "name": "@slaw/shared",
+    "name": "@slaw-ai/shared",
     "publishFromCi": true
   },
   {
     "dir": "packages/skills-catalog",
-    "name": "@slaw/skills-catalog",
+    "name": "@slaw-ai/skills-catalog",
     "publishFromCi": false
   },
   {
     "dir": "packages/db",
-    "name": "@slaw/db",
+    "name": "@slaw-ai/db",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sdk",
-    "name": "@slaw/plugin-sdk",
+    "name": "@slaw-ai/plugin-sdk",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/plugin-workspace-diff",
-    "name": "@slaw/plugin-workspace-diff",
+    "name": "@slaw-ai/plugin-workspace-diff",
     "publishFromCi": false
   },
   {
     "dir": "server",
-    "name": "@slaw/server",
+    "name": "@slaw-ai/server",
     "publishFromCi": true
   },
   {
@@ -86,42 +86,42 @@
   },
   {
     "dir": "packages/mcp-server",
-    "name": "@slaw/mcp-server",
+    "name": "@slaw-ai/mcp-server",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/create-slaw-plugin",
-    "name": "@slaw/create-slaw-plugin",
+    "name": "@slaw-ai/create-slaw-plugin",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/cloudflare",
-    "name": "@slaw/plugin-cloudflare-sandbox",
+    "name": "@slaw-ai/plugin-cloudflare-sandbox",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/daytona",
-    "name": "@slaw/plugin-daytona",
+    "name": "@slaw-ai/plugin-daytona",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/exe-dev",
-    "name": "@slaw/plugin-exe-dev",
+    "name": "@slaw-ai/plugin-exe-dev",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/e2b",
-    "name": "@slaw/plugin-e2b",
+    "name": "@slaw-ai/plugin-e2b",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/modal",
-    "name": "@slaw/plugin-modal",
+    "name": "@slaw-ai/plugin-modal",
     "publishFromCi": true
   },
   {
     "dir": "ui",
-    "name": "@slaw/ui",
+    "name": "@slaw-ai/ui",
     "publishFromCi": true
   }
 ]

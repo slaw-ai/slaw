@@ -1,4 +1,4 @@
-# @slaw/ui
+# @slaw-ai/ui
 
 Published static assets for the Slaw operator UI.
 
@@ -11,10 +11,10 @@ The npm package contains the production build under `dist/`. It does not ship th
 Storybook config, stories, and fixtures live under `ui/storybook/`.
 
 ```sh
-pnpm --filter @slaw/ui storybook
-pnpm --filter @slaw/ui build-storybook
+pnpm --filter @slaw-ai/ui storybook
+pnpm --filter @slaw-ai/ui build-storybook
 ```
 
 ## Typical use
 
-Install the package, then serve or copy the built files from `node_modules/@slaw/ui/dist`.
+Install the package, then serve or copy the built files from `node_modules/@slaw-ai/ui/dist`.

@@ -1,4 +1,4 @@
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import type { SquadUserProfile } from "./squad-members";
 
 type ActivityDetails = Record<string, unknown> | null | undefined;

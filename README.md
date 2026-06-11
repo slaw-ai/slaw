@@ -398,7 +398,7 @@ Find Plugins and more at [awesome-slaw](https://github.com/gsxdsm/awesome-slaw)
 
 **Bundled plugins** live under `packages/plugins/` and are auto-discovered at startup. Notably:
 
-- **Jira Sync** (`@slaw/plugin-jira-sync`) — connects one Jira board to a squad. Mirrors Jira issues
+- **Jira Sync** (`@slaw-ai/plugin-jira-sync`) — connects one Jira board to a squad. Mirrors Jira issues
   into Slaw (real-time webhook + hourly reconcile) and reflects Slaw completion back to Jira. Install
   it into a squad, point it at a board, and it provisions a sync agent and an hourly routine for you.
   See `packages/plugins/jira-sync/README.md`.

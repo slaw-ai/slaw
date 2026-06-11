@@ -1,4 +1,4 @@
-import type { DocumentRevision, IssueDocument } from "@slaw/shared";
+import type { DocumentRevision, IssueDocument } from "@slaw-ai/shared";
 
 type DocumentRevisionState = {
   currentRevision: DocumentRevision;

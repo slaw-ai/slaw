@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import type { Goal } from "@slaw/shared";
-import { createGoalSchema, updateGoalSchema } from "@slaw/shared";
+import type { Goal } from "@slaw-ai/shared";
+import { createGoalSchema, updateGoalSchema } from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

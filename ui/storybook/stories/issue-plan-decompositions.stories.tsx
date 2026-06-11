@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AcceptedPlanDecompositionSummary } from "@slaw/shared";
+import type { AcceptedPlanDecompositionSummary } from "@slaw-ai/shared";
 import { IssuePlanDecompositionsSection } from "@/components/IssuePlanDecompositionsSection";
 import { queryKeys } from "@/lib/queryKeys";
 import { storybookAgentMap } from "../fixtures/slawData";

@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gt, inArray, isNull, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { clampIssueRequestDepth } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { clampIssueRequestDepth } from "@slaw-ai/shared";
 import {
   agents,
   squads,
@@ -9,7 +9,7 @@ import {
   issueComments,
   issues,
   projects,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { logger } from "../middleware/logger.js";
 import { logActivity } from "./activity-log.js";
 import { budgetService } from "./budgets.js";

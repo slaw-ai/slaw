@@ -33,7 +33,7 @@
  * @see services/secrets.ts — secretService used by agent env bindings
  */
 
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   collectSecretRefPaths,
   isUuidSecretRef,

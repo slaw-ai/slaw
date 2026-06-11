@@ -7,7 +7,7 @@ import type {
   SquadPortabilityExportResult,
   SquadPortabilityManifest,
   Project,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { useNavigate, useLocation } from "@/lib/router";
 import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";

@@ -36,7 +36,7 @@ import {
   buildProjectMentionHref,
   buildRoutineMentionHref,
   buildUserMentionHref,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Boxes, CalendarClock, User } from "lucide-react";
 import { AgentIcon } from "./AgentIconPicker";
 import { applyMentionChipDecoration, clearMentionChipDecoration, parseMentionChipHref } from "../lib/mention-chips";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { IssueDocument } from "@slaw/shared";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@slaw/shared";
+import type { IssueDocument } from "@slaw-ai/shared";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { cn, relativeTime } from "../lib/utils";
 import { MarkdownBody } from "./MarkdownBody";

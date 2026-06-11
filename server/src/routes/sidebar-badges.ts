@@ -1,7 +1,7 @@
 import { Router } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { and, eq } from "drizzle-orm";
-import { inboxDismissals, joinRequests } from "@slaw/db";
+import { inboxDismissals, joinRequests } from "@slaw-ai/db";
 import { sidebarBadgeService } from "../services/sidebar-badges.js";
 import { accessService } from "../services/access.js";
 import { dashboardService } from "../services/dashboard.js";

@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@slaw/adapter-utils";
+import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@slaw-ai/adapter-utils";
 import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetRemoteCwd,
@@ -22,7 +22,7 @@ import {
   runAdapterExecutionTargetProcess,
   runAdapterExecutionTargetShellCommand,
   startAdapterExecutionTargetSlawBridge,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import {
   asString,
   asNumber,
@@ -44,8 +44,8 @@ import {
   stringifySlawWakePayload,
   DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE,
   runChildProcess,
-} from "@slaw/adapter-utils/server-utils";
-import { shellQuote } from "@slaw/adapter-utils/ssh";
+} from "@slaw-ai/adapter-utils/server-utils";
+import { shellQuote } from "@slaw-ai/adapter-utils/ssh";
 import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
 import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";

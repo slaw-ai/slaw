@@ -1,4 +1,4 @@
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 
 type IssuePropertiesPanelKeyIssue = Pick<
   Issue,

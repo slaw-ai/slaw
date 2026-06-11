@@ -1,9 +1,9 @@
-import type { Db } from "@slaw/db";
-import type { Environment, EnvironmentLease } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import type { Environment, EnvironmentLease } from "@slaw-ai/shared";
 import {
   adapterExecutionTargetToRemoteSpec,
   type AdapterExecutionTarget,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import { parseObject } from "../adapters/utils.js";
 import { resolveEnvironmentDriverConfigForRuntime } from "./environment-config.js";
 import type { EnvironmentRuntimeService } from "./environment-runtime.js";

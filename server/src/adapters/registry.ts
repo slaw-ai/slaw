@@ -7,7 +7,7 @@ import type {
 import {
   buildSandboxNpmInstallCommand,
   getAdapterSessionManagement,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   execute as acpxExecute,
   testEnvironment as acpxTestEnvironment,
@@ -15,11 +15,11 @@ import {
   getConfigSchema as getAcpxConfigSchema,
   listAcpxSkills,
   syncAcpxSkills,
-} from "@slaw/adapter-acpx-local/server";
+} from "@slaw-ai/adapter-acpx-local/server";
 import {
   agentConfigurationDoc as acpxAgentConfigurationDoc,
   models as acpxModels,
-} from "@slaw/adapter-acpx-local";
+} from "@slaw-ai/adapter-acpx-local";
 import {
   execute as claudeExecute,
   listClaudeSkills,
@@ -29,12 +29,12 @@ import {
   testEnvironment as claudeTestEnvironment,
   sessionCodec as claudeSessionCodec,
   getQuotaWindows as claudeGetQuotaWindows,
-} from "@slaw/adapter-claude-local/server";
+} from "@slaw-ai/adapter-claude-local/server";
 import {
   agentConfigurationDoc as claudeAgentConfigurationDoc,
   models as claudeModels,
   modelProfiles as claudeModelProfiles,
-} from "@slaw/adapter-claude-local";
+} from "@slaw-ai/adapter-claude-local";
 import {
   execute as codexExecute,
   listCodexSkills,
@@ -42,54 +42,54 @@ import {
   testEnvironment as codexTestEnvironment,
   sessionCodec as codexSessionCodec,
   getQuotaWindows as codexGetQuotaWindows,
-} from "@slaw/adapter-codex-local/server";
+} from "@slaw-ai/adapter-codex-local/server";
 import {
   agentConfigurationDoc as codexAgentConfigurationDoc,
   models as codexModels,
   modelProfiles as codexModelProfiles,
-} from "@slaw/adapter-codex-local";
+} from "@slaw-ai/adapter-codex-local";
 import {
   execute as cursorExecute,
   listCursorSkills,
   syncCursorSkills,
   testEnvironment as cursorTestEnvironment,
   sessionCodec as cursorSessionCodec,
-} from "@slaw/adapter-cursor-local/server";
+} from "@slaw-ai/adapter-cursor-local/server";
 import {
   agentConfigurationDoc as cursorAgentConfigurationDoc,
   models as cursorModels,
   modelProfiles as cursorModelProfiles,
-} from "@slaw/adapter-cursor-local";
+} from "@slaw-ai/adapter-cursor-local";
 import {
   execute as cursorCloudExecute,
   getConfigSchema as getCursorCloudConfigSchema,
   sessionCodec as cursorCloudSessionCodec,
   testEnvironment as cursorCloudTestEnvironment,
-} from "@slaw/adapter-cursor-cloud/server";
-import { agentConfigurationDoc as cursorCloudAgentConfigurationDoc } from "@slaw/adapter-cursor-cloud";
+} from "@slaw-ai/adapter-cursor-cloud/server";
+import { agentConfigurationDoc as cursorCloudAgentConfigurationDoc } from "@slaw-ai/adapter-cursor-cloud";
 import {
   execute as geminiExecute,
   listGeminiSkills,
   syncGeminiSkills,
   testEnvironment as geminiTestEnvironment,
   sessionCodec as geminiSessionCodec,
-} from "@slaw/adapter-gemini-local/server";
+} from "@slaw-ai/adapter-gemini-local/server";
 import {
   agentConfigurationDoc as geminiAgentConfigurationDoc,
   models as geminiModels,
   modelProfiles as geminiModelProfiles,
-} from "@slaw/adapter-gemini-local";
+} from "@slaw-ai/adapter-gemini-local";
 import {
   execute as grokExecute,
   listGrokSkills,
   syncGrokSkills,
   testEnvironment as grokTestEnvironment,
   sessionCodec as grokSessionCodec,
-} from "@slaw/adapter-grok-local/server";
+} from "@slaw-ai/adapter-grok-local/server";
 import {
   agentConfigurationDoc as grokAgentConfigurationDoc,
   models as grokModels,
-} from "@slaw/adapter-grok-local";
+} from "@slaw-ai/adapter-grok-local";
 import {
   execute as openCodeExecute,
   listOpenCodeSkills,
@@ -97,12 +97,12 @@ import {
   testEnvironment as openCodeTestEnvironment,
   sessionCodec as openCodeSessionCodec,
   listOpenCodeModels,
-} from "@slaw/adapter-opencode-local/server";
+} from "@slaw-ai/adapter-opencode-local/server";
 import {
   agentConfigurationDoc as openCodeAgentConfigurationDoc,
   models as openCodeModels,
   modelProfiles as openCodeModelProfiles,
-} from "@slaw/adapter-opencode-local";
+} from "@slaw-ai/adapter-opencode-local";
 import { listCodexModels, refreshCodexModels } from "./codex-models.js";
 import { listCursorModels } from "./cursor-models.js";
 import {
@@ -112,11 +112,11 @@ import {
   testEnvironment as piTestEnvironment,
   sessionCodec as piSessionCodec,
   listPiModels,
-} from "@slaw/adapter-pi-local/server";
+} from "@slaw-ai/adapter-pi-local/server";
 import {
   agentConfigurationDoc as piAgentConfigurationDoc,
   modelProfiles as piModelProfiles,
-} from "@slaw/adapter-pi-local";
+} from "@slaw-ai/adapter-pi-local";
 import {
   execute as hermesExecute,
   testEnvironment as hermesTestEnvironment,

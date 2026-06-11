@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { pickTextColorForPillBg } from "@/lib/color-contrast";
 import { Link } from "@/lib/router";
-import type { Issue, IssueLabel, Project, WorkspaceRuntimeService } from "@slaw/shared";
+import type { Issue, IssueLabel, Project, WorkspaceRuntimeService } from "@slaw-ai/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AdapterModel } from "../api/agents";
 import { accessApi } from "../api/access";

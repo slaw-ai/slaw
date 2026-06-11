@@ -31,13 +31,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import type {
   SlawPluginManifestV1,
   PluginLauncherDeclaration,
   PluginRecord,
   PluginUiSlotDeclaration,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { logger } from "../middleware/logger.js";
 import { pluginManifestValidator } from "./plugin-manifest-validator.js";
 import { pluginCapabilityValidator } from "./plugin-capability-validator.js";
@@ -544,7 +544,7 @@ export interface PluginLoader {
  */
 export function isPluginPackageName(name: string): boolean {
   if (name.startsWith(NPM_PLUGIN_PACKAGE_PREFIX)) return true;
-  // Also accept scoped packages like @acme/plugin-linear or @slaw/plugin-*
+  // Also accept scoped packages like @acme/plugin-linear or @slaw-ai/plugin-*
   if (name.includes("/")) {
     const localPart = name.split("/")[1] ?? "";
     return localPart.startsWith("plugin-");
@@ -1855,7 +1855,7 @@ export function pluginLoader(
       };
 
       // Repo-local plugin installs can resolve workspace TS sources at runtime
-      // (for example @slaw/shared exports). Run those workers through
+      // (for example @slaw-ai/shared exports). Run those workers through
       // the tsx loader so first-party example plugins work in development.
       if (activePlugin.packagePath && existsSync(DEV_TSX_LOADER_PATH)) {
         workerOptions.execArgv = ["--import", DEV_TSX_LOADER_PATH];

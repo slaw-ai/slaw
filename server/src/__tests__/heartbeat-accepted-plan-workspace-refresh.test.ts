@@ -27,7 +27,7 @@ import {
   projects,
   projectWorkspaces,
   workspaceOperations,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

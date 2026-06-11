@@ -19,7 +19,7 @@ import type {
   PreviewIssueTreeControl,
   ReleaseIssueTreeHold,
   UpsertIssueDocument,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export type IssueUpdateResponse = Issue & {

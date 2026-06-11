@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isCodexUnknownSessionError, parseCodexJsonl } from "@slaw/adapter-codex-local/server";
-import { parseCodexStdoutLine } from "@slaw/adapter-codex-local/ui";
-import { printCodexStreamEvent } from "@slaw/adapter-codex-local/cli";
+import { isCodexUnknownSessionError, parseCodexJsonl } from "@slaw-ai/adapter-codex-local/server";
+import { parseCodexStdoutLine } from "@slaw-ai/adapter-codex-local/ui";
+import { printCodexStreamEvent } from "@slaw-ai/adapter-codex-local/cli";
 
 describe("codex_local parser", () => {
   it("extracts session, summary, usage, and terminal error message", () => {

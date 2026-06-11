@@ -4,8 +4,8 @@ import type {
   PluginDetailTabProps,
   PluginCommentAnnotationProps,
   PluginCommentContextMenuItemProps,
-} from "@slaw/plugin-sdk/ui";
-import { FileTree, usePluginAction, usePluginData } from "@slaw/plugin-sdk/ui";
+} from "@slaw-ai/plugin-sdk/ui";
+import { FileTree, usePluginAction, usePluginData } from "@slaw-ai/plugin-sdk/ui";
 import { useCallback, useMemo, useState, useEffect, useRef, type MouseEvent, type RefObject } from "react";
 import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";

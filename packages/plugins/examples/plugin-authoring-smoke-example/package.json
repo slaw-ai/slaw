@@ -1,17 +1,17 @@
 {
-  "name": "@slaw/plugin-authoring-smoke-example",
+  "name": "@slaw-ai/plugin-authoring-smoke-example",
   "version": "0.1.0",
   "type": "module",
   "private": true,
   "description": "A Slaw plugin",
   "scripts": {
-    "prebuild": "pnpm --filter @slaw/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps",
     "build": "node ./esbuild.config.mjs",
     "build:rollup": "rollup -c",
     "dev": "node ./esbuild.config.mjs --watch",
     "dev:ui": "slaw-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
     "test": "vitest run --config ./vitest.config.ts",
-    "typecheck": "pnpm --filter @slaw/plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "slawPlugin": {
     "manifest": "./dist/manifest.js",
@@ -26,7 +26,7 @@
   "author": "Plugin Author",
   "license": "MIT",
   "dependencies": {
-    "@slaw/plugin-sdk": "workspace:*"
+    "@slaw-ai/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",

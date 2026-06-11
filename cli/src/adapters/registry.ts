@@ -1,13 +1,13 @@
-import type { CLIAdapterModule } from "@slaw/adapter-utils";
-import { printAcpxStreamEvent } from "@slaw/adapter-acpx-local/cli";
-import { printClaudeStreamEvent } from "@slaw/adapter-claude-local/cli";
-import { printCodexStreamEvent } from "@slaw/adapter-codex-local/cli";
-import { printCursorStreamEvent } from "@slaw/adapter-cursor-local/cli";
-import { printCursorCloudEvent } from "@slaw/adapter-cursor-cloud/cli";
-import { printGeminiStreamEvent } from "@slaw/adapter-gemini-local/cli";
-import { printGrokStreamEvent } from "@slaw/adapter-grok-local/cli";
-import { printOpenCodeStreamEvent } from "@slaw/adapter-opencode-local/cli";
-import { printPiStreamEvent } from "@slaw/adapter-pi-local/cli";
+import type { CLIAdapterModule } from "@slaw-ai/adapter-utils";
+import { printAcpxStreamEvent } from "@slaw-ai/adapter-acpx-local/cli";
+import { printClaudeStreamEvent } from "@slaw-ai/adapter-claude-local/cli";
+import { printCodexStreamEvent } from "@slaw-ai/adapter-codex-local/cli";
+import { printCursorStreamEvent } from "@slaw-ai/adapter-cursor-local/cli";
+import { printCursorCloudEvent } from "@slaw-ai/adapter-cursor-cloud/cli";
+import { printGeminiStreamEvent } from "@slaw-ai/adapter-gemini-local/cli";
+import { printGrokStreamEvent } from "@slaw-ai/adapter-grok-local/cli";
+import { printOpenCodeStreamEvent } from "@slaw-ai/adapter-opencode-local/cli";
+import { printPiStreamEvent } from "@slaw-ai/adapter-pi-local/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
 

@@ -6,7 +6,7 @@ import {
   type DocumentAnnotationAnchorSelector,
   type DocumentTextProjection,
   type DocumentTextRange,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 export interface ContainerTextOffset {
   /** Byte offset of the selection start within the flattened container text. */

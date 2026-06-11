@@ -1,4 +1,4 @@
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 
 export interface IssueTree {
   roots: Issue[];

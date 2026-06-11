@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   documents,
   heartbeatRuns,
@@ -8,7 +8,7 @@ import {
   issueDocuments,
   issueThreadInteractions,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   AcceptIssueThreadInteraction,
   AskUserQuestionsAnswer,
@@ -22,7 +22,7 @@ import type {
   RespondIssueThreadInteraction,
   SuggestTasksInteraction,
   SuggestTasksResultCreatedTask,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   acceptIssueThreadInteractionSchema,
   askUserQuestionsPayloadSchema,
@@ -34,7 +34,7 @@ import {
   requestConfirmationResultSchema,
   suggestTasksPayloadSchema,
   suggestTasksResultSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { issueService, listUnfinalizedExecutionWorkspaceIds } from "./issues.js";
 

@@ -16,7 +16,7 @@ vi.mock("../services/environment-execution-target.js", () => ({
   resolveEnvironmentExecutionTransport: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@slaw/adapter-utils/execution-target", () => ({
+vi.mock("@slaw-ai/adapter-utils/execution-target", () => ({
   adapterExecutionTargetToRemoteSpec: mockAdapterExecutionTargetToRemoteSpec,
 }));
 
@@ -52,7 +52,7 @@ import {
   environmentRunOrchestrator,
   EnvironmentRunError,
 } from "../services/environment-run-orchestrator.ts";
-import type { Environment, EnvironmentLease, ExecutionWorkspace } from "@slaw/shared";
+import type { Environment, EnvironmentLease, ExecutionWorkspace } from "@slaw-ai/shared";
 import type { RealizedExecutionWorkspace } from "../services/workspace-runtime.ts";
 import type { EnvironmentRuntimeService } from "../services/environment-runtime.ts";
 

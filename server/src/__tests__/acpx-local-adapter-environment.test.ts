@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { testEnvironment } from "@slaw/adapter-acpx-local/server";
-import type { AdapterEnvironmentCheck } from "@slaw/adapter-utils";
+import { testEnvironment } from "@slaw-ai/adapter-acpx-local/server";
+import type { AdapterEnvironmentCheck } from "@slaw-ai/adapter-utils";
 
 function credentialChecks(checks: AdapterEnvironmentCheck[]): AdapterEnvironmentCheck[] {
   return checks.filter((check) => check.code.startsWith("acpx_claude_") || check.code.startsWith("acpx_codex_"));

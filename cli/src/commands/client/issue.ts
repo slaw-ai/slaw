@@ -24,7 +24,7 @@ import {
   type Issue,
   type IssueComment,
   upsertIssueDocumentSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

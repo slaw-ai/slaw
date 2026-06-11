@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildSkillMentionHref } from "@slaw/shared";
+import { buildSkillMentionHref } from "@slaw-ai/shared";
 import {
   applyRunScopedMentionedSkillKeys,
   extractMentionedSkillIdsFromSources,

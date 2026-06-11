@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   updateSquadMemberWithPermissionsSchema,
   updateCurrentUserProfileSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 describe("access validators", () => {
   it("accepts HTTP(S) and Slaw asset image URLs", () => {

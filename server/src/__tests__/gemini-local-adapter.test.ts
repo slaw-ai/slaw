@@ -3,9 +3,9 @@ import {
   isGeminiTurnLimitResult,
   isGeminiUnknownSessionError,
   parseGeminiJsonl,
-} from "@slaw/adapter-gemini-local/server";
-import { parseGeminiStdoutLine } from "@slaw/adapter-gemini-local/ui";
-import { printGeminiStreamEvent } from "@slaw/adapter-gemini-local/cli";
+} from "@slaw-ai/adapter-gemini-local/server";
+import { parseGeminiStdoutLine } from "@slaw-ai/adapter-gemini-local/ui";
+import { printGeminiStreamEvent } from "@slaw-ai/adapter-gemini-local/cli";
 
 describe("gemini_local parser", () => {
   it("extracts session, summary, usage, cost, and terminal error message from v0.38 stream-json output", () => {

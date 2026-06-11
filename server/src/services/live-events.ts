@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { LiveEvent, LiveEventType } from "@slaw/shared";
+import type { LiveEvent, LiveEventType } from "@slaw-ai/shared";
 
 type LiveEventPayload = Record<string, unknown>;
 type LiveEventListener = (event: LiveEvent) => void;

@@ -54,7 +54,7 @@ pnpm storybook
 pnpm build-storybook
 ```
 
-These run the `@slaw/ui` Storybook on port `6006` and build the static output to `ui/storybook-static/`.
+These run the `@slaw-ai/ui` Storybook on port `6006` and build the static output to `ui/storybook-static/`.
 
 Inspect or stop the current repo's managed dev runner:
 
@@ -470,18 +470,18 @@ skills and is not part of the catalog.
 Validate the catalog without writing the manifest:
 
 ```sh
-pnpm --filter @slaw/skills-catalog validate
+pnpm --filter @slaw-ai/skills-catalog validate
 ```
 
 Regenerate `generated/catalog.json` after editing any catalog `SKILL.md`,
 frontmatter, file inventory, category, or slug:
 
 ```sh
-pnpm --filter @slaw/skills-catalog build:manifest
+pnpm --filter @slaw-ai/skills-catalog build:manifest
 ```
 
 The package's `build` script runs `build:manifest` and then `tsc`; tests live
-under `pnpm --filter @slaw/skills-catalog test`. Validation fails when:
+under `pnpm --filter @slaw-ai/skills-catalog test`. Validation fails when:
 
 - a catalog entry is not under `catalog/bundled/<category>/<slug>` or
   `catalog/optional/<category>/<slug>`
@@ -498,7 +498,7 @@ only), `assets` (other non-script files), or `scripts_executables` (any
 executable script). The build contract is documented in
 `doc/plans/2026-05-26-skills-cli-catalog-contract.md`.
 
-CI runs `pnpm --filter @slaw/skills-catalog validate` and the package's
+CI runs `pnpm --filter @slaw-ai/skills-catalog validate` and the package's
 vitest suite, so always regenerate the manifest in the same commit as the
 catalog change.
 

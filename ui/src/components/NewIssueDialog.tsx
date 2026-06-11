@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type DragEvent, type RefObject } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { IssueWorkMode } from "@slaw/shared";
+import type { IssueWorkMode } from "@slaw-ai/shared";
 import { pickTextColorForSolidBg } from "@/lib/color-contrast";
 import { useDialog } from "../context/DialogContext";
 import { useSquad } from "../context/SquadContext";

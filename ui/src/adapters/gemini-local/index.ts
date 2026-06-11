@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parseGeminiStdoutLine } from "@slaw/adapter-gemini-local/ui";
+import { parseGeminiStdoutLine } from "@slaw-ai/adapter-gemini-local/ui";
 import { GeminiLocalConfigFields } from "./config-fields";
-import { buildGeminiLocalConfig } from "@slaw/adapter-gemini-local/ui";
+import { buildGeminiLocalConfig } from "@slaw-ai/adapter-gemini-local/ui";
 
 export const geminiLocalUIAdapter: UIAdapterModule = {
   type: "gemini_local",

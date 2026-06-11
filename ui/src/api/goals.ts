@@ -1,4 +1,4 @@
-import type { Goal } from "@slaw/shared";
+import type { Goal } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const goalsApi = {

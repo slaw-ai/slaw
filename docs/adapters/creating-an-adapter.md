@@ -74,7 +74,7 @@ export { createServerAdapter } from "./server/index.js";
 
 Key responsibilities:
 
-1. Read config using safe helpers (`asString`, `asNumber`, etc.) from `@slaw/adapter-utils/server-utils`
+1. Read config using safe helpers (`asString`, `asNumber`, etc.) from `@slaw-ai/adapter-utils/server-utils`
 2. Build environment with `buildSlawEnv(agent)` plus context vars
 3. Resolve session state from `runtime.sessionParams`
 4. Render prompt with `renderTemplate(template, data)`
@@ -86,11 +86,11 @@ Key responsibilities:
 
 | Helper | Source | Purpose |
 |--------|--------|---------|
-| `runChildProcess(cmd, opts)` | `@slaw/adapter-utils/server-utils` | Spawn with timeout, grace, streaming |
-| `buildSlawEnv(agent)` | `@slaw/adapter-utils/server-utils` | Inject `SLAW_*` env vars |
-| `renderTemplate(tpl, data)` | `@slaw/adapter-utils/server-utils` | `{{variable}}` substitution |
-| `asString(v)` | `@slaw/adapter-utils` | Safe config value extraction |
-| `asNumber(v)` | `@slaw/adapter-utils` | Safe number extraction |
+| `runChildProcess(cmd, opts)` | `@slaw-ai/adapter-utils/server-utils` | Spawn with timeout, grace, streaming |
+| `buildSlawEnv(agent)` | `@slaw-ai/adapter-utils/server-utils` | Inject `SLAW_*` env vars |
+| `renderTemplate(tpl, data)` | `@slaw-ai/adapter-utils/server-utils` | `{{variable}}` substitution |
+| `asString(v)` | `@slaw-ai/adapter-utils` | Safe config value extraction |
+| `asNumber(v)` | `@slaw-ai/adapter-utils` | Safe number extraction |
 
 ### AdapterExecutionContext
 

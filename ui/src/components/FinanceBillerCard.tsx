@@ -1,4 +1,4 @@
-import type { FinanceByBiller } from "@slaw/shared";
+import type { FinanceByBiller } from "@slaw-ai/shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCents, providerDisplayName } from "@/lib/utils";
 

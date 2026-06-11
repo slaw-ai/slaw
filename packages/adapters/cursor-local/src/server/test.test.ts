@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { runChildProcess } from "@slaw/adapter-utils/server-utils";
+import { runChildProcess } from "@slaw-ai/adapter-utils/server-utils";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";
 import { testEnvironment } from "./test.js";
 

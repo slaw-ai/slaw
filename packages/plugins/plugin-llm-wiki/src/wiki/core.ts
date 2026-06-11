@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
-import type { Agent, AgentSessionEvent, Issue, IssueComment, PluginContext, PluginEvent, PluginLocalFolderEntry, Project, ToolResult } from "@slaw/plugin-sdk";
-import type { IssueDocument, PluginIssueOriginKind, PluginManagedRoutineResolution, PluginManagedSkillResolution } from "@slaw/plugin-sdk/types";
+import type { Agent, AgentSessionEvent, Issue, IssueComment, PluginContext, PluginEvent, PluginLocalFolderEntry, Project, ToolResult } from "@slaw-ai/plugin-sdk";
+import type { IssueDocument, PluginIssueOriginKind, PluginManagedRoutineResolution, PluginManagedSkillResolution } from "@slaw-ai/plugin-sdk/types";
 import {
   DEFAULT_MAX_SOURCE_BYTES,
   DEFAULT_MAX_SLAW_CURSOR_WINDOW_CHARS,

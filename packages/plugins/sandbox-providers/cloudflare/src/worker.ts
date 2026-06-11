@@ -1,4 +1,4 @@
-import { runWorker } from "@slaw/plugin-sdk";
+import { runWorker } from "@slaw-ai/plugin-sdk";
 import plugin from "./plugin.js";
 
 export default plugin;

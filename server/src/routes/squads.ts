@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Router, type Request } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   squadPortabilityExportSchema,
   squadPortabilityImportSchema,
@@ -8,7 +8,7 @@ import {
   createSquadSchema,
   updateSquadBrandingSchema,
   updateSquadSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {

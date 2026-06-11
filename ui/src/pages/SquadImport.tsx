@@ -6,7 +6,7 @@ import type {
   SquadPortabilityPreviewResult,
   SquadPortabilitySource,
   SquadPortabilityAdapterOverride,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { useSquad } from "../context/SquadContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
@@ -34,7 +34,7 @@ import { Field, adapterLabels } from "../components/agent-config-primitives";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 import { defaultCreateValues } from "../components/agent-config-defaults";
 import { getUIAdapter, listUIAdapters } from "../adapters";
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 import {
   type FileTreeNode,
   type FrontmatterData,

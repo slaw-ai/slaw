@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   activityLog,
   agents,
@@ -13,8 +13,8 @@ import {
   issues,
   issueWorkProducts,
   workspaceOperations,
-} from "@slaw/db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@slaw/shared";
+} from "@slaw-ai/db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@slaw-ai/shared";
 import { logger } from "../middleware/logger.js";
 import { classifyRunLiveness } from "./run-liveness.js";
 

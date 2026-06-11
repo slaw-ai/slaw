@@ -149,15 +149,15 @@ describe.sequential("plugin install and upgrade authz", () => {
     const byPackageName = new Map(
       res.body.map((plugin: { packageName: string; experimental: boolean }) => [plugin.packageName, plugin]),
     );
-    expect(packageNames).toContain("@slaw/plugin-workspace-diff");
-    expect(packageNames).toContain("@slaw/plugin-llm-wiki");
-    expect(packageNames).toContain("@slaw/plugin-modal");
-    expect(packageNames).toContain("@slaw/plugin-authoring-smoke-example");
-    expect(packageNames).not.toContain("@slaw/plugin-sdk");
-    expect(byPackageName.get("@slaw/plugin-workspace-diff")?.experimental).toBe(true);
-    expect(byPackageName.get("@slaw/plugin-llm-wiki")?.experimental).toBe(true);
-    expect(byPackageName.get("@slaw/plugin-modal")?.experimental).toBe(true);
-    expect(byPackageName.get("@slaw/plugin-authoring-smoke-example")?.experimental).toBe(false);
+    expect(packageNames).toContain("@slaw-ai/plugin-workspace-diff");
+    expect(packageNames).toContain("@slaw-ai/plugin-llm-wiki");
+    expect(packageNames).toContain("@slaw-ai/plugin-modal");
+    expect(packageNames).toContain("@slaw-ai/plugin-authoring-smoke-example");
+    expect(packageNames).not.toContain("@slaw-ai/plugin-sdk");
+    expect(byPackageName.get("@slaw-ai/plugin-workspace-diff")?.experimental).toBe(true);
+    expect(byPackageName.get("@slaw-ai/plugin-llm-wiki")?.experimental).toBe(true);
+    expect(byPackageName.get("@slaw-ai/plugin-modal")?.experimental).toBe(true);
+    expect(byPackageName.get("@slaw-ai/plugin-authoring-smoke-example")?.experimental).toBe(false);
   }, 20_000);
 
   it("rejects plugin installation for non-admin operator users", async () => {

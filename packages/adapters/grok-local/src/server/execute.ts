@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@slaw/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@slaw-ai/adapter-utils";
 import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetRemoteCwd,
@@ -16,7 +16,7 @@ import {
   resolveAdapterExecutionTargetCommandForLogs,
   resolveAdapterExecutionTargetTimeoutSec,
   runAdapterExecutionTargetProcess,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import {
   asBoolean,
   asNumber,
@@ -37,7 +37,7 @@ import {
   stringifySlawWakePayload,
   refreshSlawWorkspaceEnvForExecution,
   DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import { DEFAULT_GROK_LOCAL_MODEL } from "../index.js";
 import { isGrokUnknownSessionError, parseGrokJsonl } from "./parse.js";
 

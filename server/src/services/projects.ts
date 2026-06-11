@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   projects,
   projectGoals,
@@ -8,7 +8,7 @@ import {
   plugins,
   projectWorkspaces,
   workspaceRuntimeServices,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   PROJECT_COLORS,
   deriveProjectUrlKey,
@@ -24,7 +24,7 @@ import {
   type WorkspaceRuntimeService,
   type PluginManagedProjectDeclaration,
   type PluginManagedProjectResolution,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { listCurrentRuntimeServicesForProjectWorkspaces } from "./workspace-runtime-read-model.js";
 import { parseProjectExecutionWorkspacePolicy } from "./execution-workspace-policy.js";
 import { mergeProjectWorkspaceRuntimeConfig, readProjectWorkspaceRuntimeConfig } from "./project-workspace-runtime-config.js";
@@ -612,7 +612,7 @@ export function projectService(db: Db) {
             resourceKey: input.projectKey,
             squadId: input.squadId,
             projectId: project?.id ?? existingBinding.resourceId,
-            project: project as import("@slaw/shared").Project | null,
+            project: project as import("@slaw-ai/shared").Project | null,
             status: input.reset ? "reset" : "resolved",
           };
         }
@@ -646,7 +646,7 @@ export function projectService(db: Db) {
           resourceKey: input.projectKey,
           squadId: input.squadId,
           projectId: hydrated?.id ?? project.id,
-          project: hydrated as import("@slaw/shared").Project | null,
+          project: hydrated as import("@slaw-ai/shared").Project | null,
           status: "relinked",
         };
       }
@@ -685,7 +685,7 @@ export function projectService(db: Db) {
         resourceKey: input.projectKey,
         squadId: input.squadId,
         projectId: hydrated?.id ?? project.id,
-        project: hydrated as import("@slaw/shared").Project | null,
+        project: hydrated as import("@slaw-ai/shared").Project | null,
         status: "created",
       };
     },

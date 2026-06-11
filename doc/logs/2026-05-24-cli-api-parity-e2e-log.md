@@ -716,7 +716,7 @@ pnpm slaw health --json
 
 ### 2026-05-24T14:12:30+02:00 - Full OpenAPI generator implementation
 
-- Command: `pnpm add @asteasolutions/zod-to-openapi@7.3.4 --filter @slaw/server`; replaced `server/src/routes/openapi.ts` inventory stub with the schema-backed generator from `doc/plans/2026-05-23-cli-api-parity-openapi-reference.ts`; added route wrapper exports; tightened `server/src/__tests__/openapi-routes.test.ts`; `pnpm exec vitest run server/src/__tests__/openapi-routes.test.ts`; `pnpm --dir server typecheck`; restarted isolated server with the scratch env; `pnpm slaw openapi --json`.
+- Command: `pnpm add @asteasolutions/zod-to-openapi@7.3.4 --filter @slaw-ai/server`; replaced `server/src/routes/openapi.ts` inventory stub with the schema-backed generator from `doc/plans/2026-05-23-cli-api-parity-openapi-reference.ts`; added route wrapper exports; tightened `server/src/__tests__/openapi-routes.test.ts`; `pnpm exec vitest run server/src/__tests__/openapi-routes.test.ts`; `pnpm --dir server typecheck`; restarted isolated server with the scratch env; `pnpm slaw openapi --json`.
 - Purpose: Resolve the final OpenAPI caveat by serving a proper generated OpenAPI document with shared Zod request schemas, auth/security metadata, and response status fixups.
 - Prerequisites/IDs used: Isolated scratch server restarted on `127.0.0.1:3197`; `DATABASE_URL` and `DATABASE_MIGRATION_URL` unset; `SLAW_HOME`, `SLAW_CONFIG`, `SLAW_CONTEXT`, `SLAW_AUTH_STORE`, `CODEX_HOME`, and `CLAUDE_HOME` all under `tmp/cli-api-parity`.
 - Expected result: `/api/openapi.json` and `slaw openapi --json` return OpenAPI 3.0 with schema-backed request bodies, security schemes, public-operation security overrides, and create-operation `201` responses.

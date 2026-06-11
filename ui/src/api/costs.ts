@@ -11,7 +11,7 @@ import type {
   FinanceByKind,
   FinanceEvent,
   ProviderQuotaResult,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 function dateParams(from?: string, to?: string): string {

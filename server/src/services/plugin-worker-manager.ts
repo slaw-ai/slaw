@@ -22,7 +22,7 @@ import { fork, type ChildProcess } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { createInterface, type Interface as ReadlineInterface } from "node:readline";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
 import {
   JSONRPC_VERSION,
   JSONRPC_ERROR_CODES,
@@ -37,7 +37,7 @@ import {
   isJsonRpcSuccessResponse,
   JsonRpcParseError,
   JsonRpcCallError,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import type {
   JsonRpcId,
   PluginInvocationContext,
@@ -51,7 +51,7 @@ import type {
   WorkerToHostMethodName,
   WorkerToHostMethods,
   InitializeParams,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import { logger } from "../middleware/logger.js";
 
 // ---------------------------------------------------------------------------

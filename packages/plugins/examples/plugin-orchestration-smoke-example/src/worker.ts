@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { definePlugin, runWorker, type PluginApiRequestInput } from "@slaw/plugin-sdk";
+import { definePlugin, runWorker, type PluginApiRequestInput } from "@slaw-ai/plugin-sdk";
 
 type SmokeInput = {
   squadId: string;

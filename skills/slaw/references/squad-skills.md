@@ -4,7 +4,7 @@ Use this reference when a board user, Squad Lead, or manager asks you to find a 
 
 ## What Exists
 
-- App-shipped catalog: a curated set of squad skills in `@slaw/skills-catalog`, browseable and installable without leaving Slaw.
+- App-shipped catalog: a curated set of squad skills in `@slaw-ai/skills-catalog`, browseable and installable without leaving Slaw.
 - Squad skill library: install, inspect, update, audit, reset, and read squad skills for the whole squad.
 - Agent skill assignment: add or remove squad skills on an existing agent.
 - Hire/create composition: pass `desiredSkills` when creating or hiring an agent so the same assignment model applies immediately.

@@ -9,7 +9,7 @@ import {
   type SDKAgent,
   type SDKMessage,
 } from "@cursor/sdk";
-import type { AdapterExecutionContext, AdapterExecutionResult, AdapterInvocationMeta } from "@slaw/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult, AdapterInvocationMeta } from "@slaw-ai/adapter-utils";
 import {
   DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE,
   asBoolean,
@@ -21,7 +21,7 @@ import {
   renderSlawWakePrompt,
   renderTemplate,
   stringifySlawWakePayload,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 
 type CursorCloudSession = {
   cursorAgentId: string;

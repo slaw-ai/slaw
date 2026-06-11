@@ -1,13 +1,13 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { issueRecoveryActions } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { issueRecoveryActions } from "@slaw-ai/db";
 import type {
   IssueRecoveryAction,
   IssueRecoveryActionKind,
   IssueRecoveryActionOwnerType,
   IssueRecoveryActionOutcome,
   IssueRecoveryActionStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 const ACTIVE_RECOVERY_ACTION_STATUSES = ["active", "escalated"] as const satisfies readonly IssueRecoveryActionStatus[];
 const MAX_UPSERT_RETRIES = 3;

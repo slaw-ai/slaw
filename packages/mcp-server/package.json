@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/mcp-server",
+  "name": "@slaw-ai/mcp-server",
   "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://github.com/slaw-ai/slaw",
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@slaw/shared": "workspace:*",
+    "@slaw-ai/shared": "workspace:*",
     "zod": "^3.25.76"
   },
   "devDependencies": {

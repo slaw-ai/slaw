@@ -23,7 +23,7 @@ import {
   squads,
   squadMemberships,
   instanceUserRoles,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";

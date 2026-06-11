@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { and, eq, gt, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   authUsers,
   operatorApiKeys,
@@ -8,7 +8,7 @@ import {
   squads,
   squadMemberships,
   instanceUserRoles,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { conflict, forbidden, notFound } from "../errors.js";
 
 export const OPERATOR_API_KEY_TTL_MS = 30 * 24 * 60 * 60 * 1000;

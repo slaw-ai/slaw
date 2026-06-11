@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import type { ActivityEvent, Issue, Agent } from "@slaw/shared";
+import type { ActivityEvent, Issue, Agent } from "@slaw-ai/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
 import { accessApi, type CurrentOperatorAccess } from "../api/access";

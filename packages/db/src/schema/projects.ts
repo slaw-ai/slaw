@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, date, index, jsonb } from "drizzle-orm/pg-core";
-import type { AgentEnvConfig } from "@slaw/shared";
+import type { AgentEnvConfig } from "@slaw-ai/shared";
 import { squads } from "./squads.js";
 import { goals } from "./goals.js";
 import { agents } from "./agents.js";

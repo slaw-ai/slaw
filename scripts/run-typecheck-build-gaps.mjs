@@ -86,7 +86,7 @@ if (buildGapPackages.length === 0) {
   process.exit(0);
 }
 
-run("pnpm", ["--filter", "@slaw/plugin-sdk", "ensure-build-deps"]);
+run("pnpm", ["--filter", "@slaw-ai/plugin-sdk", "ensure-build-deps"]);
 
 for (const workspacePkg of buildGapPackages) {
   run("pnpm", ["--filter", workspacePkg.name, "typecheck"]);

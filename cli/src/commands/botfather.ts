@@ -6,7 +6,7 @@ import {
   loadOrCreateMachineIdentity,
   resolveSlawInstanceId,
   resolveBotfatherCredentialsPath,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 
 interface CommonOpts {

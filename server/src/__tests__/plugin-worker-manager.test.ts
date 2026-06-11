@@ -1,14 +1,14 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
 import {
   createHostClientHandlers,
   JsonRpcCallError,
   PLUGIN_RPC_ERROR_CODES,
   type HostServices,
   type HostToWorkerMethods,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import {
   appendStderrExcerpt,
   createPluginWorkerHandle,

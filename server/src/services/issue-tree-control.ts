@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNull, notInArray, or, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agentWakeupRequests,
   heartbeatRuns,
@@ -7,7 +7,7 @@ import {
   issueTreeHoldMembers,
   issueTreeHolds,
   issues,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   ISSUE_STATUSES,
   type IssueStatus,
@@ -20,7 +20,7 @@ import {
   type IssueTreePreviewIssue,
   type IssueTreePreviewRun,
   type IssueTreePreviewWarning,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 type IssueRow = typeof issues.$inferSelect;

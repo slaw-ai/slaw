@@ -7,7 +7,7 @@ import {
   createDb,
   environmentLeases,
   environments,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

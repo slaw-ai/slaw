@@ -4,7 +4,7 @@ import type {
   DocumentAnnotationComment,
   DocumentAnnotationThreadStatus,
   DocumentAnnotationThreadWithComments,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   Check,
   Copy,
@@ -26,7 +26,7 @@ import { cn, relativeTime } from "@/lib/utils";
 import { documentAnnotationsApi } from "@/api/document-annotations";
 import { MarkdownBody } from "./MarkdownBody";
 import type { PendingAnchor } from "./DocumentAnnotationLayer";
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import type { SquadUserProfile } from "@/lib/squad-members";
 
 type AnnotationFilter = "open" | "resolved" | "stale" | "orphan";

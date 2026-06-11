@@ -1,4 +1,4 @@
-import type { SquadPortabilityFileEntry } from "@slaw/shared";
+import type { SquadPortabilityFileEntry } from "@slaw-ai/shared";
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();

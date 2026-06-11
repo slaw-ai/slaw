@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock3, ExternalLink, Settings } from "lucide-react";
-import type { InstanceSchedulerHeartbeatAgent } from "@slaw/shared";
+import type { InstanceSchedulerHeartbeatAgent } from "@slaw-ai/shared";
 import { Link } from "@/lib/router";
 import { heartbeatsApi } from "../api/heartbeats";
 import { agentsApi } from "../api/agents";

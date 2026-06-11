@@ -4,7 +4,7 @@ import type {
   BudgetOverview,
   BudgetPolicySummary,
   BudgetPolicyUpsertInput,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const budgetsApi = {

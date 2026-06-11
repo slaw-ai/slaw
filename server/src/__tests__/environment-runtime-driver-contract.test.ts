@@ -10,7 +10,7 @@ import {
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
   type SshEnvironmentConfig,
-} from "@slaw/adapter-utils/ssh";
+} from "@slaw-ai/adapter-utils/ssh";
 import {
   agents,
   squads,
@@ -20,8 +20,8 @@ import {
   environmentLeases,
   environments,
   heartbeatRuns,
-} from "@slaw/db";
-import type { Environment } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { Environment } from "@slaw-ai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -6,7 +6,7 @@ import {
   resubmitApprovalSchema,
   type Approval,
   type ApprovalComment,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

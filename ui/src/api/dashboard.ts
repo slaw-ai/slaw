@@ -1,4 +1,4 @@
-import type { DashboardSummary } from "@slaw/shared";
+import type { DashboardSummary } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const dashoperatorApi = {

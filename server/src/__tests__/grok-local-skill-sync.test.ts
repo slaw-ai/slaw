@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   listGrokSkills,
   syncGrokSkills,
-} from "@slaw/adapter-grok-local/server";
+} from "@slaw-ai/adapter-grok-local/server";
 
 describe("grok local skill sync", () => {
   const slawKey = "slaw/slaw/slaw";

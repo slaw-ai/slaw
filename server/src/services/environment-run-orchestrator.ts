@@ -15,7 +15,7 @@
  * and transport logic.
  */
 
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import type {
   Environment,
   EnvironmentLease,
@@ -23,7 +23,7 @@ import type {
   EnvironmentLeaseStatus,
   ExecutionWorkspace,
   ExecutionWorkspaceConfig,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { environmentService } from "./environments.js";
 import {
   environmentRuntimeService,
@@ -39,7 +39,7 @@ import {
   adapterExecutionTargetToRemoteSpec,
   type AdapterExecutionTarget,
   type AdapterRemoteExecutionSpec,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import { buildWorkspaceRealizationRequest } from "./workspace-realization.js";
 import { executionWorkspaceService } from "./execution-workspaces.js";
 import { logActivity } from "./activity-log.js";

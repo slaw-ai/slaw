@@ -1,6 +1,6 @@
 import type { UIAdapterModule } from "../types";
-import { createGrokStdoutParser, parseGrokStdoutLine } from "@slaw/adapter-grok-local/ui";
-import { buildGrokLocalConfig } from "@slaw/adapter-grok-local/ui";
+import { createGrokStdoutParser, parseGrokStdoutLine } from "@slaw-ai/adapter-grok-local/ui";
+import { buildGrokLocalConfig } from "@slaw-ai/adapter-grok-local/ui";
 import { GrokLocalConfigFields } from "./config-fields";
 
 export const grokLocalUIAdapter: UIAdapterModule = {

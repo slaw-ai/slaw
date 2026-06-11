@@ -5,7 +5,7 @@ import {
   botfatherConfigSchema,
   type SlawConfig,
   type BotfatherConfig,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { resolveSlawConfigPath } from "./paths.js";
 
 export function readConfigFile(): SlawConfig | null {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { verifyDocumentAnchorSelector } from "@slaw/shared";
+import { verifyDocumentAnchorSelector } from "@slaw-ai/shared";
 import {
   buildAnchorFromContainerSelection,
   getContainerTextOffset,

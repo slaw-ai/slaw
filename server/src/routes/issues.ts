@@ -3,7 +3,7 @@ import { Router, type Request, type Response } from "express";
 import multer from "multer";
 import { z } from "zod";
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   activityLog,
   executionWorkspaces,
@@ -14,7 +14,7 @@ import {
   issueWorkProducts,
   issueDocuments,
   projectWorkspaces,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   addIssueCommentSchema,
   acceptIssueThreadInteractionSchema,
@@ -51,7 +51,7 @@ import {
   type ExecutionWorkspace,
   type IssueRelationIssueSummary,
   type SuccessfulRunHandoffState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type { StorageService } from "../storage/types.js";
 import { validate } from "../middleware/validate.js";
 import * as serviceIndex from "../services/index.js";

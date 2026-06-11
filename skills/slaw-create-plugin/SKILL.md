@@ -60,7 +60,7 @@ On success the command prints the exact next commands (`cd`, `pnpm install`, `pn
 If `slaw` is not on PATH in your environment, fall back to:
 
 ```bash
-pnpm --filter @slaw/create-slaw-plugin build
+pnpm --filter @slaw-ai/create-slaw-plugin build
 node packages/plugins/create-slaw-plugin/dist/index.js @acme/my-plugin \
   --output /absolute/path \
   --sdk-path /absolute/path/to/slaw/packages/plugins/sdk

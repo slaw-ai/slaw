@@ -2,7 +2,7 @@ import type {
   ResourceMemberships,
   ResourceMembershipUpdateResult,
   UpdateResourceMembership,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const resourceMembershipsApi = {

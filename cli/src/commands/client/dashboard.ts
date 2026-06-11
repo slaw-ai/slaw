@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { DashboardSummary } from "@slaw/shared";
+import type { DashboardSummary } from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

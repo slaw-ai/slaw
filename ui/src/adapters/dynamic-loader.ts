@@ -27,7 +27,7 @@
  * Security: see `sandboxed-parser-worker.ts` for the full lockdown.
  */
 
-import type { TranscriptEntry } from "@slaw/adapter-utils";
+import type { TranscriptEntry } from "@slaw-ai/adapter-utils";
 import type { StdoutLineParser, StdoutParserFactory } from "./types";
 import { createSandboxedWorker } from "./sandboxed-parser-worker";
 import type { SandboxRequest, SandboxResponse } from "./sandboxed-parser-worker";

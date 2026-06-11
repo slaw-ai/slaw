@@ -8,7 +8,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import type { PluginCategory, PluginStatus, SlawPluginManifestV1 } from "@slaw/shared";
+import type { PluginCategory, PluginStatus, SlawPluginManifestV1 } from "@slaw-ai/shared";
 
 /**
  * `plugins` table — stores one row per installed plugin.

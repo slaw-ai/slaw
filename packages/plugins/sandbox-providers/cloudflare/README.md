@@ -1,4 +1,4 @@
-# `@slaw/plugin-cloudflare-sandbox`
+# `@slaw-ai/plugin-cloudflare-sandbox`
 
 Published Cloudflare sandbox provider plugin for Slaw.
 
@@ -9,7 +9,7 @@ This package lives in the Slaw monorepo, but it is intentionally excluded from t
 From a Slaw instance, install:
 
 ```text
-@slaw/plugin-cloudflare-sandbox
+@slaw-ai/plugin-cloudflare-sandbox
 ```
 
 Configure Cloudflare from `Squad Settings -> Environments`, not from the plugin's instance settings page.
@@ -45,4 +45,4 @@ pnpm test
 pnpm typecheck
 ```
 
-These commands assume the repo root has already been installed once so the local `@slaw/plugin-sdk` workspace package is available to the compiler during development.
+These commands assume the repo root has already been installed once so the local `@slaw-ai/plugin-sdk` workspace package is available to the compiler during development.

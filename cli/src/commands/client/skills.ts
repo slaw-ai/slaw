@@ -12,7 +12,7 @@ import type {
   SquadSkillListItem,
   SquadSkillProjectScanResult,
   SquadSkillUpdateStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { readFile } from "node:fs/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { createInterface } from "node:readline/promises";

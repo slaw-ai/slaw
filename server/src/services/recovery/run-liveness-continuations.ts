@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@slaw/db";
-import type { RunLivenessState } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@slaw-ai/db";
+import type { RunLivenessState } from "@slaw-ai/shared";
 import { withRecoveryModelProfileHint } from "./model-profile-hint.js";
 import { RECOVERY_REASON_KINDS } from "./origins.js";
 

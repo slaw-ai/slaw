@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Agent, SquadSecret } from "@slaw/shared";
+import type { Agent, SquadSecret } from "@slaw-ai/shared";
 import type { SlawConfig } from "../config/schema.js";
 import { secretsCheck } from "../checks/secrets-check.js";
 import {

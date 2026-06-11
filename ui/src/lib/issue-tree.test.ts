@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { buildIssueTree, countDescendants, filterIssueDescendants } from "./issue-tree";
 
 function makeIssue(id: string, parentId: string | null = null): Issue {

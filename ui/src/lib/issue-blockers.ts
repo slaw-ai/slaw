@@ -1,4 +1,4 @@
-import type { IssueRelationIssueSummary } from "@slaw/shared";
+import type { IssueRelationIssueSummary } from "@slaw-ai/shared";
 
 export function isAssignedBacklogBlocker(blocker: IssueRelationIssueSummary): boolean {
   return blocker.status === "backlog" && Boolean(blocker.assigneeAgentId);

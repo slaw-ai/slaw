@@ -32,4 +32,4 @@ export type {
   AdapterConfigSchema,
   AdapterRuntimeCommandSpec,
   ServerAdapterModule,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";

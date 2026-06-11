@@ -1,7 +1,7 @@
-import type { ActivityEvent, RunLivenessState } from "@slaw/shared";
+import type { ActivityEvent, RunLivenessState } from "@slaw-ai/shared";
 import { api } from "./client";
 
-export type { RunLivenessState } from "@slaw/shared";
+export type { RunLivenessState } from "@slaw-ai/shared";
 
 export interface RunForIssue {
   runId: string;

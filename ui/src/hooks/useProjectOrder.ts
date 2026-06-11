@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "@slaw/shared";
+import type { Project } from "@slaw-ai/shared";
 import { sidebarPreferencesApi } from "../api/sidebarPreferences";
 import { sortProjectsByStoredOrder } from "../lib/project-order";
 import { queryKeys } from "../lib/queryKeys";

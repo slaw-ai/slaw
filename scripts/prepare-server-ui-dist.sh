@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # prepare-server-ui-dist.sh — Build the UI and copy it into server/ui-dist.
-# This keeps @slaw/server publish artifacts self-contained for static UI serving.
+# This keeps @slaw-ai/server publish artifacts self-contained for static UI serving.
 # When SLAW_RELEASE_REUSE_UI_DIST=1 and ui/dist already exists, reuse that
 # output instead of rebuilding it again inside the release packaging flow.
 
@@ -18,10 +18,10 @@ case "${SLAW_RELEASE_REUSE_UI_DIST:-}" in
 esac
 
 if [ "$should_reuse_existing_ui_dist" = true ] && [ -f "$UI_DIST/index.html" ]; then
-  echo "  -> Reusing existing @slaw/ui dist output"
+  echo "  -> Reusing existing @slaw-ai/ui dist output"
 else
-  echo "  -> Building @slaw/ui..."
-  pnpm --dir "$REPO_ROOT" --filter @slaw/ui build
+  echo "  -> Building @slaw-ai/ui..."
+  pnpm --dir "$REPO_ROOT" --filter @slaw-ai/ui build
 fi
 
 if [ ! -f "$UI_DIST/index.html" ]; then

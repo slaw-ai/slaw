@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext } from "@slaw/adapter-utils";
+import type { AdapterExecutionContext } from "@slaw-ai/adapter-utils";
 
 const ensureRuntimeInstalledMock = vi.hoisted(() => vi.fn(async () => {}));
 const ensureCommandMock = vi.hoisted(() => vi.fn(async () => {}));
@@ -13,7 +13,7 @@ const prepareRuntimeMock = vi.hoisted(() => vi.fn(async () => ({
 const resolveCommandForLogsMock = vi.hoisted(() => vi.fn(async () => "grok"));
 const runProcessMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@slaw/adapter-utils/execution-target", () => ({
+vi.mock("@slaw-ai/adapter-utils/execution-target", () => ({
   adapterExecutionTargetIsRemote: () => false,
   adapterExecutionTargetRemoteCwd: (_target: unknown, cwd: string) => cwd,
   overrideAdapterExecutionTargetRemoteCwd: (target: unknown, _cwd: string) => target,

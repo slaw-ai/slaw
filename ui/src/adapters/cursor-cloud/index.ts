@@ -3,7 +3,7 @@ import { SchemaConfigFields } from "../schema-config-fields";
 import {
   buildCursorCloudConfig,
   parseCursorCloudStdoutLine,
-} from "@slaw/adapter-cursor-cloud/ui";
+} from "@slaw-ai/adapter-cursor-cloud/ui";
 
 export const cursorCloudUIAdapter: UIAdapterModule = {
   type: "cursor_cloud",

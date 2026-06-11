@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { and, desc, eq, gte } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   squads,
@@ -33,17 +33,17 @@ import {
   pluginLogs,
   pluginWebhookDeliveries,
   projects,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   PluginApiRouteDeclaration,
   PluginStatus,
   SlawPluginManifestV1,
   PluginBridgeErrorCode,
   PluginLauncherRenderContextSnapshot,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   PLUGIN_STATUSES,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { pluginRegistryService } from "../services/plugin-registry.js";
 import { pluginLifecycleManager } from "../services/plugin-lifecycle.js";
 import { getPluginUiContributionMetadata, pluginLoader } from "../services/plugin-loader.js";
@@ -55,8 +55,8 @@ import type { PluginJobStore } from "../services/plugin-job-store.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 import type { PluginStreamBus } from "../services/plugin-stream-bus.js";
 import type { PluginToolDispatcher } from "../services/plugin-tool-dispatcher.js";
-import type { PluginPerformActionActorContext, ToolRunContext } from "@slaw/plugin-sdk";
-import { JsonRpcCallError, PLUGIN_RPC_ERROR_CODES } from "@slaw/plugin-sdk";
+import type { PluginPerformActionActorContext, ToolRunContext } from "@slaw-ai/plugin-sdk";
+import { JsonRpcCallError, PLUGIN_RPC_ERROR_CODES } from "@slaw-ai/plugin-sdk";
 import {
   assertAuthenticated,
   assertOperator,
@@ -106,7 +106,7 @@ type PluginUiContribution = {
 
 /** Request body for POST /api/plugins/install */
 interface PluginInstallRequest {
-  /** npm package name (e.g., @slaw/plugin-linear) or local path */
+  /** npm package name (e.g., @slaw-ai/plugin-linear) or local path */
   packageName: string;
   /** Target version for npm packages (optional, defaults to latest) */
   version?: string;
@@ -152,9 +152,9 @@ const PLUGIN_SCOPED_API_RESPONSE_HEADER_ALLOWLIST = new Set([
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../..");
 const EXPERIMENTAL_BUNDLED_PLUGIN_PACKAGE_NAMES = new Set([
-  "@slaw/plugin-llm-wiki",
-  "@slaw/plugin-modal",
-  "@slaw/plugin-workspace-diff",
+  "@slaw-ai/plugin-llm-wiki",
+  "@slaw-ai/plugin-modal",
+  "@slaw-ai/plugin-workspace-diff",
 ]);
 let bundledPluginsCache: Promise<AvailableBundledPlugin[]> | null = null;
 

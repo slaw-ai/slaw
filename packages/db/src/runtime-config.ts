@@ -5,7 +5,7 @@ import {
   resolveDefaultEmbeddedPostgresDir,
   resolveSlawConfigPathForInstance,
   resolveSlawEnvPathForConfig,
-} from "@slaw/shared/home-paths";
+} from "@slaw-ai/shared/home-paths";
 
 const CONFIG_BASENAME = "config.json";
 

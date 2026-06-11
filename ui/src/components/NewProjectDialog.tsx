@@ -33,7 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PROJECT_COLORS } from "@slaw/shared";
+import { PROJECT_COLORS } from "@slaw-ai/shared";
 import { cn } from "../lib/utils";
 import { MarkdownEditor, type MarkdownEditorRef, type MentionOption } from "./MarkdownEditor";
 import { StatusBadge } from "./StatusBadge";

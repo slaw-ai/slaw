@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { resolveBotfatherCredentialsPath } from "@slaw/shared";
+import { resolveBotfatherCredentialsPath } from "@slaw-ai/shared";
 
 /**
  * Per-instance botfather credentials, stored outside the squad-scoped secrets

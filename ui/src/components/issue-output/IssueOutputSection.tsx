@@ -1,5 +1,5 @@
 import { Play } from "lucide-react";
-import type { IssueWorkProduct } from "@slaw/shared";
+import type { IssueWorkProduct } from "@slaw-ai/shared";
 import { getIssueOutputs, type IssueOutputItem } from "@/lib/issue-output";
 import { OutputPrimaryCard } from "./OutputPrimaryCard";
 import { OutputRow } from "./OutputRow";

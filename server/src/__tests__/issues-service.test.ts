@@ -24,7 +24,7 @@ import {
   projectWorkspaces,
   projects,
   workspaceOperations,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -36,7 +36,7 @@ import {
   ISSUE_LIST_MAX_LIMIT,
   issueService,
 } from "../services/issues.ts";
-import { buildProjectMentionHref, MAX_ISSUE_REQUEST_DEPTH } from "@slaw/shared";
+import { buildProjectMentionHref, MAX_ISSUE_REQUEST_DEPTH } from "@slaw-ai/shared";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;

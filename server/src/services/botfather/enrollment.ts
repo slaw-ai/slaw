@@ -1,6 +1,6 @@
 import os from "node:os";
-import { loadOrCreateMachineIdentity, resolveSlawInstanceId } from "@slaw/shared";
-import type { InstanceIdentity } from "@slaw/shared/botfather/protocol";
+import { loadOrCreateMachineIdentity, resolveSlawInstanceId } from "@slaw-ai/shared";
+import type { InstanceIdentity } from "@slaw-ai/shared/botfather/protocol";
 import { serverVersion } from "../../version.js";
 import { createBotfatherClient, BotfatherHttpError, type BotfatherClient } from "./client.js";
 import {

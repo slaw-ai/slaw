@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@slaw/adapter-opencode-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@slaw-ai/adapter-opencode-local";
 
 vi.mock("acpx/runtime", () => ({
   createAcpRuntime: vi.fn(),
@@ -108,8 +108,8 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@slaw/adapter-opencode-local/server", async () => {
-    const actual = await vi.importActual<typeof import("@slaw/adapter-opencode-local/server")>("@slaw/adapter-opencode-local/server");
+  vi.doMock("@slaw-ai/adapter-opencode-local/server", async () => {
+    const actual = await vi.importActual<typeof import("@slaw-ai/adapter-opencode-local/server")>("@slaw-ai/adapter-opencode-local/server");
     return {
       ...actual,
       ensureOpenCodeModelConfiguredAndAvailable: mockEnsureOpenCodeModelConfiguredAndAvailable,
@@ -280,7 +280,7 @@ describe.sequential("agent permission routes", () => {
     vi.doUnmock("../routes/agents.js");
     vi.doUnmock("../routes/authz.js");
     vi.doUnmock("../middleware/index.js");
-    vi.doUnmock("@slaw/adapter-opencode-local/server");
+    vi.doUnmock("@slaw-ai/adapter-opencode-local/server");
     registerModuleMocks();
     vi.resetAllMocks();
     mockAgentService.getById.mockReset();

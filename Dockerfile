@@ -46,9 +46,9 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
-RUN pnpm --filter @slaw/ui build
-RUN pnpm --filter @slaw/plugin-sdk build
-RUN pnpm --filter @slaw/server build
+RUN pnpm --filter @slaw-ai/ui build
+RUN pnpm --filter @slaw-ai/plugin-sdk build
+RUN pnpm --filter @slaw-ai/server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
 
 FROM base AS production

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { agents, squads, createDb, environmentLeases, environments, heartbeatRuns } from "@slaw/db";
+import { agents, squads, createDb, environmentLeases, environments, heartbeatRuns } from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

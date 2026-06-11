@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { and, asc, desc, eq, inArray, isNotNull, isNull, lte, ne, not, or, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   squadSecretBindings,
@@ -19,7 +19,7 @@ import {
   routineRuns,
   routines,
   routineTriggers,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   CreateRoutine,
   CreateRoutineTrigger,
@@ -36,7 +36,7 @@ import type {
   RunRoutine,
   UpdateRoutine,
   UpdateRoutineTrigger,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   WORKSPACE_BRANCH_ROUTINE_VARIABLE,
   getBuiltinRoutineVariableValues,
@@ -45,7 +45,7 @@ import {
   pluginOperationIssueOriginKind,
   stringifyRoutineVariableValue,
   syncRoutineVariablesWithTemplate,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { getConfiguredSecretProvider } from "../secrets/configured-provider.js";

@@ -4,7 +4,7 @@ import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Squad } from "@slaw/shared";
+import type { Squad } from "@slaw-ai/shared";
 import { queryKeys } from "../lib/queryKeys";
 import {
   SquadProvider,

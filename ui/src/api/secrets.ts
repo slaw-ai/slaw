@@ -12,7 +12,7 @@ import type {
   SecretProviderConfigHealthResponse,
   SecretProviderDescriptor,
   SecretStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export interface SecretUsageResponse {

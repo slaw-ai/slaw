@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, UserRound } from "lucide-react";
-import type { UserProfileDailyPoint, UserProfileWindowStats } from "@slaw/shared";
+import type { UserProfileDailyPoint, UserProfileWindowStats } from "@slaw-ai/shared";
 import { Link, useParams } from "@/lib/router";
 import { userProfilesApi } from "../api/userProfiles";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";

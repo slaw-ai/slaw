@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import type { IssueWorkMode } from "@slaw/shared";
+import type { IssueWorkMode } from "@slaw-ai/shared";
 
 interface NewIssueDefaults {
   status?: string;

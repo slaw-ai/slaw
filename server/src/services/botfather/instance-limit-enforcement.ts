@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { readInstanceLimit, type StoredInstanceLimit } from "./limits-store.js";
 
 /**

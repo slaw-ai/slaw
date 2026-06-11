@@ -1,4 +1,4 @@
-import type { Goal } from "@slaw/shared";
+import type { Goal } from "@slaw-ai/shared";
 
 export const ONBOARDING_PROJECT_NAME = "Onboarding";
 

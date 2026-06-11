@@ -10,7 +10,7 @@ import type {
   PluginDatabaseMigrationStatus,
   PluginDatabaseNamespaceMode,
   PluginDatabaseNamespaceStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { plugins } from "./plugins.js";
 
 /**

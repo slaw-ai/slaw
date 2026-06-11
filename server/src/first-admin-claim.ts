@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { instanceUserRoles } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { instanceUserRoles } from "@slaw-ai/db";
 
 type FirstAdminTransaction = Pick<Db, "execute" | "select" | "insert" | "update">;
 

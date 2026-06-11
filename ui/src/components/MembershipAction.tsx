@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { Loader2, LogIn, LogOut } from "lucide-react";
-import type { ResourceMembershipState } from "@slaw/shared";
+import type { ResourceMembershipState } from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "../lib/utils";
 

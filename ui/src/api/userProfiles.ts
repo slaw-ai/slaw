@@ -1,4 +1,4 @@
-import type { UserProfileResponse } from "@slaw/shared";
+import type { UserProfileResponse } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const userProfilesApi = {

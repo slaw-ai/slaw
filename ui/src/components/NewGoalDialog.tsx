@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GOAL_STATUSES, GOAL_LEVELS } from "@slaw/shared";
+import { GOAL_STATUSES, GOAL_LEVELS } from "@slaw-ai/shared";
 import { useDialog } from "../context/DialogContext";
 import { useSquad } from "../context/SquadContext";
 import { goalsApi } from "../api/goals";

@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@slaw/adapter-utils/server-utils";
-import { testEnvironment } from "@slaw/adapter-cursor-local/server";
+import { runChildProcess } from "@slaw-ai/adapter-utils/server-utils";
+import { testEnvironment } from "@slaw-ai/adapter-cursor-local/server";
 
 async function writeFakeAgentCommand(binDir: string, argsCapturePath: string): Promise<string> {
   const commandPath = path.join(binDir, "agent");

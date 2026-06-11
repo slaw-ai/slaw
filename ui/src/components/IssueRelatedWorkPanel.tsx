@@ -1,4 +1,4 @@
-import type { IssueRelatedWorkItem, IssueRelatedWorkSummary } from "@slaw/shared";
+import type { IssueRelatedWorkItem, IssueRelatedWorkSummary } from "@slaw-ai/shared";
 import { IssueReferencePill } from "./IssueReferencePill";
 
 type GroupedSource = {

@@ -17,7 +17,7 @@ import type {
   CatalogTrustLevel,
 } from "./types.js";
 
-const CATALOG_PACKAGE_NAME = "@slaw/skills-catalog";
+const CATALOG_PACKAGE_NAME = "@slaw-ai/skills-catalog";
 const CATALOG_SCHEMA_VERSION = 1;
 const SKILL_ENTRYPOINT = "SKILL.md";
 const MAX_CATALOG_FILE_BYTES = 1024 * 1024;
@@ -111,7 +111,7 @@ export async function validateCatalog(packageDir: string): Promise<BuildCatalogM
   if (generatedText !== null) {
     const expectedText = formatCatalogManifest(expected.manifest);
     if (generatedText !== expectedText) {
-      errors.push("generated/catalog.json is stale. Run pnpm --filter @slaw/skills-catalog build:manifest.");
+      errors.push("generated/catalog.json is stale. Run pnpm --filter @slaw-ai/skills-catalog build:manifest.");
     }
   }
 

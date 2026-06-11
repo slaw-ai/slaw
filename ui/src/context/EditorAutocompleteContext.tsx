@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { buildRoutineMentionHref, buildSkillMentionHref } from "@slaw/shared";
+import { buildRoutineMentionHref, buildSkillMentionHref } from "@slaw-ai/shared";
 import { squadSkillsApi } from "../api/squadSkills";
 import { routinesApi } from "../api/routines";
 import { useSquad } from "./SquadContext";

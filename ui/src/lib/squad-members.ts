@@ -1,7 +1,7 @@
 import type { SquadMember, SquadUserDirectoryEntry } from "@/api/access";
 import type { InlineEntityOption } from "@/components/InlineEntitySelector";
 import type { MentionOption } from "@/components/MarkdownEditor";
-import type { Agent, Project } from "@slaw/shared";
+import type { Agent, Project } from "@slaw-ai/shared";
 
 export interface SquadUserProfile {
   label: string;

@@ -5,7 +5,7 @@ import {
   expandHomePrefix,
   resolveDefaultBackupDir,
   resolveSlawConfigPathForInstance,
-} from "@slaw/shared/home-paths";
+} from "@slaw-ai/shared/home-paths";
 
 type PartialConfig = {
   database?: {

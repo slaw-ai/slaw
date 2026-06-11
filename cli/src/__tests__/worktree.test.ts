@@ -15,7 +15,7 @@ import {
   projects,
   routines,
   routineTriggers,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   copyGitHooksToWorktreeGitDir,
   copySeededSecretsKey,

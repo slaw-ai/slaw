@@ -7,7 +7,7 @@ import {
   index,
   unique,
 } from "drizzle-orm/pg-core";
-import type { PluginStateScopeKind } from "@slaw/shared";
+import type { PluginStateScopeKind } from "@slaw-ai/shared";
 import { plugins } from "./plugins.js";
 
 /**

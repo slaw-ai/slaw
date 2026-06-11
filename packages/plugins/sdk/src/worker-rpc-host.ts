@@ -45,7 +45,7 @@ import type {
   SlawPluginManifestV1,
   RequestConfirmationInteraction,
   SuggestTasksInteraction,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 import type { SlawPlugin } from "./define-plugin.js";
 import type {
@@ -258,7 +258,7 @@ export function runWorker(
  * ```ts
  * // worker-bootstrap.ts
  * import plugin from "./worker.js";
- * import { startWorkerRpcHost } from "@slaw/plugin-sdk";
+ * import { startWorkerRpcHost } from "@slaw-ai/plugin-sdk";
  *
  * startWorkerRpcHost({ plugin });
  * ```
@@ -296,7 +296,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
     (params: Record<string, unknown>, context: PluginPerformActionContext) => Promise<unknown>
   >();
   const toolHandlers = new Map<string, {
-    declaration: Pick<import("@slaw/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">;
+    declaration: Pick<import("@slaw-ai/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">;
     fn: (params: unknown, runCtx: ToolRunContext) => Promise<ToolResult>;
   }>();
 
@@ -1220,7 +1220,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       tools: {
         register(
           name: string,
-          declaration: Pick<import("@slaw/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">,
+          declaration: Pick<import("@slaw-ai/shared").PluginToolDeclaration, "displayName" | "description" | "parametersSchema">,
           fn: (params: unknown, runCtx: ToolRunContext) => Promise<ToolResult>,
         ): void {
           toolHandlers.set(name, { declaration, fn });

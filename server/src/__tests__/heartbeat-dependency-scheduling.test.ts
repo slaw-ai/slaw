@@ -22,7 +22,7 @@ import {
   issueTreeHolds,
   issues,
   workspaceOperations,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

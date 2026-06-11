@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agents, squads, issues, projects } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { agents, squads, issues, projects } from "@slaw-ai/db";
 import {
   SQUAD_SEARCH_MAX_LIMIT,
   SQUAD_SEARCH_MAX_OFFSET,
@@ -13,7 +13,7 @@ import {
   type SquadSearchResultType,
   type SquadSearchScope,
   type SquadSearchSnippet,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 const MIN_TOKEN_LENGTH = 2;
 const MIN_FUZZY_QUERY_LENGTH = 4;

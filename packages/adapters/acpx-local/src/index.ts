@@ -1,4 +1,4 @@
-import type { AdapterModel } from "@slaw/adapter-utils";
+import type { AdapterModel } from "@slaw-ai/adapter-utils";
 
 export const type = "acpx_local";
 export const label = "ACPX (local)";

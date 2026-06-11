@@ -1,12 +1,12 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   documentAnnotationAnchorSnapshots,
   documentAnnotationComments,
   documentAnnotationThreads,
   documents,
   issueDocuments,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   anchorSnapshotToSelector,
   remapDocumentAnchor,
@@ -18,7 +18,7 @@ import {
   CreateDocumentAnnotationComment,
   CreateDocumentAnnotationThread,
   UpdateDocumentAnnotationThread,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 type ActorInput = {

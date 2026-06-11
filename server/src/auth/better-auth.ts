@@ -3,13 +3,13 @@ import type { IncomingHttpHeaders } from "node:http";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { toNodeHandler } from "better-auth/node";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   authAccounts,
   authSessions,
   authUsers,
   authVerifications,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type { Config } from "../config.js";
 import { resolveSlawInstanceId } from "../home-paths.js";
 

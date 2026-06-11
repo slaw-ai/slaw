@@ -44,7 +44,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import type { RoutineListItem, RoutineVariable } from "@slaw/shared";
+import type { RoutineListItem, RoutineVariable } from "@slaw-ai/shared";
 
 const concurrencyPolicies = ["coalesce_if_active", "always_enqueue", "skip_if_active"];
 const catchUpPolicies = ["skip_missed", "enqueue_missed_with_cap"];

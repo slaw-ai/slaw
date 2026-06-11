@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   agentSkillEntrySchema,
   agentSkillSnapshotSchema,
-} from "@slaw/shared/validators/adapter-skills";
+} from "@slaw-ai/shared/validators/adapter-skills";
 
 describe("agent skill contract", () => {
   it("accepts optional provenance metadata on skill entries", () => {

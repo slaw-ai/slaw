@@ -10,9 +10,9 @@ import type {
   IssueLabel,
   Project,
   WorkspaceRuntimeService,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueProperties } from "./IssueProperties";
 

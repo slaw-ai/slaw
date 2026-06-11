@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/adapter-grok-local",
+  "name": "@slaw-ai/adapter-grok-local",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/slaw-ai/slaw",
@@ -50,7 +50,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@slaw/adapter-utils": "workspace:*",
+    "@slaw-ai/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

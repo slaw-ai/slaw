@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { buildSandboxNpmInstallCommand } from "@slaw/adapter-utils";
+import { buildSandboxNpmInstallCommand } from "@slaw-ai/adapter-utils";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
 const hermesExecuteMock = vi.hoisted(() =>

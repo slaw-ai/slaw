@@ -11,8 +11,8 @@ import {
   pluginDatabaseNamespaces,
   pluginMigrations,
   plugins,
-} from "@slaw/db";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

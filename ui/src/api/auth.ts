@@ -4,7 +4,7 @@ import {
   type AuthSession,
   type CurrentUserProfile,
   type UpdateCurrentUserProfile,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 type AuthErrorBody =
   | {

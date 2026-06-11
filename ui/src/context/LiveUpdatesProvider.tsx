@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import type { Agent, Issue, IssueComment, LiveEvent } from "@slaw/shared";
+import type { Agent, Issue, IssueComment, LiveEvent } from "@slaw-ai/shared";
 import type { RunForIssue } from "../api/activity";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import type { SquadUserDirectoryResponse } from "../api/access";

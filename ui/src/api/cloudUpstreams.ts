@@ -5,7 +5,7 @@ import type {
   CloudUpstreamPreview,
   CloudUpstreamRun,
   CloudUpstreamsState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const cloudUpstreamsApi = {

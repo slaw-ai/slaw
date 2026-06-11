@@ -1,4 +1,4 @@
-import type { SquadPortabilityIssueManifestEntry } from "@slaw/shared";
+import type { SquadPortabilityIssueManifestEntry } from "@slaw-ai/shared";
 
 function isTaskPath(filePath: string): boolean {
   return /(?:^|\/)tasks\//.test(filePath);

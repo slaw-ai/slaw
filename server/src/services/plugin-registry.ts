@@ -1,5 +1,5 @@
 import { asc, eq, ne, sql, and } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   plugins,
   pluginConfig,
@@ -8,7 +8,7 @@ import {
   pluginJobs,
   pluginJobRuns,
   pluginWebhookDeliveries,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   SlawPluginManifestV1,
   PluginStatus,
@@ -26,7 +26,7 @@ import type {
   PluginJobRunStatus,
   PluginJobRunTrigger,
   PluginWebhookDeliveryStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { conflict, notFound } from "../errors.js";
 
 // ---------------------------------------------------------------------------

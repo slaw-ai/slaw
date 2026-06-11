@@ -1,4 +1,4 @@
-import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@slaw/adapter-utils";
+import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@slaw-ai/adapter-utils";
 import type { TranscriptEntry, StdoutLineParser, TranscriptParserSource } from "./types";
 
 export type RunLogChunk = { ts: string; stream: "stdout" | "stderr" | "system"; chunk: string };

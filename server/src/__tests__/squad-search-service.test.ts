@@ -10,8 +10,8 @@ import {
   issueDocuments,
   issues,
   projects,
-} from "@slaw/db";
-import { squadSearchQuerySchema, SQUAD_SEARCH_MAX_QUERY_LENGTH } from "@slaw/shared";
+} from "@slaw-ai/db";
+import { squadSearchQuerySchema, SQUAD_SEARCH_MAX_QUERY_LENGTH } from "@slaw-ai/shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

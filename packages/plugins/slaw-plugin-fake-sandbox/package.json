@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/plugin-fake-sandbox",
+  "name": "@slaw-ai/plugin-fake-sandbox",
   "version": "0.1.0",
   "description": "First-party deterministic fake sandbox provider plugin for Slaw environments",
   "type": "module",
@@ -12,14 +12,14 @@
     "worker": "./dist/worker.js"
   },
   "scripts": {
-    "prebuild": "pnpm --filter @slaw/plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps",
     "build": "tsc",
     "clean": "rm -rf dist",
-    "typecheck": "pnpm --filter @slaw/plugin-sdk ensure-build-deps && tsc --noEmit",
+    "typecheck": "pnpm --filter @slaw-ai/plugin-sdk ensure-build-deps && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
-    "@slaw/plugin-sdk": "workspace:*"
+    "@slaw-ai/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.12.4",

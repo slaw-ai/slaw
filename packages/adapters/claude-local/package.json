@@ -1,5 +1,5 @@
 {
-  "name": "@slaw/adapter-claude-local",
+  "name": "@slaw-ai/adapter-claude-local",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/slaw-ai/slaw",
@@ -53,7 +53,7 @@
     "probe:quota:raw": "pnpm exec tsx src/cli/quota-probe.ts --json --raw-cli"
   },
   "dependencies": {
-    "@slaw/adapter-utils": "workspace:*",
+    "@slaw-ai/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

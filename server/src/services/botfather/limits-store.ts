@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { instanceLimits } from "@slaw/db";
-import type { Directive, LimitSpec } from "@slaw/shared/botfather/protocol";
+import type { Db } from "@slaw-ai/db";
+import { instanceLimits } from "@slaw-ai/db";
+import type { Directive, LimitSpec } from "@slaw-ai/shared/botfather/protocol";
 
 const SINGLETON = "default";
 

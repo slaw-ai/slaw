@@ -11,7 +11,7 @@ import type {
   RoutineRevisionSnapshotTriggerV1,
   RoutineVariable,
   SecretVersionSelector,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   routinesApi,
   type RestoreRoutineRevisionResponse,

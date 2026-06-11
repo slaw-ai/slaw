@@ -5,7 +5,7 @@ import type {
   ExecutionWorkspaceCloseReadiness,
   Goal,
   IssueAttachment,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { DocumentDiffModal } from "@/components/DocumentDiffModal";
@@ -19,7 +19,7 @@ import { PathInstructionsModal } from "@/components/PathInstructionsModal";
 import { useSquad } from "@/context/SquadContext";
 import { useDialog } from "@/context/DialogContext";
 import { queryKeys } from "@/lib/queryKeys";
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import {
   storybookAgents,
   storybookAuthSession,

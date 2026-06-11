@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Puzzle, ArrowLeft, ShieldAlert, ActivitySquare, CheckCircle, XCircle, Loader2, Clock, Cpu, Webhook, CalendarClock, AlertTriangle, FolderOpen, Save } from "lucide-react";
-import type { PluginLocalFolderDeclaration } from "@slaw/shared";
+import type { PluginLocalFolderDeclaration } from "@slaw-ai/shared";
 import { useSquad } from "@/context/SquadContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { Link, Navigate, useParams } from "@/lib/router";

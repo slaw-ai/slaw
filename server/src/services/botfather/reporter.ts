@@ -1,5 +1,5 @@
 import { and, asc, gt, or, eq, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   squads,
   agents,
@@ -8,13 +8,13 @@ import {
   issues,
   costEvents,
   botfatherSyncState,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   EntityUpsert,
   FactEvent,
   SyncRequest,
   HeartbeatRequest,
-} from "@slaw/shared/botfather/protocol";
+} from "@slaw-ai/shared/botfather/protocol";
 import type { BotfatherClient } from "./client.js";
 import { BotfatherEnrollment } from "./enrollment.js";
 import { applyDirectives, appliedLimitVersion } from "./limits-store.js";

@@ -2,15 +2,15 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   asString,
   parseObject,
   ensurePathInEnv,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import {
   asStringArray,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   maybeRunSandboxInstallCommand,
@@ -18,7 +18,7 @@ import {
   runAdapterExecutionTargetProcess,
   describeAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import { discoverPiModelsCached } from "./models.js";
 import { parsePiJsonl } from "./parse.js";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";

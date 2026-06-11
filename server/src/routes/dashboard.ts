@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { dashboardService } from "../services/dashboard.js";
 import { assertSquadAccess } from "./authz.js";
 

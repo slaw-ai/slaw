@@ -7,7 +7,7 @@ import type {
   SquadPortabilityExportResult,
   SquadPortabilityFileEntry,
   InstanceExperimentalSettings,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { openUrl } from "../../client/operator-auth.js";
 import { resolveSlawInstanceId } from "../../config/home.js";
 import {

@@ -1,4 +1,4 @@
-import type { Issue, IssueStatus } from "@slaw/shared";
+import type { Issue, IssueStatus } from "@slaw-ai/shared";
 import { workflowSort } from "./workflow-sort";
 
 export type SubIssueProgressTargetKind = "next" | "blocked";

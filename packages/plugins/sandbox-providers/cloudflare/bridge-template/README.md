@@ -1,6 +1,6 @@
 # Cloudflare Sandbox Bridge Template
 
-This Worker is the operator-facing bridge used by `@slaw/plugin-cloudflare-sandbox`.
+This Worker is the operator-facing bridge used by `@slaw-ai/plugin-cloudflare-sandbox`.
 
 It exposes a small authenticated JSON API under `/api/slaw-sandbox/v1` and translates Slaw lease and command requests into Cloudflare Sandbox SDK calls.
 

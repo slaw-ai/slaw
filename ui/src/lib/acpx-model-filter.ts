@@ -1,6 +1,6 @@
 import type { AdapterModel } from "../api/agents";
-import { models as CLAUDE_LOCAL_MODELS } from "@slaw/adapter-claude-local";
-import { models as CODEX_LOCAL_MODELS } from "@slaw/adapter-codex-local";
+import { models as CLAUDE_LOCAL_MODELS } from "@slaw-ai/adapter-claude-local";
+import { models as CODEX_LOCAL_MODELS } from "@slaw-ai/adapter-codex-local";
 
 const claudeModelIds = new Set(CLAUDE_LOCAL_MODELS.map((model) => model.id));
 const codexModelIds = new Set(CODEX_LOCAL_MODELS.map((model) => model.id));

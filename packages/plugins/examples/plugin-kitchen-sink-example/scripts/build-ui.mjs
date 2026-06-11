@@ -18,7 +18,7 @@ await esbuild.build({
     "react",
     "react-dom",
     "react/jsx-runtime",
-    "@slaw/plugin-sdk/ui",
+    "@slaw-ai/plugin-sdk/ui",
   ],
   logLevel: "info",
 });

@@ -11,7 +11,7 @@ import {
   resolveSlawHomeDir,
   resolveSlawInstanceId,
   resolveSlawInstanceRoot as resolveSharedSlawInstanceRoot,
-} from "@slaw/shared/home-paths";
+} from "@slaw-ai/shared/home-paths";
 
 export {
   expandHomePrefix,

@@ -1,4 +1,4 @@
-import type { DashboardRunActivityDay, HeartbeatRun } from "@slaw/shared";
+import type { DashboardRunActivityDay, HeartbeatRun } from "@slaw-ai/shared";
 
 /* ---- Utilities ---- */
 

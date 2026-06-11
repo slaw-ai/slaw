@@ -9,7 +9,7 @@ import {
   type SyncResponse,
   type SkillCatalogResponse,
   type SkillContentResponse,
-} from "@slaw/shared/botfather/protocol";
+} from "@slaw-ai/shared/botfather/protocol";
 
 /**
  * HTTP client for the botfather tower. The tower's ingest endpoints accept

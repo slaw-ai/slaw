@@ -42,7 +42,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { AGENT_ICON_NAMES, type AgentIconName } from "@slaw/shared";
+import { AGENT_ICON_NAMES, type AgentIconName } from "@slaw-ai/shared";
 
 export const AGENT_ICONS: Record<AgentIconName, LucideIcon> = {
   bot: Bot,

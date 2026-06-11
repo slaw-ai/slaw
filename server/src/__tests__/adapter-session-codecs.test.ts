@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { sessionCodec as claudeSessionCodec } from "@slaw/adapter-claude-local/server";
-import { sessionCodec as codexSessionCodec, isCodexUnknownSessionError } from "@slaw/adapter-codex-local/server";
+import { sessionCodec as claudeSessionCodec } from "@slaw-ai/adapter-claude-local/server";
+import { sessionCodec as codexSessionCodec, isCodexUnknownSessionError } from "@slaw-ai/adapter-codex-local/server";
 import {
   sessionCodec as cursorSessionCodec,
   isCursorUnknownSessionError,
-} from "@slaw/adapter-cursor-local/server";
+} from "@slaw-ai/adapter-cursor-local/server";
 import {
   sessionCodec as geminiSessionCodec,
   isGeminiUnknownSessionError,
-} from "@slaw/adapter-gemini-local/server";
+} from "@slaw-ai/adapter-gemini-local/server";
 import {
   sessionCodec as opencodeSessionCodec,
   isOpenCodeUnknownSessionError,
-} from "@slaw/adapter-opencode-local/server";
-import { sessionCodec as acpxSessionCodec } from "@slaw/adapter-acpx-local/server";
+} from "@slaw-ai/adapter-opencode-local/server";
+import { sessionCodec as acpxSessionCodec } from "@slaw-ai/adapter-acpx-local/server";
 
 describe("adapter session codecs", () => {
   it("normalizes claude session params with cwd", () => {

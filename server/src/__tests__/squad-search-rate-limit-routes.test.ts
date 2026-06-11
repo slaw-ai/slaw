@@ -3,7 +3,7 @@ import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
 import { issueRoutes } from "../routes/issues.js";
 import { createSquadSearchRateLimiter } from "../services/squad-search-rate-limit.js";
-import type { SquadSearchQuery, SquadSearchResponse } from "@slaw/shared";
+import type { SquadSearchQuery, SquadSearchResponse } from "@slaw-ai/shared";
 
 function createSearchResponse(query: SquadSearchQuery): SquadSearchResponse {
   return {

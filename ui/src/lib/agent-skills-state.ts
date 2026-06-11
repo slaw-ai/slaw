@@ -1,4 +1,4 @@
-import type { AgentSkillEntry } from "@slaw/shared";
+import type { AgentSkillEntry } from "@slaw-ai/shared";
 
 export interface AgentSkillDraftState {
   draft: string[];

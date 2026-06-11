@@ -1,13 +1,13 @@
 import { AlertTriangle, Clock, Pause, User, Wrench } from "lucide-react";
 import type { ComponentType } from "react";
-import type { IssueBlockedInboxSeverity } from "@slaw/shared";
+import type { IssueBlockedInboxSeverity } from "@slaw-ai/shared";
 import { cn } from "../lib/utils";
 import {
   blockedReasonVariant,
   blockedVariantLabel,
   type BlockedReasonVariant,
 } from "../lib/blockedInbox";
-import type { IssueBlockedInboxReason } from "@slaw/shared";
+import type { IssueBlockedInboxReason } from "@slaw-ai/shared";
 
 interface BlockedReasonChipProps {
   reason: IssueBlockedInboxReason;

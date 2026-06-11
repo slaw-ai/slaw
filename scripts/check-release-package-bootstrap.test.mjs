@@ -9,9 +9,9 @@ import {
 
 test("manifest changes without base state validate all release-enabled packages", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@slaw/a", publishFromCi: true },
-    { dir: "packages/b", name: "@slaw/b", publishFromCi: true },
-    { dir: "packages/c", name: "@slaw/c", publishFromCi: false },
+    { dir: "packages/a", name: "@slaw-ai/a", publishFromCi: true },
+    { dir: "packages/b", name: "@slaw-ai/b", publishFromCi: true },
+    { dir: "packages/c", name: "@slaw-ai/c", publishFromCi: false },
   ];
 
   const changedPackages = collectReleasePackagesForChangedPaths(
@@ -21,19 +21,19 @@ test("manifest changes without base state validate all release-enabled packages"
 
   assert.deepEqual(
     changedPackages.map((pkg) => pkg.name),
-    ["@slaw/a", "@slaw/b"],
+    ["@slaw-ai/a", "@slaw-ai/b"],
   );
 });
 
 test("manifest changes only validate newly release-enabled packages relative to base state", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@slaw/a", publishFromCi: true },
-    { dir: "packages/b", name: "@slaw/b", publishFromCi: true },
-    { dir: "packages/c", name: "@slaw/c", publishFromCi: false },
+    { dir: "packages/a", name: "@slaw-ai/a", publishFromCi: true },
+    { dir: "packages/b", name: "@slaw-ai/b", publishFromCi: true },
+    { dir: "packages/c", name: "@slaw-ai/c", publishFromCi: false },
   ];
   const baseReleaseState = {
     source: "manifest",
-    byDir: new Map([["packages/a", { name: "@slaw/a", publishFromCi: true }]]),
+    byDir: new Map([["packages/a", { name: "@slaw-ai/a", publishFromCi: true }]]),
   };
 
   const changedPackages = collectReleasePackagesForChangedPaths(
@@ -44,14 +44,14 @@ test("manifest changes only validate newly release-enabled packages relative to 
 
   assert.deepEqual(
     changedPackages.map((pkg) => pkg.name),
-    ["@slaw/b"],
+    ["@slaw-ai/b"],
   );
 });
 
 test("package-specific changes only validate affected release-enabled packages", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@slaw/a", publishFromCi: true },
-    { dir: "packages/b", name: "@slaw/b", publishFromCi: true },
+    { dir: "packages/a", name: "@slaw-ai/a", publishFromCi: true },
+    { dir: "packages/b", name: "@slaw-ai/b", publishFromCi: true },
   ];
 
   const changedPackages = collectReleasePackagesForChangedPaths(
@@ -61,7 +61,7 @@ test("package-specific changes only validate affected release-enabled packages",
 
   assert.deepEqual(
     changedPackages.map((pkg) => pkg.name),
-    ["@slaw/b"],
+    ["@slaw-ai/b"],
   );
 });
 
@@ -77,8 +77,8 @@ test("non-404 npm failures are treated as registry errors", () => {
 
 test("base release state falls back to public packages when manifest is absent", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@slaw/a", publishFromCi: true },
-    { dir: "packages/b", name: "@slaw/b", publishFromCi: true },
+    { dir: "packages/a", name: "@slaw-ai/a", publishFromCi: true },
+    { dir: "packages/b", name: "@slaw-ai/b", publishFromCi: true },
   ];
 
   const baseReleaseState = getBaseReleaseState("base-sha", releasePackages, (_revision, filePath) => {
@@ -87,11 +87,11 @@ test("base release state falls back to public packages when manifest is absent",
     }
 
     if (filePath === "packages/a/package.json") {
-      return JSON.stringify({ name: "@slaw/a", private: false });
+      return JSON.stringify({ name: "@slaw-ai/a", private: false });
     }
 
     if (filePath === "packages/b/package.json") {
-      return JSON.stringify({ name: "@slaw/b", private: true });
+      return JSON.stringify({ name: "@slaw-ai/b", private: true });
     }
 
     return null;
@@ -99,6 +99,6 @@ test("base release state falls back to public packages when manifest is absent",
 
   assert.equal(baseReleaseState?.source, "public-packages");
   assert.deepEqual([...baseReleaseState.byDir.entries()], [
-    ["packages/a", { name: "@slaw/a", publishFromCi: true }],
+    ["packages/a", { name: "@slaw-ai/a", publishFromCi: true }],
   ]);
 });

@@ -1,4 +1,4 @@
-import type { ExecutionWorkspace, Issue, Project } from "@slaw/shared";
+import type { ExecutionWorkspace, Issue, Project } from "@slaw-ai/shared";
 
 type ProjectWorkspaceLike = Pick<Project, "workspaces" | "primaryWorkspace">;
 

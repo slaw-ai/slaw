@@ -10,7 +10,7 @@ import {
 } from "../../../packages/plugins/sdk/src/protocol.js";
 import { definePlugin } from "../../../packages/plugins/sdk/src/define-plugin.js";
 import { startWorkerRpcHost } from "../../../packages/plugins/sdk/src/worker-rpc-host.js";
-import { pluginManifestV1Schema, type SlawPluginManifestV1 } from "@slaw/shared";
+import { pluginManifestV1Schema, type SlawPluginManifestV1 } from "@slaw-ai/shared";
 import { pluginCapabilityValidator } from "../services/plugin-capability-validator.js";
 
 const baseManifest: SlawPluginManifestV1 = {

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import type { Goal } from "@slaw/shared";
-import { GOAL_STATUSES, GOAL_LEVELS } from "@slaw/shared";
+import type { Goal } from "@slaw-ai/shared";
+import { GOAL_STATUSES, GOAL_LEVELS } from "@slaw-ai/shared";
 import { agentsApi } from "../api/agents";
 import { goalsApi } from "../api/goals";
 import { useSquad } from "../context/SquadContext";

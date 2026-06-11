@@ -9,8 +9,8 @@ import type {
   IssueExecutionStagePrincipal,
   IssueExecutionState,
   IssueMonitorScheduledBy,
-} from "@slaw/shared";
-import { issueExecutionPolicySchema, issueExecutionStateSchema } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import { issueExecutionPolicySchema, issueExecutionStateSchema } from "@slaw-ai/shared";
 import { unprocessable } from "../errors.js";
 
 type AssigneeLike = {

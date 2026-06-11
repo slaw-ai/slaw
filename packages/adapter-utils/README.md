@@ -1,4 +1,4 @@
-# @slaw/adapter-utils
+# @slaw-ai/adapter-utils
 
 Shared utilities for Slaw adapters: process spawning, environment
 injection, sandbox/SSH transport, workspace sync, and the round-trip helpers

@@ -1,4 +1,4 @@
-import type { InboxDismissal } from "@slaw/shared";
+import type { InboxDismissal } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const inboxDismissalsApi = {

@@ -2,7 +2,7 @@ import type {
   DocumentAnnotationAnchorConfidence,
   DocumentAnnotationAnchorSnapshot,
   DocumentAnnotationAnchorState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { squads } from "./squads.js";
 import { documentAnnotationThreads } from "./document_annotation_threads.js";

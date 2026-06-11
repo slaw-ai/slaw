@@ -1,7 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { issueWorkProducts } from "@slaw/db";
-import type { IssueWorkProduct } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { issueWorkProducts } from "@slaw-ai/db";
+import type { IssueWorkProduct } from "@slaw-ai/shared";
 
 type IssueWorkProductRow = typeof issueWorkProducts.$inferSelect;
 

@@ -1,4 +1,4 @@
-import { definePlugin, type PluginContext } from "@slaw/plugin-sdk";
+import { definePlugin, type PluginContext } from "@slaw-ai/plugin-sdk";
 
 import {
   COMPLETION_STATUSES,

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import type { Directive } from "@slaw/shared/botfather/protocol";
+import type { Db } from "@slaw-ai/db";
+import type { Directive } from "@slaw-ai/shared/botfather/protocol";
 import type { BotfatherClient } from "./client.js";
 import { squadSkillService } from "../squad-skills.js";
 

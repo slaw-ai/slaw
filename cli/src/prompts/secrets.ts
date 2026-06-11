@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import type { SecretProvider } from "@slaw/shared";
+import type { SecretProvider } from "@slaw-ai/shared";
 import type { SecretsConfig } from "../config/schema.js";
 import { resolveDefaultSecretsKeyFilePath, resolveSlawInstanceId } from "../config/home.js";
 

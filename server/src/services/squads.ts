@@ -1,5 +1,5 @@
 import { and, count, eq, gte, inArray, lt, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   squads,
   squadLogos,
@@ -28,7 +28,7 @@ import {
   squadMemberships,
   squadSkills,
   documents,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { notFound, unprocessable } from "../errors.js";
 import { environmentService } from "./environments.js";
 

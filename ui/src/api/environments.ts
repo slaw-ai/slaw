@@ -1,4 +1,4 @@
-import type { Environment, EnvironmentCapabilities, EnvironmentLease, EnvironmentProbeResult } from "@slaw/shared";
+import type { Environment, EnvironmentCapabilities, EnvironmentLease, EnvironmentProbeResult } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const environmentsApi = {

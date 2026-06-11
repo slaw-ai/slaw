@@ -4,7 +4,7 @@ import type {
   IssueRelationIssueSummary,
   IssueScheduledRetry,
   SuccessfulRunHandoffState,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { AlertTriangle, CheckCircle2, Flag, Loader2, RotateCcw } from "lucide-react";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";

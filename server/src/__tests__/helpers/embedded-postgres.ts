@@ -3,4 +3,4 @@ export {
   startEmbeddedPostgresTestDatabase,
   type EmbeddedPostgresTestDatabase,
   type EmbeddedPostgresTestSupport,
-} from "@slaw/db";
+} from "@slaw-ai/db";

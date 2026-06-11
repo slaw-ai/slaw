@@ -1,4 +1,4 @@
-# @slaw/adapter-codex-local
+# @slaw-ai/adapter-codex-local
 
 ## 0.3.1
 
@@ -6,7 +6,7 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @slaw/adapter-utils@0.3.1
+  - @slaw-ai/adapter-utils@0.3.1
 
 ## 0.3.0
 
@@ -17,7 +17,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @slaw/adapter-utils@0.3.0
+  - @slaw-ai/adapter-utils@0.3.0
 
 ## 0.2.7
 
@@ -25,7 +25,7 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.7
+  - @slaw-ai/adapter-utils@0.2.7
 
 ## 0.2.6
 
@@ -33,7 +33,7 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.6
+  - @slaw-ai/adapter-utils@0.2.6
 
 ## 0.2.5
 
@@ -41,7 +41,7 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.5
+  - @slaw-ai/adapter-utils@0.2.5
 
 ## 0.2.4
 
@@ -49,7 +49,7 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.4
+  - @slaw-ai/adapter-utils@0.2.4
 
 ## 0.2.3
 
@@ -57,7 +57,7 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.3
+  - @slaw-ai/adapter-utils@0.2.3
 
 ## 0.2.2
 
@@ -65,7 +65,7 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.2
+  - @slaw-ai/adapter-utils@0.2.2
 
 ## 0.2.1
 
@@ -73,4 +73,4 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @slaw/adapter-utils@0.2.1
+  - @slaw-ai/adapter-utils@0.2.1

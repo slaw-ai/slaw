@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Agent, DocumentAnnotationThreadWithComments, IssueDocument } from "@slaw/shared";
+import type { Agent, DocumentAnnotationThreadWithComments, IssueDocument } from "@slaw-ai/shared";
 import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

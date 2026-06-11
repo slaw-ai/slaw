@@ -8,7 +8,7 @@ import {
   createDb,
   instanceUserRoles,
   principalPermissionGrants,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   claimInstanceOwnership,
   getInstanceClaimWarningUrl,

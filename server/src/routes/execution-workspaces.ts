@@ -1,14 +1,14 @@
 import { and, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@slaw/db";
-import { issues, projects, projectWorkspaces } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { issues, projects, projectWorkspaces } from "@slaw-ai/db";
 import {
   findWorkspaceCommandDefinition,
   matchWorkspaceRuntimeServiceToCommand,
   updateExecutionWorkspaceSchema,
   workspaceRuntimeControlTargetSchema,
-} from "@slaw/shared";
-import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { executionWorkspaceService, logActivity, workspaceOperationService } from "../services/index.js";
 import { mergeExecutionWorkspaceConfig, readExecutionWorkspaceConfig } from "../services/execution-workspaces.js";

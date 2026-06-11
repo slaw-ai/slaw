@@ -52,7 +52,7 @@ Slaw listens on `http://127.0.0.1:3100` by default. The CLI talks to that server
 slaw plugin init @acme/hello-plugin --output ~/dev/slaw-plugins
 ```
 
-This creates `~/dev/slaw-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@slaw/plugin-sdk` from your local Slaw checkout. You can run the package and tests without publishing anything to npm.
+This creates `~/dev/slaw-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@slaw-ai/plugin-sdk` from your local Slaw checkout. You can run the package and tests without publishing anything to npm.
 
 Useful flags:
 
@@ -131,7 +131,7 @@ When you are done iterating locally, publish the package and reinstall the npm-p
 
 - **Restart cleanly:** `slaw plugin disable <key>` pauses the plugin without removing it. `slaw plugin enable <key>` brings it back. `slaw plugin uninstall <key>` removes the install record; add `--force` to also purge plugin state and settings.
 - **Browse examples:** `slaw plugin examples` lists the bundled example plugins that ship with the repo, each with a ready-to-run `slaw plugin install <path>` line.
-- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@slaw/plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
+- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@slaw-ai/plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
 - **Routine-first automation:** If your plugin should produce periodic issue work, prefer managed routines and `ctx.routines.managed` reconciliation over custom process loops or unobserved cron code.
 
 ## Troubleshooting

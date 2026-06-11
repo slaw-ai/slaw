@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { pluginOperationIssueOriginKind } from "@slaw/shared";
+import { pluginOperationIssueOriginKind } from "@slaw-ai/shared";
 import type {
   SlawPluginManifestV1,
   PluginCapability,
@@ -20,7 +20,7 @@ import type {
   IssueDocument,
   Agent,
   Goal,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type {
   EventFilter,
   PluginContext,

@@ -1,4 +1,4 @@
-import { redactCommandText } from "@slaw/adapter-utils";
+import { redactCommandText } from "@slaw-ai/adapter-utils";
 
 const SECRET_FIELD_NAME_PATTERN =
   String.raw`[A-Za-z0-9_-]*(?:api[-_]?key|access[-_]?token|auth(?:_?token)?|token|authorization|bearer|secret|passwd|password|credential|jwt|private[-_]?key|cookie|connectionstring)[A-Za-z0-9_-]*`;

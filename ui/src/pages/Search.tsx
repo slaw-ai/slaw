@@ -7,7 +7,7 @@ import {
   type SquadSearchResponse,
   type SquadSearchResult,
   type SquadSearchScope,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import { loadRecentSearches, pushRecentSearch } from "../lib/recent-searches";
 import { PageTabBar, type PageTabItem } from "../components/PageTabBar";
 import { IssueGroupHeader } from "../components/IssueGroupHeader";
 import { SearchResultRow } from "../components/search/SearchResultRow";
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 
 const SEARCH_DEBOUNCE_MS = 250;
 const IDENTIFIER_PATTERN = /^[A-Z]+-\d+$/;

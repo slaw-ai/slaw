@@ -1,4 +1,4 @@
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const manifest: SlawPluginManifestV1 = {
   id: "slaw.plugin-authoring-smoke-example",

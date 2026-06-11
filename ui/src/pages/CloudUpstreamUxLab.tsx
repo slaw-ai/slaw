@@ -20,7 +20,7 @@ import type {
   CloudUpstreamStep,
   CloudUpstreamSummaryCount,
   CloudUpstreamWarning,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "@/lib/router";

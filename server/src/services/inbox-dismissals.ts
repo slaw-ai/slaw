@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { inboxDismissals } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { inboxDismissals } from "@slaw-ai/db";
 
 export function inboxDismissalService(db: Db) {
   return {

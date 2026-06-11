@@ -1,4 +1,4 @@
-import type { AgentDetail } from "@slaw/shared";
+import type { AgentDetail } from "@slaw-ai/shared";
 
 const INSTRUCTION_CONFIG_KEYS = [
   "instructionsBundleMode",

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agents } from "@slaw/db";
-import type { HireApprovedPayload } from "@slaw/adapter-utils";
+import type { Db } from "@slaw-ai/db";
+import { agents } from "@slaw-ai/db";
+import type { HireApprovedPayload } from "@slaw-ai/adapter-utils";
 import { findActiveServerAdapter } from "../adapters/registry.js";
 import { logger } from "../middleware/logger.js";
 import { logActivity } from "./activity-log.js";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Squad } from "@slaw/shared";
+import type { Squad } from "@slaw-ai/shared";
 import { sidebarPreferencesApi } from "../api/sidebarPreferences";
 import { queryKeys } from "../lib/queryKeys";
 

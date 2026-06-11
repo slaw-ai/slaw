@@ -5,7 +5,7 @@ import {
   type PluginContext,
   type PluginManagedRoutineDeclaration,
   type PluginManagedRoutineResolution,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import {
   SLAW_DISTILL_SKILL_KEY,
   WIKI_MAINTENANCE_ROUTINE_KEYS,

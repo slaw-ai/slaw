@@ -1,4 +1,4 @@
-import type { SidebarBadges } from "@slaw/shared";
+import type { SidebarBadges } from "@slaw-ai/shared";
 import { api } from "./client";
 
 export const sidebarBadgesApi = {

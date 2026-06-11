@@ -38,7 +38,7 @@ const workspacePaths = [
 // Workspace packages that are NOT bundled and must stay as npm dependencies.
 // These get published separately and resolved at runtime.
 const externalWorkspacePackages = new Set([
-  "@slaw/server",
+  "@slaw-ai/server",
 ]);
 
 // Collect all external dependencies from all workspace packages
@@ -51,10 +51,10 @@ for (const pkgPath of workspacePaths) {
   const optDeps = pkg.optionalDependencies || {};
 
   for (const [name, version] of Object.entries(deps)) {
-    if (name.startsWith("@slaw/") && !externalWorkspacePackages.has(name)) continue;
+    if (name.startsWith("@slaw-ai/") && !externalWorkspacePackages.has(name)) continue;
     // For external workspace packages, read their version directly
     if (externalWorkspacePackages.has(name)) {
-      const pkgDirMap = { "@slaw/server": "server" };
+      const pkgDirMap = { "@slaw-ai/server": "server" };
       const wsPkg = readPkg(pkgDirMap[name]);
       allDeps[name] = wsPkg.version;
       continue;

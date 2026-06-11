@@ -1,4 +1,4 @@
-# @slaw/adapter-cursor-local
+# @slaw-ai/adapter-cursor-local
 
 ## 0.3.1
 
@@ -6,7 +6,7 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @slaw/adapter-utils@0.3.1
+  - @slaw-ai/adapter-utils@0.3.1
 
 ## 0.3.0
 
@@ -17,7 +17,7 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @slaw/adapter-utils@0.3.0
+  - @slaw-ai/adapter-utils@0.3.0
 
 ## 0.2.7
 

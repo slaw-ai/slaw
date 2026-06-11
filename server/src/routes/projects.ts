@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   createProjectSchema,
   createProjectWorkspaceSchema,
@@ -9,8 +9,8 @@ import {
   updateProjectSchema,
   updateProjectWorkspaceSchema,
   workspaceRuntimeControlTargetSchema,
-} from "@slaw/shared";
-import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { projectService, logActivity, workspaceOperationService } from "../services/index.js";
 import { conflict, forbidden } from "../errors.js";

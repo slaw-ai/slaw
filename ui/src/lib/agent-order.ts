@@ -1,4 +1,4 @@
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 
 export const AGENT_ORDER_UPDATED_EVENT = "slaw:agent-order-updated";
 export const AGENT_SORT_MODE_UPDATED_EVENT = "slaw:agent-sort-mode-updated";

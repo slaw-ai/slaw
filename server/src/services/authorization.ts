@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   squadMemberships,
@@ -7,8 +7,8 @@ import {
   issues,
   principalPermissionGrants,
   projects,
-} from "@slaw/db";
-import type { PermissionKey, PrincipalType } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { PermissionKey, PrincipalType } from "@slaw-ai/shared";
 
 export type AuthorizationActor =
   {

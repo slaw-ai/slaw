@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, isNotNull, isNull, lt, lte, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { Db } from "@slaw/db";
-import { activityLog, agents, squads, costEvents, heartbeatRuns, issues, projects } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { activityLog, agents, squads, costEvents, heartbeatRuns, issues, projects } from "@slaw-ai/db";
 import { notFound, unprocessable } from "../errors.js";
 import { budgetService, type BudgetServiceHooks } from "./budgets.js";
 

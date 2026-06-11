@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@slaw/adapter-utils";
+import type { TranscriptEntry } from "@slaw-ai/adapter-utils";
 import { applyTurnBoundary, createTurnBoundaryState, type TurnBoundaryState } from "../shared/turn-boundary.js";
 
 function safeJsonParse(text: string): unknown {

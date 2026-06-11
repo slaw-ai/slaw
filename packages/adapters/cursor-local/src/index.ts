@@ -1,4 +1,4 @@
-import type { AdapterModelProfileDefinition } from "@slaw/adapter-utils";
+import type { AdapterModelProfileDefinition } from "@slaw-ai/adapter-utils";
 
 export const type = "cursor";
 export const label = "Cursor CLI (local)";

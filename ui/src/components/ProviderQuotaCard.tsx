@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { CostByProviderModel, CostWindowSpendRow, QuotaWindow } from "@slaw/shared";
+import type { CostByProviderModel, CostWindowSpendRow, QuotaWindow } from "@slaw-ai/shared";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuotaBar } from "./QuotaBar";

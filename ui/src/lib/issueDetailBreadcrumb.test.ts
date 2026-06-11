@@ -11,7 +11,7 @@ import {
   shouldArmIssueDetailInboxQuickArchive,
   withIssueDetailHeaderSeed,
 } from "./issueDetailBreadcrumb";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 
 const sessionStorageMock = (() => {
   const store = new Map<string, string>();

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Db } from "@slaw/db";
-import type { Directive, SkillCatalogResponse, SkillContentResponse } from "@slaw/shared/botfather/protocol";
+import type { Db } from "@slaw-ai/db";
+import type { Directive, SkillCatalogResponse, SkillContentResponse } from "@slaw-ai/shared/botfather/protocol";
 
 /**
  * P4 — skill catalog sync (instance side). We mock the squad-skills service so

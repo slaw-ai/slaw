@@ -34,8 +34,8 @@ Do this for every public package that Slaw publishes.
 At minimum that includes:
 
 - `slaw`
-- `@slaw/server`
-- `@slaw/ui`
+- `@slaw-ai/server`
+- `@slaw-ai/ui`
 - public packages under `packages/`
 
 ### 2.1. In npm, open each package settings page

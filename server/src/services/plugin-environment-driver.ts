@@ -1,16 +1,16 @@
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import type {
   EnvironmentProbeResult,
   PluginEnvironmentConfig,
   PluginEnvironmentDriverDeclaration,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type {
   PluginEnvironmentExecuteParams,
   PluginEnvironmentExecuteResult,
   PluginEnvironmentLease,
   PluginEnvironmentRealizeWorkspaceParams,
   PluginEnvironmentRealizeWorkspaceResult,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 import { unprocessable } from "../errors.js";
 import { pluginRegistryService } from "./plugin-registry.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";

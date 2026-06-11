@@ -1,6 +1,6 @@
 import { memo, type ComponentType, type SVGProps } from "react";
 import { Bot, FileText, Hexagon, MessageSquare, Quote } from "lucide-react";
-import type { Agent, SquadSearchResult } from "@slaw/shared";
+import type { Agent, SquadSearchResult } from "@slaw-ai/shared";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { StatusIcon } from "../StatusIcon";

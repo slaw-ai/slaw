@@ -3,12 +3,12 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   buildRuntimeMountedSkillSnapshot,
   readSlawRuntimeSkillEntries,
   resolveSlawDesiredSkillNames,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 

@@ -11,7 +11,7 @@ import {
   formatEmbeddedPostgresError,
   prepareEmbeddedPostgresNativeRuntime,
   routines,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import { eq, inArray } from "drizzle-orm";
 import { loadSlawEnvFile } from "../config/env.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";

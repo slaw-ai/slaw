@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { $createLinkNode, LinkNode } from "@lexical/link";
-import { buildAgentMentionHref } from "@slaw/shared";
+import { buildAgentMentionHref } from "@slaw-ai/shared";
 import {
   createEditor,
   $createParagraphNode,

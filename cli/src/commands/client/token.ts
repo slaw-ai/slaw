@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { createAgentKeySchema, createOperatorApiKeySchema, type Agent } from "@slaw/shared";
+import { createAgentKeySchema, createOperatorApiKeySchema, type Agent } from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

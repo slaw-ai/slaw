@@ -3,7 +3,7 @@ import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { PluginExecutionWorkspaceMetadata } from "@slaw/plugin-sdk";
+import type { PluginExecutionWorkspaceMetadata } from "@slaw-ai/plugin-sdk";
 import type {
   WorkspaceDiffCaps,
   WorkspaceDiffFile,

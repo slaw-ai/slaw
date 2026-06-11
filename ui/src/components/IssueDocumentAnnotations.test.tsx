@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
   DocumentAnnotationThreadWithComments,
   IssueDocument,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DocumentAnnotationsCountChip,

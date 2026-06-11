@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { buildIssuesSearchUrl, getNextIssuesPageOffset, mergeIssuePagesStable } from "./Issues";
 
 function createIssue(id: string, title: string): Issue {

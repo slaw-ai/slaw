@@ -22,7 +22,7 @@ import {
   resolveRuntimeBind,
   validateConfiguredBindMode,
   type BotfatherConfig,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,

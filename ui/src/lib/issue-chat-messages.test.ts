@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Agent } from "@slaw/shared";
+import type { Agent } from "@slaw-ai/shared";
 import {
   buildAssistantPartsFromTranscript,
   buildIssueChatMessages,

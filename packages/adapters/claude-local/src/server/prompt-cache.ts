@@ -2,12 +2,12 @@ import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash, type Hash } from "node:crypto";
-import type { AdapterExecutionContext } from "@slaw/adapter-utils";
+import type { AdapterExecutionContext } from "@slaw-ai/adapter-utils";
 import {
   ensureSlawSkillSymlink,
   resolveSlawInstanceRootForAdapter,
   type SlawSkillEntry,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 
 type SkillEntry = SlawSkillEntry;
 

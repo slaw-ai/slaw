@@ -1,6 +1,6 @@
-import type { Environment, EnvironmentProbeResult } from "@slaw/shared";
-import type { Db } from "@slaw/db";
-import { ensureSshWorkspaceReady } from "@slaw/adapter-utils/ssh";
+import type { Environment, EnvironmentProbeResult } from "@slaw-ai/shared";
+import type { Db } from "@slaw-ai/db";
+import { ensureSshWorkspaceReady } from "@slaw-ai/adapter-utils/ssh";
 import {
   resolveEnvironmentDriverConfigForRuntime,
   type ParsedEnvironmentConfig,

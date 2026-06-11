@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "@slaw/adapter-opencode-local/server";
-import { parseOpenCodeStdoutLine } from "@slaw/adapter-opencode-local/ui";
-import { printOpenCodeStreamEvent } from "@slaw/adapter-opencode-local/cli";
+import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "@slaw-ai/adapter-opencode-local/server";
+import { parseOpenCodeStdoutLine } from "@slaw-ai/adapter-opencode-local/ui";
+import { printOpenCodeStreamEvent } from "@slaw-ai/adapter-opencode-local/cli";
 
 describe("opencode_local parser", () => {
   it("extracts session, summary, usage, cost, and terminal error message", () => {

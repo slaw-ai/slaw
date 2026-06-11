@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { agents } from "@slaw/db";
-import { sessionCodec as codexSessionCodec } from "@slaw/adapter-codex-local/server";
+import type { agents } from "@slaw-ai/db";
+import { sessionCodec as codexSessionCodec } from "@slaw-ai/adapter-codex-local/server";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import {
   applyPersistedExecutionWorkspaceConfig,

@@ -26,5 +26,5 @@ export type {
   UsageSummary,
   AdapterAgent,
   AdapterRuntime,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 export { runningProcesses } from "./utils.js";

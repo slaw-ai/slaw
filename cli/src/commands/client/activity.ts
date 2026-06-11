@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ActivityEvent } from "@slaw/shared";
+import type { ActivityEvent } from "@slaw-ai/shared";
 import {
   addCommonClientOptions,
   apiPath,

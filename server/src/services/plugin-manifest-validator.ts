@@ -9,9 +9,9 @@
  * @see PLUGIN_SPEC.md §10 — Plugin Manifest
  * @see packages/shared/src/validators/plugin.ts — Zod schema definition
  */
-import { pluginManifestV1Schema } from "@slaw/shared";
-import type { SlawPluginManifestV1 } from "@slaw/shared";
-import { PLUGIN_API_VERSION } from "@slaw/shared";
+import { pluginManifestV1Schema } from "@slaw-ai/shared";
+import type { SlawPluginManifestV1 } from "@slaw-ai/shared";
+import { PLUGIN_API_VERSION } from "@slaw-ai/shared";
 import { badRequest } from "../errors.js";
 
 // ---------------------------------------------------------------------------

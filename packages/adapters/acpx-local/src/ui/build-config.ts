@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 import {
   DEFAULT_ACPX_LOCAL_AGENT,
   DEFAULT_ACPX_LOCAL_MODE,

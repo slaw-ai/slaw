@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   createSecretProviderConfigSchema,
   createSecretSchema,
@@ -9,7 +9,7 @@ import {
   secretProviderConfigDiscoveryPreviewSchema,
   updateSecretProviderConfigSchema,
   updateSecretSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { assertOperator, assertSquadAccess } from "./authz.js";
 import { logActivity, secretService } from "../services/index.js";

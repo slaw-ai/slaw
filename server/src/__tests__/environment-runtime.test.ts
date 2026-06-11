@@ -9,7 +9,7 @@ import {
   getSshEnvLabSupport,
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
-} from "@slaw/adapter-utils/ssh";
+} from "@slaw-ai/adapter-utils/ssh";
 import {
   agents,
   squads,
@@ -20,7 +20,7 @@ import {
   environments,
   heartbeatRuns,
   plugins,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -427,7 +427,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "slaw.fake-plugin-sandbox-provider",
-      packageName: "@slaw/plugin-fake-sandbox",
+      packageName: "@slaw-ai/plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],

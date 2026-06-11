@@ -38,7 +38,7 @@ import type {
   IssueScheduledRetry,
   SuccessfulRunHandoffState,
   IssueWorkMode,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
 import { useSlawIssueRuntime, type SlawIssueRuntimeReassignment } from "../hooks/useSlawIssueRuntime";
@@ -108,7 +108,7 @@ import {
 import type {
   IssueCommentMetadata,
   IssueCommentPresentation,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   describeToolInput,
   displayToolName,

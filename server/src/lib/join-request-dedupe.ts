@@ -1,4 +1,4 @@
-import { joinRequests } from "@slaw/db";
+import { joinRequests } from "@slaw-ai/db";
 
 type JoinRequestLike = Pick<
   typeof joinRequests.$inferSelect,

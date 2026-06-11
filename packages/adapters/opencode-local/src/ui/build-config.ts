@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 
 function parseCommaArgs(value: string): string[] {
   return value

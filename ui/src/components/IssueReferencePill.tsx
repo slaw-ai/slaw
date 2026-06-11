@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { IssueRelationIssueSummary } from "@slaw/shared";
+import type { IssueRelationIssueSummary } from "@slaw-ai/shared";
 import { Link } from "@/lib/router";
 import { cn } from "../lib/utils";
 import { StatusIcon } from "./StatusIcon";

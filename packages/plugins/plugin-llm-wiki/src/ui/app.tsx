@@ -18,7 +18,7 @@ import {
   type PluginRouteSidebarProps,
   type PluginSettingsPageProps,
   type PluginSidebarProps,
-} from "@slaw/plugin-sdk/ui";
+} from "@slaw-ai/plugin-sdk/ui";
 import { useCallback, useEffect, useMemo, useRef, useState, type AnchorHTMLAttributes, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import { readIngestOperationIssueId, uploadIssueAttachmentFile } from "./issue-attachments.js";
 

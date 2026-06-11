@@ -19,5 +19,5 @@ pnpm slaw plugin install ./
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@slaw/plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@slaw-ai/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.

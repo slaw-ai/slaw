@@ -16,7 +16,7 @@ export async function databaseCheck(config: SlawConfig, configPath?: string): Pr
     }
 
     try {
-      const { createDb } = await import("@slaw/db");
+      const { createDb } = await import("@slaw-ai/db");
       const db = createDb(config.database.connectionString);
       await db.execute("SELECT 1");
       return {

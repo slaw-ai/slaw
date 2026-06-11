@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import os from "node:os";
-import type { AdapterModel } from "@slaw/adapter-utils";
+import type { AdapterModel } from "@slaw-ai/adapter-utils";
 import {
   asString,
   ensurePathInEnv,
   runChildProcess,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import { isValidOpenCodeModelId } from "../index.js";
 
 const MODELS_CACHE_TTL_MS = 60_000;

@@ -20,8 +20,8 @@
  * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
  */
 
-import type { PluginEventType } from "@slaw/shared";
-import type { PluginEvent, EventFilter } from "@slaw/plugin-sdk";
+import type { PluginEventType } from "@slaw-ai/shared";
+import type { PluginEvent, EventFilter } from "@slaw-ai/plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Internal types

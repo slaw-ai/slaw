@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@slaw/db";
-import { createGoalSchema, updateGoalSchema } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { createGoalSchema, updateGoalSchema } from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { goalService, logActivity } from "../services/index.js";
 import { assertSquadAccess, getActorInfo } from "./authz.js";

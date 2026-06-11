@@ -1,4 +1,4 @@
-import type { SlawPluginManifestV1 } from "@slaw/plugin-sdk";
+import type { SlawPluginManifestV1 } from "@slaw-ai/plugin-sdk";
 
 const PLUGIN_ID = "slaw.workspace-diff";
 const CHANGES_TAB_SLOT_ID = "workspace-changes-tab";

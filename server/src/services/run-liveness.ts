@@ -1,4 +1,4 @@
-import type { HeartbeatRunStatus, IssueStatus, RunLivenessState } from "@slaw/shared";
+import type { HeartbeatRunStatus, IssueStatus, RunLivenessState } from "@slaw-ai/shared";
 
 export type RunLivenessActionability =
   | "runnable"

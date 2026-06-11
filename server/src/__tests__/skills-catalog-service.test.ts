@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CatalogSkill } from "@slaw/shared";
+import type { CatalogSkill } from "@slaw-ai/shared";
 
 const mockExistsSync = vi.hoisted(() => vi.fn());
 const mockReadFileSync = vi.hoisted(() => vi.fn());
@@ -45,7 +45,7 @@ function catalogSkill(slug: string, name = slug): CatalogSkill {
 function manifest(skills: CatalogSkill[], packageVersion = "0.3.1") {
   return JSON.stringify({
     schemaVersion: 1,
-    packageName: "@slaw/skills-catalog",
+    packageName: "@slaw-ai/skills-catalog",
     packageVersion,
     generatedAt: "2026-05-28T00:00:00.000Z",
     skills,
@@ -90,7 +90,7 @@ describe("skills catalog service", () => {
     expect(mockReadFileSync).toHaveBeenCalledTimes(2);
     expect(() => service.getCatalogSkillOrThrow("old-skill")).toThrow("Catalog skill not found");
     expect(service.getCatalogPackageMetadata()).toEqual({
-      packageName: "@slaw/skills-catalog",
+      packageName: "@slaw-ai/skills-catalog",
       packageVersion: "0.3.2",
     });
   });

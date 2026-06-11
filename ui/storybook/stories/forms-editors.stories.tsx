@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Agent, SquadSecret, EnvBinding, Project, RoutineVariable } from "@slaw/shared";
+import type { Agent, SquadSecret, EnvBinding, Project, RoutineVariable } from "@slaw-ai/shared";
 import { Code2, FileText, ListPlus, RotateCcw, Table2 } from "lucide-react";
 import { EnvVarEditor } from "@/components/EnvVarEditor";
 import { ExecutionParticipantPicker } from "@/components/ExecutionParticipantPicker";
@@ -181,7 +181,7 @@ const validAdapterValues = {
   concurrency: 2,
   dryRun: true,
   notes: "Use the project worktree and post a concise task update before handoff.",
-  allowedCommands: ["pnpm --filter @slaw/ui typecheck", "pnpm build-storybook"],
+  allowedCommands: ["pnpm --filter @slaw-ai/ui typecheck", "pnpm build-storybook"],
   advanced: { timeoutSeconds: 900, requireApproval: false },
 };
 

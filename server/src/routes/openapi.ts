@@ -104,7 +104,7 @@ import {
   // Instance settings
   patchInstanceGeneralSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 
 type JsonSchema = Record<string, unknown>;
 type OpenApiResponse = Record<string, unknown>;

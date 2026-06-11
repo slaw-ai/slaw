@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type { Db } from "@slaw/db";
-import { workspaceOperations } from "@slaw/db";
-import type { WorkspaceOperation, WorkspaceOperationPhase, WorkspaceOperationStatus } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { workspaceOperations } from "@slaw-ai/db";
+import type { WorkspaceOperation, WorkspaceOperationPhase, WorkspaceOperationStatus } from "@slaw-ai/shared";
 import { asc, desc, eq, inArray, isNull, or, and } from "drizzle-orm";
 import { notFound } from "../errors.js";
 import { redactCurrentUserText, redactCurrentUserValue } from "../log-redaction.js";

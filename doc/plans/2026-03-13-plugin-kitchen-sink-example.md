@@ -135,7 +135,7 @@ The implementation should keep a small validation checklist for these before we 
 The plugin should be named:
 
 - display name: `Kitchen Sink (Example)`
-- package: `@slaw/plugin-kitchen-sink-example`
+- package: `@slaw-ai/plugin-kitchen-sink-example`
 - plugin id: `slaw.kitchen-sink-example` or `slaw-kitchen-sink-example`
 
 Recommendation: use `slaw-kitchen-sink-example` to match current in-repo example naming style.

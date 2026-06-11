@@ -394,7 +394,7 @@ are added on top of whatever the desired set names.
 
 ### Catalog (app-shipped skills)
 
-The Slaw app ships a curated catalog under `@slaw/skills-catalog`.
+The Slaw app ships a curated catalog under `@slaw-ai/skills-catalog`.
 Browse and inspect commands never mutate squad state; `install` adds a catalog
 skill to the squad library.
 

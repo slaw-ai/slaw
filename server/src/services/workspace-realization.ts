@@ -4,7 +4,7 @@ import type {
   ExecutionWorkspaceConfig,
   WorkspaceRealizationRecord,
   WorkspaceRealizationRequest,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import type { RealizedExecutionWorkspace } from "./workspace-runtime.js";
 
 function parseObject(value: unknown): Record<string, unknown> {

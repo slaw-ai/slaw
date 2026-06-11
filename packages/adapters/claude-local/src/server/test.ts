@@ -2,7 +2,7 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@slaw/adapter-utils";
+} from "@slaw-ai/adapter-utils";
 import {
   asString,
   asBoolean,
@@ -10,7 +10,7 @@ import {
   asStringArray,
   parseObject,
   ensurePathInEnv,
-} from "@slaw/adapter-utils/server-utils";
+} from "@slaw-ai/adapter-utils/server-utils";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
@@ -18,7 +18,7 @@ import {
   runAdapterExecutionTargetProcess,
   describeAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
-} from "@slaw/adapter-utils/execution-target";
+} from "@slaw-ai/adapter-utils/execution-target";
 import path from "node:path";
 import { detectClaudeLoginRequired, parseClaudeStreamJson } from "./parse.js";
 import { isBedrockModelId } from "./models.js";

@@ -1,4 +1,4 @@
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import { issueTreeControlService } from "../issue-tree-control.js";
 
 type IssueTreeControlService = ReturnType<typeof issueTreeControlService>;

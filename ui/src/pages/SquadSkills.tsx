@@ -15,7 +15,7 @@ import type {
   SquadSkillSourceBadge,
   SquadSkillTrustLevel,
   SquadSkillUpdateStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { squadSkillsApi } from "../api/squadSkills";
 import { botfatherApi, type SkillCatalogEntry } from "../api/botfather";
 import { agentsApi } from "../api/agents";

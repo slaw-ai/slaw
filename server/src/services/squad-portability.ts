@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import type {
   SquadPortabilityAgentManifestEntry,
   SquadPortabilityCollisionStrategy,
@@ -30,7 +30,7 @@ import type {
   SquadSkill,
   AgentEnvConfig,
   RoutineVariable,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   ISSUE_PRIORITIES,
@@ -48,12 +48,12 @@ import {
   issueCommentPresentationSchema,
   normalizeAgentRole,
   normalizeAgentUrlKey,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import {
   readSlawSkillSyncPreference,
   writeSlawSkillSyncPreference,
-} from "@slaw/adapter-utils/server-utils";
-import { requireOpenCodeModelId } from "@slaw/adapter-opencode-local/server";
+} from "@slaw-ai/adapter-utils/server-utils";
+import { requireOpenCodeModelId } from "@slaw-ai/adapter-opencode-local/server";
 import { findServerAdapter } from "../adapters/index.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";

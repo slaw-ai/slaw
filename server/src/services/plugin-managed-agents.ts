@@ -1,17 +1,17 @@
 import { and, eq, ne } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   squads,
   pluginEntities,
   pluginManagedResources,
-} from "@slaw/db";
+} from "@slaw-ai/db";
 import type {
   Agent,
   SlawPluginManifestV1,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { notFound } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";

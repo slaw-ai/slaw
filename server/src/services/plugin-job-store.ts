@@ -31,14 +31,14 @@
  */
 
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { plugins, pluginJobs, pluginJobRuns } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { plugins, pluginJobs, pluginJobRuns } from "@slaw-ai/db";
 import type {
   PluginJobDeclaration,
   PluginJobRunStatus,
   PluginJobRunTrigger,
   PluginJobRecord,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { notFound } from "../errors.js";
 
 /**

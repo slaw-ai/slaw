@@ -2,7 +2,7 @@
  * Plugin UI bridge runtime — concrete implementations of the bridge hooks.
  *
  * Plugin UI bundles import `usePluginData`, `usePluginAction`, and
- * `useHostContext` from `@slaw/plugin-sdk/ui`.  Those are type-only
+ * `useHostContext` from `@slaw-ai/plugin-sdk/ui`.  Those are type-only
  * declarations in the SDK package. The host provides the real implementations
  * by injecting this bridge runtime into the plugin's module scope.
  *
@@ -32,7 +32,7 @@ import type {
   PluginLauncherBounds,
   PluginLauncherRenderContextSnapshot,
   PluginLauncherRenderEnvironment,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { pluginsApi } from "@/api/plugins";
 import { ApiError } from "@/api/client";
 import { useToastActions, type ToastInput } from "@/context/ToastContext";

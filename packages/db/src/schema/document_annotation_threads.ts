@@ -3,7 +3,7 @@ import type {
   DocumentAnnotationAnchorSelector,
   DocumentAnnotationAnchorState,
   DocumentAnnotationThreadStatus,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
 import { squads } from "./squads.js";

@@ -8,7 +8,7 @@ import {
   type Sandbox,
   type SandboxCreateParams,
 } from "modal";
-import { definePlugin } from "@slaw/plugin-sdk";
+import { definePlugin } from "@slaw-ai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -23,7 +23,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@slaw/plugin-sdk";
+} from "@slaw-ai/plugin-sdk";
 
 const DEFAULT_WORKDIR = "/workspace/slaw";
 const DEFAULT_SANDBOX_TIMEOUT_MS = 3_600_000;

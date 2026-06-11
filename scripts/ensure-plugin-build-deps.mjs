@@ -14,13 +14,13 @@ const lockPollMs = 100;
 
 const buildTargets = [
   {
-    name: "@slaw/shared",
+    name: "@slaw-ai/shared",
     output: path.join(rootDir, "packages/shared/dist/index.js"),
     sourceDir: path.join(rootDir, "packages/shared/src"),
     tsconfig: path.join(rootDir, "packages/shared/tsconfig.json"),
   },
   {
-    name: "@slaw/plugin-sdk",
+    name: "@slaw-ai/plugin-sdk",
     output: path.join(rootDir, "packages/plugins/sdk/dist/index.js"),
     sourceDir: path.join(rootDir, "packages/plugins/sdk/src"),
     tsconfig: path.join(rootDir, "packages/plugins/sdk/tsconfig.json"),

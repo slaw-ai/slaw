@@ -1,4 +1,4 @@
-import { definePlugin, runWorker, type PluginContext } from "@slaw/plugin-sdk";
+import { definePlugin, runWorker, type PluginContext } from "@slaw-ai/plugin-sdk";
 import { workspaceDiffQuerySchema } from "./contracts.js";
 import { workspaceDiffService } from "./workspace-diff.js";
 

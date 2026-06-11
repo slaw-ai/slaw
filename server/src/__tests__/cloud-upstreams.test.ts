@@ -1,6 +1,6 @@
 import { generateKeyPairSync, randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { squads, cloudUpstreamConnections, cloudUpstreamRuns, squadSkills, createDb } from "@slaw/db";
+import { squads, cloudUpstreamConnections, cloudUpstreamRuns, squadSkills, createDb } from "@slaw-ai/db";
 
 import { HttpError } from "../errors.js";
 import {

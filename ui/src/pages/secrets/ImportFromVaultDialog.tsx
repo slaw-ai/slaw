@@ -22,7 +22,7 @@ import type {
   RemoteSecretImportPreviewResult,
   RemoteSecretImportResult,
   RemoteSecretImportRowResult,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { ApiError } from "../../api/client";
 import {
   secretsApi,

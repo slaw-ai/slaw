@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
-import { agents, approvals, squads, costEvents, heartbeatRuns, issues } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
+import { agents, approvals, squads, costEvents, heartbeatRuns, issues } from "@slaw-ai/db";
 import { notFound } from "../errors.js";
 import { budgetService } from "./budgets.js";
 

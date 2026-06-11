@@ -1,12 +1,12 @@
 import { Router, type Request } from "express";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   addApprovalCommentSchema,
   createApprovalSchema,
   requestApprovalRevisionSchema,
   resolveApprovalSchema,
   resubmitApprovalSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { logger } from "../middleware/logger.js";
 import {

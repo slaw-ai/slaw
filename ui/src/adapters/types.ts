@@ -1,18 +1,18 @@
 import type { ComponentType } from "react";
-import type { CreateConfigValues } from "@slaw/adapter-utils";
+import type { CreateConfigValues } from "@slaw-ai/adapter-utils";
 
 // Re-export shared types so local consumers don't need to change imports
-export type { TranscriptEntry, StdoutLineParser, CreateConfigValues } from "@slaw/adapter-utils";
+export type { TranscriptEntry, StdoutLineParser, CreateConfigValues } from "@slaw-ai/adapter-utils";
 
 export interface StatefulStdoutParser {
-  parseLine: (line: string, ts: string) => import("@slaw/adapter-utils").TranscriptEntry[];
+  parseLine: (line: string, ts: string) => import("@slaw-ai/adapter-utils").TranscriptEntry[];
   reset: () => void;
 }
 
 export type StdoutParserFactory = () => StatefulStdoutParser;
 
 export interface TranscriptParserSource {
-  parseStdoutLine: (line: string, ts: string) => import("@slaw/adapter-utils").TranscriptEntry[];
+  parseStdoutLine: (line: string, ts: string) => import("@slaw-ai/adapter-utils").TranscriptEntry[];
   createStdoutParser?: StdoutParserFactory;
 }
 

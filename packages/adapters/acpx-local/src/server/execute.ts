@@ -3,8 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@slaw/adapter-utils";
-import { readAdapterExecutionTarget, adapterExecutionTargetSessionIdentity } from "@slaw/adapter-utils/execution-target";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@slaw-ai/adapter-utils";
+import { readAdapterExecutionTarget, adapterExecutionTargetSessionIdentity } from "@slaw-ai/adapter-utils/execution-target";
 import {
   DEFAULT_SLAW_AGENT_PROMPT_TEMPLATE,
   applySlawWorkspaceEnv,
@@ -27,8 +27,8 @@ import {
   shapeSlawWorkspaceEnvForExecution,
   stringifySlawWakePayload,
   type SlawSkillEntry,
-} from "@slaw/adapter-utils/server-utils";
-import { shellQuote } from "@slaw/adapter-utils/ssh";
+} from "@slaw-ai/adapter-utils/server-utils";
+import { shellQuote } from "@slaw-ai/adapter-utils/ssh";
 import {
   createAcpRuntime,
   createAgentRegistry,

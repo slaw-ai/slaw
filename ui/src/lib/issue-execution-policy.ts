@@ -1,4 +1,4 @@
-import type { IssueExecutionPolicy, IssueExecutionStageParticipant, IssueExecutionStagePrincipal } from "@slaw/shared";
+import type { IssueExecutionPolicy, IssueExecutionStageParticipant, IssueExecutionStagePrincipal } from "@slaw-ai/shared";
 import { parseAssigneeValue } from "./assignees";
 
 type StageType = "review" | "approval";

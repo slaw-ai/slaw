@@ -1,13 +1,13 @@
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
-import type { Db } from "@slaw/db";
+import type { Db } from "@slaw-ai/db";
 import {
   agents,
   squadMemberships,
   instanceUserRoles,
   issues,
   principalPermissionGrants,
-} from "@slaw/db";
-import type { PermissionKey, PrincipalType } from "@slaw/shared";
+} from "@slaw-ai/db";
+import type { PermissionKey, PrincipalType } from "@slaw-ai/shared";
 import { conflict } from "../errors.js";
 import { authorizationService, type AuthorizationActor, type AuthorizationResource } from "./authorization.js";
 import { ensureHumanRoleDefaultGrants } from "./principal-access-compatibility.js";

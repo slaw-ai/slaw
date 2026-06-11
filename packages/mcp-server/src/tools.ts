@@ -11,7 +11,7 @@ import {
   updateIssueSchema,
   upsertIssueDocumentSchema,
   linkIssueApprovalSchema,
-} from "@slaw/shared";
+} from "@slaw-ai/shared";
 import { SlawApiClient } from "./client.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 

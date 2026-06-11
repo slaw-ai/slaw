@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Db } from "@slaw/db";
-import { normalizeIssueIdentifier } from "@slaw/shared";
+import type { Db } from "@slaw-ai/db";
+import { normalizeIssueIdentifier } from "@slaw-ai/shared";
 import { validate } from "../middleware/validate.js";
 import { activityService, normalizeActivityLimit } from "../services/activity.js";
 import { assertAuthenticated, assertOperator, assertSquadAccess } from "./authz.js";

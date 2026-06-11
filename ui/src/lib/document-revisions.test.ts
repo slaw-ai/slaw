@@ -1,4 +1,4 @@
-import type { DocumentRevision, IssueDocument } from "@slaw/shared";
+import type { DocumentRevision, IssueDocument } from "@slaw-ai/shared";
 import { describe, expect, it } from "vitest";
 import { deriveDocumentRevisionState } from "./document-revisions";
 

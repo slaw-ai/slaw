@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Agent, Issue, IssueTreeControlPreview, IssueTreeHold } from "@slaw/shared";
+import type { Agent, Issue, IssueTreeControlPreview, IssueTreeHold } from "@slaw-ai/shared";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";

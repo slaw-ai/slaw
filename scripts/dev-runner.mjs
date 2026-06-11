@@ -291,14 +291,14 @@ async function runPnpm(args, options = {}) {
 
 async function getMigrationStatusPayload() {
   const status = await runPnpm(
-    ["--filter", "@slaw/db", "exec", "tsx", "src/migration-status.ts", "--json"],
+    ["--filter", "@slaw-ai/db", "exec", "tsx", "src/migration-status.ts", "--json"],
     { env },
   );
   if (status.code !== 0) {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[slaw] Command failed with code ${status.code}: pnpm --filter @slaw/db exec tsx src/migration-status.ts --json\n`,
+        `[slaw] Command failed with code ${status.code}: pnpm --filter @slaw-ai/db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -390,7 +390,7 @@ async function maybePreflightMigrations(options = {}) {
 async function buildPluginSdk() {
   console.log("[slaw] building plugin sdk...");
   const result = await runPnpm(
-    ["--filter", "@slaw/plugin-sdk", "build"],
+    ["--filter", "@slaw-ai/plugin-sdk", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -470,7 +470,7 @@ async function startServerChild() {
   const serverScript = mode === "watch" ? "dev:watch" : "dev";
   child = spawn(
     pnpmBin,
-    ["--filter", "@slaw/server", serverScript, ...forwardedArgs],
+    ["--filter", "@slaw-ai/server", serverScript, ...forwardedArgs],
     { stdio: "inherit", env, shell: process.platform === "win32" },
   );
 

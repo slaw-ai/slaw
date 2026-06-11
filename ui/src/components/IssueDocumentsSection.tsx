@@ -5,8 +5,8 @@ import type {
   DocumentRevision,
   Issue,
   IssueDocument,
-} from "@slaw/shared";
-import { isSystemIssueDocumentKey } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import { isSystemIssueDocumentKey } from "@slaw-ai/shared";
 import { useLocation } from "@/lib/router";
 import { ApiError } from "../api/client";
 import { issuesApi } from "../api/issues";

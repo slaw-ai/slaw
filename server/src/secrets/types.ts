@@ -2,8 +2,8 @@ import type {
   SecretProvider,
   SecretProviderConfigDiscoveryPreviewResult,
   SecretProviderDescriptor,
-} from "@slaw/shared";
-import type { DeploymentMode } from "@slaw/shared";
+} from "@slaw-ai/shared";
+import type { DeploymentMode } from "@slaw-ai/shared";
 
 export interface StoredSecretVersionMaterial {
   [key: string]: unknown;

@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import type { Issue } from "@slaw/shared";
+import type { Issue } from "@slaw-ai/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { issuesApi } from "@/api/issues";
 import {
