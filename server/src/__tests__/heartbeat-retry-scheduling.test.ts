@@ -19,6 +19,10 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import {
+  CIRCUIT_BREAKER_DEFAULT_COOLOFF_MS,
+  CIRCUIT_BREAKER_MAX_COOLOFF_MS,
+} from "../services/heartbeat-circuit-breaker.ts";
+import {
   BOUNDED_TRANSIENT_HEARTBEAT_RETRY_DELAYS_MS,
   MAX_TURN_CONTINUATION_RETRY_REASON,
   MAX_TURN_CONTINUATION_WAKE_REASON,
@@ -1175,70 +1179,74 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     });
   });
 
-  it("advances codex transient fallback stages across bounded retry attempts", async () => {
-    const fallbackModes = [
-      "same_session",
-      "safer_invocation",
-      "fresh_session",
-      "fresh_session_safer_invocation",
-    ] as const;
-
-    for (const [index, expectedMode] of fallbackModes.entries()) {
-      const squadId = randomUUID();
-      const agentId = randomUUID();
-      const runId = randomUUID();
-      const now = new Date(`2026-04-20T1${index}:00:00.000Z`);
-
-      await seedRetryFixture({
-        runId,
-        squadId,
-        agentId,
-        now,
-        errorCode: "adapter_failed",
-        errorFamily: "transient_upstream",
-        scheduledRetryAttempt: index,
-      });
-
-      const scheduled = await heartbeat.scheduleBoundedRetry(runId, {
-        now,
-        random: () => 0.5,
-      });
-
-      expect(scheduled.outcome).toBe("scheduled");
-      if (scheduled.outcome !== "scheduled") continue;
-
-      const retryRun = await db
-        .select({
-          contextSnapshot: heartbeatRuns.contextSnapshot,
-          wakeupRequestId: heartbeatRuns.wakeupRequestId,
-        })
-        .from(heartbeatRuns)
-        .where(eq(heartbeatRuns.id, scheduled.run.id))
-        .then((rows) => rows[0] ?? null);
-      expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.codexTransientFallbackMode).toBe(expectedMode);
-
-      const wakeupRequest = await db
-        .select({ payload: agentWakeupRequests.payload })
-        .from(agentWakeupRequests)
-        .where(eq(agentWakeupRequests.id, retryRun?.wakeupRequestId ?? ""))
-        .then((rows) => rows[0] ?? null);
-      expect((wakeupRequest?.payload as Record<string, unknown> | null)?.codexTransientFallbackMode).toBe(expectedMode);
-
-      await db.delete(heartbeatRunEvents);
-      await db.delete(heartbeatRuns);
-      await db.delete(agentWakeupRequests);
-      await db.delete(agents);
-      await db.delete(squads);
-    }
-  });
-
-  it("honors codex retry-not-before timestamps when they exceed the default bounded backoff", async () => {
+  it("defers codex transient upstream failures to the instance circuit breaker", async () => {
     const squadId = randomUUID();
     const agentId = randomUUID();
     const runId = randomUUID();
-    const now = new Date(2026, 3, 22, 22, 29, 0);
-    const retryNotBefore = new Date(2026, 3, 22, 23, 31, 0);
+    const now = new Date("2026-04-20T10:00:00.000Z");
 
+    heartbeat.resetCircuitBreaker();
+    await seedRetryFixture({
+      runId,
+      squadId,
+      agentId,
+      now,
+      errorCode: "adapter_failed",
+      errorFamily: "transient_upstream",
+    });
+
+    const scheduled = await heartbeat.scheduleBoundedRetry(runId, {
+      now,
+      random: () => 0.5,
+    });
+
+    // F1 — shared-account exhaustion (usage/rate limit, overloaded upstream)
+    // must NOT be retried per-run: all agents share one account, so per-run
+    // retries multiply the failure. The instance-wide breaker pauses all
+    // heartbeats until the limit resets.
+    expect(scheduled.outcome).toBe("not_scheduled");
+    if (scheduled.outcome !== "not_scheduled") return;
+    expect(scheduled.errorCode).toBe("circuit_breaker_open");
+
+    const breaker = heartbeat.getCircuitBreakerState();
+    expect(breaker.reason).toBe("shared_account_exhaustion");
+    // No reset hint on the run, so the default cool-off applies.
+    expect(breaker.openUntil?.getTime()).toBe(now.getTime() + CIRCUIT_BREAKER_DEFAULT_COOLOFF_MS);
+
+    // No retry run and no wakeup request may be created.
+    const runCount = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.squadId, squadId))
+      .then((rows) => rows[0]?.count ?? 0);
+    expect(runCount).toBe(1);
+
+    const wakeupCount = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(agentWakeupRequests)
+      .then((rows) => rows[0]?.count ?? 0);
+    expect(wakeupCount).toBe(0);
+
+    const deferralEvent = await db
+      .select({ message: heartbeatRunEvents.message })
+      .from(heartbeatRunEvents)
+      .where(eq(heartbeatRunEvents.runId, runId))
+      .orderBy(sql`${heartbeatRunEvents.id} desc`)
+      .then((rows) => rows[0] ?? null);
+    expect(deferralEvent?.message).toContain("instance circuit breaker");
+
+    heartbeat.resetCircuitBreaker();
+  });
+
+  it("opens the breaker honoring an upstream retry-not-before hint within the cool-off cap", async () => {
+    const squadId = randomUUID();
+    const agentId = randomUUID();
+    const runId = randomUUID();
+    const now = new Date("2026-04-22T22:29:00.000Z");
+    // 30 minutes — inside the 60-minute max cool-off, so honored exactly.
+    const retryNotBefore = new Date(now.getTime() + 30 * 60 * 1000);
+
+    heartbeat.resetCircuitBreaker();
     await seedRetryFixture({
       runId,
       squadId,
@@ -1254,43 +1262,26 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       random: () => 0.5,
     });
 
-    expect(scheduled.outcome).toBe("scheduled");
-    if (scheduled.outcome !== "scheduled") return;
-    expect(scheduled.dueAt.getTime()).toBe(retryNotBefore.getTime());
+    expect(scheduled.outcome).toBe("not_scheduled");
+    if (scheduled.outcome !== "not_scheduled") return;
+    expect(scheduled.errorCode).toBe("circuit_breaker_open");
 
-    const retryRun = await db
-      .select({
-        contextSnapshot: heartbeatRuns.contextSnapshot,
-        scheduledRetryAt: heartbeatRuns.scheduledRetryAt,
-        wakeupRequestId: heartbeatRuns.wakeupRequestId,
-      })
-      .from(heartbeatRuns)
-      .where(eq(heartbeatRuns.id, scheduled.run.id))
-      .then((rows) => rows[0] ?? null);
+    const breaker = heartbeat.getCircuitBreakerState();
+    expect(breaker.reason).toBe("shared_account_exhaustion");
+    expect(breaker.openUntil?.getTime()).toBe(retryNotBefore.getTime());
 
-    expect(retryRun?.scheduledRetryAt?.getTime()).toBe(retryNotBefore.getTime());
-    expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.transientRetryNotBefore).toBe(
-      retryNotBefore.toISOString(),
-    );
-
-    const wakeupRequest = await db
-      .select({ payload: agentWakeupRequests.payload })
-      .from(agentWakeupRequests)
-      .where(eq(agentWakeupRequests.id, retryRun?.wakeupRequestId ?? ""))
-      .then((rows) => rows[0] ?? null);
-
-    expect((wakeupRequest?.payload as Record<string, unknown> | null)?.transientRetryNotBefore).toBe(
-      retryNotBefore.toISOString(),
-    );
+    heartbeat.resetCircuitBreaker();
   });
 
-  it("schedules bounded retries for claude_transient_upstream and honors its retry-not-before hint", async () => {
+  it("clamps claude transient retry-not-before hints to the breaker max cool-off", async () => {
     const squadId = randomUUID();
     const agentId = randomUUID();
     const runId = randomUUID();
-    const now = new Date(2026, 3, 22, 10, 0, 0);
-    const retryNotBefore = new Date(2026, 3, 22, 16, 0, 0);
+    const now = new Date("2026-04-22T10:00:00.000Z");
+    // 6 hours — beyond the 60-minute max cool-off, so the breaker clamps.
+    const retryNotBefore = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
+    heartbeat.resetCircuitBreaker();
     await seedRetryFixture({
       runId,
       squadId,
@@ -1307,34 +1298,14 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       random: () => 0.5,
     });
 
-    expect(scheduled.outcome).toBe("scheduled");
-    if (scheduled.outcome !== "scheduled") return;
-    expect(scheduled.dueAt.getTime()).toBe(retryNotBefore.getTime());
+    expect(scheduled.outcome).toBe("not_scheduled");
+    if (scheduled.outcome !== "not_scheduled") return;
+    expect(scheduled.errorCode).toBe("circuit_breaker_open");
 
-    const retryRun = await db
-      .select({
-        contextSnapshot: heartbeatRuns.contextSnapshot,
-        scheduledRetryAt: heartbeatRuns.scheduledRetryAt,
-        wakeupRequestId: heartbeatRuns.wakeupRequestId,
-      })
-      .from(heartbeatRuns)
-      .where(eq(heartbeatRuns.id, scheduled.run.id))
-      .then((rows) => rows[0] ?? null);
+    const breaker = heartbeat.getCircuitBreakerState();
+    expect(breaker.reason).toBe("shared_account_exhaustion");
+    expect(breaker.openUntil?.getTime()).toBe(now.getTime() + CIRCUIT_BREAKER_MAX_COOLOFF_MS);
 
-    expect(retryRun?.scheduledRetryAt?.getTime()).toBe(retryNotBefore.getTime());
-    const contextSnapshot = (retryRun?.contextSnapshot as Record<string, unknown> | null) ?? {};
-    expect(contextSnapshot.transientRetryNotBefore).toBe(retryNotBefore.toISOString());
-    // Claude does not participate in the Codex fallback-mode ladder.
-    expect(contextSnapshot.codexTransientFallbackMode ?? null).toBeNull();
-
-    const wakeupRequest = await db
-      .select({ payload: agentWakeupRequests.payload })
-      .from(agentWakeupRequests)
-      .where(eq(agentWakeupRequests.id, retryRun?.wakeupRequestId ?? ""))
-      .then((rows) => rows[0] ?? null);
-
-    expect((wakeupRequest?.payload as Record<string, unknown> | null)?.transientRetryNotBefore).toBe(
-      retryNotBefore.toISOString(),
-    );
+    heartbeat.resetCircuitBreaker();
   });
 });

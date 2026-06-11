@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -215,7 +214,12 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   async function createPluginPackage(manifest: SlawPluginManifestV1, migrationSql: string) {
-    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "slaw-plugin-package-"));
+    // Keep temp packages inside the vite root: vite-node (vitest) cannot
+    // dynamically import modules that live outside it, and installable
+    // packages get their manifest.js imported by loadManifestFromPath.
+    const tempBase = path.join(import.meta.dirname, "tmp");
+    await mkdir(tempBase, { recursive: true });
+    const packageRoot = await mkdtemp(path.join(tempBase, "slaw-plugin-package-"));
     packageRoots.push(packageRoot);
     const migrationsDir = path.join(packageRoot, manifest.database!.migrationsDir);
     await mkdir(migrationsDir, { recursive: true });

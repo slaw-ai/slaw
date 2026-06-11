@@ -72,7 +72,10 @@ async function runPnpm(cwd: string, args: string[]) {
 
 async function createTempRepo(defaultBranch = "main") {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slaw-worktree-repo-"));
-  await runGit(repoRoot, ["init"]);
+  // Pin the initial branch: the host's init.defaultBranch config (often
+  // "main" on developer machines) must not leak into the fixture, which
+  // expects "master" to exist alongside the requested default branch.
+  await runGit(repoRoot, ["init", "--initial-branch=master"]);
   await runGit(repoRoot, ["config", "user.email", "slaw@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Slaw Test"]);
   await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
