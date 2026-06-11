@@ -12,7 +12,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import os from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -108,7 +108,7 @@ function main() {
   process.exit(runForbiddenTokenCheck({ repoRoot, tokens }));
 }
 
-const isMainModule = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMainModule = process.argv[1] && realpathSync(resolve(process.argv[1])) === fileURLToPath(import.meta.url);
 
 if (isMainModule) {
   main();
