@@ -110,6 +110,11 @@ const manifest: SlawPluginManifestV1 = {
         description:
           "When true, all Slaw status changes are pushed to Jira. When false, only completion (done/cancelled) is reflected back.",
       },
+      webhookSecretRef: {
+        type: "string",
+        description:
+          "Optional. Name of the Slaw secret holding the Jira webhook signing secret. When set, inbound deliveries must carry a valid X-Hub-Signature (HMAC-SHA256) or they are rejected.",
+      },
     },
   },
   webhooks: [

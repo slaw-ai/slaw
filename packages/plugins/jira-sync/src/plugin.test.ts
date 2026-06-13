@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { createTestHarness } from "@slaw-ai/plugin-sdk/testing";
 
@@ -103,5 +104,89 @@ describe("jira-sync inbound (Jira → Slaw)", () => {
       stateKey: "last-full-sync",
     });
     expect(state).toMatchObject({ total: 0, created: 0, skipped: 0 });
+  });
+});
+
+describe("jira-sync webhook signature verification (H2)", () => {
+  const SECRET_REF = "jira-wh-secret";
+  // The test harness resolves a secret ref to `resolved:<ref>`.
+  const RESOLVED_SECRET = `resolved:${SECRET_REF}`;
+  const SIGNED_CONFIG = { ...CONFIG, webhookSecretRef: SECRET_REF };
+  const PAYLOAD = JSON.stringify({ webhookEvent: "jira:issue_created", issue: JIRA_ISSUE });
+
+  const sign = (body: string, secret = RESOLVED_SECRET) =>
+    "sha256=" + createHmac("sha256", secret).update(body, "utf8").digest("hex");
+
+  it("rejects a delivery with no signature when a secret is configured", async () => {
+    const harness = createTestHarness({ manifest, config: SIGNED_CONFIG });
+    harness.seed({ squads: [{ id: "squad-1" } as never] });
+    await plugin.definition.setup(harness.ctx);
+
+    await expect(
+      plugin.definition.onWebhook?.({
+        endpointKey: WEBHOOK_KEYS.jiraEvent,
+        headers: {},
+        rawBody: PAYLOAD,
+        parsedBody: JSON.parse(PAYLOAD),
+        requestId: "req-nosig",
+      }),
+    ).rejects.toThrow(/signature/i);
+
+    const created = await harness.ctx.issues.list({ squadId: "squad-1" });
+    expect(created).toHaveLength(0);
+  });
+
+  it("rejects a forged signature", async () => {
+    const harness = createTestHarness({ manifest, config: SIGNED_CONFIG });
+    harness.seed({ squads: [{ id: "squad-1" } as never] });
+    await plugin.definition.setup(harness.ctx);
+
+    await expect(
+      plugin.definition.onWebhook?.({
+        endpointKey: WEBHOOK_KEYS.jiraEvent,
+        headers: { "x-hub-signature": sign(PAYLOAD, "wrong-secret") },
+        rawBody: PAYLOAD,
+        parsedBody: JSON.parse(PAYLOAD),
+        requestId: "req-forged",
+      }),
+    ).rejects.toThrow(/signature/i);
+
+    const created = await harness.ctx.issues.list({ squadId: "squad-1" });
+    expect(created).toHaveLength(0);
+  });
+
+  it("accepts a correctly-signed delivery", async () => {
+    const harness = createTestHarness({ manifest, config: SIGNED_CONFIG });
+    harness.seed({ squads: [{ id: "squad-1" } as never] });
+    await plugin.definition.setup(harness.ctx);
+
+    await plugin.definition.onWebhook?.({
+      endpointKey: WEBHOOK_KEYS.jiraEvent,
+      headers: { "x-hub-signature": sign(PAYLOAD) },
+      rawBody: PAYLOAD,
+      parsedBody: JSON.parse(PAYLOAD),
+      requestId: "req-signed",
+    });
+
+    const created = await harness.ctx.issues.list({ squadId: "squad-1" });
+    expect(created).toHaveLength(1);
+    expect(created[0]).toMatchObject({ originId: "ENG-7" });
+  });
+
+  it("does not require a signature when no secret is configured (back-compat)", async () => {
+    const harness = createTestHarness({ manifest, config: CONFIG });
+    harness.seed({ squads: [{ id: "squad-1" } as never] });
+    await plugin.definition.setup(harness.ctx);
+
+    await plugin.definition.onWebhook?.({
+      endpointKey: WEBHOOK_KEYS.jiraEvent,
+      headers: {},
+      rawBody: PAYLOAD,
+      parsedBody: JSON.parse(PAYLOAD),
+      requestId: "req-unsigned-ok",
+    });
+
+    const created = await harness.ctx.issues.list({ squadId: "squad-1" });
+    expect(created).toHaveLength(1);
   });
 });

@@ -28,6 +28,7 @@ import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
 import { logger } from "./middleware/logger.js";
+import { assertCloudTenantConfig } from "./middleware/auth.js";
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
 import {
   backfillPrincipalAccessCompatibility,
@@ -871,6 +872,9 @@ export async function startServer(): Promise<StartedServer> {
     server.listen(listenPort, config.host, () => {
       server.off("error", onError);
       logger.info(`Server listening on ${config.host}:${listenPort}`);
+      // Advisory: warn if the cloud-tenant trusted-header path is enabled
+      // without a source-IP allowlist (H5).
+      assertCloudTenantConfig();
       if (process.env.SLAW_OPEN_ON_LISTEN === "true") {
         const openHost = config.host === "0.0.0.0" || config.host === "::" ? "127.0.0.1" : config.host;
         const url = `http://${openHost}:${listenPort}`;

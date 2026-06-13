@@ -203,6 +203,23 @@ async function resolveCloudTenantActor(db: Db, req: Request): Promise<Express.Re
   const expectedToken = process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN?.trim();
   if (!expectedToken) return null;
 
+  // Source-IP allowlist (H5). The trusted-header bundle grants instance-admin
+  // from a shared token alone; require the request to originate from a
+  // configured edge proxy CIDR so a leaked token can't be replayed from
+  // anywhere. When unset we warn at startup (see assertCloudTenantConfig) but
+  // still honour the token — opt-in for back-compat.
+  const allowlist = parseCloudTenantAllowlist();
+  if (allowlist.length > 0) {
+    const remoteIp = (req.ip ?? req.socket?.remoteAddress ?? "").replace(/^::ffff:/, "");
+    if (!remoteIp || !allowlist.some((cidr) => ipInCidr(remoteIp, cidr))) {
+      logger.warn(
+        { remoteIp: remoteIp || "(unknown)" },
+        "cloud-tenant header bundle rejected: source IP not in allowlist",
+      );
+      return null;
+    }
+  }
+
   const token = req.header("x-slaw-cloud-tenant-token")?.trim();
   if (!token || !constantTimeStringEqual(token, expectedToken)) return null;
 
@@ -327,6 +344,64 @@ function constantTimeStringEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left);
   const rightBuffer = Buffer.from(right);
   return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+/** Parse SLAW_CLOUD_TENANT_ALLOWED_IPS (comma/space-separated IPs or CIDRs). */
+function parseCloudTenantAllowlist(): string[] {
+  return (process.env.SLAW_CLOUD_TENANT_ALLOWED_IPS ?? "")
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Whether an IPv4 address falls inside a CIDR (or equals a bare IP). IPv6 is
+ * matched by exact string equality only — deployments needing IPv6 CIDRs should
+ * list explicit addresses. Returns false on any parse failure (fail closed).
+ *
+ * Exported for unit testing.
+ */
+export function ipInCidr(ip: string, cidr: string): boolean {
+  if (!cidr.includes("/")) return ip === cidr;
+  const [range, bitsStr] = cidr.split("/");
+  const bits = Number(bitsStr);
+  const ipNum = ipv4ToInt(ip);
+  const rangeNum = ipv4ToInt(range);
+  if (ipNum === null || rangeNum === null || !Number.isInteger(bits) || bits < 0 || bits > 32) {
+    return false;
+  }
+  if (bits === 0) return true;
+  const mask = bits === 32 ? 0xffffffff : (~((1 << (32 - bits)) - 1)) >>> 0;
+  return (ipNum & mask) === (rangeNum & mask);
+}
+
+function ipv4ToInt(ip: string): number | null {
+  const parts = ip.split(".");
+  if (parts.length !== 4) return null;
+  let n = 0;
+  for (const p of parts) {
+    const octet = Number(p);
+    if (!Number.isInteger(octet) || octet < 0 || octet > 255 || !/^\d+$/.test(p)) return null;
+    n = (n << 8) | octet;
+  }
+  return n >>> 0;
+}
+
+/**
+ * Startup advisory: if the cloud-tenant trusted-header path is enabled but no
+ * source-IP allowlist is configured, warn that the shared token is the only
+ * gate. Call once at boot. Also reminds operators the edge proxy MUST strip
+ * inbound x-slaw-cloud-* headers from client requests.
+ */
+export function assertCloudTenantConfig(): void {
+  if (!process.env.SLAW_CLOUD_TENANT_SERVER_TOKEN?.trim()) return;
+  if (parseCloudTenantAllowlist().length === 0) {
+    logger.warn(
+      "SLAW_CLOUD_TENANT_SERVER_TOKEN is set but SLAW_CLOUD_TENANT_ALLOWED_IPS is empty — " +
+        "the trusted x-slaw-cloud-* header bundle is gated by the shared token alone. " +
+        "Set an edge-proxy CIDR allowlist, and ensure the proxy strips inbound x-slaw-cloud-* headers.",
+    );
+  }
 }
 
 function cloudTenantSquadId(stackId: string): string {

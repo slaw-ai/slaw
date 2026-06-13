@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 import { definePlugin, type PluginContext } from "@slaw-ai/plugin-sdk";
 
 import {
@@ -24,6 +26,12 @@ interface JiraSyncConfig {
   targetProjectId?: string;
   targetAssigneeAgentId?: string;
   syncStatusBack?: boolean;
+  /**
+   * Optional name of the Slaw secret holding the Jira webhook signing secret.
+   * When set, inbound deliveries must carry a valid `X-Hub-Signature`
+   * (HMAC-SHA256 over the raw body) or they are rejected (H2 fix).
+   */
+  webhookSecretRef?: string;
 }
 
 /**
@@ -43,7 +51,31 @@ function readConfig(raw: Record<string, unknown>): JiraSyncConfig {
     targetProjectId: raw.targetProjectId ? String(raw.targetProjectId) : undefined,
     targetAssigneeAgentId: raw.targetAssigneeAgentId ? String(raw.targetAssigneeAgentId) : undefined,
     syncStatusBack: raw.syncStatusBack === true,
+    webhookSecretRef: raw.webhookSecretRef ? String(raw.webhookSecretRef) : undefined,
   };
+}
+
+/**
+ * Verify a Jira webhook delivery's HMAC-SHA256 signature.
+ *
+ * Jira signs the raw request body with the configured webhook secret and sends
+ * the result in `X-Hub-Signature` as `sha256=<hex>` (WebSub standard). We
+ * recompute over the exact bytes the host stashed (`rawBody`) and compare in
+ * constant time. Returns true when the signature is present and valid.
+ */
+function verifyWebhookSignature(
+  rawBody: string,
+  headers: Record<string, string | string[]>,
+  secret: string,
+): boolean {
+  const headerVal = headers["x-hub-signature"] ?? headers["X-Hub-Signature"];
+  const sig = Array.isArray(headerVal) ? headerVal[0] : headerVal;
+  if (!sig) return false;
+  const received = sig.startsWith("sha256=") ? sig.slice("sha256=".length) : sig;
+  const expected = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const a = Buffer.from(received, "hex");
+  const b = Buffer.from(expected, "hex");
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 async function buildClient(ctx: PluginContext, config: JiraSyncConfig): Promise<JiraClient> {
@@ -197,6 +229,24 @@ const plugin = definePlugin({
       throw new Error("jira-sync webhook received before setup completed");
     }
     const config = readConfig(await ctx.config.get());
+
+    // Verify the delivery signature when a webhook secret is configured (H2).
+    // Reject forged/unsigned deliveries before doing any work.
+    if (config.webhookSecretRef) {
+      const secret = await ctx.secrets.resolve(config.webhookSecretRef);
+      if (!secret) {
+        ctx.logger.error("jira-sync webhook secret ref configured but secret is empty", {
+          requestId: input.requestId,
+        });
+        throw new Error("jira-sync webhook secret unavailable");
+      }
+      if (!verifyWebhookSignature(input.rawBody, input.headers, secret)) {
+        ctx.logger.warn("jira-sync webhook signature verification failed — rejecting", {
+          requestId: input.requestId,
+        });
+        throw new Error("jira-sync webhook signature invalid");
+      }
+    }
 
     const body = (input.parsedBody ?? safeJson(input.rawBody)) as {
       webhookEvent?: string;
