@@ -342,9 +342,13 @@ function resolveBotfatherConfig(file: Partial<BotfatherConfig> | undefined): Bot
   // env url overrides file; SLAW_BOTFATHER_DISABLED clears the url (the gate's
   // enforcement rules decide whether an already-enrolled instance still runs).
   const url = disabled ? undefined : (envUrl || file?.url);
+  // env secret overrides the file; prefer env so the secret isn't committed.
+  const enrollmentSecret =
+    process.env.SLAW_BOTFATHER_ENROLLMENT_SECRET?.trim() || file?.enrollmentSecret || undefined;
   return {
     url,
     enforcement: file?.enforcement ?? "enforce",
+    enrollmentSecret,
     locked: file?.locked ?? false,
     syncIntervalSec: file?.syncIntervalSec ?? 60,
     heartbeatIntervalSec: file?.heartbeatIntervalSec ?? 60,

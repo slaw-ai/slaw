@@ -51,6 +51,8 @@ export interface BotfatherSettings {
   url: string | undefined;
   enforcement: "enforce" | "advisory";
   reportIssueTitles: boolean;
+  /** pre-shared enrollment secret, sent on /enroll when the tower requires one */
+  enrollmentSecret?: string;
 }
 
 /**
@@ -118,7 +120,11 @@ export class BotfatherEnrollment {
 
     try {
       if (!this.enrollmentId) {
-        const res = await this.client.enroll(this.identity, this.settings.reportIssueTitles);
+        const res = await this.client.enroll(
+          this.identity,
+          this.settings.reportIssueTitles,
+          this.settings.enrollmentSecret,
+        );
         this.enrollmentId = res.enrollmentId;
         if (res.state === "active" && res.apiKey) {
           this.persistKey(res.apiKey, res.enrollmentId);

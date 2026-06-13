@@ -44,6 +44,11 @@ export const enrollRequestSchema = z.object({
       liveStream: z.boolean().default(false),
     })
     .default({}),
+  /**
+   * Optional pre-shared enrollment secret. Sent when the tower is configured
+   * with a secret; omitted otherwise. Back-compat with secret-less towers.
+   */
+  enrollmentSecret: z.string().max(512).optional(),
 });
 export type EnrollRequest = z.infer<typeof enrollRequestSchema>;
 

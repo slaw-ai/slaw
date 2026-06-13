@@ -99,12 +99,21 @@ async function getJson<T>(url: string, apiKey: string, timeoutMs = 15_000): Prom
 export function createBotfatherClient(baseUrl: string) {
   const ingest = (p: string) => joinUrl(baseUrl, `api/ingest/v1/${p}`);
   return {
-    /** token-less self-enrollment → pending (or active if an auto-approve rule matches) */
-    async enroll(instance: InstanceIdentity, reportIssueTitles: boolean): Promise<EnrollResponse> {
+    /**
+     * Self-enrollment → pending (or active if an auto-approve rule matches).
+     * Sends the pre-shared enrollment secret when the operator configured one
+     * (towers requiring a secret reject enrollment without it).
+     */
+    async enroll(
+      instance: InstanceIdentity,
+      reportIssueTitles: boolean,
+      enrollmentSecret?: string,
+    ): Promise<EnrollResponse> {
       return postJson<EnrollResponse>(ingest("enroll"), {
         protocolVersion: PROTOCOL_VERSION,
         instance,
         capabilities: { reportIssueTitles, liveStream: false },
+        ...(enrollmentSecret ? { enrollmentSecret } : {}),
       });
     },
     /** poll until approved; returns the per-instance apiKey once active */

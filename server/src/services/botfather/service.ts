@@ -35,6 +35,7 @@ export class BotfatherService {
       url: config.url,
       enforcement: config.enforcement,
       reportIssueTitles: config.reportIssueTitles,
+      enrollmentSecret: config.enrollmentSecret,
     });
     this.reporter = config.url
       ? new BotfatherReporter({
@@ -66,6 +67,7 @@ export class BotfatherService {
       url,
       enforcement,
       reportIssueTitles: this.config.reportIssueTitles,
+      enrollmentSecret: this.config.enrollmentSecret,
     });
     if (changedUrl) this.enrollment.onRevoked(); // drop any stale key for a new tower
     this.reporter = new BotfatherReporter({

@@ -105,6 +105,9 @@ export const botfatherConfigSchema = z
   .object({
     url: z.string().url().optional(),
     enforcement: z.enum(["enforce", "advisory"]).default("enforce"),
+    // pre-shared secret the tower may require for enrollment; sent on /enroll.
+    // Prefer delivering via env (SLAW_BOTFATHER_ENROLLMENT_SECRET) over the file.
+    enrollmentSecret: z.string().max(512).optional(),
     // true when IT delivers this read-only (MDM); UI greys the fields out
     locked: z.boolean().default(false),
     syncIntervalSec: z.number().int().min(15).max(3600).default(60),
