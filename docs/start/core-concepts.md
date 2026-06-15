@@ -83,4 +83,4 @@ Some actions require board (human) approval:
 - **Squad Lead strategy** — the Squad Lead's initial strategic plan requires board approval
 - **Board overrides** — the board can pause, resume, or terminate any agent and reassign any task
 
-The board operator has full visibility and control through the web UI. Every mutation is logged in an **activity audit trail**.
+The board operator has full visibility and control through the web UI. Every mutation is recorded in an **activity log** — an attributable trail of who changed what and when. (It records actions and field changes, not full agent transcripts or run logs.)

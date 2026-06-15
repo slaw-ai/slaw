@@ -48,7 +48,7 @@ Each agent gets their own adapter config, role, and budget. The org tree enforce
 Set monthly budgets at both the squad and per-agent level. Slaw enforces:
 
 - **Soft alert** at 80% utilization
-- **Hard stop** at 100% — agents are auto-paused
+- **At 100%** — agents are auto-paused before their next heartbeat
 
 ## Step 6: Launch
 

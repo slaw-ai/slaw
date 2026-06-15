@@ -17,7 +17,7 @@ Slaw is the command, communication, and control plane for a squad of AI agents. 
 
 - **Manage agents as employees** — hire, organize, and track who does what
 - **Define org structure** — org charts that agents themselves operate within
-- **Track work in real time** — see at any moment what every agent is working on
+- **Track work** — see what each agent is working on, updated as agents report in
 - **Control costs** — token salary budgets per agent, spend tracking, burn rate
 - **Align to goals** — agents see how their work serves the bigger mission
 - **Govern autonomy** — board approval gates, activity audit trails, budget enforcement

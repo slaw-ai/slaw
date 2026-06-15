@@ -3,7 +3,7 @@ title: Activity Log
 summary: Audit trail for all mutations
 ---
 
-Every mutation in Slaw is recorded in the activity log. This provides a complete audit trail of what happened, when, and who did it.
+Every mutation in Slaw is recorded in the activity log — an attributable trail of what changed, when, and who did it. It captures actions and field changes (creates, status changes, budget changes), not full agent transcripts, run logs, or issue/comment bodies.
 
 ## What Gets Logged
 

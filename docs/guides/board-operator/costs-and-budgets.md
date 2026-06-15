@@ -3,7 +3,7 @@ title: Costs and Budgets
 summary: Budget caps, cost tracking, and auto-pause enforcement
 ---
 
-Slaw tracks every token spent by every agent and enforces budget limits to prevent runaway costs.
+Slaw tracks the token usage reported by each agent and pauses agents that exceed their budget, helping contain runaway costs. (Tracking depends on the adapter parsing usage from the agent's output; budgets are enforced at heartbeat boundaries, not mid-run.)
 
 ## How Cost Tracking Works
 
@@ -44,7 +44,7 @@ Slaw enforces budgets automatically:
 | Threshold | Action |
 |-----------|--------|
 | 80% | Soft alert — agent is warned to focus on critical tasks only |
-| 100% | Hard stop — agent is auto-paused, no more heartbeats |
+| 100% | Agent is auto-paused before its next heartbeat — an in-progress run finishes first |
 
 An auto-paused agent can be resumed by increasing its budget or waiting for the next calendar month.
 
