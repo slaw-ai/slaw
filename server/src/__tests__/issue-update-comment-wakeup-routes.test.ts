@@ -13,7 +13,10 @@ const mockIssueService = vi.hoisted(() => ({
   listWakeableBlockedDependents: vi.fn(),
   getWakeableParentAfterChildCompletion: vi.fn(),
   getCurrentScheduledRetry: vi.fn(),
+  getOrCreateLeadThread: vi.fn(),
 }));
+
+const mockAgentGetById = vi.hoisted(() => vi.fn(async () => null));
 
 const mockHeartbeatService = vi.hoisted(() => ({
   wakeup: vi.fn(async () => undefined),
@@ -42,7 +45,7 @@ vi.mock("../services/index.js", () => ({
     hasPermission: vi.fn(async () => true),
   }),
   agentService: () => ({
-    getById: vi.fn(async () => null),
+    getById: mockAgentGetById,
     resolveByReference: vi.fn(async (_squadId: string, raw: string) => ({
       ambiguous: false,
       agent: { id: raw },
@@ -106,7 +109,7 @@ function registerModuleMocks() {
       hasPermission: vi.fn(async () => true),
     }),
     agentService: () => ({
-      getById: vi.fn(async () => null),
+      getById: mockAgentGetById,
       resolveByReference: vi.fn(async (_squadId: string, raw: string) => ({
         ambiguous: false,
         agent: { id: raw },
@@ -375,5 +378,32 @@ describe("issue update comment wakeups", () => {
         contextSnapshot: expect.objectContaining({ source: "issue.comment" }),
       }),
     );
+  });
+
+  it("GET /squads/:squadId/lead-thread returns the Lead thread + Squad Lead summary (Phase 7)", async () => {
+    mockIssueService.getOrCreateLeadThread.mockResolvedValue({
+      id: "lead-thread-1",
+      identifier: "SLA-1",
+      squadId: "squad-1",
+      threadType: "lead",
+      assigneeAgentId: ASSIGNEE_AGENT_ID,
+    });
+    mockAgentGetById.mockResolvedValue({
+      id: ASSIGNEE_AGENT_ID,
+      name: "Squad Lead",
+      role: "squad_lead",
+      status: "active",
+    } as any);
+
+    const res = await request(await createApp()).get("/api/squads/squad-1/lead-thread");
+
+    expect(res.status).toBe(200);
+    expect(mockIssueService.getOrCreateLeadThread).toHaveBeenCalledWith("squad-1");
+    expect(res.body).toEqual({
+      issueId: "lead-thread-1",
+      identifier: "SLA-1",
+      squadId: "squad-1",
+      lead: { id: ASSIGNEE_AGENT_ID, name: "Squad Lead", role: "squad_lead", status: "active" },
+    });
   });
 });

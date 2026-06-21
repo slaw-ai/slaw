@@ -1965,6 +1965,25 @@ export function issueRoutes(
     res.json(result);
   });
 
+  // Squad Lead Chat: get (lazily creating) the squad's Lead thread + a summary of the
+  // Squad Lead that hosts it. This is the entry point the chat UI opens onto.
+  router.get("/squads/:squadId/lead-thread", async (req, res) => {
+    const squadId = req.params.squadId as string;
+    assertSquadAccess(req, squadId);
+
+    const thread = await svc.getOrCreateLeadThread(squadId);
+    const leadAgent = thread.assigneeAgentId ? await agentsSvc.getById(thread.assigneeAgentId) : null;
+
+    res.json({
+      issueId: thread.id,
+      identifier: thread.identifier,
+      squadId: thread.squadId,
+      lead: leadAgent
+        ? { id: leadAgent.id, name: leadAgent.name, role: leadAgent.role, status: leadAgent.status }
+        : null,
+    });
+  });
+
   router.get("/squads/:squadId/issues", async (req, res) => {
     const squadId = req.params.squadId as string;
     assertSquadAccess(req, squadId);
