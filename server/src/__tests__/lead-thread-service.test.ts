@@ -141,4 +141,29 @@ describeEmbeddedPostgres("issueService.getOrCreateLeadThread", () => {
 
     await expect(svc.getOrCreateLeadThread(squadId)).rejects.toThrow(/Squad Lead/i);
   });
+
+  // Phase 6: an outcome issue created as a child of the Lead thread is a normal task --
+  // it shows on the board, while the Lead thread itself stays excluded. This is the linkage
+  // model the Squad Lead chat-mode instructions tell the agent to use (parentId = Lead thread).
+  it("shows an outcome issue parented to the Lead thread on the board, but not the Lead thread", async () => {
+    const { squadId } = await seedSquadWithLead();
+    const thread = await svc.getOrCreateLeadThread(squadId);
+
+    const outcome = await svc.create(squadId, {
+      title: "Fix the flaky CI",
+      status: "todo",
+      priority: "medium",
+      parentId: thread.id,
+    });
+
+    // The outcome is a normal task linked back to the Lead thread.
+    expect(outcome.threadType).toBe("issue");
+    expect(outcome.parentId).toBe(thread.id);
+
+    // The board/list shows the outcome but NOT the Lead thread.
+    const listed = await svc.list(squadId);
+    const listedIds = listed.map((i) => i.id);
+    expect(listedIds).toContain(outcome.id);
+    expect(listedIds).not.toContain(thread.id);
+  });
 });

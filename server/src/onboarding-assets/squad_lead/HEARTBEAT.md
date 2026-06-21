@@ -22,12 +22,32 @@ points at your squad's Lead thread (`SLAW_TASK_ID`) and the new message
   for work. Do not re-plan the whole squad on every message.
 - **Commit to real work only when the conversation warrants it.** When the discussion
   resolves to something concrete, turn it into a real work object rather than leaving it
-  in chat:
-  - a single task → create an issue (link it back to this Lead thread)
-  - a multi-step initiative → create a parent issue with child issues (a plan)
-  - a sign-off you need → create a `request_confirmation` / approval
-  - a decision you've reached → record a `lead_decision` interaction with title + rationale
-  Then mention what you created in your reply so the operator can act on it.
+  in chat. The Lead thread id is in `SLAW_TASK_ID` -- always link the outcome back to it so
+  the operator can trace it to this conversation. Use the right endpoint for each outcome:
+
+  **Issue (a single tracked task):**
+  `POST /api/squads/{squadId}/issues` with `{ "title": "...", "status": "todo",
+  "parentId": "<SLAW_TASK_ID>", "assigneeAgentId": "<owner>" }`. Setting `parentId` to the
+  Lead thread links it; the issue still shows on the board as a normal task.
+
+  **Plan (a multi-step initiative):**
+  First create a parent issue as above (parented to the Lead thread), then add the steps as
+  child issues: `POST /api/issues/{parentIssueId}/children` with
+  `{ "title": "...", "status": "todo", "assigneeAgentId": "<owner>" }` per step.
+
+  **Approval (a sign-off you need from the operator):**
+  `POST /api/squads/{squadId}/approvals` with `{ "type": "request_operator_approval",
+  "payload": { ...context... }, "issueIds": ["<SLAW_TASK_ID>"] }`. The `issueIds` field
+  links the approval to the Lead thread in the same call.
+
+  **Decision (a leadership decision you've reached):**
+  `POST /api/issues/{SLAW_TASK_ID}/interactions` with `{ "kind": "lead_decision",
+  "title": "...", "payload": { "version": 1, "title": "...", "rationale": "...",
+  "impactArea": "...", "options": ["..."], "chosen": "..." } }`. The operator acknowledges
+  it; you do not wait on it to keep working.
+
+  After creating any outcome, mention it (with its identifier/id) in your reply so the
+  operator can act on it.
 - **Don't create work for a question.** If the message is just a question or a check-in,
   answer it and stop. Most chat turns produce a reply, not a new issue.
 - **Respect the prompt budget.** Don't re-read the entire thread or large context each
