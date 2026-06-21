@@ -5952,6 +5952,12 @@ export function issueRoutes(
       const actorIsAgent = actor.actorType === "agent";
       const selfComment = actorIsAgent && actor.actorId === assigneeId;
       const skipWake = selfComment || isClosed;
+      // Squad Lead Chat (Phase 3): a user message on a Lead thread is a conversational
+      // turn with the Squad Lead, not task activity. Tag the wake so the heartbeat /
+      // Squad Lead instructions can answer in chat mode, and reset the F3 cycle counters
+      // (below) so a genuine human reply always re-wakes the Lead even after prior
+      // agent-to-agent loop suppression.
+      const isLeadChatFromUser = currentIssue.threadType === "lead" && actor.actorType === "user";
       // F3 — never wake the assignee on their OWN comment, even when that
       // comment reopened the issue (mirrors the PATCH comment path; this POST
       // path is the site the reliability design called out as the loop driver).
@@ -5988,11 +5994,12 @@ export function issueRoutes(
           wakeups.set(assigneeId, {
             source: "automation",
             triggerDetail: "system",
-            reason: "issue_commented",
+            reason: isLeadChatFromUser ? "lead_chat_message" : "issue_commented",
             payload: {
               issueId: currentIssue.id,
               commentId: comment.id,
               mutation: "comment",
+              ...(isLeadChatFromUser ? { leadChat: true } : {}),
               ...(resumeRequested === true ? { resumeIntent: true, followUpRequested: true } : {}),
               ...(interruptedRunId ? { interruptedRunId } : {}),
             },
@@ -6003,8 +6010,9 @@ export function issueRoutes(
               taskId: currentIssue.id,
               commentId: comment.id,
               wakeCommentId: comment.id,
-              source: "issue.comment",
-              wakeReason: "issue_commented",
+              source: isLeadChatFromUser ? "lead_chat" : "issue.comment",
+              wakeReason: isLeadChatFromUser ? "lead_chat_message" : "issue_commented",
+              ...(isLeadChatFromUser ? { leadChat: true } : {}),
               ...(resumeRequested === true ? { resumeIntent: true, followUpRequested: true } : {}),
               ...(interruptedRunId ? { interruptedRunId } : {}),
             },
@@ -6038,6 +6046,14 @@ export function issueRoutes(
             source: "comment.mention",
           },
         });
+      }
+
+      // F3 — for a Lead-thread chat message from a human, treat each message as a real
+      // state advance so the cycle guard's counters reset and the Squad Lead always
+      // re-wakes for a genuine reply, even after earlier agent-to-agent loop suppression.
+      // (The comment id is a fresh token per human turn.)
+      if (isLeadChatFromUser) {
+        wakeCycleGuard.noteStateChange(currentIssue.id, `lead_chat:${comment.id}`);
       }
 
       for (const [agentId, wakeup] of wakeups.entries()) {

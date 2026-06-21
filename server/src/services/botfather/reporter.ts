@@ -1,4 +1,4 @@
-import { and, asc, gt, or, eq, sql } from "drizzle-orm";
+import { and, asc, gt, or, eq, ne, sql } from "drizzle-orm";
 import type { Db } from "@slaw-ai/db";
 import {
   squads,
@@ -93,7 +93,7 @@ export class BotfatherReporter {
         (SELECT count(*)::int FROM squads) AS squads,
         (SELECT count(*)::int FROM agents) AS agents,
         (SELECT count(*)::int FROM heartbeat_runs WHERE status IN ('running','queued')) AS active_runs,
-        (SELECT count(*)::int FROM issues WHERE status NOT IN ('done','closed','completed','cancelled')) AS open_issues,
+        (SELECT count(*)::int FROM issues WHERE status NOT IN ('done','closed','completed','cancelled') AND thread_type <> 'lead') AS open_issues,
         (SELECT coalesce(sum(cost_cents),0)::int FROM cost_events WHERE occurred_at >= date_trunc('day', now() at time zone 'utc')) AS today_cents,
         (SELECT coalesce(sum(cost_cents),0)::int FROM cost_events WHERE occurred_at >= date_trunc('month', now() at time zone 'utc')) AS month_cents
     `)) as unknown;
@@ -255,7 +255,8 @@ export class BotfatherReporter {
     const issueRows = await db
       .select()
       .from(issues)
-      .where(afterCursor(issues.updatedAt, issues.id, cursors.get("issue")))
+      // Squad Lead Chat threads (thread_type='lead') are not tasks — never report them to the tower.
+      .where(and(afterCursor(issues.updatedAt, issues.id, cursors.get("issue")), ne(issues.threadType, "lead")))
       .orderBy(asc(issues.updatedAt), asc(issues.id))
       .limit(BATCH);
     for (const i of issueRows) {
@@ -472,7 +473,7 @@ export class BotfatherReporter {
         updatedAt: p.updatedAt.toISOString(),
       });
     }
-    for (const i of await db.select().from(issues).limit(2000)) {
+    for (const i of await db.select().from(issues).where(ne(issues.threadType, "lead")).limit(2000)) {
       upserts.push({
         type: "issue",
         localId: i.id,

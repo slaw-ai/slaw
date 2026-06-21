@@ -31,6 +31,11 @@ export const issues = pgTable(
     description: text("description"),
     status: text("status").notNull().default("backlog"),
     workMode: text("work_mode").notNull().default("standard"),
+    // What KIND of issue row this is. 'issue' = a normal task; 'lead' = a per-squad
+    // Squad Lead Chat thread (Squad Lead Chat feature). Lead threads are excluded from
+    // the kanban board, issue lists, and the Botfather tower issue re-emit so they never
+    // appear as tasks. Distinct from workMode (execution mode) and originKind (provenance).
+    threadType: text("thread_type").notNull().default("issue"),
     priority: text("priority").notNull().default("medium"),
     assigneeAgentId: uuid("assignee_agent_id").references(() => agents.id),
     assigneeUserId: text("assignee_user_id"),
@@ -81,6 +86,10 @@ export const issues = pgTable(
       table.status,
     ),
     parentIdx: index("issues_squad_parent_idx").on(table.squadId, table.parentId),
+    // Squad Lead Chat: at most one Lead thread per squad, and a fast lookup for it.
+    leadThreadIdx: uniqueIndex("issues_squad_lead_thread_uq")
+      .on(table.squadId)
+      .where(sql`${table.threadType} = 'lead'`),
     projectIdx: index("issues_squad_project_idx").on(table.squadId, table.projectId),
     originIdx: index("issues_squad_origin_idx").on(table.squadId, table.originKind, table.originId),
     projectWorkspaceIdx: index("issues_squad_project_workspace_idx").on(table.squadId, table.projectWorkspaceId),

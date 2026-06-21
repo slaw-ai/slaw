@@ -694,6 +694,13 @@
       "when": 1780040470891,
       "tag": "0098_roles_to_leads",
       "breakpoints": true
+    },
+    {
+      "idx": 99,
+      "version": "7",
+      "when": 1780040470892,
+      "tag": "0099_lead_chat",
+      "breakpoints": true
     }
   ]
 }
