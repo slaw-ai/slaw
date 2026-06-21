@@ -723,6 +723,23 @@ export const requestConfirmationPayloadSchema = z.object({
   target: requestConfirmationTargetSchema.nullable().optional(),
 });
 
+// Squad Lead Chat: a leadership decision the Squad Lead records for the operator to acknowledge.
+export const leadDecisionPayloadSchema = z.object({
+  version: z.literal(1),
+  title: z.string().trim().min(1).max(240),
+  rationale: z.string().trim().min(1).max(20000),
+  impactArea: z.string().trim().min(1).max(160).nullable().optional(),
+  options: z.array(z.string().trim().min(1).max(240)).max(20).nullable().optional(),
+  chosen: z.string().trim().min(1).max(240).nullable().optional(),
+});
+
+export const leadDecisionResultSchema = z.object({
+  version: z.literal(1),
+  acknowledgedByUserId: z.string().min(1),
+  acknowledgedAt: z.string().min(1),
+  note: z.string().trim().max(4000).nullable().optional(),
+});
+
 export const requestConfirmationResultSchema = z.object({
   version: z.literal(1),
   outcome: z.enum(["accepted", "rejected", "superseded_by_comment", "stale_target"]),
@@ -762,6 +779,17 @@ export const createIssueThreadInteractionSchema = z.discriminatedUnion("kind", [
     continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("none"),
     payload: requestConfirmationPayloadSchema,
   }),
+  z.object({
+    kind: z.literal("lead_decision"),
+    idempotencyKey: z.string().trim().max(255).nullable().optional(),
+    sourceCommentId: z.string().uuid().nullable().optional(),
+    sourceRunId: z.string().uuid().nullable().optional(),
+    title: z.string().trim().max(240).nullable().optional(),
+    summary: z.string().trim().max(1000).nullable().optional(),
+    // A decision record does not wake anyone on its own; the operator acknowledges it.
+    continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("none"),
+    payload: leadDecisionPayloadSchema,
+  }),
 ]);
 
 export type CreateIssueThreadInteraction = z.infer<typeof createIssueThreadInteractionSchema>;
@@ -793,6 +821,12 @@ export const cancelIssueThreadInteractionSchema = z.object({
   reason: z.string().trim().max(4000).optional(),
 });
 export type CancelIssueThreadInteraction = z.infer<typeof cancelIssueThreadInteractionSchema>;
+
+// Squad Lead Chat: the operator acknowledging a lead_decision interaction.
+export const acknowledgeIssueThreadInteractionSchema = z.object({
+  note: z.string().trim().max(4000).optional(),
+});
+export type AcknowledgeIssueThreadInteraction = z.infer<typeof acknowledgeIssueThreadInteractionSchema>;
 
 export const respondIssueThreadInteractionSchema = z.object({
   answers: z.array(askUserQuestionsAnswerSchema).max(20),

@@ -11,11 +11,13 @@ import {
 } from "@slaw-ai/db";
 import type {
   AcceptIssueThreadInteraction,
+  AcknowledgeIssueThreadInteraction,
   AskUserQuestionsAnswer,
   AskUserQuestionsInteraction,
   CancelIssueThreadInteraction,
   CreateIssueThreadInteraction,
   IssueThreadInteraction,
+  LeadDecisionInteraction,
   RequestConfirmationInteraction,
   RequestConfirmationTarget,
   RejectIssueThreadInteraction,
@@ -30,6 +32,8 @@ import {
   cancelIssueThreadInteractionSchema,
   createIssueThreadInteractionSchema,
   rejectIssueThreadInteractionSchema,
+  leadDecisionPayloadSchema,
+  leadDecisionResultSchema,
   requestConfirmationPayloadSchema,
   requestConfirmationResultSchema,
   suggestTasksPayloadSchema,
@@ -128,6 +132,13 @@ function hydrateInteraction(
         payload: requestConfirmationPayloadSchema.parse(row.payload),
         result: row.result ? requestConfirmationResultSchema.parse(row.result) : null,
       } satisfies RequestConfirmationInteraction;
+    case "lead_decision":
+      return {
+        ...base,
+        kind: "lead_decision",
+        payload: leadDecisionPayloadSchema.parse(row.payload),
+        result: row.result ? leadDecisionResultSchema.parse(row.result) : null,
+      } satisfies LeadDecisionInteraction;
     default:
       throw unprocessable(`Unknown interaction kind: ${row.kind}`);
   }
@@ -994,6 +1005,52 @@ export function issueThreadInteractionService(db: Db) {
           resolvedByUserId: actor.userId ?? null,
           resolvedAt: new Date(),
           updatedAt: new Date(),
+        })
+        .where(and(
+          eq(issueThreadInteractions.id, interactionId),
+          eq(issueThreadInteractions.status, "pending"),
+        ))
+        .returning();
+
+      if (!updated) {
+        throw conflict("Interaction has already been resolved");
+      }
+
+      await touchIssue(db, issue.id);
+      return hydrateInteraction(updated);
+    },
+
+    // Squad Lead Chat: the operator acknowledges a lead_decision the Squad Lead recorded.
+    // This is the only terminal transition for lead_decision (pending -> acknowledged).
+    acknowledgeLeadDecision: async (
+      issue: { id: string; squadId: string },
+      interactionId: string,
+      input: AcknowledgeIssueThreadInteraction,
+      actor: InteractionActor,
+    ) => {
+      if (!actor.userId) {
+        throw unprocessable("Only an operator user can acknowledge a decision");
+      }
+      const current = await getPendingInteractionForResolution({ issue, interactionId });
+      if (current.kind !== "lead_decision") {
+        throw unprocessable("Only lead_decision interactions can be acknowledged");
+      }
+
+      const now = new Date();
+      const [updated] = await db
+        .update(issueThreadInteractions)
+        .set({
+          status: "acknowledged",
+          result: {
+            version: 1,
+            acknowledgedByUserId: actor.userId,
+            acknowledgedAt: now.toISOString(),
+            note: input.note?.trim() || null,
+          },
+          resolvedByAgentId: actor.agentId ?? null,
+          resolvedByUserId: actor.userId,
+          resolvedAt: now,
+          updatedAt: now,
         })
         .where(and(
           eq(issueThreadInteractions.id, interactionId),

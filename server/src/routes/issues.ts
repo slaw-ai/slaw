@@ -20,6 +20,7 @@ import {
   acceptIssueThreadInteractionSchema,
   attachmentArtifactWorkProductMetadataSchema,
   cancelIssueThreadInteractionSchema,
+  acknowledgeIssueThreadInteractionSchema,
   squadSearchQuerySchema,
   createIssueAttachmentMetadataSchema,
   createIssueThreadInteractionSchema,
@@ -5638,6 +5639,47 @@ export function issueRoutes(
         interaction,
         actor,
         source: "issue.interaction.cancel",
+      });
+
+      res.json(interaction);
+    },
+  );
+
+  // Squad Lead Chat: operator acknowledges a lead_decision recorded by the Squad Lead.
+  router.post(
+    "/issues/:id/interactions/:interactionId/acknowledge",
+    validate(acknowledgeIssueThreadInteractionSchema),
+    async (req, res) => {
+      const id = req.params.id as string;
+      const interactionId = req.params.interactionId as string;
+      const issue = await svc.getById(id);
+      if (!issue) {
+        res.status(404).json({ error: "Issue not found" });
+        return;
+      }
+      assertSquadAccess(req, issue.squadId);
+      assertOperator(req);
+
+      const actor = getActorInfo(req);
+      const interaction = await issueThreadInteractionService(db).acknowledgeLeadDecision(issue, interactionId, req.body, {
+        agentId: actor.agentId,
+        userId: actor.actorType === "user" ? actor.actorId : null,
+      });
+
+      await logActivity(db, {
+        squadId: issue.squadId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        action: "issue.thread_interaction_acknowledged",
+        entityType: "issue",
+        entityId: issue.id,
+        details: {
+          interactionId: interaction.id,
+          interactionKind: interaction.kind,
+          interactionStatus: interaction.status,
+        },
       });
 
       res.json(interaction);

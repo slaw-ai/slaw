@@ -778,6 +778,25 @@ export interface RequestConfirmationResult {
   staleTarget?: RequestConfirmationTarget | null;
 }
 
+// Squad Lead Chat: a leadership decision the Squad Lead records in a chat. The operator
+// acknowledges it. It is a durable, attributable record of a decision + its rationale,
+// not a yes/no gate (that is request_confirmation).
+export interface LeadDecisionPayload {
+  version: 1;
+  title: string;
+  rationale: string;
+  impactArea?: string | null;
+  options?: string[] | null;
+  chosen?: string | null;
+}
+
+export interface LeadDecisionResult {
+  version: 1;
+  acknowledgedByUserId: string;
+  acknowledgedAt: string;
+  note?: string | null;
+}
+
 export interface IssueThreadInteractionBase extends IssueThreadInteractionActorFields {
   id: string;
   squadId: string;
@@ -813,20 +832,29 @@ export interface RequestConfirmationInteraction extends IssueThreadInteractionBa
   result?: RequestConfirmationResult | null;
 }
 
+export interface LeadDecisionInteraction extends IssueThreadInteractionBase {
+  kind: "lead_decision";
+  payload: LeadDecisionPayload;
+  result?: LeadDecisionResult | null;
+}
+
 export type IssueThreadInteraction =
   | SuggestTasksInteraction
   | AskUserQuestionsInteraction
-  | RequestConfirmationInteraction;
+  | RequestConfirmationInteraction
+  | LeadDecisionInteraction;
 
 export type IssueThreadInteractionPayload =
   | SuggestTasksPayload
   | AskUserQuestionsPayload
-  | RequestConfirmationPayload;
+  | RequestConfirmationPayload
+  | LeadDecisionPayload;
 
 export type IssueThreadInteractionResult =
   | SuggestTasksResult
   | AskUserQuestionsResult
-  | RequestConfirmationResult;
+  | RequestConfirmationResult
+  | LeadDecisionResult;
 
 export interface IssueAttachment {
   id: string;
