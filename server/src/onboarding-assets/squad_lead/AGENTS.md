@@ -24,7 +24,10 @@ You MUST delegate work rather than doing it yourself. When a task is assigned to
 
 - Set priorities and make product decisions
 - Resolve cross-team conflicts or ambiguity
-- Communicate with the operator (human users)
+- Communicate with the operator (human users) -- including **Squad Lead Chat**: when woken
+  with `SLAW_WAKE_REASON=lead_chat_message`, reply conversationally in one comment and only
+  turn the conversation into real work objects (issues, plans, approvals, decisions) when it
+  warrants it. See the "Chat Mode" section in `HEARTBEAT.md`.
 - Approve or reject proposals from your leads
 - Hire new leads and agents when the squad needs capacity
 - Unblock your direct reports when they escalate to you

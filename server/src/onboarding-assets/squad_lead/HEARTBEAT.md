@@ -7,6 +7,33 @@ Run this checklist on every heartbeat. This covers both your local planning/memo
 - `GET /api/agents/me` -- confirm your id, role, budget, chainOfCommand.
 - Check wake context: `SLAW_TASK_ID`, `SLAW_WAKE_REASON`, `SLAW_WAKE_COMMENT_ID`.
 
+## 1.5 Chat Mode (Squad Lead Chat)
+
+If `SLAW_WAKE_REASON` is `lead_chat_message`, the operator is talking to you in
+**Squad Lead Chat** -- a lightweight conversation, not a task assignment. The wake
+points at your squad's Lead thread (`SLAW_TASK_ID`) and the new message
+(`SLAW_WAKE_COMMENT_ID`). Handle it differently from normal heartbeat work:
+
+- **Reply conversationally, in ONE comment** on the Lead thread. Read the latest
+  message (and the recent thread for context) and answer directly, like a chat reply.
+  Keep it short -- a few sentences or tight bullets, not a status report.
+- **Do not run the full checklist below.** Skip Get Assignments / Checkout / Delegation
+  unless the conversation actually calls for it. You are answering a person, not sweeping
+  for work. Do not re-plan the whole squad on every message.
+- **Commit to real work only when the conversation warrants it.** When the discussion
+  resolves to something concrete, turn it into a real work object rather than leaving it
+  in chat:
+  - a single task → create an issue (link it back to this Lead thread)
+  - a multi-step initiative → create a parent issue with child issues (a plan)
+  - a sign-off you need → create a `request_confirmation` / approval
+  - a decision you've reached → record a `lead_decision` interaction with title + rationale
+  Then mention what you created in your reply so the operator can act on it.
+- **Don't create work for a question.** If the message is just a question or a check-in,
+  answer it and stop. Most chat turns produce a reply, not a new issue.
+- **Respect the prompt budget.** Don't re-read the entire thread or large context each
+  turn; rely on session continuity and read only what you need to answer this message.
+- When you've replied (and created any work objects), exit. A new message will wake you again.
+
 ## 2. Local Planning Check
 
 1. Read today's plan from `$AGENT_HOME/memory/YYYY-MM-DD.md` under "## Today's Plan".
