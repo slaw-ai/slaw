@@ -3,7 +3,7 @@ import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, getTableColumns, gt, inArray, isNull, lt, lte, notInArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, gt, inArray, isNull, lt, lte, ne, notInArray, or, sql } from "drizzle-orm";
 import type { Db } from "@slaw-ai/db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
@@ -1072,7 +1072,7 @@ interface ParsedIssueAssigneeAdapterOverrides {
 }
 
 type ModelProfileRequestSource = "issue_override" | "wake_context";
-type AppliedModelProfileConfigSource = "agent_runtime" | "adapter_default";
+type AppliedModelProfileConfigSource = "agent_runtime" | "squad_lead_runtime" | "adapter_default";
 
 export interface ModelProfileApplication {
   requested: ModelProfileKey | null;
@@ -1160,6 +1160,9 @@ function readAgentRuntimeModelProfile(
 export function resolveModelProfileApplication(input: {
   adapterModelProfiles: AdapterModelProfileDefinition[];
   agentRuntimeConfig: unknown;
+  // Runtime config of the squad's Squad Lead, passed only when the lead shares this agent's
+  // adapter type. Its profile overrides become the squad-wide default for agents without their own.
+  squadLeadRuntimeConfig?: unknown;
   issueModelProfile: ModelProfileKey | null | undefined;
   contextSnapshot: Record<string, unknown> | null | undefined;
   profileResolutionFallbackReason?: string | null;
@@ -1196,7 +1199,12 @@ export function resolveModelProfileApplication(input: {
     };
   }
 
-  const runtimeProfile = readAgentRuntimeModelProfile(input.agentRuntimeConfig, requested);
+  const agentProfile = readAgentRuntimeModelProfile(input.agentRuntimeConfig, requested);
+  const leadProfile = agentProfile.configured
+    ? null
+    : readAgentRuntimeModelProfile(input.squadLeadRuntimeConfig, requested);
+  const useLeadProfile = Boolean(leadProfile?.configured && leadProfile.enabled);
+  const runtimeProfile = useLeadProfile ? leadProfile! : agentProfile;
   if (!runtimeProfile.enabled) {
     return {
       requested,
@@ -1212,7 +1220,11 @@ export function resolveModelProfileApplication(input: {
     requested,
     requestedBy,
     applied: requested,
-    configSource: runtimeProfile.configured ? "agent_runtime" : "adapter_default",
+    configSource: useLeadProfile
+      ? "squad_lead_runtime"
+      : runtimeProfile.configured
+        ? "agent_runtime"
+        : "adapter_default",
     fallbackReason: null,
     adapterConfig: {
       ...parseObject(adapterProfile.adapterConfig),
@@ -7439,9 +7451,26 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         "Failed to resolve adapter model profiles; falling back to primary adapter config",
       );
     }
+    const squadLead =
+      agent.role === "squad_lead"
+        ? null
+        : await db
+            .select({ runtimeConfig: agents.runtimeConfig })
+            .from(agents)
+            .where(
+              and(
+                eq(agents.squadId, agent.squadId),
+                eq(agents.role, "squad_lead"),
+                eq(agents.adapterType, agent.adapterType),
+                ne(agents.status, "terminated"),
+              ),
+            )
+            .limit(1)
+            .then((rows) => rows[0] ?? null);
     const modelProfileApplication = resolveModelProfileApplication({
       adapterModelProfiles,
       agentRuntimeConfig: agent.runtimeConfig,
+      squadLeadRuntimeConfig: squadLead?.runtimeConfig ?? null,
       issueModelProfile: issueAssigneeOverrides?.modelProfile ?? null,
       contextSnapshot: context,
       profileResolutionFallbackReason,

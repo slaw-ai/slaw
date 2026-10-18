@@ -990,6 +990,13 @@ function nonPluginOperationIssueCondition() {
   )`;
 }
 
+// Squad Lead Chat: a `thread_type='lead'` issue is a Squad Lead Chat thread, not a task.
+// Exclude it from every list/count that powers the kanban board, issue lists, and inbox
+// so it never appears or counts as work. (See migration 0099_lead_chat / DESIGN-squad-lead-chat.md.)
+function excludeLeadThreadsCondition() {
+  return ne(issues.threadType, "lead");
+}
+
 function shouldIncludePluginOperationIssues(filters: IssueFilters | undefined) {
   return Boolean(
     filters?.includePluginOperations ||
@@ -1902,6 +1909,7 @@ const issueListSelect = {
   `,
   status: issues.status,
   workMode: issues.workMode,
+  threadType: issues.threadType,
   priority: issues.priority,
   assigneeAgentId: issues.assigneeAgentId,
   assigneeUserId: issues.assigneeUserId,
@@ -2833,6 +2841,7 @@ async function blockedInboxIssueConditions(
     eq(issues.squadId, squadId),
     isNull(issues.hiddenAt),
     notInArray(issues.status, [...BLOCKED_INBOX_TERMINAL_STATUSES]),
+    excludeLeadThreadsCondition(),
   ];
   const touchedByUserId = filters?.touchedByUserId?.trim() || undefined;
   const inboxArchivedByUserId = filters?.inboxArchivedByUserId?.trim() || undefined;
@@ -3851,6 +3860,7 @@ export function issueService(db: Db) {
         conditions.push(ne(issues.originKind, "routine_execution"));
       }
       conditions.push(isNull(issues.hiddenAt));
+      conditions.push(excludeLeadThreadsCondition());
 
       const priorityOrder = sql`CASE ${issues.priority} WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END`;
       const searchOrder = sql<number>`
@@ -3969,7 +3979,11 @@ export function issueService(db: Db) {
         return countBlockedInboxIssues(db, squadId, filters);
       }
 
-      const conditions = [eq(issues.squadId, squadId), isNull(issues.hiddenAt)];
+      const conditions = [
+        eq(issues.squadId, squadId),
+        isNull(issues.hiddenAt),
+        excludeLeadThreadsCondition(),
+      ];
       if (filters?.status) {
         const statuses = filters.status.split(",").map((status) => status.trim()).filter(Boolean);
         if (statuses.length === 1) conditions.push(eq(issues.status, statuses[0]!));
@@ -4003,6 +4017,7 @@ export function issueService(db: Db) {
         isNull(issues.hiddenAt),
         nonPluginOperationIssueCondition(),
         unreadForUserCondition(squadId, userId),
+        excludeLeadThreadsCondition(),
       ];
       if (status) {
         const statuses = status.split(",").map((s) => s.trim()).filter(Boolean);
@@ -4842,6 +4857,55 @@ export function issueService(db: Db) {
         const [enriched] = await withIssueLabels(tx, [issue]);
         return enriched;
       });
+    },
+
+    // Squad Lead Chat (Phase 2): return the squad's single Lead thread, creating it on
+    // first use. The Lead thread is a normal issue row marked thread_type='lead', assigned
+    // to the squad's Squad Lead agent, so it inherits comments, wake, audit, and cost for
+    // free while being excluded from the Board and issue lists (see excludeLeadThreadsCondition).
+    // Idempotent: a partial UNIQUE index (issues_squad_lead_thread_uq) guarantees at most one
+    // per squad, so a concurrent create races to a 23505 we recover from by re-selecting.
+    getOrCreateLeadThread: async (squadId: string) => {
+      const findExisting = async () =>
+        db
+          .select()
+          .from(issues)
+          .where(and(eq(issues.squadId, squadId), eq(issues.threadType, "lead")))
+          .limit(1)
+          .then((rows) => rows[0] ?? null);
+
+      const existing = await findExisting();
+      if (existing) return existing;
+
+      // Find the squad's Squad Lead agent to own the thread. Prefer a non-terminated one.
+      const lead = await db
+        .select({ id: agents.id, status: agents.status })
+        .from(agents)
+        .where(and(eq(agents.squadId, squadId), eq(agents.role, "squad_lead"), ne(agents.status, "terminated")))
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+      if (!lead) {
+        throw unprocessable("Squad has no Squad Lead agent to host the chat thread");
+      }
+
+      try {
+        return await issueService(db).create(squadId, {
+          title: "Squad Lead Chat",
+          description: "Conversation with the Squad Lead. Messages here resolve to real work — issues, plans, approvals, and decisions.",
+          threadType: "lead",
+          status: "backlog",
+          priority: "medium",
+          assigneeAgentId: lead.id,
+          originKind: "lead_thread",
+        });
+      } catch (error) {
+        // Lost a race to a concurrent create (partial unique index). Re-read the winner.
+        if ((error as { code?: string })?.code === "23505") {
+          const winner = await findExisting();
+          if (winner) return winner;
+        }
+        throw error;
+      }
     },
 
     update: async (

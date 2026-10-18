@@ -120,4 +120,32 @@ describe("issue thread interaction schemas", () => {
       })).toThrow("href must not use javascript:, data:, or protocol-relative URLs");
     }
   });
+
+  it("parses a lead_decision payload with default no-wake continuation", () => {
+    const parsed = createIssueThreadInteractionSchema.parse({
+      kind: "lead_decision",
+      title: "Ship the beta this week",
+      payload: {
+        version: 1,
+        title: "Ship the beta this week",
+        rationale: "Audit findings are minor and can land as fast-follows; momentum matters more.",
+        impactArea: "release",
+        options: ["Ship this week", "Wait for the audit"],
+        chosen: "Ship this week",
+      },
+    });
+
+    expect(parsed.kind).toBe("lead_decision");
+    expect(parsed.continuationPolicy).toBe("none");
+    if (parsed.kind !== "lead_decision") return;
+    expect(parsed.payload.title).toBe("Ship the beta this week");
+    expect(parsed.payload.chosen).toBe("Ship this week");
+  });
+
+  it("rejects a lead_decision payload missing the rationale", () => {
+    expect(() => createIssueThreadInteractionSchema.parse({
+      kind: "lead_decision",
+      payload: { version: 1, title: "No rationale" },
+    })).toThrow();
+  });
 });

@@ -194,6 +194,8 @@ export const ISSUE_THREAD_INTERACTION_KINDS = [
   "suggest_tasks",
   "ask_user_questions",
   "request_confirmation",
+  // Squad Lead Chat: a leadership decision the Squad Lead records and the operator acknowledges.
+  "lead_decision",
 ] as const;
 export type IssueThreadInteractionKind = (typeof ISSUE_THREAD_INTERACTION_KINDS)[number];
 
@@ -202,6 +204,8 @@ export const ISSUE_THREAD_INTERACTION_STATUSES = [
   "accepted",
   "rejected",
   "answered",
+  // Squad Lead Chat: terminal state for a lead_decision the operator has acknowledged.
+  "acknowledged",
   "cancelled",
   "expired",
   "failed",

@@ -13,7 +13,10 @@ const mockIssueService = vi.hoisted(() => ({
   listWakeableBlockedDependents: vi.fn(),
   getWakeableParentAfterChildCompletion: vi.fn(),
   getCurrentScheduledRetry: vi.fn(),
+  getOrCreateLeadThread: vi.fn(),
 }));
+
+const mockAgentGetById = vi.hoisted(() => vi.fn(async () => null));
 
 const mockHeartbeatService = vi.hoisted(() => ({
   wakeup: vi.fn(async () => undefined),
@@ -42,7 +45,7 @@ vi.mock("../services/index.js", () => ({
     hasPermission: vi.fn(async () => true),
   }),
   agentService: () => ({
-    getById: vi.fn(async () => null),
+    getById: mockAgentGetById,
     resolveByReference: vi.fn(async (_squadId: string, raw: string) => ({
       ambiguous: false,
       agent: { id: raw },
@@ -106,7 +109,7 @@ function registerModuleMocks() {
       hasPermission: vi.fn(async () => true),
     }),
     agentService: () => ({
-      getById: vi.fn(async () => null),
+      getById: mockAgentGetById,
       resolveByReference: vi.fn(async (_squadId: string, raw: string) => ({
         ambiguous: false,
         agent: { id: raw },
@@ -303,5 +306,104 @@ describe("issue update comment wakeups", () => {
         }),
       }),
     );
+  });
+
+  it("tags a Lead-thread chat message from a user as a lead_chat wake (Phase 3)", async () => {
+    const leadThread = makeIssue({
+      threadType: "lead",
+      assigneeAgentId: ASSIGNEE_AGENT_ID,
+      assigneeUserId: null,
+      status: "backlog",
+      title: "Squad Lead Chat",
+    });
+    mockIssueService.getById.mockResolvedValue(leadThread);
+    mockIssueService.addComment.mockResolvedValue({
+      id: "comment-lead-1",
+      issueId: leadThread.id,
+      squadId: leadThread.squadId,
+      body: "what should we do about the flaky CI?",
+    });
+
+    const res = await request(await createApp())
+      .post(`/api/issues/${leadThread.id}/comments`)
+      .send({ body: "what should we do about the flaky CI?" });
+
+    expect(res.status).toBe(201);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledTimes(1);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
+      ASSIGNEE_AGENT_ID,
+      expect.objectContaining({
+        source: "automation",
+        reason: "lead_chat_message",
+        payload: expect.objectContaining({
+          issueId: leadThread.id,
+          commentId: "comment-lead-1",
+          mutation: "comment",
+          leadChat: true,
+        }),
+        contextSnapshot: expect.objectContaining({
+          source: "lead_chat",
+          wakeReason: "lead_chat_message",
+          leadChat: true,
+        }),
+      }),
+    );
+  });
+
+  it("does NOT tag a normal (non-lead) issue comment as lead_chat", async () => {
+    const normalIssue = makeIssue({
+      threadType: "issue",
+      assigneeAgentId: ASSIGNEE_AGENT_ID,
+      assigneeUserId: null,
+      status: "in_progress",
+    });
+    mockIssueService.getById.mockResolvedValue(normalIssue);
+    mockIssueService.addComment.mockResolvedValue({
+      id: "comment-normal-1",
+      issueId: normalIssue.id,
+      squadId: normalIssue.squadId,
+      body: "please revise this",
+    });
+
+    const res = await request(await createApp())
+      .post(`/api/issues/${normalIssue.id}/comments`)
+      .send({ body: "please revise this" });
+
+    expect(res.status).toBe(201);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledTimes(1);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
+      ASSIGNEE_AGENT_ID,
+      expect.objectContaining({
+        reason: "issue_commented",
+        contextSnapshot: expect.objectContaining({ source: "issue.comment" }),
+      }),
+    );
+  });
+
+  it("GET /squads/:squadId/lead-thread returns the Lead thread + Squad Lead summary (Phase 7)", async () => {
+    mockIssueService.getOrCreateLeadThread.mockResolvedValue({
+      id: "lead-thread-1",
+      identifier: "SLA-1",
+      squadId: "squad-1",
+      threadType: "lead",
+      assigneeAgentId: ASSIGNEE_AGENT_ID,
+    });
+    mockAgentGetById.mockResolvedValue({
+      id: ASSIGNEE_AGENT_ID,
+      name: "Squad Lead",
+      role: "squad_lead",
+      status: "active",
+    } as any);
+
+    const res = await request(await createApp()).get("/api/squads/squad-1/lead-thread");
+
+    expect(res.status).toBe(200);
+    expect(mockIssueService.getOrCreateLeadThread).toHaveBeenCalledWith("squad-1");
+    expect(res.body).toEqual({
+      issueId: "lead-thread-1",
+      identifier: "SLA-1",
+      squadId: "squad-1",
+      lead: { id: ASSIGNEE_AGENT_ID, name: "Squad Lead", role: "squad_lead", status: "active" },
+    });
   });
 });

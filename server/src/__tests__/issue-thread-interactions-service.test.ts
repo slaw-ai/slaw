@@ -1400,5 +1400,94 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
         status: "accepted",
       });
     });
+
+    it("acknowledges a lead_decision and records who acknowledged it", async () => {
+      const squadId = randomUUID();
+      const issueId = randomUUID();
+
+      await db.insert(squads).values({
+        id: squadId,
+        name: "Slaw",
+        issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        requireOperatorApprovalForNewAgents: false,
+      });
+      await db.insert(issues).values({
+        id: issueId,
+        squadId,
+        title: "Squad Lead Chat",
+        threadType: "lead",
+        status: "backlog",
+        priority: "medium",
+      });
+
+      const created = await interactionsSvc.create({ id: issueId, squadId }, {
+        kind: "lead_decision",
+        title: "Ship the beta this week",
+        payload: {
+          version: 1,
+          title: "Ship the beta this week",
+          rationale: "Audit findings are minor; ship now and fast-follow.",
+          impactArea: "release",
+          chosen: "Ship this week",
+        },
+      }, { userId: "local-operator" });
+
+      expect(created.kind).toBe("lead_decision");
+      expect(created.status).toBe("pending");
+
+      const acknowledged = await interactionsSvc.acknowledgeLeadDecision(
+        { id: issueId, squadId },
+        created.id,
+        { note: "Agreed." },
+        { userId: "local-operator" },
+      );
+
+      expect(acknowledged).toMatchObject({
+        id: created.id,
+        kind: "lead_decision",
+        status: "acknowledged",
+        resolvedByUserId: "local-operator",
+        result: {
+          version: 1,
+          acknowledgedByUserId: "local-operator",
+          note: "Agreed.",
+        },
+      });
+    });
+
+    it("does not acknowledge a lead_decision twice", async () => {
+      const squadId = randomUUID();
+      const issueId = randomUUID();
+
+      await db.insert(squads).values({
+        id: squadId,
+        name: "Slaw",
+        issuePrefix: `T${squadId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        requireOperatorApprovalForNewAgents: false,
+      });
+      await db.insert(issues).values({
+        id: issueId,
+        squadId,
+        title: "Squad Lead Chat",
+        threadType: "lead",
+        status: "backlog",
+        priority: "medium",
+      });
+
+      const created = await interactionsSvc.create({ id: issueId, squadId }, {
+        kind: "lead_decision",
+        payload: { version: 1, title: "Decide X", rationale: "Because Y." },
+      }, { userId: "local-operator" });
+
+      await interactionsSvc.acknowledgeLeadDecision(
+        { id: issueId, squadId }, created.id, {}, { userId: "local-operator" },
+      );
+
+      await expect(
+        interactionsSvc.acknowledgeLeadDecision(
+          { id: issueId, squadId }, created.id, {}, { userId: "local-operator" },
+        ),
+      ).rejects.toThrow(/already been resolved/i);
+    });
   });
 });
