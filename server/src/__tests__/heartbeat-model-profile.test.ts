@@ -103,6 +103,61 @@ describe("heartbeat model profile application", () => {
     });
   });
 
+  it("uses the squad lead's profile override when the agent has none", () => {
+    const modelProfile = resolveModelProfileApplication({
+      adapterModelProfiles: [cheapProfile],
+      agentRuntimeConfig: {},
+      squadLeadRuntimeConfig: {
+        modelProfiles: { cheap: { enabled: true, adapterConfig: { model: "lead-cheap" } } },
+      },
+      issueModelProfile: null,
+      contextSnapshot: { modelProfile: "cheap" },
+    });
+
+    expect(modelProfile).toMatchObject({
+      applied: "cheap",
+      configSource: "squad_lead_runtime",
+      adapterConfig: { model: "lead-cheap", modelReasoningEffort: "low" },
+    });
+  });
+
+  it("prefers the agent's own profile override over the squad lead's", () => {
+    const modelProfile = resolveModelProfileApplication({
+      adapterModelProfiles: [cheapProfile],
+      agentRuntimeConfig: {
+        modelProfiles: { cheap: { adapterConfig: { model: "agent-cheap" } } },
+      },
+      squadLeadRuntimeConfig: {
+        modelProfiles: { cheap: { adapterConfig: { model: "lead-cheap" } } },
+      },
+      issueModelProfile: null,
+      contextSnapshot: { modelProfile: "cheap" },
+    });
+
+    expect(modelProfile).toMatchObject({
+      configSource: "agent_runtime",
+      adapterConfig: { model: "agent-cheap" },
+    });
+  });
+
+  it("ignores a disabled squad lead profile and uses the adapter default", () => {
+    const modelProfile = resolveModelProfileApplication({
+      adapterModelProfiles: [cheapProfile],
+      agentRuntimeConfig: {},
+      squadLeadRuntimeConfig: {
+        modelProfiles: { cheap: { enabled: false, adapterConfig: { model: "lead-cheap" } } },
+      },
+      issueModelProfile: null,
+      contextSnapshot: { modelProfile: "cheap" },
+    });
+
+    expect(modelProfile).toMatchObject({
+      applied: "cheap",
+      configSource: "adapter_default",
+      adapterConfig: { model: "adapter-cheap" },
+    });
+  });
+
   it("falls back to the primary config when the adapter does not support the requested profile", () => {
     const modelProfile = resolveModelProfileApplication({
       adapterModelProfiles: [],
